@@ -258,51 +258,59 @@ W#46 Phase 3) + W#54 (Sick Bay — H1 cleared, H2 gated on W#53 P1, H3 on
 ADR 0068 Accepted). |
 | 51 | **Quarterdeck Entry-Point Surface** (ADR 0080; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0080 Accepted 2026-05-05 via PR #574; Stage 06 hand-off at `icm/_state/handoffs/quarterdeck-entry-point-stage06-handoff.md`; sunfish-PM may begin Phase 1 when W#46 Phase 1 lands) | research (XO) ✓ | `docs/adrs/0080-quarterdeck-entry-point.md` (PR #574 merged) | Hard prerequisites: ADR 0077 W#46 Phase 1 (ShipAction catalog) must land before Phase 2; ADR 0078 W#49 Phase 1 (IOodWatchService) must land before Phase 3a; ADR 0077 W#46 Phase 3 (ILiveAnnouncer + IFocusTrap) must land before Phase 3a. Key types: `IQuarterdeckDataProvider` (`GetSnapshotAsync` / `SubscribeSnapshotAsync`) + `IQuarterdeckCommandService` (`AcknowledgeAlertAsync`) + `IQuarterdeckAlertSource` (SourceName + `GetAlertsAsync`) + `IDepartmentKpiSource` (SourceName + `GetKpisAsync`); `QuarterdeckOptions` (HeartbeatInterval + ProviderTimeout + PerSourceTimeout); `QuarterdeckSnapshot` aggregates 6 sources (OOD watch + mission envelope + standing orders + alerts + KPIs + permission-pre-resolved dept links); `AlertVisibilityPolicy` enum; 3 new `AuditEventType`: WatchHandoverRequested + AlertAcknowledgementRequested + AlertAcknowledged; split `ShipAction`: ViewQuarterdeck (any ShipRole) + ViewQuarterdeckAlerts (DivisionOfficer+) + AcknowledgeAlert. Two new packages: `foundation-quarterdeck` + `blocks-quarterdeck`. 4-phase build: ~14-20h / ~5 PRs. Pre-merge council canonical (WCAG/a11y + security subagents mandatory for Phases 2/3a/3b/4). |
 | 52 | **Tactical Anomaly Detection + Threat-Trigger Surface** (ADR 0081; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0081 Accepted 2026-05-05 via PR #578; Stage 06 hand-off at `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md`; sunfish-PM may begin Phase 1 when W#46 Phase 1 lands) | research (XO) ✓ | `docs/adrs/0081-tactical-anomaly-detection.md` (PR #578 merged) + `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md` | Hard prerequisites: ADR 0077 W#46 Accepted ✓ + ADR 0065 W#42 built ✓. Soft cross-reference: ADR 0080 W#51 (`LookoutQuarterdeckAlertSource` supplies Quarterdeck ticker); ADR 0068 W#37 (security policy). Key types: `ITacticalRuleEngine` + `ITacticalRule` + `IAlertRouter` + `ISonarStore` + `ILookout` + `ITacticalDataProvider` + `ITacticalCommandService` + `IThreatTriggerService` + `ISystemPrincipalProvider` + `LookoutQuarterdeckAlertSource`; `TacticalOptions` (7 fields with normative bounds); 13 `AuditEventType` constants; 7 `ShipAction` constants (IssueEmergencyStandingOrder = System-only; ManageThreatTriggers = reserved v1). Two new packages: `foundation-tactical` + `blocks-tactical`. 4–5 phase build: ~16-22h / ~6 PRs. Pre-merge council canonical (WCAG/a11y + security subagents mandatory for all UI-bearing and authority-chain phases per §Trust + §8.5). |
-| 53 | **Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1** | `building` (Phase 1a merged 2026-05-06 via PR #630 — `IAtlasProvider<T>` on origin/main + Helm widget contract surface; Phase 1b pending — KeyFingerprint + IIdentityAtlasSurface) | sunfish-PM | `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) + `packages/ui-core/Wayfinder/` (P1a merged) | **Phase 1a merged 2026-05-06 via PR #630.** New `Sunfish.UICore.Wayfinder`
-namespace shipped: `IAtlasProvider<TView>` (invariant — hand-off cited
-`out TView` but C# compiler rejects on `Task<T>` return type per CS1961;
-concrete W#48 `IIntegrationAtlasProvider` derives directly without
-covariant downcast); `IHelmWidget` interface + 5 records
-(HelmWidgetMetadata / HelmWidgetViewState / HelmWidgetAction /
-HelmRenderContext) + 2 `[JsonStringEnumConverter]` enums (HelmSlot /
-HelmActionInvocationKind) + `HelmOptions` (PeriodicRefreshInterval
-default 1m); `IHelmWidgetRegistry` + `internal sealed
-DefaultHelmWidgetRegistry` (Slot then OrderHint sort; LINQ stable);
-`AddSunfishHelm()` + `AddHelmWidget<TWidget>()` DI extensions.
+| 53 | **Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1** | `building` (Phase 1 fully merged 2026-05-06 via PR #630 + #633 — `IAtlasProvider<T>` + Helm widget contract surface + KeyFingerprint + IIdentityAtlasSurface + 8 view-model records on origin/main; Phase 2 pending — 6 canonical Helm widgets + Blazor/React adapter renderers) | sunfish-PM | `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) + `packages/ui-core/Wayfinder/` (P1 merged) | **Phase 1 milestone complete 2026-05-06.** Phase 1a merged via PR #630
+(IAtlasProvider<TView> + IHelmWidget contract surface); Phase 1b merged
+via PR #633 (KeyFingerprint + IIdentityAtlasSurface + 8 view-model
+records). All Phase 1 contract types now on origin/main.
 
-**Two hand-off divergences (council-validated)**:
-1. `out TView` → invariant `TView` (C# CS1961 — Task<T> not covariant).
-2. `TeamId? → Guid?` for HelmRenderContext.ActiveTeamId — kernel-runtime
-   already references ui-core (line 23 of its csproj); reverse dep
-   would form cycle. Consumers wrap Guid back into TeamId at the
-   kernel-runtime boundary.
+**Phase 1a (PR #630)**: `Sunfish.UICore.Wayfinder` namespace —
+`IAtlasProvider<TView>` (invariant — hand-off cited `out TView` but C#
+compiler rejects on `Task<T>` return type per CS1961; concrete W#48
+`IIntegrationAtlasProvider` derives directly without covariant
+downcast); `IHelmWidget` interface + 5 records (HelmWidgetMetadata /
+HelmWidgetViewState / HelmWidgetAction / HelmRenderContext) + 2
+`[JsonStringEnumConverter]` enums (HelmSlot / HelmActionInvocationKind)
++ `HelmOptions` (PeriodicRefreshInterval default 1m);
+`IHelmWidgetRegistry` + `internal sealed DefaultHelmWidgetRegistry`
+(Slot then OrderHint sort; LINQ stable); `AddSunfishHelm()` +
+`AddHelmWidget<TWidget>()` DI extensions.
+
+**Phase 1b (PR #633)**: `KeyFingerprint` value type (95-char hex-with-
+colons SHA-256; readonly record struct + Parse + IsValid + ToString +
+JsonConverter) — relocated from foundation-recovery to
+`foundation/Crypto/` to break a foundation-recovery → kernel-security →
+ui-core cycle. `IIdentityAtlasSurface` 5-method projection contract +
+8 view-model records (IdentityProfileEditViewModel / KeyRotationViewModel
+/ RecoveryContactsViewModel / RecoveryContact / HistoricalKeysBrowseViewModel
+/ HistoricalKeyEntry / ActiveTeamOverviewViewModel /
+TeamMembershipEntry).
+
+**Three hand-off divergences (all council-validated)**:
+1. `out TView` → invariant `TView` (P1a) — C# CS1961 reproduced.
+2. `TeamId? → Guid?` (P1a + P1b) — kernel-runtime → ui-core cycle.
+3. KeyFingerprint relocation foundation-recovery → foundation/Crypto/
+   (P1b) — foundation-recovery → kernel-security → ui-core cycle.
 
 DateTimeOffset over NodaTime (cohort precedent W#46/W#49/W#50/W#54/W#55).
 
 **Pre-merge council** (standard 4-perspective adversarial; Opus + xhigh)
-returned **READY-TO-MERGE** with no findings. Both hand-off divergences
-validated (CS1961 reproduced; cycle confirmed at kernel-runtime:23).
-§A0 three-direction structural-citation audit clean. **Cohort batting
-average: 30-of-36** (W#53 P1a was the cleanest substrate — 0 Major,
-0 Minor; only PR description amendments noted).
+returned **READY-TO-MERGE** for both P1a + P1b with no findings.
+**Cohort batting average: 30-of-36** — both W#53 phases were the
+cleanest substrate landings.
 
-**Tests**: 11 new `HelmWidgetRegistryTests` (slot+orderHint sort +
-tie-stability + GetSlot filter + DI defaults + AddHelmWidget + null
-guards + enum cardinalities + IAtlasProvider class-constraint
-reflection). 47/47 ui-core tests pass overall.
+**Tests**:
+- P1a: 11 new `HelmWidgetRegistryTests` (47/47 ui-core total).
+- P1b: 12 new `KeyFingerprintTests` in foundation/tests/Crypto/ + 9 new
+  `IdentityAtlasContractTests` in ui-core/tests/. 56/56 ui-core +
+  279/279 foundation totals after this PR.
 
-**Phase 1a-immediate unblock**: W#48 P1 (Atlas Integration-Config UI
-Surface) was gated on `IAtlasProvider<T>` landing on origin/main. With
-PR #630 merged, **W#48 Phase 1 is now ready for COB pickup**.
+**W#48 unblocked** by P1a (PR #630 merged 2026-05-06); ready for COB
+pickup.
 
-**Phase 1b remaining** (~3-4h, 1 PR): `KeyFingerprint` (additive to
-`packages/foundation-recovery/`) + `IIdentityAtlasSurface` + view-model
-records + `RecoveryContact`. Cleared halts: H1+H2 from hand-off; the
-new ui-core dependencies are landed.
-
-**Phase 2 remaining** (~12-19h, 3-4 PRs; gated on Phase 1 merged):
-6 canonical Helm widgets + Blazor/React adapter renderers + WCAG tests.
-Pre-merge WCAG/a11y subagent mandatory.
+**Phase 2 remaining** (~12-19h, 3-4 PRs; now unblocked by Phase 1
+fully landed):
+- 6 canonical Helm widgets + Blazor/React adapter renderers + WCAG
+  tests. Pre-merge WCAG/a11y subagent mandatory.
 
 **Phase 3 deferred** to W#54 (identity Atlas implementations). |
 | 47 | **W#42 follow-on — Anchor MAUI `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; mounts ADR 0063-A1.1 `SystemRequirementsResult` onto Anchor's MAUI Blazor Hybrid shell | `ready-to-build` (W#42 substrate built 2026-05-04 across PRs #503/#504/#505/#510/#513/#514; Stage 06 hand-off authored 2026-05-04; sunfish-PM may begin Phase 1 once a COB capacity slot opens) | sunfish-PM | `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` + `docs/adrs/0063-mission-space-requirements.md` (substrate spec) + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Decision §7 (WCAG mandate) + `docs/adrs/0048-anchor-multi-backend-maui.md` (multi-backend) + `docs/adrs/0032-multi-team-anchor-workspace-switching.md` (active-team scoping) | **Hand-off ready 2026-05-04.** First per-adapter renderer hand-off in the W#42 follow-on chain (Anchor MAUI; Bridge React + iOS SwiftUI + Android-native still queued as future hand-offs). Implementation: 13–18h sunfish-PM / 5 PRs / 5 phases. **Phase 1:** `PreInstallFullPage` Razor page + `SystemRequirementsDimensionRow` component + 26 localization keys + 6 unit tests (~4–5h). **Phase 2:** `PostInstallInlineExplanation` mode + `AnchorMauiSystemRequirementsRenderer` + `AnchorMauiSystemRequirementsSurface` + 4 unit tests (~2–3h). **Phase 3:** `PostInstallRegressionBanner` + `SystemRequirementsRegressionObserver` (`IMissionEnvelopeObserver`) + `aria-live="assertive"` + 5 unit tests (~2h). **Phase 4:** `AddAnchorSystemRequirementsRenderer` DI extension + per-platform native-a11y (UIA / NSAccessibility on Win + MacCatalyst Phase-1 RIDs; iOS/Android deferred per ADR 0048-A1) + 3 a11y harness tests via `Sunfish.UIAdapters.Blazor.A11y` + WCAG 2.2 AA + EN 301 549 v3.2.1 baseline append in `apps/docs/foundation/wayfinder/wcag.md` (~3–4h). **Phase 5:** ledger flip + memory + close (~30min). **7 halt-conditions named** including (a) substrate prereq verification on origin/main, (b) ledger-row sanity check, (c) WCAG/a11y subagent pre-merge canonical per ADR 0065 §7 mandate (non-negotiable for UI-bearing phases), (d) MAUI-version compatibility, (e) Win+MacCatalyst-only Phase-4 scope, (f) audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), (g) `IMinimumSpecResolver` scoping must respect `IActiveTeamAccessor`. Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase; cohort batting average 22-of-22). |
@@ -427,7 +435,6 @@ cardinality test updated to assert the 4 new entries; net cardinality = 13).
 W#46 P1 ✓ (foundation-ship-common) + W#49 P1+P2+P2-amend+P3 ✓
 (foundation-wayfinder OOD watch) + W#55 P1 ✓ (foundation-ships-office;
 this PR). Phases 2+ for each cohort workstream remain. |
-| 57 | **ADR 0065-A1 — Standing Order event-stream contract** (`sunfish-feature-change` pipeline; addendum to W#42) — adds `StandingOrderAppliedEvent` + `IStandingOrderEventStream` + `InMemoryStandingOrderEventStream` to `packages/foundation-wayfinder/` + one new `AuditEventType.StandingOrderApplied` constant in `packages/kernel-audit/`; clears W#46 Phase-3 halt-condition C + W#53 Phase-2 H8 | `ready-to-build` (ADR 0065-A1 authored 2026-05-04 + council-reviewed in ADR file; Stage 06 hand-off authored 2026-05-06; sunfish-PM may begin immediately) | sunfish-PM | `icm/_state/handoffs/wayfinder-adr-0065-a1-event-stream-handoff.md` + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Amendment A1 | **Hand-off authored 2026-05-06.** Additive to `packages/foundation-wayfinder/` — no new package. ~2-3h / 1 PR + 1 ledger-flip PR. All prerequisite symbols verified on origin/main; all introduced symbols confirmed absent. **Unblocks:** (1) W#46 Phase 3 halt-condition C (subscribe-before-load cache invalidation in `DefaultPermissionResolver`); (2) W#53 Phase 2 H8 (Helm widget reactive refresh for `recent-standing-orders` + `quick-toggles`); (3) future W#43 `WayfinderFeatureProvider` cache-invalidation path (`feature-management.*` Standing Order consumer). Pre-merge council mandatory. |
 | 56 | **W#42 follow-on — Bridge React `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; ships TypeScript projection contract + Bridge JSON endpoint + React renderer in `packages/ui-adapters-react/`; sibling to W#47 Anchor MAUI | `ready-to-build` (W#42 substrate built 2026-05-04 across PRs #503/#504/#505/#510/#513/#514; W#47 Anchor MAUI sibling hand-off authored 2026-05-04 as PR #555; Stage 06 hand-off authored 2026-05-05; sunfish-PM may begin Phase 1 once a COB capacity slot opens) | sunfish-PM | `icm/_state/handoffs/foundation-wayfinder-bridge-react-renderer-stage06-handoff.md` + sibling `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` (W#47) + `docs/adrs/0063-mission-space-requirements.md` (substrate spec) + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Decision §7 (WCAG mandate) + `docs/adrs/0030-react-adapter-scaffolding.md` (React adapter) + `docs/adrs/0014-adapter-parity-policy.md` (parity) + `docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md` (Bridge Zone C) | **Hand-off ready 2026-05-05.** Second per-adapter renderer in the W#42 follow-on chain (sibling to W#47 Anchor MAUI; iOS SwiftUI + Android-native still queued as future hand-offs). Implementation: 14–19h sunfish-PM / 5 PRs / 5 phases. **Phase 1:** TypeScript projection contract (`packages/ui-adapters-react/src/contracts/SystemRequirements.ts`) + Bridge endpoint (`accelerators/bridge/Sunfish.Bridge/Features/SystemRequirements/SystemRequirementsEndpoints.cs` with `MapSystemRequirementsEndpoints` per Bridge cohort `MapListingsEndpoints` / `MapFieldEndpoints` pattern) + 4 endpoint tests (~3–4h; this phase has no MAUI-sibling counterpart — first .NET→JSON crossing of the substrate boundary). **Phase 2:** `PreInstallFullPage` React component + `SystemRequirementsDimensionRow` + `SystemRequirements.strings.ts` (26 string entries, parity with W#47's `SharedResource.resx`) + 6 Vitest tests (~3–4h). **Phase 3:** `PostInstallInlineExplanation` (`<details>` element) + `PostInstallRegressionBanner` (`aria-live="assertive"`) + optional `useSystemRequirements(bundleId, platformKey)` fetch hook + 5 Vitest tests (~3–4h). **Phase 4:** 7 Storybook stories + axe-core gate via `tooling/a11y-audit-runner` + WCAG 2.2 AA + EN 301 549 v3.2.1 baseline append in `apps/docs/foundation/wayfinder/wcag.md` + README update (~3–4h). **Phase 5:** adapter-parity matrix update in `_shared/engineering/adapter-parity.md` + ledger flip + memory + close (~30min). **9 halt-conditions named** including (1) substrate-prereq verification, (2) ledger-row sanity, (3) WCAG/a11y subagent pre-merge canonical per ADR 0065 §7 mandate (non-negotiable for UI-bearing phases), (4) substrate `[JsonPropertyName]` drift detection, (5) negative-existence on `SystemRequirements` Bridge endpoint (no parallel session), (6) audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), (7) `JsonStringEnumConverter` PascalCase wire-format alignment, (8) multi-tenant scoping of `IMinimumSpecResolver` per ADR 0031, (9) adapter-parity matrix entry must reference Anchor-tier consumer (NOT a "missing Blazor adapter" claim). Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase; cohort batting average 22-of-22). §A0 self-audit: 17 cited Sunfish.* symbols verified positive-existence on origin/main; negative-existence confirmed for Bridge endpoint + TypeScript projection (no parallel work); structural-citation verified for `ISystemRequirementsRenderer.RenderAsync` signature + `SystemRequirementsResult`/`DimensionEvaluation` `[JsonPropertyName]` attributes + `JsonStringEnumConverter<TEnum>` PascalCase enum-name discipline. |
 
 ---
@@ -462,14 +469,6 @@ this PR). Phases 2+ for each cohort workstream remain. |
 ---
 
 ## Last updated
-
-**2026-05-06 (XO: W#57 added — ADR 0065-A1 event-stream hand-off + ADR 0066-A1 merge confirmed)** —
-XO research session: **W#57 added** at `ready-to-build` for ADR 0065-A1 (`StandingOrderAppliedEvent` +
-`IStandingOrderEventStream` + `InMemoryStandingOrderEventStream`). Hand-off at
-`icm/_state/handoffs/wayfinder-adr-0065-a1-event-stream-handoff.md`. ~2-3h / 1 PR. Clears
-W#46 Phase-3 halt-condition C + W#53 Phase-2 H8 on merge. **ADR 0066-A1** (PR #586; `IAtlasProvider<T>`
-covariant Atlas-view base formal ratification) merged 2026-05-05T19:05:49Z — ADR 0066 status
-now `Accepted`. Unblocks W#48 Phase 2 + ADR 0068 Phase 2 prerequisites.
 
 **2026-05-05 (XO: W#49 Stage 06 hand-off authored — OOD Watch Rotation)** — XO research session: W#49 Stage 06 hand-off authored at `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` (3 phases, ~6-9h, ~3 PRs). ADR 0078 Accepted via PR #571. **W#49 row flipped `design-in-flight` → `ready-to-build`**. Substrate verification complete on origin/main: `StandingOrder.cs` exists in `foundation-wayfinder`; 3 call-sites identified (`DefaultStandingOrderIssuer.cs`, `StandingOrderShapeTests.cs`, `DefaultAtlasProjectorTests.cs`); binary-compat halt clear (no NuGet binary shipped yet). Key deliverables: Phase 1 (OOD types + audit constants + `StandingOrder.IssuedDuringWatchId` extension); Phase 2 (`DefaultOodWatchService` + `OodWatchExpiryService` + 8 tests); Phase 3 (docs + ledger flip). Pre-merge council + security-engineering subagent canonical for Phases 1+2. W#50 Phase 3b + W#51 Phase 3a are unblocked by W#49 Phase 1 landing.
 
