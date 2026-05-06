@@ -83,4 +83,4 @@ workaround; full reactive subscribe-before-load is available.
 - PR 2c: React adapter renderers + WCAG tests.
   Pre-merge WCAG/a11y subagent mandatory for all remaining Phase 2 PRs.
 
-**Phase 3 deferred** to W#54 (identity Atlas implementations).
+**Phase 3 deferred** to **W#58** (identity Atlas implementations — hand-off authored 2026-05-06 at `icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md`).
