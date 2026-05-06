@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Sunfish.Foundation.UI;
@@ -100,11 +102,19 @@ public sealed class RecentStandingOrdersWidget : IHelmWidget
         {
             throw;
         }
-        catch
+        catch (Exception ex) when (
+            ex is InvalidOperationException
+                or IOException
+                or TimeoutException
+                or HttpRequestException)
         {
-            // Source faults degrade to a stale-state surface rather
-            // than propagating into the Helm render — a transient
-            // repository hiccup must not blank the entire Helm.
+            // Transient infrastructure faults degrade to a stale-state
+            // surface rather than propagating into the Helm render —
+            // a repository hiccup must not blank the entire Helm.
+            // Programmer-error exceptions (NullReferenceException,
+            // ArgumentException, ...) deliberately propagate so they
+            // surface during dev / test rather than getting silently
+            // swallowed (council m-3 amendment).
             return new HelmWidgetViewState(
                 State: SyncState.Stale,
                 PrimaryLabel: "Recent standing orders",
@@ -112,6 +122,11 @@ public sealed class RecentStandingOrdersWidget : IHelmWidget
                 Actions: Array.Empty<HelmWidgetAction>());
         }
 
+        // Per IRecentStandingOrdersSource contract, implementations
+        // MUST NOT return null — the empty-list path covers the "no
+        // history" case. The defensive null guard below is
+        // belt-and-suspenders against a contract violation; the
+        // empty-list path is the documented happy case.
         if (entries is null || entries.Count == 0)
         {
             return new HelmWidgetViewState(

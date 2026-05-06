@@ -30,11 +30,24 @@ public interface IRecentStandingOrdersSource
     /// <summary>
     /// Return the <paramref name="maxEntries"/> most-recent orders
     /// for the (<paramref name="tenantId"/>, <paramref name="actor"/>)
-    /// pair, newest first. Implementations MAY return fewer entries
-    /// than requested when the underlying repository has less
-    /// history; they MUST NOT return more than
-    /// <paramref name="maxEntries"/>.
+    /// pair, newest first.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Implementations MAY return fewer entries than requested when
+    /// the underlying repository has less history; they MUST NOT
+    /// return more than <paramref name="maxEntries"/>. They MUST
+    /// return an empty list rather than <c>null</c> for the
+    /// "no history" case — callers may rely on the result being
+    /// non-null.
+    /// </para>
+    /// <para>
+    /// Implementations SHOULD clamp <paramref name="maxEntries"/> to
+    /// a sane upper bound (≤50) to defend against caller misuse;
+    /// the canonical <c>RecentStandingOrdersWidget</c> always passes
+    /// 5 (<c>RecentStandingOrdersWidget.MaxEntries</c>).
+    /// </para>
+    /// </remarks>
     Task<IReadOnlyList<RecentStandingOrderEntry>> GetRecentAsync(
         TenantId tenantId,
         ActorId actor,
