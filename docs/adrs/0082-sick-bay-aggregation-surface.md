@@ -592,6 +592,11 @@ NOT ship until each is verified by the WCAG/a11y council subagent:
 
 ### Trust impact / Security & privacy
 
+- **Atmosphere is host-scoped, not tenant-scoped.** `AtmosphereReadout` reflects the host
+  process's Mission Envelope. In multi-tenant hosted deployments (Bridge / Zone C), ALL tenants
+  sharing the host see the same Atmosphere readout. UI surfaces MUST label scope explicitly per
+  §A1.5; back-end consumers MUST NOT cache Atmosphere by tenant key (any tenant cache flush would
+  not invalidate cross-tenant readouts).
 - **Pharmacy read-model posture.** `ISickBayDataProvider` MUST NOT call `IFieldDecryptor`.
   The Pharmacy inventory shows metadata (purpose, count, rotation status) only.
   Any implementation that exposes decrypted field values or raw ciphertext is a
@@ -870,57 +875,221 @@ No existing packages are modified beyond additive changes:
 
 ---
 
-## §A1 — AtmosphereHealth.Unknown sentinel + NoopKeyRotationScheduler warning
+## Amendment A1 — Mission Envelope integration + AtmosphereHealth.Unknown sentinel + NoopKeyRotation guidance
 
 **Status:** Accepted
 **Date:** 2026-05-06
-**Triggered by:** W#54 Phase 2 council (XO ruling `xo-ruling-2026-05-06T20-00Z-w54-phase2b-atmosphere-mapping.md`)
+**Authors:** XO research session
+**Council posture:** pre-merge canonical (per ADR 0069 D1; cohort batting average 30-of-35 substrate amendments needed council-sourced fixes — auto-merge NOT enabled until verdict received)
+**Scope:** additive amendment to `Sunfish.Foundation.SickBay` types in `packages/foundation-sick-bay/` + projection-rule specification consumed by `Sunfish.Blocks.SickBay.SickBayDataProvider` in Phase 2b. No breaking changes to Phase 1 substrate. Existing `AtmosphereHealth` callers (Phase 2 stub returning `Green`) are migrated by this amendment to return `Unknown`.
 
-### A1.1 — AtmosphereHealth.Unknown sentinel
+### A1.1 — Context
 
-**Problem:** Phase 2 `SickBayDataProvider.BuildAtmosphereStub` returned
-`AtmosphereHealth.Green` before Mission Envelope integration landed in Phase 2b. A UI
-consumer reading `Atmosphere.OverallHealth == Green` would legitimately conclude "all
-systems normal" while the actual Mission Envelope may have degraded probes. The misleading
-Green is indistinguishable from a real Green at the API surface.
+Two surfaces in ADR 0082 (parent) acquired drift between draft and Phase 2 build:
 
-**Amendment:** Add `AtmosphereHealth.Unknown` as the zero-value (first enum member,
-numeric value 0) in `foundation-sick-bay/AtmosphereHealth.cs`. Semantics:
+1. **§9 Phase 2 checklist + W#54 hand-off §2.1** specify "query `IMissionEnvelopeProvider.GetCurrentEnvelope(tenant)`" and "map `MissionEnvelope` `DegradationKind` counts → `AtmosphereHealth`". Both are inaccurate against the substrate that landed via ADR 0062 / W#33:
+   - The contract on `origin/main` is `IMissionEnvelopeProvider.GetCurrentAsync(CancellationToken)` — process-level (no `TenantId` parameter; `MissionEnvelope` is the host's runtime mission space, not a per-tenant view).
+   - `MissionEnvelope` exposes ten typed dimension records (`HardwareCapabilities`, `UserCapabilities`, `RegulatoryCapabilities`, `RuntimeCapabilities`, `FormFactorSnapshot`, `EditionCapabilities`, `NetworkCapabilities`, `TrustAnchorCapabilities`, `SyncStateSnapshot`, `VersionVectorSnapshot`); each carries a `ProbeStatus` field. There is no per-dimension `DegradationKind`. `DegradationKind` lives on `FeatureVerdict` (the `IFeatureGate` taxonomy: `ReadOnly` / `ReducedSurface` / `PerformanceLimited` / `PartiallyHidden` / `AdvisoryCaveat`) — orthogonal to dimension-probe health.
 
-- `Unknown` = "provider has not yet projected real probe data"
-- UI **MUST** render a neutral pending state (e.g., spinner or "—") when this value
-  is observed — never Green
-- `default(AtmosphereHealth)` now yields `Unknown` (safe sentinel)
-- Phase 2 stubs **MUST** return `Unknown`, not `Green`
-- Phase 2b stubs are replaced with real probe projection; `Unknown` is only returned
-  when `IMissionEnvelopeProvider` is null or the envelope has not yet been fetched
+2. **PR #695 council §Trust review (W#54 Phase 2)** flagged two stub-behavior risks that need ADR-level disposition rather than a code-only patch: (a) `AtmosphereHealth.Green` returned by the Phase 2 stub is indistinguishable from a real Green to downstream consumers, and (b) `NoopKeyRotationScheduler.ScheduleAsync` returning `Task.CompletedTask` silently is misleading-success when surfaced behind a user-visible "rotation triggered" toast.
 
-**Design rationale:** Making `Unknown` the zero-value ensures that any code that uses
-`default(AtmosphereHealth)` (e.g., uninitialized struct fields, new record parameters)
-gets the safe sentinel rather than the misleading success state. This is the same
-zero-value-as-sentinel pattern used in `SyncState` enum throughout the platform.
+This amendment closes the API drift, specifies a probe-status–based projection rule using the actual substrate, and adds the `AtmosphereHealth.Unknown` sentinel and a `NoopKeyRotationScheduler` registration-guidance note.
 
-**Breaking change scope:** Any existing code that matches on the numeric value of
-`AtmosphereHealth` members will be affected (Green was 0, now 1). The type is serialized
-via `JsonStringEnumConverter` so JSON round-trips are unaffected. Switch expressions
-without exhaustive matching will encounter a new arm. COB MUST verify in Phase 2b.
+### A1.2 — Decision: dimension-`ProbeStatus` projection (Option A reconciled to substrate)
 
-### A1.2 — NoopKeyRotationScheduler stub-success warning
+The XO directive recommended "Option A — each dimension-record carries `DegradationKind`; Sick Bay sums non-`None` across dimensions." The substrate verification (§A1.7 below) shows the per-dimension health field on `MissionEnvelope` is `ProbeStatus`, not `DegradationKind`. The directive's **intent** — Sick Bay consumes typed dimensions directly with no new substrate — is preserved; the **field name** is corrected to the value that actually exists.
 
-**Problem:** `NoopKeyRotationScheduler.ScheduleAsync` returns `Task.CompletedTask`
-silently. A UI that calls through `ISickBayCommandService.TriggerKeyRotationAsync`
-will show "rotation triggered" while no rotation happens. Phase 3b wires the real
-implementation; the concern is that Phase 2 code shipped to a production-adjacent
-environment without this warning visible at the type definition site.
+`Sunfish.Blocks.SickBay.SickBayDataProvider.BuildAtmosphere` materializes `AtmosphereReadout` from a single `IMissionEnvelopeProvider.GetCurrentAsync(ct)` call, then projects the ten dimension `ProbeStatus` values via the table below.
 
-**Amendment:** Add to `NoopKeyRotationScheduler` XML doc:
+#### A1.2.1 — `ProbeStatus` → severity bucket projection table
 
-> **ADR 0082-A1 WARNING:** This stub completes successfully without scheduling
-> any rotation. Hosts MUST NOT register this implementation in any environment
-> that surfaces a user-visible confirmation ("rotation triggered"). Replace with
-> the real scheduler (Phase 3b) before any UI rotation-trigger wiring.
+Each dimension contributes one count to either `WarningProbeCount`, `CriticalProbeCount`, or neither:
 
-**Implementation checklist addition (§Phase 2 — already shipped):**
-- [ ] `NoopKeyRotationScheduler` is registered only in test / development / demo environments
-- [ ] Any host wiring `AddSunfishSickBay()` that exposes a `TriggerKeyRotationAsync`
-  UI button MUST swap `NoopKeyRotationScheduler` for the real scheduler before shipping
+| `ProbeStatus` (ADR 0062) | Severity bucket | Rationale |
+|---|---|---|
+| `Healthy` | none (counted as healthy) | Probe ran, returned a normal reading. |
+| `Stale` | `WarningProbeCount` | Probe last reading is past its TTL; data may be incorrect but not actively failing. |
+| `PartiallyDegraded` | `WarningProbeCount` | Probe completed with caveats per ADR 0062 A1.10. |
+| `Failed` | `CriticalProbeCount` | Probe execution failed; observable state is unknown. |
+| `Unreachable` | `CriticalProbeCount` | Probe could not reach its target (e.g., network dimension offline); observable state is unknown. |
+
+Total dimension count is always 10 (the `MissionEnvelope` shape is fixed by ADR 0062 A1.2). `WarningProbeCount + CriticalProbeCount + healthy` therefore sums to 10 in every materialized readout.
+
+#### A1.2.2 — `OverallHealth` discriminator derivation
+
+The `AtmosphereHealth` value is derived from `(WarningProbeCount, CriticalProbeCount, ForceEnableActive)`:
+
+| Condition | `OverallHealth` |
+|---|---|
+| Provider has not yet projected a real `MissionEnvelope` (Phase 2 stub state) | `Unknown` (new — see A1.3) |
+| `CriticalProbeCount == 0 && WarningProbeCount == 0 && !ForceEnableActive` | `Green` |
+| `CriticalProbeCount == 0 && WarningProbeCount >= 1 && !ForceEnableActive` | `Yellow` |
+| `CriticalProbeCount >= 1 && CriticalProbeCount <= 2` (or `ForceEnableActive`) | `Orange` |
+| `CriticalProbeCount >= 3` | `Red` |
+
+These thresholds align to the existing `AtmosphereHealth` XML doc semantics in `packages/foundation-sick-bay/AtmosphereHealth.cs` (Green = all healthy; Yellow = ≥1 warning; Orange = multiple warnings or one critical; Red = multiple criticals). The `ForceEnableActive` escalation to at least Orange preserves the operator-override visibility requirement: any active force-enable should never present as Green or Yellow regardless of probe counts.
+
+#### A1.2.3 — `ForceEnableActive` derivation
+
+`ForceEnableActive` is `true` when any `IFeatureForceEnableSurface.ResolveAsync` for any registered feature × dimension pair returns a non-null `ForceEnableRecord`. Phase 2b will inject `IFeatureForceEnableSurface` and the registered feature-keys list (sourced from `SickBayOptions` — added in Phase 2b per the hand-off addendum). Phase 2 stub keeps `ForceEnableActive = false`. Aligning with ADR 0062 A1.9.
+
+### A1.3 — Decision: add `AtmosphereHealth.Unknown` sentinel
+
+Add a new enum value to `AtmosphereHealth` in `packages/foundation-sick-bay/AtmosphereHealth.cs`:
+
+```csharp
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum AtmosphereHealth
+{
+    /// <summary>
+    /// The provider has not yet projected real Mission Envelope probe data —
+    /// e.g., Phase 2 stub state, or Phase 2b before the first
+    /// IMissionEnvelopeProvider.GetCurrentAsync(ct) call has resolved.
+    /// UI consumers MUST render a neutral / pending state (e.g., "—",
+    /// a spinner, or a "data not yet available" banner). UI consumers
+    /// MUST NOT render Unknown as Green — they convey different semantics.
+    /// </summary>
+    Unknown,
+
+    /// <summary>All probes reporting healthy.</summary>
+    Green,
+
+    /// <summary>One or more probes warning; no critical states.</summary>
+    Yellow,
+
+    /// <summary>Multiple warnings or one critical probe.</summary>
+    Orange,
+
+    /// <summary>Multiple critical probes; immediate intervention required.</summary>
+    Red,
+}
+```
+
+**Position of `Unknown` in the enum (ordinal 0):** `Unknown` is added as the **first** member so that `default(AtmosphereHealth) == AtmosphereHealth.Unknown`. This preserves the ADR 0082 §Trust contract — code paths that fail to set `OverallHealth` (zero-init structs, partial readouts, deserialization defaults) MUST NOT default to `Green`. Existing callers that check `OverallHealth == AtmosphereHealth.Green` are unaffected (Green still exists; the value just shifts to ordinal 1). JSON serialization is by name (`JsonStringEnumConverter`), so wire-format compatibility is preserved.
+
+**Migration of the Phase 2 stub:** `SickBayDataProvider.BuildAtmosphereStub` (currently returns `Green` per `packages/blocks-sick-bay/SickBayDataProvider.cs`) MUST return `Unknown`. Phase 2b's real projection then returns the derived `AtmosphereHealth` from §A1.2.2 once the provider is wired.
+
+**WCAG 2.2 implications (additive to ADR 0082 §8):**
+
+- SC 1.4.1 (Use of Color): Unknown MUST be rendered with a text label ("data not yet available" or equivalent) plus a non-color visual marker (e.g., a dashed-border icon, a spinner, or a "—" placeholder). It MUST NOT be conveyed by absence-of-color alone (a missing badge is indistinguishable from a not-yet-loaded badge for screen-reader users).
+- SC 4.1.3 (Status Messages): the transition from `Unknown` → derived health on first envelope projection MUST be announced via `aria-live="polite"` (consistent with ADR 0082 §8 SC 4.1.3 row).
+
+**`Unknown` is not a Critical-band state — it is a not-yet-known state.** UI consumers SHOULD differentiate visually: Unknown is "we don't know yet; wait" whereas Red is "we know, and intervention is required." Both render in non-green states; the affordance differs.
+
+### A1.4 — Decision: `NoopKeyRotationScheduler` registration guidance + ADR §Trust note
+
+`NoopKeyRotationScheduler.ScheduleAsync` returns `Task.CompletedTask` per the W#54 hand-off Phase 2 contract — this is the documented stub for environments where the real key-rotation substrate has not yet been wired (Phase 3b). Council §Trust correctly flagged that a UI surfacing "rotation triggered" alongside this stub creates a false-success: the toast renders, no rotation occurs, audit trail records intent without effect.
+
+**ADR 0082 §Trust impact gains a new bullet:**
+
+> **Phase 2 `NoopKeyRotationScheduler` is misleading-success when surfaced behind UI.** `NoopKeyRotationScheduler.ScheduleAsync` returns `Task.CompletedTask` without scheduling work. Hosts MUST NOT register `NoopKeyRotationScheduler` in any environment that surfaces a user-visible "rotation triggered" toast or any other affordance that implies effect. Acceptable Phase 2 host postures: (a) register `NoopKeyRotationScheduler` with the `TriggerKeyRotation` UI affordance hidden / disabled until Phase 3b lands the real `IKeyRotationScheduler`, or (b) defer registering `IKeyRotationScheduler` entirely (callers see DI resolution failure rather than silent success). Phase 3b ships a real implementation wired to the W#32 / ADR 0046-A2 rotation substrate; the Noop is removed from Anchor + Bridge default registration at that point.
+
+**Anchor + Bridge wiring (Phase 4 of ADR 0082):** `AddSunfishSickBayDefaults` (per cohort `AddSunfishXDefaults` convention) MUST register `NoopKeyRotationScheduler` only when the consumer explicitly opts in (e.g., a `SickBayOptions.RegisterNoopKeyRotationScheduler` flag, default `false`). This makes the Phase 2 stub posture a deliberate host decision, not a default-on hazard. The hand-off addendum (Phase 2b) specifies the option-flag wiring.
+
+**No new audit event for Noop scheduling.** Scheduling a Noop produces no observable effect, so there is no rejected-operation event to emit (compare `SickBayMedevacSelfApprovalRejected`, which records a real rejected medevac decision — a four-eyes guard that the system has actively evaluated). Phase 2 hosts that opt into Noop registration MUST disable the `TriggerKeyRotation` UI affordance per the §Trust bullet above; the existing `SickBayKeyRotationTriggered` audit event ships in Phase 3b when the real `IKeyRotationScheduler` lands and is wired ahead of `IKeyRotationScheduler.ScheduleAsync`.
+
+**Residual risk (known v1 limitation):** the opt-in flag converts "silent default registration" to "explicit registration via flag," but a host operator setting `options.RegisterNoopKeyRotationScheduler = true` without reading the §Trust bullet above still produces a misleading-success outcome. This is a known v1 limitation. The long-term mitigation is a Roslyn analyzer that warns when `RegisterNoopKeyRotationScheduler = true` and the host registers any UI surface that emits `SickBayKeyRotationTriggered` audit events (or a `TriggerKeyRotation` ShipAction handler); that analyzer is out of scope for Phase 2b and is flagged as a future work item for a Phase 3a or analyzer-ADR follow-on.
+
+### A1.5 — Scoping note: Atmosphere is host-scoped (process-level), not tenant-scoped
+
+A consequence of consuming `IMissionEnvelopeProvider.GetCurrentAsync(ct)` directly: `AtmosphereReadout` reflects the **host process's** mission space (network connectivity, hardware, edition, regulatory jurisdiction, sync state of the local device), not any single tenant's posture. The `TenantId` parameter to `ISickBayDataProvider.GetSnapshotAsync(TenantId, CancellationToken)` is consumed only by the Pharmacy projection (which IS per-tenant — registered field purposes can vary per tenant); the Atmosphere projection ignores it.
+
+This is an intentional v1 limitation: Mission Envelope is shaped at the kernel-runtime tier as a host concept (ADR 0062 A1.2 — "host's runtime mission space"). Per-tenant atmospheric views (e.g., per-tenant force-enables, per-tenant sync-state slices) are out of scope for v1 and would require a tenant-scoped Mission Envelope substrate — out of scope for this amendment.
+
+**UI guidance (Phase 3a + apps/docs):** the Atmosphere tab MUST label its scope as "this device" / "host" / "Anchor process" rather than implying tenant-scope. The Pharmacy and Lab tabs remain tenant-scoped; the Atmosphere tab is the only departmental view that is host-scoped, and the UI must surface that distinction visually.
+
+### A1.6 — New + modified types introduced by A1
+
+| Type | Namespace | Tier | Action | Naming-check |
+|---|---|---|---|---|
+| `AtmosphereHealth.Unknown` (new enum value, ordinal 0) | `Sunfish.Foundation.SickBay` | foundation | additive | CLEAN — no collision with existing values |
+
+No other new types. No removed types. Phase 2b's `BuildAtmosphere` projection logic is implementation in `Sunfish.Blocks.SickBay.SickBayDataProvider`, not a new public surface.
+
+### A1.7 — §A0 self-audit (additive)
+
+**Negative-existence (A1 symbol not yet on `origin/main`):**
+
+- `AtmosphereHealth.Unknown` — verified `grep -n "Unknown" packages/foundation-sick-bay/AtmosphereHealth.cs` returns zero matches on `origin/main` `72ab276b`. Phase 1 enum has four values (`Green`, `Yellow`, `Orange`, `Red`); A1 adds a fifth (`Unknown`) at ordinal 0.
+- No parallel session is authoring an A1 — verified `gh pr list --search "ADR 0082"` returns zero open PRs at amendment authoring time.
+
+**Positive-existence (cited symbols exist on `origin/main`):**
+
+- `IMissionEnvelopeProvider.GetCurrentAsync(CancellationToken)` — `packages/foundation-mission-space/Services/Contracts.cs:51` ✓ (returns `ValueTask<MissionEnvelope>`).
+- `IMissionEnvelopeObserver` — `packages/foundation-mission-space/Services/Contracts.cs:35` ✓.
+- `MissionEnvelope` — `packages/foundation-mission-space/Models/MissionEnvelope.cs:13` ✓ (sealed record; ten dimension properties + `SnapshotAt` + `EnvelopeHash`).
+- The ten dimension records — `packages/foundation-mission-space/Models/Dimensions/Dimensions.cs` — verified each carries a `ProbeStatus` field: `HardwareCapabilities` (line 30), `UserCapabilities` (line 47), `RegulatoryCapabilities` (line 62), `RuntimeCapabilities` (line 82), `FormFactorSnapshot` (line 164), `EditionCapabilities` (line 99), `NetworkCapabilities` (line 121), `TrustAnchorCapabilities` (line 135), `SyncStateSnapshot` (line 153), `VersionVectorSnapshot` (line 175). All ten ✓. (Ordered to match `MissionEnvelope` property declaration order: Hardware, User, Regulatory, Runtime, FormFactor, Edition, Network, TrustAnchor, SyncState, VersionVector.)
+- `ProbeStatus` enum — `packages/foundation-mission-space/Models/Enums.cs:48–55` ✓ (five values: `Healthy`, `Stale`, `Failed`, `PartiallyDegraded`, `Unreachable`).
+- `IFeatureForceEnableSurface.ResolveAsync` — `packages/foundation-mission-space/Services/Contracts.cs:45` ✓.
+- `AtmosphereHealth` enum (Phase 1 four values) — `packages/foundation-sick-bay/AtmosphereHealth.cs:11–24` ✓.
+- `AtmosphereReadout` record — `packages/foundation-sick-bay/AtmosphereReadout.cs:15–20` ✓ (positional record: `OverallHealth`, `WarningProbeCount`, `CriticalProbeCount`, `ForceEnableActive`, `CapturedAt`).
+- `Sunfish.Blocks.SickBay.SickBayDataProvider` Phase 2 stub — `packages/blocks-sick-bay/SickBayDataProvider.cs:143–149` ✓ (`BuildAtmosphereStub` returns `AtmosphereHealth.Green`; A1 migrates this to `Unknown`).
+- `NoopKeyRotationScheduler` — `packages/blocks-sick-bay/NoopKeyRotationScheduler.cs` ✓ (Phase 2 stub returning `Task.CompletedTask`).
+- `IKeyRotationScheduler` — declared in `packages/foundation-sick-bay/IKeyRotationScheduler.cs` per Phase 1 ✓.
+- `SickBayKeyRotationTriggered` audit event — declared per ADR 0082 §6 (Phase 1 added 10 audit constants) — referenced by name only in this amendment.
+
+**Structural-citation correctness (do APIs match the cited shape?):**
+
+- `IMissionEnvelopeProvider.GetCurrentAsync(CancellationToken)` returns `ValueTask<MissionEnvelope>` (NOT `Task<MissionEnvelope>` and NOT `MissionEnvelope` — `Contracts.cs:51`). Phase 2b implementation MUST `await` the `ValueTask` correctly; cannot use `IMissionEnvelopeProvider.GetCurrentAsync(ct).Result` (ValueTask `.Result` is a synchronous-completion access pattern that's unsafe in general). The hand-off addendum specifies `await provider.GetCurrentAsync(ct)`.
+- `IMissionEnvelopeProvider.GetCurrentEnvelope(tenant)` does NOT exist on `origin/main` (verified `grep -n "GetCurrentEnvelope" packages/foundation-mission-space/Services/Contracts.cs` returns zero matches). The W#54 hand-off §2.1 cites this name; the addendum at `icm/_state/handoffs/sick-bay-stage06-addendum.md` corrects it.
+- `MissionEnvelope` exposes typed dimension records — NOT a flat probe-result list. Code that wants per-dimension health must read each typed record's `ProbeStatus` field independently (no enumerable dimension iteration on `MissionEnvelope` itself; the dimension fields are accessed by name).
+- `DegradationKind` enum (`Models/Enums.cs:38–45`) is a `FeatureVerdict.DegradationKind` taxonomy (`ReadOnly` / `ReducedSurface` / `PerformanceLimited` / `PartiallyHidden` / `AdvisoryCaveat`) — orthogonal to dimension `ProbeStatus`. Sick Bay's Atmosphere readout consumes `ProbeStatus` (per-dimension), not `DegradationKind` (per-feature-verdict). The hand-off §2.1 conflates these; the addendum disambiguates.
+- `EnvelopeChangeSeverity` enum (`Models/Enums.cs:19–27`) carries `Informational` / `Warning` / `Critical` / `ProbeUnreliable` — this is the per-`EnvelopeChange` severity (diff between two snapshots), not a per-snapshot per-dimension health. Sick Bay's `AtmosphereReadout` is a per-snapshot view; `EnvelopeChangeSeverity` is consumed by `IMissionEnvelopeObserver` subscribers for change events, not for static readouts.
+- `AtmosphereHealth.Unknown` ordinal 0 placement — verified by reading the existing enum: Phase 1 values are `Green=0`, `Yellow=1`, `Orange=2`, `Red=3`. After A1: `Unknown=0`, `Green=1`, `Yellow=2`, `Orange=3`, `Red=4`. **Wire-format compatibility:** `[JsonConverter(typeof(JsonStringEnumConverter))]` is applied at the type level (`AtmosphereHealth.cs:10`) — JSON serialization is by name, so the ordinal shift is wire-safe. **Source-compat:** any `switch` expression on `AtmosphereHealth` will get a CS8509 warning for the unhandled `Unknown` case (matching the precedent of `ShipRole.IDC` exhaustive-switch caveat in §5). Implementations MUST add an `Unknown` arm.
+
+**Council disposition expected at pre-merge (this amendment):**
+
+- §Trust review: confirm `Unknown` semantics are documented for both code consumers (must not equate to Green) and UI consumers (must render neutral, not absent) — addressed in §A1.3.
+- §Trust review: confirm `NoopKeyRotationScheduler` registration-guidance is enforced at the DI level (host-opt-in flag, not default-on) — addressed in §A1.4.
+- §Structural-Citation: confirm `ProbeStatus` is the correct dimension health field (not `DegradationKind`) — addressed in §A1.7 above + §A1.2.1 projection table.
+- §Pedantic-Lawyer: confirm tenant-scope vs host-scope is documented as a known v1 limitation (not a bug) — addressed in §A1.5.
+- §A11y / WCAG: confirm `Unknown` rendering guidance does not weaken SC 1.4.1 or SC 4.1.3 — addressed in §A1.3 (rendering MUST include text + non-color marker; transitions MUST announce via `aria-live="polite"`).
+
+### A1.8 — Implementation checklist (Phase 2b — new sub-phase)
+
+Phase 2b is a new sub-phase in ADR 0082's §9 phase table — slotted between Phase 2 (merged via PR #695) and Phase 3a (Blazor UI). Estimated ~2–3h, single PR. Pre-merge security-engineering subagent NOT required for this sub-phase (no decryption-path or audit-emission changes); standard adversarial council canonical per ADR 0069 D1.
+
+- [ ] Add `AtmosphereHealth.Unknown` enum value at ordinal 0 in `packages/foundation-sick-bay/AtmosphereHealth.cs`. Update XML doc per §A1.3.
+- [ ] Update `packages/blocks-sick-bay/SickBayDataProvider.cs` `BuildAtmosphereStub` to return `AtmosphereHealth.Unknown` until the real provider is wired (this is a one-line stub fix; the real projection lands in the same PR via `BuildAtmosphere` below).
+- [ ] Inject `IMissionEnvelopeProvider` into `SickBayDataProvider` (constructor parameter; nullable for backward-compat with Phase 2 tests until the test fixture is updated in the same PR).
+- [ ] Implement `BuildAtmosphereAsync(MissionEnvelope envelope, DateTimeOffset capturedAt)` per §A1.2.1 + §A1.2.2 projection rules. Materialize once per `GetSnapshotAsync` invocation; do NOT call `GetCurrentAsync` more than once per snapshot.
+- [ ] **Lab projection deferred to Amendment A2.** Phase 2b ships `BuildSnapshotAsync` returning
+  `Array.Empty<LabDiagnosticResult>()` for the Lab list, with a code comment pointing at Amendment A2.
+  **Rationale (council HA2 Path B disposition):** synthesizing `DegradationKind.AdvisoryCaveat` from
+  per-dimension `ProbeStatus` data that contains no `DegradationKind` is the same §Trust failure class
+  that A1.3 + A1.4 reject — a dashboard surface MUST NOT synthesize a taxon not present in source data.
+  Amendment A2 will widen `LabDiagnosticResult.Degradation` to `DegradationKind?` (nullable) and spec
+  the full projection in Phase 2c (post-A2). Phase 2b ships Atmosphere + Unknown sentinel + Noop opt-in
+  only.
+
+- [ ] Wire `IMissionEnvelopeObserver.Subscribe` in `SubscribeSnapshotAsync` so envelope changes drive snapshot re-emission (replacing the current "emit-once-then-poll" stub). Coalesce concurrent change-events (debounce ~250ms) to avoid flapping during multi-dimension probe runs.
+- [ ] Add a `SickBayOptions.RegisterNoopKeyRotationScheduler` boolean flag (default `false`). `AddSunfishSickBayDefaults` registers `NoopKeyRotationScheduler` only when this flag is `true`; otherwise `IKeyRotationScheduler` is left unregistered (DI resolution failure surfaces to the caller).
+- [ ] Tests:
+  - `AtmosphereHealth_Unknown_is_ordinal_zero` — `Assert.Equal(0, (int)AtmosphereHealth.Unknown)`
+  - `BuildAtmosphere_returns_Green_when_all_probes_Healthy` — fixture envelope with all 10 dimensions `ProbeStatus.Healthy`
+  - `BuildAtmosphere_returns_Yellow_on_one_Stale_probe` — fixture with Hardware Stale, others Healthy
+  - `BuildAtmosphere_returns_Orange_on_one_Failed_probe` — fixture with Network Failed, others Healthy
+  - `BuildAtmosphere_returns_Red_on_three_Failed_probes` — fixture with Hardware/Network/Runtime Failed
+  - `BuildAtmosphere_returns_Orange_when_ForceEnableActive` — fixture all Healthy + `ForceEnableActive = true` → expect `Orange` (escalation)
+  - `BuildAtmosphere_returns_Unknown_when_provider_not_wired` — null provider injection (or provider throwing) → expect `Unknown`
+  - `SubscribeSnapshotAsync_re_emits_on_IMissionEnvelopeObserver_change` — observer-driven invalidation
+  - `AddSunfishSickBayDefaults_does_not_register_NoopKeyRotationScheduler_by_default` — verify DI resolution fails for `IKeyRotationScheduler` unless flag is set
+- [ ] Pre-merge council: standard adversarial (per ADR 0069 D1). Auto-merge NOT enabled until verdict received.
+
+### A1.9 — Cross-references
+
+- **ADR 0062** (Mission Space Negotiation Protocol) — substrate origin of `IMissionEnvelopeProvider`, `MissionEnvelope`, the ten dimension records, `ProbeStatus`, `DegradationKind`, `EnvelopeChangeSeverity`. A1.2.1 projection table consumes `ProbeStatus`; A1.7 verifies all citations.
+- **ADR 0069 D1** (ADR Authoring Discipline) — pre-merge council canonical for substrate amendments; this amendment runs council before merge.
+- **W#54 hand-off addendum** at `icm/_state/handoffs/sick-bay-stage06-addendum.md` — companion document specifying §2.1 API correction + Phase 2b implementation per §A1.8.
+- **PR #695** (W#54 Phase 2 — `feat(blocks-sick-bay): W#54 Phase 2 — reference impls + H4 reflection test`) — merged; this amendment supersedes the §Trust posture of the Phase 2 stub (`AtmosphereHealth.Green` → `AtmosphereHealth.Unknown`).
+- **COB beacon** at `icm/_state/research-inbox/cob-question-2026-05-06T18-00Z-w54-mission-envelope-integration.md` — resolved by this amendment; archived in the same PR.
+
+### A1.10 — Halt-conditions specific to A1
+
+- **(HA1)** This amendment must reach `Status: Accepted` on `origin/main` before Phase 2b PR may auto-merge. (Auto-merge is gated by ADR 0069 D1 anyway; this is operational reinforcement.)
+- **(HA2 — RESOLVED Path B)** Pre-merge council (PR #701) rejected the `DegradationKind.AdvisoryCaveat`
+  fallback for `LabDiagnosticResult.Degradation` as a §Trust violation (same class as A1.3 + A1.4):
+  synthesizing a taxon not present in source data is a misleading-success defect. **Path B disposition:**
+  Lab projection is deferred to Amendment A2, which will widen `LabDiagnosticResult.Degradation` to
+  `DegradationKind?` (nullable). Phase 2b ships Atmosphere + Unknown sentinel + Noop opt-in only;
+  Phase 2c (post-A2) ships the Lab projection per the nullable contract.

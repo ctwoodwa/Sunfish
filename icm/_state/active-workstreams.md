@@ -389,7 +389,7 @@ workaround; full reactive subscribe-before-load is available.
 
 **Phase 3 deferred** to **W#58** (identity Atlas implementations — hand-off authored 2026-05-06 at `icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md`). |
 | 47 | **W#42 follow-on — Anchor MAUI `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; mounts ADR 0063-A1.1 `SystemRequirementsResult` onto Anchor's MAUI Blazor Hybrid shell | `ready-to-build` (W#42 substrate built 2026-05-04 across PRs #503/#504/#505/#510/#513/#514; Stage 06 hand-off authored 2026-05-04; sunfish-PM may begin Phase 1 once a COB capacity slot opens) | sunfish-PM | `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` + `docs/adrs/0063-mission-space-requirements.md` (substrate spec) + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Decision §7 (WCAG mandate) + `docs/adrs/0048-anchor-multi-backend-maui.md` (multi-backend) + `docs/adrs/0032-multi-team-anchor-workspace-switching.md` (active-team scoping) | **Hand-off ready 2026-05-04.** First per-adapter renderer hand-off in the W#42 follow-on chain (Anchor MAUI; Bridge React + iOS SwiftUI + Android-native still queued as future hand-offs). Implementation: 13–18h sunfish-PM / 5 PRs / 5 phases. **Phase 1:** `PreInstallFullPage` Razor page + `SystemRequirementsDimensionRow` component + 26 localization keys + 6 unit tests (~4–5h). **Phase 2:** `PostInstallInlineExplanation` mode + `AnchorMauiSystemRequirementsRenderer` + `AnchorMauiSystemRequirementsSurface` + 4 unit tests (~2–3h). **Phase 3:** `PostInstallRegressionBanner` + `SystemRequirementsRegressionObserver` (`IMissionEnvelopeObserver`) + `aria-live="assertive"` + 5 unit tests (~2h). **Phase 4:** `AddAnchorSystemRequirementsRenderer` DI extension + per-platform native-a11y (UIA / NSAccessibility on Win + MacCatalyst Phase-1 RIDs; iOS/Android deferred per ADR 0048-A1) + 3 a11y harness tests via `Sunfish.UIAdapters.Blazor.A11y` + WCAG 2.2 AA + EN 301 549 v3.2.1 baseline append in `apps/docs/foundation/wayfinder/wcag.md` (~3–4h). **Phase 5:** ledger flip + memory + close (~30min). **7 halt-conditions named** including (a) substrate prereq verification on origin/main, (b) ledger-row sanity check, (c) WCAG/a11y subagent pre-merge canonical per ADR 0065 §7 mandate (non-negotiable for UI-bearing phases), (d) MAUI-version compatibility, (e) Win+MacCatalyst-only Phase-4 scope, (f) audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), (g) `IMinimumSpecResolver` scoping must respect `IActiveTeamAccessor`. Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase; cohort batting average 22-of-22). |
-| 54 | **Sick Bay Aggregation Surface + IDC Role** (ADR 0082; W#35 Ship Architecture follow-on #6; `sunfish-feature-change` pipeline) | `building` (Phase 1 merged 2026-05-06 via PR #628; ADR 0082 Accepted PR #672; **Phase 2 UNBLOCKED** — IActorPrincipalResolver shipped PR #678; H2 CLEARED (KeyFingerprint W#53 P1b ✓); H3 gate: ADR 0068 Accepted required for KeyRotationTrigger type-swap; H4 IFieldDecryptor reflection check mandatory pre-merge; Phases 2-5 pending) | sunfish-PM | `icm/_state/handoffs/sick-bay-stage06-handoff.md` + `docs/adrs/0082-sick-bay-aggregation-surface.md` (PR #589 merged) + `packages/foundation-sick-bay/` (P1 merged) + `icm/00_intake/output/2026-05-01_sick-bay-aggregation-intake.md` | **Phase 1 merged 2026-05-06 via PR #628.** New `Sunfish.Foundation.SickBay`
+| 54 | **Sick Bay Aggregation Surface + IDC Role** (ADR 0082; W#35 Ship Architecture follow-on #6; `sunfish-feature-change` pipeline) | `building` (Phase 1 merged PR #628; Phase 2 merged PR #695; ADR 0082 Accepted PR #672; **ADR 0082 A1 + hand-off addendum shipped 2026-05-06 — Phase 2b UNBLOCKED** for Mission Envelope integration + AtmosphereHealth.Unknown sentinel + NoopKeyRotation host-opt-in flag; H2 CLEARED (KeyFingerprint W#53 P1b ✓); H3 gate: ADR 0068 Accepted required for KeyRotationTrigger type-swap; H4 IFieldDecryptor reflection check pinned by PR #695; Phase 2b → 3a → 3b → 4 → 5 pending) | sunfish-PM | `icm/_state/handoffs/sick-bay-stage06-handoff.md` + `docs/adrs/0082-sick-bay-aggregation-surface.md` (PR #589 merged) + `packages/foundation-sick-bay/` (P1 merged) + `icm/00_intake/output/2026-05-01_sick-bay-aggregation-intake.md` | **Phase 1 merged 2026-05-06 via PR #628.** New `Sunfish.Foundation.SickBay`
 package shipped: 12 data-model types (PharmacyRecordCount k=3 floor + 4 enums
 + PharmacyInventoryEntry / LabDiagnosticResult / AtmosphereReadout /
 SickBaySnapshot / FirstAidHint / StretcherBearerRole) + 6 contract
@@ -439,14 +439,27 @@ subset + Options + DI). 26/26 in foundation-ship-common still pass
 - Phase 2 reflection test verifying `IFieldDecryptor` absence in
   `SickBayDataProvider` (H4 council requirement)
 
-**Remaining phases** (per hand-off):
-- **Phase 2** (~3-4h): reference impls + DefaultStretcherBearerPolicy +
+**Remaining phases** (per hand-off + ADR 0082 A1 addendum):
+- **Phase 2** (DONE): reference impls + DefaultStretcherBearerPolicy +
   DefaultFirstAidSurface + NoopKeyRotationScheduler + DI registration
-  finalize; pre-merge security-engineering subagent mandatory (H4
-  reflection test).
+  finalize. Shipped PR #695 with H4 reflection test pinned. Mission
+  Envelope integration deferred to Phase 2b (resolved by ADR 0082 A1).
+- **Phase 2b** (~2-3h, NEW per ADR 0082 A1): Mission Envelope
+  integration — inject `IMissionEnvelopeProvider`; implement
+  `BuildAtmosphereAsync` per A1.2.1 ProbeStatus → severity bucket
+  projection + A1.2.2 OverallHealth derivation; add
+  `AtmosphereHealth.Unknown` sentinel at ordinal 0; wire
+  `IMissionEnvelopeObserver` for push-driven invalidation; gate
+  `NoopKeyRotationScheduler` registration behind
+  `SickBayOptions.RegisterNoopKeyRotationScheduler` opt-in flag;
+  pre-merge standard-adversarial council canonical (security-engineering
+  NOT required — no decryption / audit emission changes). Spec:
+  `icm/_state/handoffs/sick-bay-stage06-addendum.md`.
 - **Phase 3a** (~3-4h): `blocks-sick-bay` Blazor UI (Pharmacy + Lab +
   Atmosphere tabs); pre-merge WCAG/a11y subagent mandatory; H2
-  (KeyFingerprint) gates KeyFingerprintDisplay.razor.
+  (KeyFingerprint) gates KeyFingerprintDisplay.razor; A1.3 Unknown-
+  rendering rules apply (text + non-color marker; aria-live announce
+  on Unknown → derived transition).
 - **Phase 3b** (~3-4h): SickBayCommandService + MedevacOrchestrator +
   real IKeyRotationScheduler impl; pre-merge security-engineering
   mandatory.
