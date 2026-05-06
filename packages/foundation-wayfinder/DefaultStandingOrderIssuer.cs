@@ -42,33 +42,54 @@ public sealed class DefaultStandingOrderIssuer : IStandingOrderIssuer
     private readonly IReadOnlyList<IStandingOrderValidator> _validators;
     private readonly IOperationSigner _signer;
     private readonly TimeProvider _time;
+    private readonly InMemoryStandingOrderEventStream _eventStream;
 
     /// <summary>
     /// Construct an issuer bound to a repository, an enumerable of validators
     /// (registered via <see cref="WayfinderServiceExtensions.AddStandingOrderValidator{T}"/>),
-    /// an operation signer, and a time provider.
+    /// an operation signer, a time provider, and the in-process
+    /// <see cref="InMemoryStandingOrderEventStream"/> for
+    /// <see cref="StandingOrderAppliedEvent"/> fanout.
     /// </summary>
     /// <remarks>
     /// Validators are sorted by ascending <see cref="IStandingOrderValidator.Priority"/>
     /// at construction; ties resolve to registration order (per
     /// <see cref="WayfinderServiceExtensions.AddStandingOrderValidator{T}"/>'s
-    /// <c>TryAddEnumerable</c> semantics).
+    /// <c>TryAddEnumerable</c> semantics). The event stream is the
+    /// concrete <see cref="InMemoryStandingOrderEventStream"/> rather
+    /// than the public <see cref="IStandingOrderEventStream"/>
+    /// abstraction so the issuer can call the internal
+    /// <c>Publish</c> method per ADR 0065-A1 §A1.5 (the publish surface
+    /// is intentionally not on the public interface).
     /// </remarks>
     public DefaultStandingOrderIssuer(
         IStandingOrderRepository repository,
         IEnumerable<IStandingOrderValidator> validators,
         IOperationSigner signer,
-        TimeProvider time)
+        TimeProvider time,
+        IStandingOrderEventStream eventStream)
     {
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(validators);
         ArgumentNullException.ThrowIfNull(signer);
         ArgumentNullException.ThrowIfNull(time);
+        ArgumentNullException.ThrowIfNull(eventStream);
+
+        if (eventStream is not InMemoryStandingOrderEventStream concreteStream)
+        {
+            throw new ArgumentException(
+                $"DefaultStandingOrderIssuer requires the {nameof(InMemoryStandingOrderEventStream)} "
+                + $"implementation of {nameof(IStandingOrderEventStream)}; the issuer publishes to "
+                + "that concrete instance directly to keep the only-the-issuer-publishes invariant "
+                + "(ADR 0065-A1 §A1.5).",
+                nameof(eventStream));
+        }
 
         _repository = repository;
         _validators = validators.OrderBy(v => (int)v.Priority).ToArray();
         _signer = signer;
         _time = time;
+        _eventStream = concreteStream;
     }
 
     /// <inheritdoc />
@@ -113,6 +134,26 @@ public sealed class DefaultStandingOrderIssuer : IStandingOrderIssuer
             ? AuditEventType.StandingOrderIssued
             : AuditEventType.StandingOrderRejected;
         await EmitAuditAsync(auditTrail, eventType, auditId.Value, realized, verdict, occurredAt, ct).ConfigureAwait(false);
+
+        if (verdict.Accepted)
+        {
+            // ADR 0065-A1 §A1.5 — publish the in-process applied event
+            // AFTER the order is persisted + audited. The publish is the
+            // last step in the success path; subscribers reading the
+            // event can rely on the repository + audit trail already
+            // reflecting the applied state. Rejected / Conflicted /
+            // Rescinded paths do NOT publish — they fire their own
+            // AuditEventType constants observed via IAuditEventStream.
+            _eventStream.Publish(new StandingOrderAppliedEvent(
+                realized.Id,
+                realized.TenantId,
+                realized.IssuedBy,
+                occurredAt,
+                realized.Scope,
+                realized.Triples,
+                auditId,
+                realized.Rationale));
+        }
 
         return realized;
     }

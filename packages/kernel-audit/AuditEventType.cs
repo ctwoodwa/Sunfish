@@ -480,6 +480,9 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A pair of concurrent <c>StandingOrder</c> issuances on the same (<c>Scope</c>, <c>Path</c>) was reconciled via the LWW tie-break; emitted once per pair, citing both <c>StandingOrderId</c> values. Per ADR 0065 §2 / §4.</summary>
     public static readonly AuditEventType StandingOrderConflictResolved = new("StandingOrderConflictResolved");
 
+    /// <summary>A <c>StandingOrder</c> reached the post-issuance, post-CRDT-merge, post-Atlas-projection state — the projected configuration is now live for downstream consumers (Helm widgets, permission caches, feature-management invalidation). Distinct from <see cref="StandingOrderIssued"/> (validation-passed grain); <c>StandingOrderApplied</c> fires when the in-process apply pipeline completes. <b>v1 deferral (W#57):</b> the v1 substrate does NOT emit this audit constant — <see cref="StandingOrderIssued"/> is the only success-path audit event in single-anchor topologies because <c>Validated</c> and <c>Applied</c> are synchronous in-process, and the in-process <c>Sunfish.Foundation.Wayfinder.StandingOrderAppliedEvent</c> covers fanout for in-process consumers. A future Phase 2 dedicated applier service (post async cross-process merge) will emit <c>StandingOrderApplied</c> as the durable audit signal cross-process consumers (Bridge fanout, replay-from-log Helm widgets) observe. Per ADR 0065-A1 §A1.3.</summary>
+    public static readonly AuditEventType StandingOrderApplied = new("StandingOrderApplied");
+
     // ===== ADR 0028-A2.6 + A9 — W#23 iOS Field-Capture App (P4 + P4.5) =====
 
     /// <summary>An iOS-paired device successfully posted a field-event envelope to <c>POST /api/v1/field/event</c>; per W#23 P4.5 unblock addendum.</summary>

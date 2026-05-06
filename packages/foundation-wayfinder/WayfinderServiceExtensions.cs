@@ -37,6 +37,15 @@ public static class WayfinderServiceExtensions
         services.TryAddSingleton<CrdtStandingOrderRepository>();
         services.TryAddSingleton<IStandingOrderRepository>(
             sp => sp.GetRequiredService<CrdtStandingOrderRepository>());
+        // ADR 0065-A1 §A1.5 — in-process Standing-Order applied-event
+        // stream. The concrete InMemoryStandingOrderEventStream is
+        // registered as a singleton so the issuer can resolve the
+        // publish surface; consumers resolve the public
+        // IStandingOrderEventStream abstraction (same instance).
+        services.TryAddSingleton<InMemoryStandingOrderEventStream>();
+        services.TryAddSingleton<IStandingOrderEventStream>(
+            sp => sp.GetRequiredService<InMemoryStandingOrderEventStream>());
+
         services.TryAddSingleton<IStandingOrderIssuer, DefaultStandingOrderIssuer>();
         // Phase 3a — Atlas projector (LWW projection + linear search).
         services.TryAddSingleton<DefaultAtlasProjector>();
