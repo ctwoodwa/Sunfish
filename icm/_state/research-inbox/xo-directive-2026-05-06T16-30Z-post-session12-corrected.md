@@ -44,7 +44,10 @@ its item 1 (W#53 PR 2b) was stale — this directive supersedes it.
 9. **W#1 WS-A Phase 1** — `TenantId.System` sentinel + `TenantSelection` + `IMayHaveTenant`
    Obsolete; hand-off at `tenant-selection-wsa-stage06-handoff.md`; non-breaking; WS-B gated.
 
-10. **W#53 Phase 3-deferred** — Identity Atlas implementations (Anchor + Bridge accelerator
-    `IIdentityAtlasSurface` impls); deferred pending separate hand-off from XO.
+10. **W#58 Phase 1** — `AnchorIdentityAtlasSurface` + 5 Anchor Blazor identity pages.
+    **Hand-off NOW AUTHORED** at `identity-atlas-implementations-stage06-handoff.md` (PR #686).
+    **GATED on item 1 closing (H1: W#53 PR 2d-react must merge first).**
+    Security-engineering subagent mandatory; READ-ONLY invariant: MUST NOT call `IFieldDecryptor`
+    / `IAuditTrail.AppendAsync` / `IStandingOrderIssuer`. (~10h / 2 PRs)
 
 Cap concurrent PRs at 3. Recommended start: items 1 + 2 (can run in parallel).
