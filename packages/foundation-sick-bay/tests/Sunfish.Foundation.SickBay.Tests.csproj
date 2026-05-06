@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Foundation.SickBay.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Foundation.SickBay.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sunfish.Foundation.SickBay.csproj" />
+    <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
+    <ProjectReference Include="..\..\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
+    <ProjectReference Include="..\..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+
+</Project>
