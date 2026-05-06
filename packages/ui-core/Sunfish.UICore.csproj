@@ -14,6 +14,25 @@
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.UICore.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <!-- W#53 P1a (ADR 0066): Wayfinder Helm + Atlas substrate.
+         NOTE: kernel-runtime is intentionally NOT referenced here —
+         packages/kernel-runtime already references packages/ui-core
+         (line 23 of its csproj), so a ui-core → kernel-runtime
+         ProjectReference would form a circular dependency. The hand-off
+         cited `Sunfish.Kernel.Runtime.Teams.TeamId` for HelmRenderContext;
+         the Phase 1a substrate substitutes `Guid?` so the active-team
+         identifier round-trips without the type wrapper crossing the
+         cycle. Consumers in kernel-runtime / accelerators wrap the Guid
+         back into TeamId at the boundary. -->
+    <ProjectReference Include="..\foundation-ui-syncstate\Sunfish.Foundation.UI.SyncState.csproj" />
+    <ProjectReference Include="..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>
