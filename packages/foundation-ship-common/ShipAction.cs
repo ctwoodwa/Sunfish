@@ -113,4 +113,15 @@ public readonly record struct ShipAction(string Name)
 
     /// <summary>Browse First-Aid contextual help (location-scoped; <see cref="DeckDepth.TopDeck"/>; ALL authenticated roles per §5 — NO role gate).</summary>
     public static readonly ShipAction ViewFirstAid = new("view-first-aid");
+
+    // ===== ADR 0080 §5 — W#51 Quarterdeck Entry-Point =====
+
+    /// <summary>Browse the Quarterdeck entry-point surface (location-scoped; <see cref="DeckDepth.TopDeck"/>; ALL authenticated roles per ADR 0080 §5 — every user session begins here).</summary>
+    public static readonly ShipAction ViewQuarterdeck = new("view-quarterdeck");
+
+    /// <summary>Browse the Quarterdeck alert ticker (location-scoped; <see cref="DeckDepth.TopDeck"/>; minimum role <see cref="ShipRole.DivisionOfficer"/> per ADR 0080 §5 — split from base browse so the ticker can hide authority-sensitive content from non-officers without hiding the surface).</summary>
+    public static readonly ShipAction ViewQuarterdeckAlerts = new("view-quarterdeck-alerts");
+
+    /// <summary>Acknowledge a pending Quarterdeck alert (resource-scoped; <see cref="DeckDepth.MainDeck"/>; alert source supplies the role gate per ADR 0080 §5; two-phase audit via <c>IQuarterdeckCommandService.AcknowledgeAlertAsync</c>).</summary>
+    public static readonly ShipAction AcknowledgeAlert = new("acknowledge-alert");
 }

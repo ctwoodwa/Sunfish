@@ -653,6 +653,17 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A recovery contact was added / updated / removed via the Sick Bay surface. Per ADR 0082 §6.</summary>
     public static readonly AuditEventType SickBayRecoveryContactManaged = new("SickBayRecoveryContactManaged");
 
+    // ===== ADR 0080 §5 — W#51 Quarterdeck Entry-Point =====
+
+    /// <summary>An OOD watch handover was requested from the Quarterdeck surface. Distinct from W#49's <c>OodWatchHandoverPerformed</c> — this is the user-initiated request emitted at the Quarterdeck before the W#49 handover service runs. Per ADR 0080 §5.</summary>
+    public static readonly AuditEventType WatchHandoverRequested = new("WatchHandoverRequested");
+
+    /// <summary>Pre-op intent for a Quarterdeck alert acknowledgement: emitted BEFORE <c>IQuarterdeckCommandService.AcknowledgeAlertAsync</c> delegates to the underlying alert source, including for denied requests (intent is auditable even when authority refuses). Pairs with <see cref="AlertAcknowledged"/> (post-op success) or absence (post-op failure / denial). Per ADR 0080 §5 two-phase audit.</summary>
+    public static readonly AuditEventType AlertAcknowledgementRequested = new("AlertAcknowledgementRequested");
+
+    /// <summary>Post-op success for a Quarterdeck alert acknowledgement: emitted ONLY after the underlying alert source confirms acknowledgement. Absence of this event after <see cref="AlertAcknowledgementRequested"/> in the audit trail IS the failure signal — there is no separate <c>AlertAcknowledgementFailed</c> constant. Per ADR 0080 §5 two-phase audit.</summary>
+    public static readonly AuditEventType AlertAcknowledged = new("AlertAcknowledged");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
