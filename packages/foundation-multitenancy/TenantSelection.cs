@@ -131,7 +131,11 @@ public abstract record TenantSelection
         ForSingle s => s.TenantId == tenantId,
         ForMultiple m => m.TenantIds.Contains(tenantId),
         AllAccessible => true,
-        _ => throw new InvalidOperationException(
-            $"Unknown TenantSelection case: {GetType().Name}"),
+        // The hierarchy is sealed (private base ctor + 3 nested-record
+        // cases); the default arm is structurally unreachable. Throw
+        // UnreachableException to document intent + match modern .NET
+        // idiom (council M4).
+        _ => throw new System.Diagnostics.UnreachableException(
+            $"TenantSelection is sealed-hierarchy; unexpected case: {GetType().Name}"),
     };
 }
