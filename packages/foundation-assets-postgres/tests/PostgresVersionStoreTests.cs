@@ -21,7 +21,7 @@ public sealed class PostgresVersionStoreTests : IClassFixture<PostgresAssetStore
     private PostgresVersionStore NewVersionStore() => new(_fixture.CreateFactory());
 
     private static CreateOptions Opts(string scheme, string nonce, string issuer = "alice")
-        => new(scheme, "acme", nonce, new ActorId(issuer), TenantId.Default);
+        => new(scheme, "acme", nonce, new ActorId(issuer), TenantId.System);
 
     [Fact]
     public async Task GetVersionAsync_ReturnsVersion_ByVersionId()

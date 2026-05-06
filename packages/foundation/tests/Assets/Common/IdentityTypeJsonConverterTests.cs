@@ -75,8 +75,11 @@ public sealed class IdentityTypeJsonConverterTests
     [Fact]
     public void TenantId_DeserializesFromFlatString()
     {
-        var id = JsonSerializer.Deserialize<TenantId>("\"default\"");
-        Assert.Equal(TenantId.Default, id);
+        var id = JsonSerializer.Deserialize<TenantId>("\"plain-tenant\"");
+        // Round-trip semantics: deserializing a plain string yields a
+        // TenantId whose Value equals that string. Avoids dependence on
+        // the legacy "default" string per W#1 WS-A migration.
+        Assert.Equal(new TenantId("plain-tenant"), id);
     }
 
     [Fact]

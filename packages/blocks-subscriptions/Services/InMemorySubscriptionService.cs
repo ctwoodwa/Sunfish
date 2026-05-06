@@ -15,7 +15,7 @@ namespace Sunfish.Blocks.Subscriptions.Services;
 /// <remarks>
 /// The in-memory service scopes reads and writes to the current
 /// <see cref="ITenantContext.TenantId"/>. If no <see cref="ITenantContext"/> is
-/// supplied, the service falls back to <see cref="TenantId.Default"/>.
+/// supplied, the service falls back to <see cref="TenantId.System"/>.
 /// The catalog is seeded with three default <see cref="Plan"/>s (Lite, Standard, Enterprise).
 /// </remarks>
 public sealed class InMemorySubscriptionService : ISubscriptionService
@@ -29,7 +29,7 @@ public sealed class InMemorySubscriptionService : ISubscriptionService
     /// <summary>
     /// Creates a new <see cref="InMemorySubscriptionService"/> with a seeded plan
     /// catalog and an optional tenant context. If <paramref name="tenantContext"/>
-    /// is <see langword="null"/>, <see cref="TenantId.Default"/> is used for all
+    /// is <see langword="null"/>, <see cref="TenantId.System"/> is used for all
     /// tenant-scoped operations.
     /// </summary>
     /// <param name="tenantContext">Optional tenant context used to scope operations.</param>
@@ -66,7 +66,7 @@ public sealed class InMemorySubscriptionService : ISubscriptionService
     }
 
     private TenantId CurrentTenant =>
-        _tenantContext is null ? TenantId.Default : new TenantId(_tenantContext.TenantId);
+        _tenantContext is null ? TenantId.System : new TenantId(_tenantContext.TenantId);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<Plan> ListPlansAsync(

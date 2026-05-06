@@ -118,7 +118,7 @@ public class QuarterdeckSnapshotShapeTests
             {
                 new QuarterdeckAlert(
                     AlertId: "alert-1",
-                    TenantId: TenantId.Default,
+                    TenantId: TenantId.System,
                     Severity: AlertSeverity.Emergency,
                     Title: "Hull breach",
                     Summary: null,
@@ -156,7 +156,7 @@ public class QuarterdeckSnapshotShapeTests
     {
         var unacknowledged = new QuarterdeckAlert(
             AlertId: "a1",
-            TenantId: TenantId.Default,
+            TenantId: TenantId.System,
             Severity: AlertSeverity.High,
             Title: "Pending",
             Summary: null,
@@ -247,7 +247,7 @@ public class CouncilAmendmentTests
     {
         var alert = new QuarterdeckAlert(
             AlertId: "sunfish.test:01HV4G7",
-            TenantId: TenantId.Default,
+            TenantId: TenantId.System,
             Severity: AlertSeverity.Normal,
             Title: "Test",
             Summary: null,
@@ -267,7 +267,7 @@ public class CouncilAmendmentTests
     {
         var alert = new QuarterdeckAlert(
             AlertId: "sunfish.broadcast:01HV4G8",
-            TenantId: TenantId.Default,
+            TenantId: TenantId.System,
             Severity: AlertSeverity.Emergency,
             Title: "Mission Envelope failed",
             Summary: null,

@@ -11,7 +11,7 @@ public sealed class InMemoryEntityStoreTests
     private static JsonDocument Body(string json) => JsonDocument.Parse(json);
 
     private static CreateOptions Opts(string nonce, string issuer = "alice", string authority = "acme")
-        => new("property", authority, nonce, new ActorId(issuer), TenantId.Default);
+        => new("property", authority, nonce, new ActorId(issuer), TenantId.System);
 
     private static InMemoryEntityStore NewStore(out InMemoryAssetStorage storage)
     {
@@ -99,7 +99,7 @@ public sealed class InMemoryEntityStoreTests
         var t1 = new DateTimeOffset(2024, 6, 1, 0, 0, 0, TimeSpan.Zero);
 
         using var b1 = Body("""{"v":1}""");
-        var id = await store.CreateAsync(Schema, b1, new CreateOptions("property", "acme", "n", new ActorId("a"), TenantId.Default, ValidFrom: t0));
+        var id = await store.CreateAsync(Schema, b1, new CreateOptions("property", "acme", "n", new ActorId("a"), TenantId.System, ValidFrom: t0));
         using var b2 = Body("""{"v":2}""");
         await store.UpdateAsync(id, b2, new UpdateOptions(new ActorId("b"), ValidFrom: t1));
 
@@ -171,7 +171,7 @@ public sealed class InMemoryEntityStoreTests
         var t1 = new DateTimeOffset(2024, 6, 1, 0, 0, 0, TimeSpan.Zero);
 
         using var b = Body("""{"v":1}""");
-        var id = await store.CreateAsync(Schema, b, new CreateOptions("property", "acme", "n", new ActorId("a"), TenantId.Default, ValidFrom: t0));
+        var id = await store.CreateAsync(Schema, b, new CreateOptions("property", "acme", "n", new ActorId("a"), TenantId.System, ValidFrom: t0));
         await store.DeleteAsync(id, new DeleteOptions(new ActorId("a"), ValidFrom: t1));
 
         var atMid = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero);
@@ -242,7 +242,7 @@ public sealed class InMemoryEntityStoreTests
         var store = NewStore(out _);
         using var b = Body("""{"x":1}""");
         var id = await store.CreateAsync(Schema, b,
-            new CreateOptions("property", "acme", "nonce", new ActorId("alice"), TenantId.Default, ExplicitLocalPart: "building-42"));
+            new CreateOptions("property", "acme", "nonce", new ActorId("alice"), TenantId.System, ExplicitLocalPart: "building-42"));
         Assert.Equal("building-42", id.LocalPart);
     }
 }

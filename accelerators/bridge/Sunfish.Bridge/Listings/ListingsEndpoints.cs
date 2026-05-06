@@ -627,15 +627,24 @@ public static class ListingsEndpoints
     /// </summary>
     internal static TenantId ResolveTenantFromHost(string host)
     {
+        // Council C1 (W#1 WS-A): unauthenticated public-listings traffic
+        // with missing/unparseable Host header MUST NOT inherit
+        // TenantId.System (system-actor sentinel reserved for trusted
+        // background context per ADR 0084 §1). The unresolved-host
+        // fallback uses an explicit "bridge-unresolved-host" sentinel
+        // so listing-repository queries against it never silently
+        // succeed against system-context records.
         if (string.IsNullOrEmpty(host))
         {
-            return TenantId.Default;
+            return UnresolvedHost;
         }
         var firstDot = host.IndexOf('.');
         if (firstDot <= 0)
         {
-            return TenantId.Default;
+            return UnresolvedHost;
         }
         return new TenantId(host[..firstDot]);
     }
+
+    private static readonly TenantId UnresolvedHost = new("bridge-unresolved-host");
 }

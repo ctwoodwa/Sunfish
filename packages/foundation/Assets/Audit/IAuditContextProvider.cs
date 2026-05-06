@@ -7,8 +7,11 @@ namespace Sunfish.Foundation.Assets.Audit;
 /// </summary>
 /// <remarks>
 /// Plan D-EXTENSIBILITY-SEAMS. Phase A default is <see cref="NullAuditContextProvider"/>,
-/// which returns <see cref="ActorId.System"/> + <see cref="TenantId.Default"/>. Consumers
-/// can override via DI to fold in HTTP middleware context.
+/// which returns <see cref="ActorId.System"/> + <see cref="TenantId.System"/>. Consumers
+/// can override via DI to fold in HTTP middleware context. Per ADR 0084 §4 (W#1 WS-A) the
+/// fallback tenant migrated from <c>TenantId.Default</c> to
+/// <see cref="TenantId.System"/> — system context is the correct semantic for an
+/// unconfigured ambient context.
 /// </remarks>
 public interface IAuditContextProvider
 {
@@ -19,7 +22,7 @@ public interface IAuditContextProvider
     TenantId GetTenant();
 }
 
-/// <summary>Default provider returning <see cref="ActorId.System"/> and <see cref="TenantId.Default"/>.</summary>
+/// <summary>Default provider returning <see cref="ActorId.System"/> and <see cref="TenantId.System"/>.</summary>
 public sealed class NullAuditContextProvider : IAuditContextProvider
 {
     /// <summary>Singleton instance.</summary>
@@ -29,5 +32,5 @@ public sealed class NullAuditContextProvider : IAuditContextProvider
     public ActorId GetActor() => ActorId.System;
 
     /// <inheritdoc />
-    public TenantId GetTenant() => TenantId.Default;
+    public TenantId GetTenant() => TenantId.System;
 }

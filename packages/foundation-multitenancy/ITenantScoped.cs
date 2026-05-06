@@ -27,6 +27,9 @@ public interface IMustHaveTenant : ITenantScoped
 /// cross-tenant records. Persistence adapters apply tenant filters only when
 /// <see cref="TenantId"/> is non-null.
 /// </summary>
+[System.Obsolete("IMayHaveTenant has no active implementors. Use ITenantScoped<T> for "
+                 + "entities or TenantSelection for query scope. Will be removed in WS-B "
+                 + "(ADR 0085). Per ADR 0084 §3.")]
 public interface IMayHaveTenant
 {
     /// <summary>The tenant that owns this entity, or null for system-level records.</summary>

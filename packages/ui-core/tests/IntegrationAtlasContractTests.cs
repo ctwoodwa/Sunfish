@@ -257,7 +257,7 @@ public class IntegrationAtlasContractTests
     public async System.Threading.Tasks.Task InMemoryValidationStatusStore_GetCurrent_RoundTripsLatestUpdate()
     {
         var store = new InMemoryValidationStatusStore();
-        var tenant = Sunfish.Foundation.Assets.Common.TenantId.Default;
+        var tenant = Sunfish.Foundation.Assets.Common.TenantId.System;
         var category = IntegrationCategory.Payments;
         var providerId = "stripe";
 
@@ -280,7 +280,7 @@ public class IntegrationAtlasContractTests
     public async System.Threading.Tasks.Task InMemoryValidationStatusStore_HistoryAsync_ReturnsNewestFirstUpToCap()
     {
         var store = new InMemoryValidationStatusStore();
-        var tenant = Sunfish.Foundation.Assets.Common.TenantId.Default;
+        var tenant = Sunfish.Foundation.Assets.Common.TenantId.System;
         var category = IntegrationCategory.MeshVpn;
         var providerId = "headscale";
         var baseAt = DateTimeOffset.UtcNow.AddMinutes(-10);
