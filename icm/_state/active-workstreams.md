@@ -31,23 +31,17 @@ Canonical "what's in flight, who owns it, what state it's in" for cross-session 
 
 | # | Workstream | Status | Owner (current phase) | Reference | Notes |
 |---|---|---|---|---|---|
-| 1 | Multi-tenancy type surface convention (WS-A + WS-B) | `building` (WS-A merged 2026-05-06 PR #688 — **⚠️ security follow-up required** before WS-B starts; 6 must-fix items on origin/main; WS-B `held` until follow-up ships) | sunfish-PM | `docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637) | **WS-A BUILT 2026-05-06 PR #688** — `TenantId.System` sentinel + `TenantSelection` DU
+| 1 | Multi-tenancy type surface convention (WS-A + WS-B) | "`building` (WS-A + security follow-up COMPLETE: PR #688 + PR #692 merged | sunfish-PM | `docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637) | **WS-A BUILT 2026-05-06 PR #688** — `TenantId.System` sentinel + `TenantSelection` DU
 (`ForSingle`/`ForMultiple`/`AllAccessible`) + implicit cast + `IMayHaveTenant` [Obsolete].
 ADR 0084 + ADR 0085 both Accepted 2026-05-06 PR #672.
 
-**⚠️ SECURITY FOLLOW-UP REQUIRED before WS-B starts.** 6 must-fix items on origin/main
-(XO security council returned after PR #688 auto-merged). Full spec with code snippets at
-PR #688 comment (https://github.com/ctwoodwa/Sunfish/pull/688#issuecomment-4388668618)
-and in auto-memory `project_workstream_01_adr_0084.md` (MF-1..MF-6). Summary:
-- MF-1: `AllAccessible.Matches` must exclude TenantId.System sentinels
-- MF-2: `InMemorySubscriptionService` null context → throw (not TenantId.System)
-- MF-3: `NativeChannelProvider` → dedicated sentinel (not TenantId.System)
-- MF-4: JSON sentinel deserialization rejection test
-- MF-5: `ForMultiple` primary positional ctor must reject empty arrays
-- MF-6: `TenantSelection.All` static field (ADR spec gap)
+**Security follow-up SHIPPED 2026-05-06 PR #692** — all 6 MFs resolved (AllAccessible
+sentinel exclusion, null-context throw, crew-comms placeholder, JSON test, ForMultiple
+empty guard, TenantSelection.All). WS-B gate cleared.
 
-**WS-B gate:** ADR 0084 ✅ ADR 0085 ✅ WS-A ✅ — but HOLD until security follow-up merges.
-MF-1 changes `TenantSelection.Matches` API which WS-B consumes.
+**WS-B `ready-to-build`:** ADR 0084 ✅ ADR 0085 ✅ WS-A ✅ security follow-up ✅.
+Hand-off at `tenant-selection-wsb-stage06-handoff.md`. MF-1 (`TenantSelection.Matches`)
+is on origin/main; WS-B can start immediately.
 
 **WS-B scope:** ADR 0085 — migrates `AuditQuery.Tenant` + `EntityQuery.Tenant` +
 `DataExport.TenantId` from `TenantId?` → `TenantSelection?`. ~3-5h / 1 PR. Source-compatible

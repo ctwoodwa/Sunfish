@@ -108,9 +108,10 @@ public sealed class NativeChannelProvider : IChannelProvider, IAsyncDisposable
     // PresenceBus needs a tenant binding at construction; the multi-tenant
     // surface here lives at the call boundary (each Open/Listen takes a
     // TenantId). Phase 1 single-tenant deployments use a dedicated
-    // sentinel (NOT TenantId.System — system records must remain
-    // strictly separate from crew-comms presence per W#1 WS-A security
-    // follow-up MF-3).
+    // placeholder TenantId — NOT TenantId.System (system records must
+    // remain strictly separate from crew-comms presence). This value is
+    // a regular tenant id; it does not use the reserved "__" prefix
+    // (per ADR 0084 §1, sentinels are "__"-prefixed only).
     private static TenantId GetDefaultTenant() =>
         new TenantId("crew-comms-single-tenant-v1");
 }

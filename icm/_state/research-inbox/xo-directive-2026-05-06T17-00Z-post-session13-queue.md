@@ -1,20 +1,13 @@
 ---
 type: directive
 workstream-or-chapter: multi-workstream — post-session-13 priority queue
-last-pr: "690 (ledger sweep — W#1 WS-A building + W#51 Phase 2 complete)"
+last-pr: "693 (W#1 WS-B unblock ledger sweep)"
 ---
 
-Replaces `xo-directive-2026-05-06T16-30Z-post-session12-corrected.md` (both archived).
-Items 6 (W#51 Phase 2b) and 9 (W#1 WS-A Phase 1) from that directive are **DONE** — PRs
-#689 and #688 merged. W#1 security follow-up (6 MFs on origin/main) is now item 0.
+Updated 2026-05-06 (session 14): item 0 DONE — W#1 security follow-up shipped PR #692.
+W#1 WS-B is now `ready-to-build` (item 9 promoted). All other items unchanged.
 
-## COB Priority Queue (post-session-13)
-
-**0. [URGENT] W#1 WS-A security follow-up — must ship before WS-B or any other new work.**
-6 must-fix security items are on origin/main from PR #688. Full code-level spec in
-`xo-directive-2026-05-06T14-15Z-w1-security-followup-before-wsb.md` (keep in inbox; do NOT
-archive until this follow-up PR merges). Also in auto-memory `project_workstream_01_adr_0084.md`.
-WS-B HELD until follow-up ships.
+## COB Priority Queue (post-session-14)
 
 1. **W#53 Phase 2 PR 2c-react** — TypeScript React adapter renderers for all 6 Helm widgets.
    H9 parity gate MUST be cleared before Phase 2 closes. WCAG/a11y subagent mandatory.
@@ -51,10 +44,10 @@ WS-B HELD until follow-up ships.
    Security-engineering subagent mandatory; READ-ONLY invariant enforced.
    (~10h / 2 PRs)
 
-**After item 0 (security follow-up) ships:**
 9. **W#1 WS-B** — `TenantSelection` migration: `AuditQuery.Tenant` + `EntityQuery.Tenant` +
    `DataExport.TenantId` from `TenantId?` → `TenantSelection?`. Hand-off at
-   `tenant-selection-wsb-stage06-handoff.md`. (~4-6h; breaking api-change pipeline)
+   `tenant-selection-wsb-stage06-handoff.md`. **NOW READY** (security follow-up PR #692 ✓).
+   (~4-6h; breaking api-change pipeline)
 
 **Also ready (no specific ordering constraint):**
 - **W#51 Phase 3a** — `blocks-quarterdeck` top-deck panels (WatchStatusPanel + alert ticker).
