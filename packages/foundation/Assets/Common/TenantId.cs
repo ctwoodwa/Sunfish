@@ -50,6 +50,16 @@ public readonly record struct TenantId
         Value = value;
     }
 
+    /// <summary>
+    /// True when this <see cref="TenantId"/> is a Sunfish system sentinel
+    /// (value starts with the reserved <c>"__"</c> prefix). Default-constructed
+    /// instances (where <see cref="Value"/> is null) are also treated as sentinels
+    /// — fail-closed for the multi-tenant query path. Per ADR 0084 §1 + W#1 WS-A
+    /// security follow-up MF-1.
+    /// </summary>
+    public bool IsSystemSentinel =>
+        Value?.StartsWith("__", StringComparison.Ordinal) ?? true;
+
     /// <inheritdoc />
     public override string ToString() => Value;
 

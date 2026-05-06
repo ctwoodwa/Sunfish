@@ -14,8 +14,12 @@ namespace Sunfish.Blocks.Subscriptions.Services;
 /// </summary>
 /// <remarks>
 /// The in-memory service scopes reads and writes to the current
-/// <see cref="ITenantContext.TenantId"/>. If no <see cref="ITenantContext"/> is
-/// supplied, the service falls back to <see cref="TenantId.System"/>.
+/// <see cref="ITenantContext.TenantId"/>. An <see cref="ITenantContext"/> is
+/// REQUIRED at first tenant-scoped operation; the service throws
+/// <see cref="InvalidOperationException"/> otherwise (W#1 WS-A security
+/// follow-up MF-2 — silent fallback to <see cref="TenantId.System"/>
+/// is forbidden because system records would otherwise mix into tenant
+/// catalogs).
 /// The catalog is seeded with three default <see cref="Plan"/>s (Lite, Standard, Enterprise).
 /// </remarks>
 public sealed class InMemorySubscriptionService : ISubscriptionService
@@ -66,7 +70,13 @@ public sealed class InMemorySubscriptionService : ISubscriptionService
     }
 
     private TenantId CurrentTenant =>
-        _tenantContext is null ? TenantId.System : new TenantId(_tenantContext.TenantId);
+        _tenantContext is null
+            ? throw new InvalidOperationException(
+                "InMemorySubscriptionService requires an ITenantContext. "
+                + "Register one in DI before resolving the service. "
+                + "Per W#1 WS-A security follow-up MF-2 — silent fallback to "
+                + "TenantId.System is forbidden.")
+            : new TenantId(_tenantContext.TenantId);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<Plan> ListPlansAsync(

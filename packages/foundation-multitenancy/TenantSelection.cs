@@ -35,19 +35,30 @@ public abstract record TenantSelection
 
     /// <summary>
     /// An explicit set of tenants in scope (≥1 member). Empty set
-    /// throws at construction.
+    /// throws at construction (both via the positional ctor and via
+    /// the <see cref="IEnumerable{TenantId}"/> overload). Per ADR 0084
+    /// §2 + W#1 WS-A security follow-up MF-5.
     /// </summary>
-    public sealed record ForMultiple(ImmutableArray<TenantId> TenantIds) : TenantSelection
+    public sealed record ForMultiple : TenantSelection
     {
-        /// <summary>Construct from any enumerable; rejects empty input.</summary>
-        public ForMultiple(IEnumerable<TenantId> tenantIds)
-            : this(tenantIds.ToImmutableArray())
+        /// <summary>The set of tenants (≥1 member, by ctor invariant).</summary>
+        public ImmutableArray<TenantId> TenantIds { get; }
+
+        /// <summary>Construct from an immutable array; rejects empty input.</summary>
+        public ForMultiple(ImmutableArray<TenantId> tenantIds)
         {
-            if (TenantIds.Length == 0)
+            if (tenantIds.IsDefaultOrEmpty)
             {
                 throw new ArgumentException(
                     "ForMultiple requires at least one TenantId.", nameof(tenantIds));
             }
+            TenantIds = tenantIds;
+        }
+
+        /// <summary>Construct from any enumerable; rejects empty input.</summary>
+        public ForMultiple(IEnumerable<TenantId> tenantIds)
+            : this(tenantIds.ToImmutableArray())
+        {
         }
 
         /// <summary>Sequence-equal comparison so element order matters.</summary>
@@ -67,8 +78,19 @@ public abstract record TenantSelection
     /// All tenants accessible to the requesting actor (platform-admin
     /// queries). Caller is responsible for verifying the actor holds
     /// the required capability before constructing this instance.
+    /// System sentinels (TenantId values starting with <c>"__"</c>) are
+    /// EXCLUDED from <see cref="Matches(TenantId)"/> — system records
+    /// must never surface through tenant-listing queries even for
+    /// platform admins. Per W#1 WS-A security follow-up MF-1.
     /// </summary>
     public sealed record AllAccessible : TenantSelection;
+
+    /// <summary>
+    /// Singleton convenience for <see cref="AllAccessible"/> — avoids
+    /// per-call allocation in hot query paths. Per W#1 WS-A security
+    /// follow-up MF-6 (ADR 0084 spec gap).
+    /// </summary>
+    public static readonly TenantSelection All = new AllAccessible();
 
     /// <summary>
     /// Factory: single tenant. Prefer over
@@ -130,7 +152,7 @@ public abstract record TenantSelection
     {
         ForSingle s => s.TenantId == tenantId,
         ForMultiple m => m.TenantIds.Contains(tenantId),
-        AllAccessible => true,
+        AllAccessible => !tenantId.IsSystemSentinel,
         // The hierarchy is sealed (private base ctor + 3 nested-record
         // cases); the default arm is structurally unreachable. Throw
         // UnreachableException to document intent + match modern .NET
