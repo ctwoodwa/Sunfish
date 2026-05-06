@@ -30,6 +30,16 @@
          back into TeamId at the boundary. -->
     <ProjectReference Include="..\foundation-ui-syncstate\Sunfish.Foundation.UI.SyncState.csproj" />
     <ProjectReference Include="..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
+    <!-- W#53 P1b: KeyFingerprint lives in foundation/Crypto/ alongside
+         PrincipalId. The hand-off cited foundation-recovery, but
+         foundation-recovery → kernel-security (existing) → ui-core
+         (existing) forms a cycle that prevents ui-core from referencing
+         foundation-recovery. KeyFingerprint is a tiny crypto value type
+         with no recovery-specific dependencies, so the foundation/Crypto/
+         placement is architecturally clean (sibling to PrincipalId) and
+         cycle-safe. -->
+    <!-- foundation already referenced above; no additional reference
+         needed for KeyFingerprint. -->
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
