@@ -541,6 +541,43 @@ public readonly record struct AuditEventType(string Value)
     /// </summary>
     public static readonly AuditEventType PermissionDenialRateExceeded = new("PermissionDenialRateExceeded");
 
+    // ===== ADR 0083 §6 — W#55 Ship's Office =====
+
+    /// <summary>
+    /// A Ship's Office document was opened in browse view. Per ADR 0083 §6 — fires on
+    /// FIRST view per document-per-session; implementations track per-session view
+    /// state (the audit is one-event-per-open, NOT one-per-render).
+    /// </summary>
+    public static readonly AuditEventType ShipsOfficeDocumentViewed = new("ShipsOfficeDocumentViewed");
+
+    /// <summary>
+    /// A Ship's Office search returned ≥1 result. Per ADR 0083 §6 — zero-result
+    /// background polls SHOULD suppress the emission to prevent audit-noise.
+    /// </summary>
+    public static readonly AuditEventType ShipsOfficeDocumentSearched = new("ShipsOfficeDocumentSearched");
+
+    /// <summary>A Ship's Office document diff was rendered. Per ADR 0083 §6.</summary>
+    public static readonly AuditEventType ShipsOfficeDocumentDiffViewed = new("ShipsOfficeDocumentDiffViewed");
+
+    /// <summary>
+    /// A Ship's Office document was published via <c>IShipsOfficeCommandService.PublishAsync</c>.
+    /// Per ADR 0083 §6 + §5 audit-emission ordering.
+    /// </summary>
+    public static readonly AuditEventType ShipsOfficeDocumentPublished = new("ShipsOfficeDocumentPublished");
+
+    /// <summary>
+    /// A Ship's Office document was archived via <c>IShipsOfficeCommandService.ArchiveAsync</c>.
+    /// Per ADR 0083 §6.
+    /// </summary>
+    public static readonly AuditEventType ShipsOfficeDocumentArchived = new("ShipsOfficeDocumentArchived");
+
+    /// <summary>
+    /// A <c>PublishAsync</c> attempt was rejected at the permission gate. Per ADR
+    /// 0083 §6 + §5 — distinct from the generic <see cref="PermissionDenied"/>
+    /// event so the Ship's Office surface can render its own audit timeline.
+    /// </summary>
+    public static readonly AuditEventType ShipsOfficePublishRejected = new("ShipsOfficePublishRejected");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

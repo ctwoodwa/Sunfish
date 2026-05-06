@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.ShipsOffice</PackageId>
+    <RootNamespace>Sunfish.Foundation.ShipsOffice</RootNamespace>
+    <Description>Foundation-tier substrate for the Ship's Office content-aggregation surface (ADR 0083): provides IShipsOfficeDataProvider + IShipsOfficeCommandService + IContentEditorSurface contracts, the ShipsOfficeDocumentView / ShipsOfficeSnapshot / ShipsOfficeSearchQuery data model, ContentEditorResult, ShipsOfficeOptions, and 6 AuditEventType + 4 ShipAction constants. Per ADR 0083 §1+§2+§3, W#55 Phase 1.</Description>
+    <PackageTags>sunfish;foundation;ships-office;adr-0083</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.ShipsOffice.Tests" />
+  </ItemGroup>
+</Project>

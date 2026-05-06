@@ -49,4 +49,18 @@ public readonly record struct ShipAction(string Name)
 
     /// <summary>Override an active quarantine (resource-scoped; <see cref="DeckDepth.BelowTheWaterline"/>).</summary>
     public static readonly ShipAction OverrideQuarantine = new("override-quarantine");
+
+    // ===== ADR 0083 §4 — W#55 Ship's Office =====
+
+    /// <summary>Browse the Ship's Office (location-scoped; minimum role <see cref="ShipRole.Scribe"/>; <see cref="DeckDepth.TopDeck"/>).</summary>
+    public static readonly ShipAction ViewShipsOffice = new("view-ships-office");
+
+    /// <summary>Edit a Ship's Office document via <c>IContentEditorSurface</c> (location-scoped; minimum role <see cref="ShipRole.Scribe"/>; <see cref="DeckDepth.TopDeck"/>).</summary>
+    public static readonly ShipAction EditShipsOfficeDocument = new("edit-ships-office-doc");
+
+    /// <summary>Publish a draft Ship's Office document via <c>IShipsOfficeCommandService.PublishAsync</c> (location-scoped; minimum role <see cref="ShipRole.XO"/>; <see cref="DeckDepth.MainDeck"/>).</summary>
+    public static readonly ShipAction PublishShipsOfficeDocument = new("publish-ships-office-doc");
+
+    /// <summary>Archive a published Ship's Office document via <c>IShipsOfficeCommandService.ArchiveAsync</c> (location-scoped; minimum role <see cref="ShipRole.XO"/>; <see cref="DeckDepth.MainDeck"/>).</summary>
+    public static readonly ShipAction ArchiveShipsOfficeDocument = new("archive-ships-office-doc");
 }
