@@ -103,6 +103,24 @@ public class DefaultPermissionResolverTests
     }
 
     [Fact]
+    public async Task ResourceScopeGuard_NullResourceForQuarantineDocument_Denied()
+    {
+        // W#50 P1 pre-merge security council 2026-05-06 (Major M1):
+        // QuarantineDocument is resource-scoped — the §Trust-elevated
+        // default closes the null-resource bypass at the resolver tier.
+        var seed = WithCaptain();
+        var (resolver, _, _) = NewResolver(seed);
+
+        var decision = await resolver.ResolveAsync(
+            Tenant, seed.Subject, ShipLocation.EngineRoom, DeckDepth.MainDeck,
+            ShipAction.QuarantineDocument, resource: null);
+
+        var denied = Assert.IsType<PermissionDecision.Denied>(decision);
+        Assert.Equal(DenialReason.SecurityPolicyBlocked, denied.Reason);
+        Assert.Contains("esource-scoped", denied.ReasonDisplay);
+    }
+
+    [Fact]
     public async Task ResourceScopeGuard_NullResourceForApprove_Denied()
     {
         // §2.1 step 0(c): resource-scoped action requires non-null resource.
@@ -504,6 +522,12 @@ public class DefaultPermissionResolverTests
         Assert.Contains(ShipAction.EditShipsOfficeDocument, keys);
         Assert.Contains(ShipAction.PublishShipsOfficeDocument, keys);
         Assert.Contains(ShipAction.ArchiveShipsOfficeDocument, keys);
+        // W#50 Engine Room cohort additions.
+        Assert.Contains(ShipAction.ViewEngineRoom, keys);
+        Assert.Contains(ShipAction.ViewDamageControl, keys);
+        Assert.Contains(ShipAction.QuarantineDocument, keys);
+        Assert.Contains(ShipAction.ReleaseQuarantine, keys);
+        Assert.Contains(ShipAction.CompactDocument, keys);
 
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.Quarantine]);
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.OverrideQuarantine]);

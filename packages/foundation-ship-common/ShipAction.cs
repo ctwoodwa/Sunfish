@@ -63,4 +63,31 @@ public readonly record struct ShipAction(string Name)
 
     /// <summary>Archive a published Ship's Office document via <c>IShipsOfficeCommandService.ArchiveAsync</c> (location-scoped; minimum role <see cref="ShipRole.XO"/>; <see cref="DeckDepth.MainDeck"/>).</summary>
     public static readonly ShipAction ArchiveShipsOfficeDocument = new("archive-ships-office-doc");
+
+    // ===== ADR 0079 §4 — W#50 Engine Room Observability =====
+
+    /// <summary>Browse the Engine Room observability surface (location-scoped; <see cref="DeckDepth.TopDeck"/>; minimum role department-head per §Trust — Phase 2 enforcement).</summary>
+    public static readonly ShipAction ViewEngineRoom = new("view-engine-room");
+
+    /// <summary>Browse the Damage Control panel (location-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.EngineerOfficer"/> per §Trust).</summary>
+    public static readonly ShipAction ViewDamageControl = new("view-damage-control");
+
+    /// <summary>
+    /// Apply a quarantine to a CRDT document (resource-scoped;
+    /// <see cref="DeckDepth.MainDeck"/>; minimum role
+    /// <see cref="ShipRole.EngineerOfficer"/> + audit-loud per §Trust).
+    /// Sits at <see cref="DeckDepth.MainDeck"/> (NOT
+    /// <see cref="DeckDepth.BelowTheWaterline"/>) because routine
+    /// quarantine is reversible via <see cref="ReleaseQuarantine"/>;
+    /// <see cref="OverrideQuarantine"/> is the irreversible destructive
+    /// sibling and stays at <see cref="DeckDepth.BelowTheWaterline"/>.
+    /// Per W#50 P1 council Minor m3.
+    /// </summary>
+    public static readonly ShipAction QuarantineDocument = new("quarantine-document");
+
+    /// <summary>Release a CRDT document from quarantine (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.EngineerOfficer"/> + audit-loud per §Trust).</summary>
+    public static readonly ShipAction ReleaseQuarantine = new("release-quarantine");
+
+    /// <summary>Compact a CRDT document's representation (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.EngineerOfficer"/> per §Trust).</summary>
+    public static readonly ShipAction CompactDocument = new("compact-document");
 }

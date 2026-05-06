@@ -578,6 +578,39 @@ public readonly record struct AuditEventType(string Value)
     /// </summary>
     public static readonly AuditEventType ShipsOfficePublishRejected = new("ShipsOfficePublishRejected");
 
+    // ===== ADR 0079 §5 — W#50 Engine Room Observability =====
+
+    /// <summary>A quarantine request was filed before the quarantine was applied. Per ADR 0079 §5 audit-emission ordering.</summary>
+    public static readonly AuditEventType DocumentQuarantineRequested = new("DocumentQuarantineRequested");
+
+    /// <summary>A document was successfully quarantined. Per ADR 0079 §5.</summary>
+    public static readonly AuditEventType DocumentQuarantined = new("DocumentQuarantined");
+
+    /// <summary>A release-from-quarantine request was filed before the release was applied. Per ADR 0079 §5.</summary>
+    public static readonly AuditEventType DocumentQuarantineReleaseRequested = new("DocumentQuarantineReleaseRequested");
+
+    /// <summary>A document was successfully released from quarantine. Per ADR 0079 §5.</summary>
+    public static readonly AuditEventType DocumentQuarantineReleased = new("DocumentQuarantineReleased");
+
+    /// <summary>A manual CRDT compaction was initiated. Per ADR 0079 §5.</summary>
+    public static readonly AuditEventType ManualCompactionInitiated = new("ManualCompactionInitiated");
+
+    /// <summary>A manual CRDT compaction completed successfully. Per ADR 0079 §5.</summary>
+    public static readonly AuditEventType ManualCompactionCompleted = new("ManualCompactionCompleted");
+
+    /// <summary>An Engine Room subsystem transitioned to <c>Warning</c> or <c>Critical</c>. Per ADR 0079 §5.</summary>
+    public static readonly AuditEventType EngineRoomHealthDegraded = new("EngineRoomHealthDegraded");
+
+    /// <summary>
+    /// A Damage Control operation (quarantine / release / compact) was denied at the
+    /// permission gate. Per ADR 0079 §Trust — distinct from the generic <see cref="PermissionDenied"/>
+    /// event so the Engine Room dashboard renders its own §Trust-elevated denial timeline.
+    /// Emitted IN ADDITION TO the generic <see cref="PermissionDenied"/> event (not a
+    /// replacement) per W#50 P1 council Minor m2; the dual emission lets the Engine Room
+    /// dashboard timeline render alongside the standard audit feed.
+    /// </summary>
+    public static readonly AuditEventType DamageControlAuthorizationDenied = new("DamageControlAuthorizationDenied");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

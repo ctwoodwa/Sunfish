@@ -106,6 +106,18 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             KeyValuePair.Create(ShipAction.EditShipsOfficeDocument, DeckDepth.TopDeck),
             KeyValuePair.Create(ShipAction.PublishShipsOfficeDocument, DeckDepth.MainDeck),
             KeyValuePair.Create(ShipAction.ArchiveShipsOfficeDocument, DeckDepth.MainDeck),
+            // ADR 0079 §4 — W#50 Engine Room cohort extension. Role-minimum
+            // enforcement (department-head / EngineerOfficer) is a Phase 2
+            // follow-up gated on ITenantSecurityPolicy. Damage Control
+            // operations (Quarantine / Release / Compact) sit at MainDeck
+            // (NOT BelowTheWaterline) per ADR 0079 §4 — they are reversible
+            // operations on a tenant-scoped CRDT, not destructive system-
+            // level deletes.
+            KeyValuePair.Create(ShipAction.ViewEngineRoom, DeckDepth.TopDeck),
+            KeyValuePair.Create(ShipAction.ViewDamageControl, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.QuarantineDocument, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.ReleaseQuarantine, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.CompactDocument, DeckDepth.MainDeck),
         });
 
     /// <summary>
@@ -113,12 +125,30 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
     /// any of these short-circuits to <see cref="DenialReason.SecurityPolicyBlocked"/>
     /// at step 0(c).
     /// </summary>
+    /// <remarks>
+    /// W#50 P1 pre-merge security council 2026-05-06 (Major M1): the W#50
+    /// Damage Control actions (<see cref="ShipAction.QuarantineDocument"/>
+    /// / <see cref="ShipAction.ReleaseQuarantine"/> /
+    /// <see cref="ShipAction.CompactDocument"/>) target a per-document
+    /// identifier on the command service; they are resource-scoped, so
+    /// they MUST be in this set. The §Trust-elevated default is
+    /// "deny on null resource" — Phase 2 wiring may synthesize a
+    /// <see cref="Resource"/> from <c>documentId</c>, but the substrate-
+    /// level guard closes the null-resource bypass at the resolver tier.
+    /// Read-only Engine Room views (<see cref="ShipAction.ViewEngineRoom"/>
+    /// / <see cref="ShipAction.ViewDamageControl"/>) stay location-scoped
+    /// (correct) and are NOT in this set.
+    /// </remarks>
     private static readonly ImmutableHashSet<ShipAction> ResourceScopedActions =
         ImmutableHashSet.CreateRange(new[]
         {
             ShipAction.Approve,
             ShipAction.Quarantine,
             ShipAction.OverrideQuarantine,
+            // ADR 0079 §4 — W#50 Damage Control resource-scoped actions.
+            ShipAction.QuarantineDocument,
+            ShipAction.ReleaseQuarantine,
+            ShipAction.CompactDocument,
         });
 
     /// <summary>
@@ -722,6 +752,14 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         if (action.Equals(ShipAction.EditShipsOfficeDocument)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.PublishShipsOfficeDocument)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.ArchiveShipsOfficeDocument)) return CapabilityAction.Write;
+        // ADR 0079 §4 — W#50 Engine Room cohort extension. Damage Control
+        // ops (Quarantine / Release / Compact) map to Write — they mutate
+        // tenant-scoped CRDT state.
+        if (action.Equals(ShipAction.ViewEngineRoom)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.ViewDamageControl)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.QuarantineDocument)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.ReleaseQuarantine)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.CompactDocument)) return CapabilityAction.Write;
         throw new InvalidOperationException(
             $"unmapped ShipAction '{action.Name}' — update DefaultPermissionResolver.MapToCapabilityAction");
     }
