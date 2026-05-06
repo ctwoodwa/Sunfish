@@ -216,6 +216,81 @@ public class DefaultAlertRouterTests
         await lookout.Received(1).WriteAsync(Arg.Any<TacticalAlert>(), Arg.Any<CancellationToken>());
     }
 
+    /// <summary>
+    /// Per W#52 P2 council Major M2: registered-but-unresolved tenant
+    /// context (Tenant == null) → tenant-unresolved denial + throw.
+    /// Silent pass-through would be a §Trust hole.
+    /// </summary>
+    [Fact]
+    public async Task RouteAsync_UnresolvedTenantContext_ThrowsAndEmitsDenial()
+    {
+        var trail = new RecordingAuditTrail();
+        var ambient = new FakeTenantContext(tenant: null);
+
+        var router = Build(audit: trail, signer: StubSigner(), tenantContext: ambient);
+
+        await Assert.ThrowsAsync<TacticalUnauthorizedException>(() =>
+            router.RouteAsync(MakeAlert()).AsTask());
+        Assert.Contains(trail.Records, r =>
+            r.EventType.Equals(AuditEventType.TacticalAuthorizationDenied) &&
+            "tenant-unresolved".Equals(r.Payload.Payload.Body["denial_reason"]));
+    }
+
+    /// <summary>
+    /// Per W#52 P2 council Major M1: AuditSignatureException propagates;
+    /// audit-by-construction (ADR 0049) — unsigned-but-routed is a
+    /// §Trust violation worse than a missed route. Pinned against future
+    /// refactors that might silently downgrade signature failures.
+    /// </summary>
+    [Fact]
+    public async Task RouteAsync_AuditSignatureException_PropagatesAndPreventsDispatch()
+    {
+        var lookout = Substitute.For<ILookout>();
+        var faultyTrail = new FaultyAuditTrail();
+        var router = Build(audit: faultyTrail, signer: StubSigner(), lookout: lookout);
+
+        await Assert.ThrowsAsync<AuditSignatureException>(() =>
+            router.RouteAsync(MakeAlert()).AsTask());
+
+        await lookout.DidNotReceive().WriteAsync(Arg.Any<TacticalAlert>(), Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// Per W#52 P2 council Critical C1: downgrade denial emits BEFORE
+    /// AnomalyDetected so a signing failure on the denial can't leave
+    /// AnomalyDetected+AlertRouted as a phantom-routing pair.
+    /// </summary>
+    [Fact]
+    public async Task RouteAsync_DowngradePath_EmitsDenialBeforeAnomalyDetected()
+    {
+        var trail = new RecordingAuditTrail();
+        var options = new TacticalOptions { AllowedHighPriorityRulePrefixes = new[] { "sunfish.*" } };
+        var router = Build(options: options, audit: trail, signer: StubSigner());
+
+        await router.RouteAsync(MakeAlert(
+            ruleName: "third-party.suspicious",
+            policy: AlertRoutingPolicy.HighPriorityLookout));
+
+        var denialIdx = trail.Records.FindIndex(r =>
+            r.EventType.Equals(AuditEventType.TacticalAuthorizationDenied) &&
+            "high-priority-routing-not-allowlisted".Equals(r.Payload.Payload.Body["denial_reason"]));
+        var anomalyIdx = trail.Records.FindIndex(r => r.EventType.Equals(AuditEventType.AnomalyDetected));
+        var routedIdx = trail.Records.FindIndex(r => r.EventType.Equals(AuditEventType.AlertRouted));
+
+        Assert.True(denialIdx >= 0 && anomalyIdx >= 0 && routedIdx >= 0);
+        Assert.True(denialIdx < anomalyIdx,
+            "Downgrade denial must be emitted before AnomalyDetected (audit-by-construction).");
+        Assert.True(anomalyIdx < routedIdx);
+    }
+
+    private sealed class FaultyAuditTrail : IAuditTrail
+    {
+        public ValueTask AppendAsync(AuditRecord record, CancellationToken ct = default)
+            => throw new AuditSignatureException("Synthetic signature failure for test.");
+        public IAsyncEnumerable<AuditRecord> QueryAsync(AuditQuery query, CancellationToken ct = default)
+            => throw new NotSupportedException();
+    }
+
     private sealed class FakeTenantContext : ITenantContext
     {
         public FakeTenantContext(TenantMetadata? tenant) { Tenant = tenant; }

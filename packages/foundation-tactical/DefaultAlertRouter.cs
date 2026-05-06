@@ -87,18 +87,39 @@ public sealed class DefaultAlertRouter : IAlertRouter
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Audit-emission propagation policy (§Trust + W#52 P2 council Major):</b>
+    /// any audit emission may fail with
+    /// <see cref="AuditSignatureException"/>; the impl propagates such
+    /// failures rather than swallowing them — an unsigned-but-routed
+    /// alert is a §Trust violation worse than a missed route. Destination
+    /// failures (<see cref="ILookout.WriteAsync"/> / <see cref="ISonarStore.WriteAsync"/>)
+    /// are best-effort: they are caught and logged at Warning per the
+    /// hand-off "audit records retained on destination failure" contract.
+    /// </remarks>
     public async ValueTask RouteAsync(TacticalAlert alert, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(alert);
         ct.ThrowIfCancellationRequested();
 
         // §8.2 tenant binding — fail-closed when an ambient context is
-        // present and disagrees with the alert.
-        if (_tenantContext?.Tenant is { Id: var ambientId } && ambientId != alert.TenantId)
+        // registered. Per W#52 P2 council Major M2: a registered-but-
+        // unresolved context (Tenant == null) is also a §Trust hole; treat
+        // as denial rather than silent pass-through.
+        if (_tenantContext is not null)
         {
-            await EmitDenialAsync(alert, "tenant-mismatch", ct).ConfigureAwait(false);
-            throw new TacticalUnauthorizedException(
-                $"Alert TenantId '{alert.TenantId}' does not match ambient '{ambientId}'.");
+            if (_tenantContext.Tenant is null)
+            {
+                await EmitDenialAsync(alert, "tenant-unresolved", ct).ConfigureAwait(false);
+                throw new TacticalUnauthorizedException(
+                    "Tenant context is registered but unresolved; cannot verify alert tenant binding.");
+            }
+            if (_tenantContext.Tenant.Id != alert.TenantId)
+            {
+                await EmitDenialAsync(alert, "tenant-mismatch", ct).ConfigureAwait(false);
+                throw new TacticalUnauthorizedException(
+                    $"Alert TenantId '{alert.TenantId}' does not match ambient '{_tenantContext.Tenant.Id}'.");
+            }
         }
 
         // Step 1 — AlertId regex validation.
@@ -108,7 +129,11 @@ public sealed class DefaultAlertRouter : IAlertRouter
             return;
         }
 
-        // Step 2 — per-(TenantId, RuleName) rate limit.
+        // Step 2 — per-(TenantId, RuleName) rate limit. GetOrAdd's
+        // factory may run twice under contention (cohort note); the
+        // loser counter is GC'd and the winning counter is the only
+        // one ever observed by subsequent calls — effective rate-limit
+        // window is single, not 2x.
         var ruleKey = new RateKey(alert.TenantId, alert.RuleName);
         var now = _time.GetUtcNow();
         var counter = _rateCounters.GetOrAdd(ruleKey, static _ => new RateCounter());
@@ -118,8 +143,8 @@ public sealed class DefaultAlertRouter : IAlertRouter
             return;
         }
 
-        // Step 5 (decided pre-emit so the AlertRouted record reflects the
-        // final routing) — high-priority allowlist gate.
+        // §8.3 high-priority allowlist gate (decided pre-emit so all
+        // audit records reflect the final routing).
         var routing = alert.RoutingPolicy;
         var downgraded = false;
         if (routing == AlertRoutingPolicy.HighPriorityLookout
@@ -129,7 +154,17 @@ public sealed class DefaultAlertRouter : IAlertRouter
             downgraded = true;
         }
 
-        // Steps 3 + 4 — audit emission BEFORE destination write.
+        // Per W#52 P2 council Critical C1: if a downgrade applies, emit
+        // the denial FIRST so a signing failure on the denial cannot
+        // leave AnomalyDetected+AlertRouted as a phantom-routing pair.
+        // Audit-by-construction: all-three-records-or-none.
+        if (downgraded)
+        {
+            await EmitDenialAsync(
+                alert, "high-priority-routing-not-allowlisted", ct).ConfigureAwait(false);
+        }
+
+        // Steps 3 + 4 — emission BEFORE destination write.
         await EmitAsync(AuditEventType.AnomalyDetected, alert,
             ExtraFields(("rule_name", alert.RuleName), ("severity", alert.Severity.ToString())),
             ct).ConfigureAwait(false);
@@ -138,14 +173,8 @@ public sealed class DefaultAlertRouter : IAlertRouter
                 ("downgraded", downgraded)),
             ct).ConfigureAwait(false);
 
-        if (downgraded)
-        {
-            await EmitDenialAsync(
-                alert, "high-priority-routing-not-allowlisted", ct).ConfigureAwait(false);
-        }
-
-        // Step 6 — dispatch. Audit records are retained on failure;
-        // log Warning rather than rethrow.
+        // Step 6 — dispatch. Destination failure is best-effort per the
+        // hand-off "audit records retained" contract.
         try
         {
             if (routing == AlertRoutingPolicy.HighPriorityLookout)
