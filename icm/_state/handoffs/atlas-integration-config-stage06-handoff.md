@@ -278,25 +278,22 @@ Anchor: singleton via local-node identity) — NOT registered here.
 
 **Gate:** Phase 1 landed.
 
-> **⚠ CYCLE HALT — WRITE cob-question BEFORE STARTING PHASE 2 ⚠**
+> **⚠ CYCLE NOTE — XO RULING AVAILABLE — READ ADDENDUM BEFORE STARTING PHASE 2 ⚠**
 >
 > `DefaultIntegrationAtlasProvider` depends on `IFieldEncryptor` + `IFieldDecryptor`
 > (both in `foundation-recovery`). `ui-core` CANNOT reference `foundation-recovery`
 > (cycle: `foundation-recovery → kernel-security → ui-core`). This means
-> `DefaultIntegrationAtlasProvider` CANNOT live in `packages/ui-core/` as the hand-off
-> originally specified.
+> `DefaultIntegrationAtlasProvider` CANNOT live in `packages/ui-core/` as originally
+> specified.
 >
-> **Action:** Before writing any Phase 2 code, write
-> `cob-question-[timestamp]-w48-phase2-impl-package.md` to research-inbox with:
-> - `workstream-or-chapter: W#48 Phase 2`
-> - `last-pr: [Phase 1b PR number]`
-> - Context: DefaultIntegrationAtlasProvider needs IFieldEncryptor + IFieldDecryptor from
->   foundation-recovery; ui-core cannot reference foundation-recovery (known cycle).
->   Options: (A) new `packages/blocks-integrations/` package; (B) move IFieldEncryptor /
->   IFieldDecryptor to foundation; (C) inject via delegate/factory in ui-core contracts.
-> - What would unblock: XO ruling on which package hosts DefaultIntegrationAtlasProvider.
+> **XO has ruled (Option A):** Phase 2 implementations go in a new
+> **`packages/blocks-integrations/`** package. The full architectural decision,
+> corrected `csproj`, split DI extension, corrected file locations, and additional
+> halt conditions (H9–H11) are documented in:
 >
-> Do NOT proceed with Phase 2 until XO answers.
+> **`icm/_state/handoffs/atlas-integration-config-p2-blocks-integrations-addendum.md`**
+>
+> **Read the addendum in full before writing any Phase 2 code.** No cob-question needed.
 
 **Scope:** `DefaultIntegrationAtlasProvider`, `InMemoryIntegrationAtlasProvider`, stores, audit constants,
 typed payload factories, SUNFISH_INTEGRATION_AUDIT001 analyzer.

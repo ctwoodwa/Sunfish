@@ -7,7 +7,7 @@ status: "building"
 status_cell: "`building` (Phase 1a shipped 2026-05-06 PR #640; P1.5 PR1 StandingOrderId shipped PR #641; P1.5 PR2 IDecryptCapability shipped PR #642; **Phase 1b NOW UNBLOCKED** — IIntegrationAtlasProvider + IntegrationAtlasView + IDecryptCapabilityProvider + AddSunfishIntegrationAtlas(); Phases 2-5 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` + `docs/adrs/0067-atlas-integration-config-surface.md` (PR #539 merged) + `packages/ui-core/Wayfinder/IAtlasProvider.cs` (W#53 P1a — `IAtlasProvider<T>` substrate landed)"
+reference_cell: "`icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` + `icm/_state/handoffs/atlas-integration-config-p2-blocks-integrations-addendum.md` (XO ruling: Phase 2 impl → `blocks-integrations` package) + `docs/adrs/0067-atlas-integration-config-surface.md` (PR #539 merged)"
 ---
 
 ## Notes
@@ -27,7 +27,14 @@ PR #642 `IDecryptCapability` → `foundation/Crypto/`.
 `AddSunfishIntegrationAtlas()` + 4 `AuditEventType` constants + full
 `ContractSurfaceTests`. Hand-off: `atlas-integration-config-stage06-handoff.md`
 §Phase 1 + `atlas-integration-config-p15-cycle-break-handoff.md` §Phase 1b.
-Pre-merge council mandatory.
+Pre-merge council mandatory. NOTE: `AddSunfishIntegrationAtlas()` in Phase 1b
+registers contracts+stores ONLY — NOT `DefaultIntegrationAtlasProvider` (that
+goes in `blocks-integrations`, see Phase 2 addendum).
+
+**Phase 2 CYCLE RESOLVED — XO ruling 2026-05-06:** `DefaultIntegrationAtlasProvider`
+goes in new `packages/blocks-integrations/` package (NOT `ui-core`). Full
+architectural spec at `atlas-integration-config-p2-blocks-integrations-addendum.md`.
+COB MUST read addendum before starting Phase 2.
 
 **`IAtlasProvider<TView>` is invariant** (W#53 P1a council resolution —
 hand-off cited `out TView` but C# CS1961 rejects on `Task<T>` returns).

@@ -4,7 +4,7 @@ number: 52
 slug: tactical-anomaly-detection-threat-trigger-surface
 title: "**Tactical Anomaly Detection + Threat-Trigger Surface** (ADR 0081; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "ready-to-build"
-status_cell: "`ready-to-build` (ADR 0081 Accepted 2026-05-05 via PR #578; Stage 06 hand-off at `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md`; W#46 P1 ✓ P3 ✓ 2026-05-06 — Phase 3a fully unblocked)"
+status_cell: "`ready-to-build` (ADR 0081 Accepted 2026-05-05 via PR #578; Stage 06 hand-off at `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md`; W#46 P1 ✓ P3 ✓ 2026-05-06 — Phase 3a fully unblocked; **W#51 P1 ✓ 2026-05-06 PR #651 — Phase 4 `IQuarterdeckAlertSource` gate cleared**)"
 owner: "research"
 owner_cell: "research (XO) ✓"
 reference_cell: "`docs/adrs/0081-tactical-anomaly-detection.md` (PR #578 merged) + `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md`"
