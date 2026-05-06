@@ -632,6 +632,19 @@ Composes `HelmRenderContext.ActiveTeam`. If `null`, renders "No active team" lab
 Composes top 3 capability-gate verdicts from `HelmRenderContext.Envelope`.
 If no capabilities, renders "No capabilities active."
 
+**Phase 2 PR 2a divergence (committed in PR #663):** the dimension-coverage
+rendering ships in lieu of "top 3 capability-gate verdicts" because
+`ICapabilityGate<T>` is not on origin/main (per ADR 0066 §1.1
+`HelmWidgetMetadata.CapabilityGateType` rationale — the `Type`-rather-than-
+generic-constraint shape exists precisely because the gate type isn't yet
+shipped). The widget counts the 10 ADR 0062-A1.2 envelope dimensions:
+`SyncState.Healthy` when all present + "10 dimensions active" secondary,
+`SyncState.Stale` + view-envelope Navigate when partial. A follow-up
+amendment will expand to per-feature-gate verdicts via an
+`IFeatureVerdictProvider` seam when the gate type lands. This is a
+Phase-2-aware substitution, not a contract change — the slot, OrderHint,
+and `HelmWidgetViewState` shape are unchanged.
+
 #### `QuickTogglesWidget` (slot: ActionStack, orderHint: 100)
 
 Composes `IStandingOrderIssuer` via three toggle actions:
