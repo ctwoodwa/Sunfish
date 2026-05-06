@@ -13,6 +13,7 @@ namespace Sunfish.Blocks.Subscriptions.Services;
 /// no persistence, no event bus.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The in-memory service scopes reads and writes to the current
 /// <see cref="ITenantContext.TenantId"/>. An <see cref="ITenantContext"/> is
 /// REQUIRED at first tenant-scoped operation; the service throws
@@ -20,7 +21,17 @@ namespace Sunfish.Blocks.Subscriptions.Services;
 /// follow-up MF-2 — silent fallback to <see cref="TenantId.System"/>
 /// is forbidden because system records would otherwise mix into tenant
 /// catalogs).
+/// </para>
+/// <para>
+/// <b>Catalog-read carve-out:</b> non-tenant-scoped operations
+/// (<see cref="ListPlansAsync"/>) do NOT touch <c>CurrentTenant</c> and
+/// therefore work without an <see cref="ITenantContext"/>. Only paths
+/// that read or write per-tenant state throw. Pinned by the test
+/// <c>ListPlansAsync_NoTenantContext_StillWorks</c>.
+/// </para>
+/// <para>
 /// The catalog is seeded with three default <see cref="Plan"/>s (Lite, Standard, Enterprise).
+/// </para>
 /// </remarks>
 public sealed class InMemorySubscriptionService : ISubscriptionService
 {
