@@ -20,6 +20,18 @@ namespace Sunfish.Blocks.ShipsOffice;
 /// </summary>
 /// <remarks>
 /// <para>
+/// <b>Phase 2a behavior contract (§Trust UI guard, per W#55 P2a council
+/// Minor M2 + cohort precedent W#54 P2 AtmosphereHealth.Green / W#50
+/// P2a Operational defaults):</b> until Phase 2b lands, this provider
+/// returns an empty projection REGARDLESS of host
+/// <c>BundleCatalog</c> / <c>ILeaseDocumentVersionLog</c> /
+/// <c>IW9DocumentService</c> registration. UI surfaces SHOULD NOT
+/// render "Your Ship's Office is empty" off this provider in Phase 2a
+/// hosts — the empty-snapshot signals "wiring not yet present", not
+/// "no documents". Phase 2b graduates this to genuine cross-package
+/// projection.
+/// </para>
+/// <para>
 /// <b>H4 invariant (load-bearing per ADR 0083 §Trust):</b> this
 /// implementation MUST NOT depend on
 /// <c>Sunfish.Foundation.Recovery.IFieldDecryptor</c>. Phase 2b's full
@@ -81,6 +93,13 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
 #pragma warning restore CS1998
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Per W#55 P2a council Minor M1: this stub never completes its own
+    /// stream — consumers MUST own a CancellationToken to terminate.
+    /// Phase 2b graduates the stream to genuine push-driven invalidation
+    /// via IMissionEnvelopeObserver and starts yielding views as
+    /// documents change.
+    /// </remarks>
     public async IAsyncEnumerable<ShipsOfficeDocumentView> SubscribeChangesAsync(
         TenantId tenant,
         [EnumeratorCancellation] CancellationToken ct = default)
