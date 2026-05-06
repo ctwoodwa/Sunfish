@@ -1,0 +1,121 @@
+@namespace Sunfish.UIAdapters.Blazor.Wayfinder
+@using System
+@using System.Threading
+@using Microsoft.AspNetCore.Components
+@using Sunfish.UICore.Wayfinder
+
+@*
+    W#53 Phase 2 PR 2c — Blazor HelmRenderer per ADR 0066 §1.4.
+    Renders the registered Helm widgets across the three slots
+    (GlanceBand → ActionStack → ActivityFeed). Each widget renders
+    in a <section> with aria-label = widget.Metadata.AccessibleName
+    (WCAG 4.1.2). The SyncStateWidget region carries
+    aria-live="polite" (WCAG 4.1.3) so SyncState transitions are
+    announced.
+
+    NOTE: this Razor file is the renderer scaffold. The view-state
+    is fetched once on initialization; the periodic refresh tick
+    (HelmOptions.PeriodicRefreshInterval) is wired by hosts that
+    need live-refresh. WCAG tests in Wayfinder/HelmRendererTests.cs
+    pin the ARIA contract.
+*@
+
+<nav class="sunfish-helm" aria-label="@(HelmAriaLabel)">
+    @if (Registry is not null)
+    {
+        @RenderSlot(HelmSlot.GlanceBand, "sunfish-helm-glance")
+        @RenderSlot(HelmSlot.ActionStack, "sunfish-helm-actionstack")
+        @RenderSlot(HelmSlot.ActivityFeed, "sunfish-helm-activityfeed")
+    }
+</nav>
+
+@code {
+    /// <summary>The Helm widget registry to render. Required.</summary>
+    [Parameter, EditorRequired]
+    public IHelmWidgetRegistry? Registry { get; set; }
+
+    /// <summary>The ambient render context passed to each widget's <c>ComputeAsync</c>. Required.</summary>
+    [Parameter, EditorRequired]
+    public HelmRenderContext? Context { get; set; }
+
+    /// <summary>
+    /// Accessible label on the outer <c>nav</c> landmark per WCAG
+    /// 2.4.6 (Headings and Labels) + 4.1.2 (Name, Role, Value).
+    /// Defaults to "Helm".
+    /// </summary>
+    [Parameter] public string HelmAriaLabel { get; set; } = "Helm";
+
+    private RenderFragment RenderSlot(HelmSlot slot, string slotClass) => __builder =>
+    {
+        if (Registry is null || Context is null)
+        {
+            return;
+        }
+
+        __builder.OpenElement(0, "div");
+        __builder.AddAttribute(1, "class", slotClass);
+        __builder.AddAttribute(2, "role", "group");
+        __builder.AddAttribute(3, "aria-label", $"{slot}");
+
+        var slotIndex = 0;
+        foreach (var widget in Registry.GetSlot(slot))
+        {
+            __builder.OpenElement(10 + slotIndex, "section");
+            __builder.AddAttribute(11 + slotIndex, "class", "sunfish-helm-widget");
+            __builder.AddAttribute(12 + slotIndex, "data-widget-id", widget.Metadata.WidgetId);
+            __builder.AddAttribute(13 + slotIndex, "aria-label", widget.Metadata.AccessibleName);
+            // SyncStateWidget surfaces ambient sync state via aria-live="polite"
+            // per ADR 0066 §1.4 + hand-off line 679. Other widgets render
+            // without aria-live (default "off") to avoid SR noise on every
+            // periodic refresh tick.
+            if (widget.Metadata.WidgetId == "sync-state")
+            {
+                __builder.AddAttribute(14 + slotIndex, "aria-live", "polite");
+            }
+
+            var view = widget.ComputeAsync(Context, CancellationToken.None).AsTask().GetAwaiter().GetResult();
+
+            __builder.OpenElement(20 + slotIndex, "div");
+            __builder.AddAttribute(21 + slotIndex, "class", "sunfish-helm-widget-primary");
+            __builder.AddContent(22 + slotIndex, view.PrimaryLabel);
+            __builder.CloseElement();
+
+            if (!string.IsNullOrEmpty(view.SecondaryLabel))
+            {
+                __builder.OpenElement(30 + slotIndex, "div");
+                __builder.AddAttribute(31 + slotIndex, "class", "sunfish-helm-widget-secondary");
+                __builder.AddContent(32 + slotIndex, view.SecondaryLabel);
+                __builder.CloseElement();
+            }
+
+            if (view.Actions.Count > 0)
+            {
+                __builder.OpenElement(40 + slotIndex, "div");
+                __builder.AddAttribute(41 + slotIndex, "class", "sunfish-helm-widget-actions");
+                __builder.AddAttribute(42 + slotIndex, "role", "group");
+                __builder.AddAttribute(43 + slotIndex, "aria-label", $"{widget.Metadata.AccessibleName} actions");
+
+                var actionIndex = 0;
+                foreach (var action in view.Actions)
+                {
+                    __builder.OpenElement(50 + actionIndex, "button");
+                    __builder.AddAttribute(51 + actionIndex, "type", "button");
+                    __builder.AddAttribute(52 + actionIndex, "class", "sunfish-helm-action");
+                    __builder.AddAttribute(53 + actionIndex, "data-action-id", action.ActionId);
+                    __builder.AddAttribute(54 + actionIndex, "data-action-kind", action.Kind.ToString());
+                    __builder.AddAttribute(55 + actionIndex, "data-action-target", action.Target);
+                    __builder.AddAttribute(56 + actionIndex, "aria-label", action.AccessibleLabel);
+                    __builder.AddContent(57 + actionIndex, action.AccessibleLabel);
+                    __builder.CloseElement();
+                    actionIndex++;
+                }
+                __builder.CloseElement();
+            }
+
+            __builder.CloseElement(); // section
+            slotIndex++;
+        }
+
+        __builder.CloseElement(); // div slot
+    };
+}
