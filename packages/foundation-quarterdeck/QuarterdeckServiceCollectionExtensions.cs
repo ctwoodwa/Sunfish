@@ -68,6 +68,12 @@ public static class QuarterdeckServiceCollectionExtensions
         services.TryAddSingleton<IActorPrincipalResolver, InMemoryActorPrincipalResolver>();
         services.TryAddSingleton<IQuarterdeckDataProvider, DefaultQuarterdeckDataProvider>();
 
+        // W#51 Phase 2b: command service for AcknowledgeAlertAsync
+        // (two-phase audit + IPermissionResolver authority gate). Hosts
+        // MUST also register IAuditTrail + IOperationSigner +
+        // ILogger<DefaultQuarterdeckCommandService>.
+        services.TryAddSingleton<IQuarterdeckCommandService, DefaultQuarterdeckCommandService>();
+
         return services;
     }
 }
