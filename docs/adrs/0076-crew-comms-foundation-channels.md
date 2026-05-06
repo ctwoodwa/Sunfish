@@ -7,10 +7,9 @@ tier: foundation
 pipeline_variant: sunfish-feature-change
 
 concern:
-  - communication
-  - transport
+  - distribution
   - security
-  - presence
+  - identity
 
 enables:
   - crew-comms-text

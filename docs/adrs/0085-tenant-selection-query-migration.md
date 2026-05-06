@@ -7,7 +7,7 @@ tier: foundation
 pipeline_variant: sunfish-api-change
 concern:
   - multi-tenancy
-  - query
+  - persistence
 enables:
   - multi-tenant-audit-queries
   - multi-tenant-entity-queries

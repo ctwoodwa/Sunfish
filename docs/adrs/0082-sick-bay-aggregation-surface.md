@@ -8,10 +8,10 @@ pipeline_variant: sunfish-feature-change
 
 concern:
   - security
-  - key-management
+  - audit
   - accessibility
   - identity
-  - health-monitoring
+  - observability
 
 enables:
   - sick-bay-ui

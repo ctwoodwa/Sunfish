@@ -7,7 +7,7 @@ tier: foundation
 pipeline_variant: sunfish-feature-change
 concern:
   - multi-tenancy
-  - type-safety
+  - version-management
 enables:
   - tenant-selection-query-scope
 composes: []
