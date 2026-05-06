@@ -1,11 +1,12 @@
 @namespace Sunfish.UIAdapters.Blazor.Wayfinder
-@using System
+@using System.Collections.Generic
 @using System.Threading
 @using Microsoft.AspNetCore.Components
 @using Sunfish.UICore.Wayfinder
 
 @*
     W#53 Phase 2 PR 2c — Blazor HelmRenderer per ADR 0066 §1.4.
+
     Renders the registered Helm widgets across the three slots
     (GlanceBand → ActionStack → ActivityFeed). Each widget renders
     in a <section> with aria-label = widget.Metadata.AccessibleName
@@ -13,23 +14,40 @@
     aria-live="polite" (WCAG 4.1.3) so SyncState transitions are
     announced.
 
-    NOTE: this Razor file is the renderer scaffold. The view-state
-    is fetched once on initialization; the periodic refresh tick
-    (HelmOptions.PeriodicRefreshInterval) is wired by hosts that
-    need live-refresh. WCAG tests in Wayfinder/HelmRendererTests.cs
-    pin the ARIA contract.
+    Per W#53 P2 PR 2c council:
+    - View-state is pre-computed in OnParametersSetAsync (avoids
+      sync-over-async deadlock under Blazor Server + collapses
+      6 ComputeAsync round-trips into one parallelizable batch);
+      render reads from the pre-computed dictionary.
+    - Razor markup (not manual RenderTreeBuilder) — sequence
+      numbers are compile-time-constant per source position;
+      cohort-consistent with SunfishAppBar.razor.
+
+    Action-button wire contract (consumed by Phase 3 host shells):
+    - data-action-id        → HelmWidgetAction.ActionId
+    - data-action-kind      → HelmWidgetAction.Kind enum name
+                              ("Navigate" | "IssueStandingOrder" |
+                              "RunLocalCommand")
+    - data-action-target    → HelmWidgetAction.Target string. For
+                              IssueStandingOrder, format is
+                              "{Path}|{Scope}" — split on the first
+                              '|' and Enum.Parse the right side as
+                              StandingOrderScope. See
+                              IHelmWidget.HelmWidgetAction.Target xmldoc.
 *@
 
-<nav class="sunfish-helm" aria-label="@(HelmAriaLabel)">
-    @if (Registry is not null)
+<nav class="sunfish-helm" aria-label="@HelmAriaLabel">
+    @if (Registry is not null && Context is not null)
     {
-        @RenderSlot(HelmSlot.GlanceBand, "sunfish-helm-glance")
-        @RenderSlot(HelmSlot.ActionStack, "sunfish-helm-actionstack")
-        @RenderSlot(HelmSlot.ActivityFeed, "sunfish-helm-activityfeed")
+        @SlotMarkup(HelmSlot.GlanceBand, "sunfish-helm-glance", GlanceBandSlotLabel)
+        @SlotMarkup(HelmSlot.ActionStack, "sunfish-helm-actionstack", ActionStackSlotLabel)
+        @SlotMarkup(HelmSlot.ActivityFeed, "sunfish-helm-activityfeed", ActivityFeedSlotLabel)
     }
 </nav>
 
 @code {
+    private readonly Dictionary<string, HelmWidgetViewState> _viewStates = new();
+
     /// <summary>The Helm widget registry to render. Required.</summary>
     [Parameter, EditorRequired]
     public IHelmWidgetRegistry? Registry { get; set; }
@@ -43,79 +61,91 @@
     /// 2.4.6 (Headings and Labels) + 4.1.2 (Name, Role, Value).
     /// Defaults to "Helm".
     /// </summary>
+    // TODO(SUNFISH_I18N_002): replace default with SharedResource lookup when the cascade ships.
     [Parameter] public string HelmAriaLabel { get; set; } = "Helm";
 
-    private RenderFragment RenderSlot(HelmSlot slot, string slotClass) => __builder =>
+    /// <summary>Accessible label for the GlanceBand slot group. Defaults to "Status".</summary>
+    // TODO(SUNFISH_I18N_002): replace default with SharedResource lookup when the cascade ships.
+    [Parameter] public string GlanceBandSlotLabel { get; set; } = "Status";
+
+    /// <summary>Accessible label for the ActionStack slot group. Defaults to "Actions".</summary>
+    // TODO(SUNFISH_I18N_002): replace default with SharedResource lookup when the cascade ships.
+    [Parameter] public string ActionStackSlotLabel { get; set; } = "Actions";
+
+    /// <summary>Accessible label for the ActivityFeed slot group. Defaults to "Activity".</summary>
+    // TODO(SUNFISH_I18N_002): replace default with SharedResource lookup when the cascade ships.
+    [Parameter] public string ActivityFeedSlotLabel { get; set; } = "Activity";
+
+    protected override async Task OnParametersSetAsync()
     {
+        // Pre-compute the view-states once per parameter change so
+        // the synchronous render path reads from a dictionary
+        // (avoiding sync-over-async deadlocks under Blazor Server +
+        // collapsing N round-trips into a single batch). Periodic-
+        // refresh hosts re-trigger this by passing a fresh
+        // HelmRenderContext on every tick.
+        _viewStates.Clear();
         if (Registry is null || Context is null)
         {
             return;
         }
 
-        __builder.OpenElement(0, "div");
-        __builder.AddAttribute(1, "class", slotClass);
-        __builder.AddAttribute(2, "role", "group");
-        __builder.AddAttribute(3, "aria-label", $"{slot}");
-
-        var slotIndex = 0;
-        foreach (var widget in Registry.GetSlot(slot))
+        foreach (var widget in Registry.Widgets)
         {
-            __builder.OpenElement(10 + slotIndex, "section");
-            __builder.AddAttribute(11 + slotIndex, "class", "sunfish-helm-widget");
-            __builder.AddAttribute(12 + slotIndex, "data-widget-id", widget.Metadata.WidgetId);
-            __builder.AddAttribute(13 + slotIndex, "aria-label", widget.Metadata.AccessibleName);
-            // SyncStateWidget surfaces ambient sync state via aria-live="polite"
-            // per ADR 0066 §1.4 + hand-off line 679. Other widgets render
-            // without aria-live (default "off") to avoid SR noise on every
-            // periodic refresh tick.
-            if (widget.Metadata.WidgetId == "sync-state")
-            {
-                __builder.AddAttribute(14 + slotIndex, "aria-live", "polite");
-            }
+            var view = await widget
+                .ComputeAsync(Context, CancellationToken.None)
+                .ConfigureAwait(false);
+            _viewStates[widget.Metadata.WidgetId] = view;
+        }
+    }
 
-            var view = widget.ComputeAsync(Context, CancellationToken.None).AsTask().GetAwaiter().GetResult();
-
-            __builder.OpenElement(20 + slotIndex, "div");
-            __builder.AddAttribute(21 + slotIndex, "class", "sunfish-helm-widget-primary");
-            __builder.AddContent(22 + slotIndex, view.PrimaryLabel);
-            __builder.CloseElement();
-
-            if (!string.IsNullOrEmpty(view.SecondaryLabel))
-            {
-                __builder.OpenElement(30 + slotIndex, "div");
-                __builder.AddAttribute(31 + slotIndex, "class", "sunfish-helm-widget-secondary");
-                __builder.AddContent(32 + slotIndex, view.SecondaryLabel);
-                __builder.CloseElement();
-            }
-
-            if (view.Actions.Count > 0)
-            {
-                __builder.OpenElement(40 + slotIndex, "div");
-                __builder.AddAttribute(41 + slotIndex, "class", "sunfish-helm-widget-actions");
-                __builder.AddAttribute(42 + slotIndex, "role", "group");
-                __builder.AddAttribute(43 + slotIndex, "aria-label", $"{widget.Metadata.AccessibleName} actions");
-
-                var actionIndex = 0;
-                foreach (var action in view.Actions)
-                {
-                    __builder.OpenElement(50 + actionIndex, "button");
-                    __builder.AddAttribute(51 + actionIndex, "type", "button");
-                    __builder.AddAttribute(52 + actionIndex, "class", "sunfish-helm-action");
-                    __builder.AddAttribute(53 + actionIndex, "data-action-id", action.ActionId);
-                    __builder.AddAttribute(54 + actionIndex, "data-action-kind", action.Kind.ToString());
-                    __builder.AddAttribute(55 + actionIndex, "data-action-target", action.Target);
-                    __builder.AddAttribute(56 + actionIndex, "aria-label", action.AccessibleLabel);
-                    __builder.AddContent(57 + actionIndex, action.AccessibleLabel);
-                    __builder.CloseElement();
-                    actionIndex++;
-                }
-                __builder.CloseElement();
-            }
-
-            __builder.CloseElement(); // section
-            slotIndex++;
+    private RenderFragment SlotMarkup(HelmSlot slot, string slotClass, string slotAriaLabel) => __builder =>
+    {
+        if (Registry is null)
+        {
+            return;
         }
 
-        __builder.CloseElement(); // div slot
+        var widgets = Registry.GetSlot(slot);
+
+        <div class="@slotClass" role="group" aria-label="@slotAriaLabel">
+            @foreach (var widget in widgets)
+            {
+                if (!_viewStates.TryGetValue(widget.Metadata.WidgetId, out var view))
+                {
+                    continue;
+                }
+                var isSyncState = widget.Metadata.WidgetId == "sync-state";
+                <section class="sunfish-helm-widget"
+                         data-widget-id="@widget.Metadata.WidgetId"
+                         aria-label="@widget.Metadata.AccessibleName"
+                         aria-live="@(isSyncState ? "polite" : null)">
+                    <div class="sunfish-helm-widget-primary">@view.PrimaryLabel</div>
+                    @if (!string.IsNullOrEmpty(view.SecondaryLabel))
+                    {
+                        <div class="sunfish-helm-widget-secondary">@view.SecondaryLabel</div>
+                    }
+                    @if (view.Actions.Count > 0)
+                    {
+                        <div class="sunfish-helm-widget-actions"
+                             role="group"
+                             aria-label="@($"{widget.Metadata.AccessibleName} actions")">
+                            @foreach (var action in view.Actions)
+                            {
+                                @* aria-label deliberately omitted: visible button text IS the
+                                   accessible name per WCAG 2.5.3 (Label in Name). Adding
+                                   aria-label would either duplicate (SR noise) or diverge
+                                   (accessibility-vs-visible mismatch). *@
+                                <button type="button"
+                                        class="sunfish-helm-action"
+                                        data-action-id="@action.ActionId"
+                                        data-action-kind="@action.Kind"
+                                        data-action-target="@action.Target">@action.AccessibleLabel</button>
+                            }
+                        </div>
+                    }
+                </section>
+            }
+        </div>
     };
 }

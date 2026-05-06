@@ -90,9 +90,13 @@ public class HelmRendererTests : BunitContext
         Assert.Equal(3, slots.Count);
 
         var labels = slots.Select(s => s.GetAttribute("aria-label")).ToArray();
-        Assert.Contains("GlanceBand", labels);
-        Assert.Contains("ActionStack", labels);
-        Assert.Contains("ActivityFeed", labels);
+        // Slot aria-labels are humans-friendly defaults per council
+        // M1 amendment (not the raw enum names "GlanceBand" /
+        // "ActionStack" / "ActivityFeed"). Hosts override via
+        // [Parameter] for localization.
+        Assert.Contains("Status", labels);
+        Assert.Contains("Actions", labels);
+        Assert.Contains("Activity", labels);
     }
 
     [Fact]
@@ -179,6 +183,12 @@ public class HelmRendererTests : BunitContext
         Assert.Contains("system.network.offline|Platform", targets);
         Assert.Contains("system.notifications.dnd|User", targets);
         Assert.Contains("system.sync.paused|Platform", targets);
+
+        // Per WCAG 2.5.3 (Label in Name): visible button text IS the
+        // accessible name; aria-label deliberately omitted per
+        // council M2 amendment.
+        Assert.All(buttons, b =>
+            Assert.True(string.IsNullOrEmpty(b.GetAttribute("aria-label"))));
     }
 
     [Fact]
@@ -221,7 +231,7 @@ public class HelmRendererTests : BunitContext
             .Add(c => c.Context, SampleContext()));
 
         var glanceBand = cut.FindAll(".sunfish-helm > div[role='group']")
-            .Single(d => d.GetAttribute("aria-label") == "GlanceBand");
+            .Single(d => d.GetAttribute("aria-label") == "Status");
         var ids = glanceBand
             .QuerySelectorAll("section.sunfish-helm-widget")
             .Select(s => s.GetAttribute("data-widget-id")).ToArray();
@@ -243,6 +253,23 @@ public class HelmRendererTests : BunitContext
 
         var nav = cut.Find("nav.sunfish-helm");
         Assert.Empty(nav.QuerySelectorAll("section"));
+    }
+
+    [Fact]
+    public void HelmRenderer_CustomSlotLabels_OverrideHumansFriendlyDefaults()
+    {
+        var cut = Render<HelmRenderer>(p => p
+            .Add(c => c.Registry, CanonicalRegistry())
+            .Add(c => c.Context, SampleContext())
+            .Add(c => c.GlanceBandSlotLabel, "État")
+            .Add(c => c.ActionStackSlotLabel, "Actions rapides")
+            .Add(c => c.ActivityFeedSlotLabel, "Activité"));
+
+        var labels = cut.FindAll(".sunfish-helm > div[role='group']")
+            .Select(s => s.GetAttribute("aria-label")).ToArray();
+        Assert.Contains("État", labels);
+        Assert.Contains("Actions rapides", labels);
+        Assert.Contains("Activité", labels);
     }
 
     [Fact]
