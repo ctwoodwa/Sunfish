@@ -59,6 +59,15 @@ Per discovery §5.9 (Pedantic-Lawyer-hardened citations):
 - **W#31 Foundation.Taxonomy** — jurisdictional classification taxonomies
 - **Phase 2 commercial MVP** — jurisdiction-aware feature surface
 
+## Authoring resources
+
+ONR should start from the canonical pre-legal research prompt at
+`_shared/engineering/pre-legal-research-prompt.md`. Replace `FEATURE / DOCUMENT NAME`
+with "ADR 0064 — Runtime Regulatory Policy Evaluation" and `jurisdiction` with
+the proposed jurisdictional scope (US Federal as default; expand if scope demands).
+
+---
+
 ## Authoring expectations (CO directive 2026-05-06)
 
 ADR 0064 is transferred from the XO author backlog to **ONR** (Office of Naval Research session) per CO directive 2026-05-06. The ADR is drafted (Status: Proposed) but requires ONR-led research-backed legal engagement before it can reach Status: Accepted. ONR's mandate:
