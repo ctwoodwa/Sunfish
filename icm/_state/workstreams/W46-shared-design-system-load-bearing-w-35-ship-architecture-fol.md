@@ -3,13 +3,58 @@ sort_order: 49
 number: 46
 slug: shared-design-system-load-bearing-w-35-ship-architecture-fol
 title: "**Shared Design System** (ADR 0077; `sunfish-feature-change` pipeline) — load-bearing W#35 Ship Architecture follow-on; sequences first per W#35 §9.2"
-status: "ready-to-build"
-status_cell: "`ready-to-build` (ADR 0077 Accepted 2026-05-05 via PR #543; Stage 06 hand-off authored 2026-05-05; sunfish-PM may begin Phase 1 when COB capacity opens)"
+status: "building"
+status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phases 2-6 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `docs/adrs/0077-shared-design-system.md` (PR #543 merged)"
+reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged)"
 ---
 
 ## Notes
 
-**Hand-off ready 2026-05-05.** ADR 0077 Accepted; triple pre-merge council complete. New packages: `foundation-ship-common` (`ShipRole` + `IPermissionResolver` + deck registry) + `foundation-design-tokens` (W3C tokens + codegen + CI contrast gate) + `Sunfish.UICore` extensions (Primitives + FirstAid + Conformance). ~28-38h sunfish-PM / 6 phases / ~8-10 PRs. **Pre-merge council canonical per ADR 0069 D1 for every phase.** WCAG/a11y + security subagents mandatory for Phases 1/3/4. Critical dependency: `IStandingOrderEventStream` not yet built (ADR 0065-A1 spec-only); Phase 1 DefaultPermissionResolver uses 60s TTL cache instead of subscribe-before-load (halt-condition C). **Hard prerequisite for ALL downstream W#35 cohort ADRs** (Quarterdeck / Engine Room / Tactical / Sick Bay / Ship's Office / OOD-Watch).
+**Phase 1 merged 2026-05-06 via PR #622.** New `Sunfish.Foundation.Ship.Common` package
+shipped with the closed `ShipRole` taxonomy (11 values) + `IPermissionResolver` +
+`DefaultPermissionResolver` + 9 `ShipAction` static-readonly fields + `PermissionDecision`
+(Granted/Denied) + 8-value `DenialReason` + 6-value `RemediationKind` + per-tenant 60s TTL
+cache (with cache-stampede protection) + `(ActorId, ShipLocation)` 1-min sliding-window
+denial rate limit (default N=10) + 2 new `AuditEventType` constants (`PermissionDenied`,
+`PermissionDenialRateExceeded`). Pre-merge council 1 Critical (cross-tenant authority bleed
+fixed via tenantId on `ResolveAsync`) + 5 Major (cache stampede; 6 `CallToActionLabel`
+contract violations; MissionEnvelope gate pass-through) + 2 Minor (capability action
+fallthrough; sentence-cased `ReasonDisplay`). 25/25 tests pass. **Cohort batting average
+updated: 28-of-32 substrate amendments needed council fixes.**
+
+**Phase 1 Phase-2 follow-up TODOs in code** (none gating P2):
+- `IOnWatchProbe` for live OOD/EOOW lookup (step 1)
+- Promotion-target wiring through `ResolveAsync` parameters (step 0b — `CheckPromotionGuard`
+  static helper available for caller pipelines today)
+- `ITenantSecurityPolicy` for step 7 (W#37 / ADR 0068)
+- Subscribe-before-load cache invalidation (halt-condition C — pending
+  `IStandingOrderEventStream`)
+- Audit-loud `Granted` emission for `AuditLoudActions`
+- `TenantId.System` swap for current `TenantId.Default` fallback (ADR 0084)
+
+**Phase 1 unblocks:** W#50 (Engine Room Phase 1), W#55 (Ship's Office Phase 1) FULLY;
+W#54 (Sick Bay Phase 1 H1 cleared; H2 still gated on W#53 P1; H3 on ADR 0068 Accepted).
+W#51 (Quarterdeck) + W#52 (Tactical) gate on W#46 Phase 3 (`ILiveAnnouncer` + `IFocusTrap`).
+
+**Remaining phases:**
+
+- **Phase 2** (~6h): `foundation-design-tokens` package + `tokens.json` (W3C Design Tokens)
+  + codegen pipeline (C# + CSS + Markdown) + CI contrast gate. Design-engineering subagent
+  council mandatory.
+- **Phase 3** (~5h): `Sunfish.UICore.Primitives` (`ILiveAnnouncer` / `IFocusTrap` /
+  `IFormControlContract` / `IDiffPreview` / `ISearchAsYouType`) + `Sunfish.UICore.FirstAid`
+  (`IFirstAidContract`) + `Sunfish.UICore.Conformance` (`IConformanceRegistry` +
+  `ConformanceDeclaration`). WCAG/a11y + security subagents mandatory.
+- **Phase 4** (~8h): adapter implementations (Blazor + React + MAUI Win/Mac concrete
+  primitives) + a11y harness extension + CI gates. WCAG/a11y subagent mandatory.
+- **Phase 5** (~3h): `apps/docs` + `AddSunfishSharedDesignSystem()` meta-extension + cross-link.
+- **Phase 6** (~30min): ledger flip + close W#35 follow-on row.
+
+**Pre-merge council canonical per ADR 0069 D1 for every phase.** Critical dependency:
+`IStandingOrderEventStream` not yet built (ADR 0065-A1 spec-only); Phase 1 ships with TTL
+cache (halt-condition C in hand-off).
+
+**Hard prerequisite for ALL downstream W#35 cohort ADRs** (Quarterdeck / Engine Room /
+Tactical / Sick Bay / Ship's Office / OOD-Watch ✓ already built).
