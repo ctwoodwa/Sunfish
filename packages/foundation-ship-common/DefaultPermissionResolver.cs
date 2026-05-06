@@ -47,7 +47,7 @@ namespace Sunfish.Foundation.Ship.Common;
 /// <see cref="DenialReason.SecurityPolicyBlocked"/>.
 /// </para>
 /// </remarks>
-public sealed class DefaultPermissionResolver : IPermissionResolver
+public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
 {
     /// <summary>
     /// Default sliding-window threshold for the
@@ -196,6 +196,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
 
     private readonly Dictionary<TenantId, CachedAssignments> _cache = new();
     private readonly Dictionary<TenantId, Task<IReadOnlyList<ShipRoleAssignment>>> _inflightLoads = new();
+    private readonly IDisposable? _eventStreamSubscription;
     private readonly Dictionary<(ActorId, ShipLocation), DenialWindow> _denialWindows = new();
     private readonly object _gate = new();
 
@@ -208,6 +209,13 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
     /// <param name="envelopeGate">Optional Mission-Envelope gate for §2.1 step 2; null skips the check.</param>
     /// <param name="timeProvider">Clock source. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <param name="denialRateLimit">Override for the §2.4 rate-limit threshold. Defaults to <see cref="DefaultDenialRateLimit"/>.</param>
+    /// <param name="eventStream">
+    /// Optional <see cref="IStandingOrderEventStream"/> for subscribe-before-load
+    /// cache invalidation per W#46 halt-condition C (resolved by W#57).
+    /// When provided, every <see cref="StandingOrderAppliedEvent"/> invalidates
+    /// the affected tenant's cache (or all tenants for Platform-scoped events);
+    /// when null, the 60s TTL behaviour applies as the sole staleness bound.
+    /// </param>
     public DefaultPermissionResolver(
         IShipRoleAssignmentSource assignmentSource,
         IAuditTrail auditTrail,
@@ -216,7 +224,8 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         ICapabilityGraph? capabilityGraph = null,
         IShipActionMissionEnvelopeGate? envelopeGate = null,
         TimeProvider? timeProvider = null,
-        int? denialRateLimit = null)
+        int? denialRateLimit = null,
+        IStandingOrderEventStream? eventStream = null)
     {
         _assignmentSource = assignmentSource ?? throw new ArgumentNullException(nameof(assignmentSource));
         _auditTrail = auditTrail ?? throw new ArgumentNullException(nameof(auditTrail));
@@ -227,6 +236,44 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         _timeProvider = timeProvider ?? TimeProvider.System;
         _denialRateLimit = denialRateLimit ?? DefaultDenialRateLimit;
         if (_denialRateLimit < 1) throw new ArgumentOutOfRangeException(nameof(denialRateLimit));
+        _eventStreamSubscription = eventStream?.Subscribe(OnStandingOrderApplied);
+    }
+
+    private void OnStandingOrderApplied(StandingOrderAppliedEvent e)
+    {
+        // W#46 halt-C: invalidate cache on Standing-Order applied events.
+        // Scope-aware invalidation per shared-design-system-permres-cache-
+        // invalidation-addendum:
+        //  - Platform → all tenants (spans the local node)
+        //  - Integration → no-op (integration-config doesn't touch role
+        //    assignments or capability graph)
+        //  - User / Tenant / Security → invalidate the event's tenant only
+        lock (_gate)
+        {
+            switch (e.Scope)
+            {
+                case StandingOrderScope.Platform:
+                    _cache.Clear();
+                    _inflightLoads.Clear();
+                    break;
+                case StandingOrderScope.Integration:
+                    break;
+                default:
+                    _cache.Remove(e.TenantId);
+                    _inflightLoads.Remove(e.TenantId);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribes from the optional <see cref="IStandingOrderEventStream"/>.
+    /// DI containers (Microsoft.Extensions.DependencyInjection) call this on
+    /// singleton dispose at application shutdown.
+    /// </summary>
+    public void Dispose()
+    {
+        _eventStreamSubscription?.Dispose();
     }
 
     /// <inheritdoc />
