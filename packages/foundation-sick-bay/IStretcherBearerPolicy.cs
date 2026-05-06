@@ -21,7 +21,14 @@ namespace Sunfish.Foundation.SickBay;
 /// </remarks>
 public interface IStretcherBearerPolicy
 {
-    /// <summary>Returns the eligible responders for the tenant's medevac flow.</summary>
+    /// <summary>
+    /// Returns the eligible responders for the tenant's medevac flow.
+    /// Per W#54 P1 council Minor m2: order is NOT significant; an empty
+    /// list indicates no eligible responders are currently registered,
+    /// in which case the caller MUST surface a fallback path (e.g.,
+    /// fall back to direct Captain notification or the W#46 §Trust
+    /// escalation surface).
+    /// </summary>
     Task<IReadOnlyList<StretcherBearerRole>> GetEligibleRespondersAsync(
         TenantId tenant,
         CancellationToken ct = default);

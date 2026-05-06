@@ -13,7 +13,12 @@ namespace Sunfish.Foundation.SickBay;
 /// <b>§Trust impact:</b> the constructor REJECTS strings containing
 /// HTML metacharacters (<c>&lt;</c>, <c>&gt;</c>, <c>&amp;</c>) or ASCII
 /// control chars below 0x20 except line-feed (<c>\n</c>). The resulting
-/// hint is safe to render verbatim with no per-renderer escaping.
+/// hint is safe to render verbatim with no per-renderer escaping. Per
+/// W#54 P1 council Minor m4: rejecting <c>&amp;</c> bars legitimate
+/// plain-text strings such as "Q&amp;A"; callers needing such glyphs
+/// SHOULD split the body into two hints OR wait for the Phase 2
+/// permit-and-pre-escape mode that is planned to honor a dedicated
+/// safe-rendering wrapper.
 /// </remarks>
 public sealed record FirstAidHint
 {

@@ -80,6 +80,9 @@ public interface IMedevacService
     /// Mark the medevac complete. Transitions
     /// <see cref="MedevacState.InProgress"/> →
     /// <see cref="MedevacState.Complete"/>.
+    /// <see cref="MedevacState.Complete"/> is terminal — there is no
+    /// transition out without a new cycle starting from
+    /// <see cref="MedevacState.Idle"/> (per W#54 P1 council Minor m1).
     /// </summary>
     Task CompleteAsync(TenantId tenant, CancellationToken ct = default);
 }

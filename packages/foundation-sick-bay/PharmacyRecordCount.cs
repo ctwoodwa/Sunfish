@@ -32,7 +32,10 @@ public sealed record PharmacyRecordCount
     /// Construct a count, returning <see cref="Suppressed"/> when
     /// <paramref name="count"/> is below <see cref="KAnonymityFloor"/>.
     /// Negative counts are treated as zero per defensive-input cohort
-    /// convention.
+    /// convention. Per W#54 P1 council Minor m3: suppression is
+    /// §Trust-safe — coercing a malformed (e.g., negative) count to
+    /// <see cref="Suppressed"/> CANNOT under-anonymize, so silent
+    /// coercion is the right failure mode for an upstream-bug input.
     /// </summary>
     public static PharmacyRecordCount Exact(int count)
     {
