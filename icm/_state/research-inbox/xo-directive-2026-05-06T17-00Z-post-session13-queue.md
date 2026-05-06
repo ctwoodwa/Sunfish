@@ -79,5 +79,9 @@ Updated 2026-05-06 (session 18 — housekeeping):
   Bridge JSON endpoint + React renderer). Hand-off at
   `foundation-wayfinder-bridge-react-renderer-stage06-handoff.md`. (~14-19h / 5 PRs;
   WCAG/a11y subagent mandatory before every UI-bearing phase)
+- **W#45 P4.5** — Crew Comms follow-up: transcript-hash alignment (SECURITY — closes
+  relay-MitM capability-downgrade vector per A1+A2) + TYPING indicator + DELIVERED ack +
+  glare-wiring. Hand-off at `crew-comms-p45-stage06-addendum.md`. (~4-6h / 3 PRs;
+  PR 1 + PR 3 require pre-merge security council; PR 2 standard review.)
 
 Cap concurrent PRs at 3.
