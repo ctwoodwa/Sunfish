@@ -222,7 +222,8 @@ services.AddSunfishIntegrationAtlasDefaults();     // blocks-integrations (regis
 
 ### `DefaultIntegrationAtlasProvider.cs` — implementation notes
 
-All behavior from the main hand-off §7.1 applies unchanged. Only the namespace and csproj change:
+All behavior from the main hand-off §7.1 applies, with ONE interface divergence (see below).
+Only the namespace and csproj change:
 
 ```csharp
 // packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs
@@ -244,6 +245,38 @@ public sealed class DefaultIntegrationAtlasProvider : IIntegrationAtlasProvider
     // ... (all other behavior per §7.1 is unchanged)
 }
 ```
+
+### CRITICAL — `IssueXxxAsync` return type divergence (Phase 1b shipping note)
+
+**`IIntegrationAtlasProvider.IssueXxxAsync` returns `Task<StandingOrderId>`, NOT `Task<StandingOrder>`.**
+
+This divergence was introduced by COB during Phase 1b (PR #660) to avoid a second dependency cycle:
+
+```
+ui-core → foundation-wayfinder → kernel-crdt → ui-core
+```
+
+`StandingOrder` lives in `kernel-crdt` (via `foundation-wayfinder`). Returning it from an
+interface defined in `ui-core` would close the cycle. COB adapted by returning `StandingOrderId`
+instead — a cycle-safe identifier in `foundation/Assets/Common/`.
+
+**Impact on `DefaultIntegrationAtlasProvider` (Phase 2):**
+
+`IStandingOrderIssuer.IssueAsync` returns the full `StandingOrder`. In the Phase 2
+implementation, extract the `StandingOrderId` and return it directly:
+
+```csharp
+// In DefaultIntegrationAtlasProvider.IssueProviderChangeAsync, IssueRoutingAsync, etc.:
+var standingOrder = await _standingOrderIssuer.IssueAsync(command, ct);
+// Do NOT return standingOrder — return its Id only (interface contract)
+return standingOrder.Id;   // StandingOrderId
+```
+
+The `StandingOrder` object is NOT passed out of the provider; callers who need to observe
+the standing order do so via `IAtlasProjector` (GetAtlasViewAsync) or an event stream.
+
+**The main hand-off §7.1 shows `Task<StandingOrder>` return types — treat those as
+`Task<StandingOrderId>` for all IssueXxxAsync method signatures.**
 
 ### Tests — `packages/blocks-integrations/tests/`
 
