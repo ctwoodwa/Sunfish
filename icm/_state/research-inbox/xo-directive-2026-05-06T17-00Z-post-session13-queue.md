@@ -1,16 +1,21 @@
 ---
 type: directive
 workstream-or-chapter: multi-workstream — post-session-13 priority queue
-last-pr: "702 (W#52 split ruling + directive update)"
+last-pr: "704 (W#52 Phase 2b DefaultTacticalRuleEngine)"
 ---
 
-Updated 2026-05-06 (session 18 — housekeeping):
+Updated 2026-05-06 (session 18b — post-W#52-P2b merge):
+- PR #704 MERGED — W#52 Phase 2b (DefaultTacticalRuleEngine) on origin/main.
+  Lazy<TenantPipe> + LazyThreadSafetyMode.ExecutionAndPublication fix applied; 39/39 tests pass.
+- PR #705 MERGED — XO advisory (W#52 P2b GetOrAdd race) archived.
+- W#52 Phase 2b removed from numbered queue; W#52 Phase 2c promoted to numbered queue.
+- Advisory xo-advisory-2026-05-06T14-10Z-w52-p2b-concurrent-channel-race.md archived.
+
+Earlier (session 18 — housekeeping):
 - PR #697 MERGED — W#52 Phase 2a (DefaultAlertRouter) on origin/main.
-- PR #702 MERGED — W#52 split ruling + this directive update on origin/main.
+- PR #702 MERGED — W#52 split ruling + directive update on origin/main.
 - PR #699 MERGED — ADR 0082-A1 (AtmosphereHealth.Unknown) on origin/main.
-- PR #700 (COB's ADR 0082-A1 addendum) — still open, needs rebase. PR #699 already
-  landed the ADR changes. COB must rebase, drop the ADR + beacon conflicts, and retain
-  only: sick-bay-stage06-addendum.md + W54 W*.md source + ledger flip.
+- PR #700 MERGED — ADR 0082-A1 addendum (sick-bay-stage06-addendum.md + ledger) on origin/main.
 - W#52 COB question beacon archived (answered by ruling at T20-30Z).
 - Superseded T17-31Z W#50 store-placement ruling archived (superseded by T20-00Z).
 
@@ -32,11 +37,12 @@ Updated 2026-05-06 (session 18 — housekeeping):
    `SUNFISH_SHIPSOFFICE_PERM001` Roslyn analyzer. (~6h; security-engineering subagent
    mandatory)
 
-5. **W#52 Phase 2b** — `DefaultTacticalRuleEngine` (§2.1): Channel<TacticalSignal> per-tenant
-   partitioning + rule-error-rate tracking + `sunfish.*` prefix restriction.
-   Phase 2a (DefaultAlertRouter) shipped PR #697. CRITICAL: read
-   `tactical-p2-system-principal-authority-addendum.md` first. Security-engineering subagent
-   mandatory. (~3-4h). Ruling at `xo-ruling-2026-05-06T20-30Z-w52-phase2b-2c-split.md`.
+5. **W#52 Phase 2c** — `DefaultThreatTriggerService` (§2.3): 8-step `TryIssueAsync` pipeline.
+   Phase 2a+2b shipped (PRs #697 + #704). CRITICAL: read
+   `tactical-p2-system-principal-authority-addendum.md` — authority check uses
+   `ISystemPrincipalProvider.GetSystemPrincipal()`, NOT `IPermissionResolver`.
+   `ShipRole.System` does NOT exist. Security-engineering subagent mandatory.
+   (~4-5h / 1 PR). Ruling at `xo-ruling-2026-05-06T20-30Z-w52-phase2b-2c-split.md`.
 
 6. **W#48 Phase 2** — `DefaultIntegrationAtlasProvider` in new `blocks-integrations/`
    package. Read `atlas-integration-config-p2-blocks-integrations-addendum.md` before
@@ -54,11 +60,6 @@ Updated 2026-05-06 (session 18 — housekeeping):
    (~4-6h; breaking api-change pipeline)
 
 **Also ready (no specific ordering constraint):**
-- **W#52 Phase 2c** — `DefaultThreatTriggerService` (§2.3): 8-step `TryIssueAsync` pipeline.
-  Per `tactical-p2-system-principal-authority-addendum.md`: identity-based authority check
-  (NOT IPermissionResolver; systemPrincipal.ActorId for audit). Security-engineering subagent
-  mandatory. (~4-5h / 1 PR). Can ship in parallel with Phase 2b or after.
-
 - **W#54 Phase 2b** — `SickBayDataProvider` Mission Envelope integration: wire
   `IMissionEnvelopeProvider`, count ProbeStatus per dimension → `WarningProbeCount` /
   `CriticalProbeCount` / `AtmosphereHealth` classification. **READ XO ruling first:**
