@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 using Sunfish.Foundation.Recovery.Crypto;
 using Sunfish.Kernel.Audit;
 

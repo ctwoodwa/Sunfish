@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sunfish.Blocks.Maintenance.Models;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 using Sunfish.Foundation.Recovery.Crypto;
 
 namespace Sunfish.Blocks.Maintenance.Services;
