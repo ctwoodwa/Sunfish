@@ -1,25 +1,21 @@
 ---
 type: directive
 workstream-or-chapter: multi-workstream — post-session-13 priority queue
-last-pr: "704 (W#52 Phase 2b DefaultTacticalRuleEngine)"
+last-pr: "708 (W#52 Phase 2c DefaultThreatTriggerService)"
 ---
 
-Updated 2026-05-06 (session 18b — post-W#52-P2b merge):
+Updated 2026-05-06 (session 19 — post-W#52-P2c merge):
+- PR #708 MERGED — W#52 Phase 2c (DefaultThreatTriggerService) on origin/main. 56/56 tests.
+- PR #709 AUTO-MERGE QUEUED — W#52 P2c council amendment (dedup TryAdd + AuditSignatureException
+  cleanup). CI running; will merge automatically. COB need not act.
+- W#52 Phase 2c removed from numbered queue.
+- PRs #707 + #706 MERGED — W#52 P2b council amendments + inbox housekeeping.
+
+Earlier (session 18b — post-W#52-P2b merge):
 - PR #704 MERGED — W#52 Phase 2b (DefaultTacticalRuleEngine) on origin/main.
-  Lazy<TenantPipe> + LazyThreadSafetyMode.ExecutionAndPublication fix applied; 39/39 tests pass.
-- PR #705 MERGED — XO advisory (W#52 P2b GetOrAdd race) archived.
-- W#52 Phase 2b removed from numbered queue; W#52 Phase 2c promoted to numbered queue.
-- Advisory xo-advisory-2026-05-06T14-10Z-w52-p2b-concurrent-channel-race.md archived.
+- W#52 Phase 2b removed from numbered queue (this session closed Phase 2c as well).
 
-Earlier (session 18 — housekeeping):
-- PR #697 MERGED — W#52 Phase 2a (DefaultAlertRouter) on origin/main.
-- PR #702 MERGED — W#52 split ruling + directive update on origin/main.
-- PR #699 MERGED — ADR 0082-A1 (AtmosphereHealth.Unknown) on origin/main.
-- PR #700 MERGED — ADR 0082-A1 addendum (sick-bay-stage06-addendum.md + ledger) on origin/main.
-- W#52 COB question beacon archived (answered by ruling at T20-30Z).
-- Superseded T17-31Z W#50 store-placement ruling archived (superseded by T20-00Z).
-
-## COB Priority Queue (post-session-17)
+## COB Priority Queue (post-session-19)
 
 1. **W#53 Phase 2 PR 2c-react** — TypeScript React adapter renderers for all 6 Helm widgets.
    H9 parity gate MUST be cleared before Phase 2 closes. WCAG/a11y subagent mandatory.
@@ -37,24 +33,17 @@ Earlier (session 18 — housekeeping):
    `SUNFISH_SHIPSOFFICE_PERM001` Roslyn analyzer. (~6h; security-engineering subagent
    mandatory)
 
-5. **W#52 Phase 2c** — `DefaultThreatTriggerService` (§2.3): 8-step `TryIssueAsync` pipeline.
-   Phase 2a+2b shipped (PRs #697 + #704). CRITICAL: read
-   `tactical-p2-system-principal-authority-addendum.md` — authority check uses
-   `ISystemPrincipalProvider.GetSystemPrincipal()`, NOT `IPermissionResolver`.
-   `ShipRole.System` does NOT exist. Security-engineering subagent mandatory.
-   (~4-5h / 1 PR). Ruling at `xo-ruling-2026-05-06T20-30Z-w52-phase2b-2c-split.md`.
-
-6. **W#48 Phase 2** — `DefaultIntegrationAtlasProvider` in new `blocks-integrations/`
+5. **W#48 Phase 2** — `DefaultIntegrationAtlasProvider` in new `blocks-integrations/`
    package. Read `atlas-integration-config-p2-blocks-integrations-addendum.md` before
    starting. (~8-10h)
 
-7. **W#58 Phase 1** — `AnchorIdentityAtlasSurface` + 5 Anchor Blazor identity pages.
+6. **W#58 Phase 1** — `AnchorIdentityAtlasSurface` + 5 Anchor Blazor identity pages.
    Hand-off at `identity-atlas-implementations-stage06-handoff.md`.
    **GATED on item 1 closing (H1: W#53 PR 2c-react must merge first).**
    Security-engineering subagent mandatory; READ-ONLY invariant enforced.
    (~10h / 2 PRs)
 
-8. **W#1 WS-B** — `TenantSelection` migration: `AuditQuery.Tenant` + `EntityQuery.Tenant` +
+7. **W#1 WS-B** — `TenantSelection` migration: `AuditQuery.Tenant` + `EntityQuery.Tenant` +
    `DataExport.TenantId` from `TenantId?` → `TenantSelection?`. Hand-off at
    `tenant-selection-wsb-stage06-handoff.md`. **NOW READY** (security follow-up PR #692 ✓).
    (~4-6h; breaking api-change pipeline)
