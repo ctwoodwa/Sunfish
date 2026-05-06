@@ -40,7 +40,7 @@ namespace Sunfish.Blocks.SickBay;
 /// + <see cref="AtmosphereReadout.CriticalProbeCount"/> is also non-
 /// trivial (MissionEnvelope exposes typed capability records, not a
 /// flat probe-result list). Phase 2b will resolve both via an XO
-/// ruling; Phase 2 ships pharmacy + a Green stub Atmosphere so the
+/// ruling; Phase 2 ships pharmacy + an Unknown-stub Atmosphere so the
 /// dashboard can render and downstream wiring can land in parallel.
 /// Halt-condition H2.A is acknowledged in the cob-question beacon
 /// filed alongside this PR.
@@ -140,11 +140,13 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
             .ToList();
     }
 
+    // ADR 0082-A1: return Unknown (not Green) until Phase 2b wires IMissionEnvelopeProvider.
+    // Callers reading Unknown MUST render a neutral pending state, not a green health badge.
     private static AtmosphereReadout BuildAtmosphereStub(DateTimeOffset capturedAt) =>
         new AtmosphereReadout(
-            OverallHealth: AtmosphereHealth.Green,
+            OverallHealth: AtmosphereHealth.Unknown,
             WarningProbeCount: 0,
             CriticalProbeCount: 0,
-            ForceEnableActive: false,
+            ForceEnableActive: false, // Phase 3: wire IInstallForceEnableSurface.HasActiveInstallOverrideAsync
             CapturedAt: capturedAt);
 }

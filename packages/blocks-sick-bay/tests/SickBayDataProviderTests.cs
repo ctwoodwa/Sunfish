@@ -23,7 +23,7 @@ public class SickBayDataProviderTests
         Assert.Empty(snapshot.Pharmacy);
         Assert.Empty(snapshot.Lab);
         Assert.Equal(MedevacState.Idle, snapshot.MedevacState);
-        Assert.Equal(AtmosphereHealth.Green, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(AtmosphereHealth.Unknown, snapshot.Atmosphere.OverallHealth); // ADR 0082-A1: stub returns Unknown until Phase 2b
         Assert.False(snapshot.Atmosphere.ForceEnableActive);
     }
 
