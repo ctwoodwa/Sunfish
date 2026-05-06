@@ -3,8 +3,8 @@ sort_order: 0
 number: 1
 slug: multi-tenancy-type-surface-convention
 title: "Multi-tenancy type surface convention (WS-A + WS-B)"
-status: "design-in-flight"
-status_cell: "`design-in-flight` (WS-A ADR 0084 **Proposed** 2026-05-05 via PR #597 — CO acceptance flip pending; WS-B ADR 0085 Proposed 2026-05-05 via PR #606 — council complete; Stage 06 hand-offs pre-authored 2026-05-06 via PR #637 — pending CO acceptance of both ADRs)"
+status: "ready-to-build"
+status_cell: "`ready-to-build` (ADR 0084 **Accepted** + ADR 0085 **Accepted** 2026-05-06 PR #672; Stage 06 hand-offs pre-authored PR #637; WS-A unblocked; WS-B requires WS-A built first)"
 owner: "research"
 owner_cell: "research"
 reference_cell: "`docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637)"

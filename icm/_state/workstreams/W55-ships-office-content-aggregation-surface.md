@@ -4,7 +4,7 @@ number: 55
 slug: ships-office-content-aggregation-surface
 title: "**Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #624; Phases 2-6 pending — Phase 2 reference impl + analyzer; Phase 3 Blazor UI; Phase 4 React UI; Phase 5 conditional on ADR 0055)"
+status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #624; ADR 0083 Accepted PR #672; **Phase 2 halt: `IActorPrincipalResolver` must be on origin/main first** — see `actor-principal-resolver-stage06-handoff.md`; Phases 2-6 pending — Phase 2 reference impl + analyzer; Phase 3 Blazor UI; Phase 4 React UI; Phase 5 conditional on ADR 0055)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md`"

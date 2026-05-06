@@ -4,7 +4,7 @@ number: 48
 slug: atlas-integration-config-ui-surface
 title: "**Atlas Integration-Config UI Surface** (ADR 0067; W#34 follow-on; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1a shipped 2026-05-06 PR #640; P1.5 PR1 StandingOrderId shipped PR #641; P1.5 PR2 IDecryptCapability shipped PR #642; **Phase 1b shipped 2026-05-06 PR #660** — IIntegrationAtlasProvider + IntegrationAtlasView + ActiveProviderSnapshot + IDecryptCapabilityProvider + AddSunfishIntegrationAtlas() + 4 AuditEventType + ContractSurfaceTests; NOTE: IssueXxxAsync returns Task<StandingOrderId> (ui-core cycle constraint); **Phase 2 UNBLOCKED** — read p2-blocks-integrations-addendum.md before starting; Phases 3-5 pending)"
+status_cell: "`building` (Phase 1a shipped 2026-05-06 PR #640; P1.5 PR1 StandingOrderId shipped PR #641; P1.5 PR2 IDecryptCapability shipped PR #642; **Phase 1b shipped 2026-05-06 PR #660** — IIntegrationAtlasProvider + IntegrationAtlasView + ActiveProviderSnapshot + IDecryptCapabilityProvider + AddSunfishIntegrationAtlas() + 4 AuditEventType + ContractSurfaceTests; NOTE: IssueXxxAsync returns Task<StandingOrderId> (ui-core cycle constraint); **Phase 2 UNBLOCKED — but halt: `IActorPrincipalResolver` must be on origin/main first** — see `actor-principal-resolver-stage06-handoff.md`; read `atlas-integration-config-p2-blocks-integrations-addendum.md` before starting; Phases 3-5 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` + `icm/_state/handoffs/atlas-integration-config-p2-blocks-integrations-addendum.md` (XO ruling: Phase 2 impl → `blocks-integrations` package) + `docs/adrs/0067-atlas-integration-config-surface.md` (PR #539 merged)"
