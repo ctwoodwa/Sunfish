@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 
 namespace Sunfish.Foundation.Recovery.Crypto;
 

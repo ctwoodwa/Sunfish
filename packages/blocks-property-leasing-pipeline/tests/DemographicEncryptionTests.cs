@@ -8,6 +8,7 @@ using Sunfish.Blocks.PropertyLeasingPipeline.Services;
 using Sunfish.Blocks.PublicListings.Capabilities;
 using Sunfish.Blocks.PublicListings.Models;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 using Sunfish.Foundation.Integrations.Payments;
 using Sunfish.Foundation.Integrations.Signatures;
 using Sunfish.Foundation.Macaroons;

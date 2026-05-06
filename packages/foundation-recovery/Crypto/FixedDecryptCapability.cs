@@ -1,5 +1,6 @@
 using System;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 
 namespace Sunfish.Foundation.Recovery.Crypto;
 
