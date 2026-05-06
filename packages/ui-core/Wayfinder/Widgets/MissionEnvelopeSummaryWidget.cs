@@ -47,12 +47,12 @@ public sealed class MissionEnvelopeSummaryWidget : IHelmWidget
 
         var envelope = context.Envelope;
 
-        // ADR 0062 mandates eight dimensions; all are 'required' on the
-        // envelope record so the count is structural not runtime. We
-        // carry the enumeration anyway so a future envelope schema
-        // change (optional dimensions, deferred dimensions) can move
-        // this widget to a missing-list rendering without a contract
-        // break.
+        // ADR 0062-A1.2 mandates ten dimensions and MissionEnvelope.cs
+        // declares all of them 'required' — so the count is structural,
+        // not runtime. We carry the enumeration anyway so a future
+        // schema change (optional dimensions, deferred dimensions)
+        // can pivot this widget to a missing-list rendering without a
+        // contract break.
         var dimensions = new (string Name, bool Present)[]
         {
             ("Hardware", envelope.Hardware is not null),

@@ -48,10 +48,14 @@ public sealed class IdentityGlanceWidget : IHelmWidget
         // projection MUST be read-only — never call IFieldDecryptor
         // from ComputeAsync (audit-emitting per ADR 0046-A2; the
         // periodic refresh tick would flood the audit trail).
+        // SecondaryLabel is null until the localization surface picks
+        // up the placeholder string per i18n cohort precedent. The
+        // ambient SyncState.Stale signal already conveys the
+        // placeholder semantics ("not yet wired") to the renderer.
         var state = new HelmWidgetViewState(
             State: SyncState.Stale,
             PrimaryLabel: "Identity",
-            SecondaryLabel: "Historical keys: loading…",
+            SecondaryLabel: null,
             Actions: new HelmWidgetAction[]
             {
                 new(

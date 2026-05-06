@@ -66,7 +66,10 @@ public class HelmGlanceWidgetsTests
 
         Assert.Equal(SyncState.Stale, view.State);
         Assert.Equal("Identity", view.PrimaryLabel);
-        Assert.Contains("Historical keys", view.SecondaryLabel ?? "");
+        // i18n discipline: placeholder Phase-2a impl emits null
+        // SecondaryLabel; SyncState.Stale carries the placeholder
+        // semantics for the renderer.
+        Assert.Null(view.SecondaryLabel);
 
         Assert.Equal(2, view.Actions.Count);
         Assert.Contains(view.Actions, a => a.ActionId == "rotate-key");
