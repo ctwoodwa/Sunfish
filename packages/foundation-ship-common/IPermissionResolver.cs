@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Capabilities;
 
 namespace Sunfish.Foundation.Ship.Common;
@@ -37,6 +38,20 @@ public interface IPermissionResolver
     /// returns a bare bool — every resolution carries a reason + remediation
     /// so the First-Aid denial UX has the data it needs.
     /// </summary>
+    /// <remarks>
+    /// <b>Tenant binding (§Trust).</b> The W#46 P1 pre-merge security
+    /// council 2026-05-06 found that the ADR 0077 §2 sketch signature
+    /// without an explicit <see cref="TenantId"/> permits a cross-tenant
+    /// authority bleed: a principal who holds Captain in tenant-A and
+    /// DivisionOfficer in tenant-B could be granted Captain authority for
+    /// tenant-B-scoped calls if the cache iterates tenant-A first. This
+    /// API takes <paramref name="tenantId"/> explicitly so the resolver
+    /// looks up assignments only within the caller-asserted tenant. Cohort
+    /// precedent: <c>IOodWatchService.StartWatchAsync</c> +
+    /// <c>GetActiveWatchAsync</c> both take <see cref="TenantId"/> as the
+    /// first parameter.
+    /// </remarks>
+    /// <param name="tenantId">Tenant scope of the resolution; the resolver looks up assignments only within this tenant.</param>
     /// <param name="subject">The principal whose authority is being resolved.</param>
     /// <param name="location">Department location per <see cref="ShipLocation"/>.</param>
     /// <param name="deck">
@@ -54,6 +69,7 @@ public interface IPermissionResolver
     /// </param>
     /// <param name="ct">Cancellation token.</param>
     ValueTask<PermissionDecision> ResolveAsync(
+        TenantId tenantId,
         Principal subject,
         ShipLocation location,
         DeckDepth deck,

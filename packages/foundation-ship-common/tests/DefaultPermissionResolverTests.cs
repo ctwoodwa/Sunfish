@@ -26,12 +26,12 @@ public class DefaultPermissionResolverTests
     {
         // §2.1 step 0(a): caller passing MainDeck for Quarantine is silently
         // promoted to BelowTheWaterline; only Captain/XO can act there.
-        var (resolver, audit, _) = NewResolver(WithCaptain());
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, audit, _) = NewResolver(seed);
         var resource = new Resource("inv-1");
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Tactical, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Tactical, DeckDepth.MainDeck,
             ShipAction.Quarantine, resource);
 
         Assert.IsType<PermissionDecision.Granted>(decision);
@@ -47,12 +47,12 @@ public class DefaultPermissionResolverTests
     {
         // §2.1 step 5: Division Officer is not Captain/XO, so a
         // BelowTheWaterline action returns DeckRestriction.
-        var (resolver, audit, _) = NewResolver(WithDivisionOfficer());
-        var actor = NewPrincipal();
+        var seed = WithDivisionOfficer();
+        var (resolver, audit, _) = NewResolver(seed);
         var resource = new Resource("inv-1");
 
         var decision = await resolver.ResolveAsync(
-            actor, ShipLocation.Tactical, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Tactical, DeckDepth.MainDeck,
             ShipAction.Quarantine, resource);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -72,7 +72,7 @@ public class DefaultPermissionResolverTests
 
         Assert.NotNull(denied);
         Assert.Equal(DenialReason.SecurityPolicyBlocked, denied!.Reason);
-        Assert.Contains("self-promotion", denied.ReasonDisplay);
+        Assert.Contains("elf-promotion", denied.ReasonDisplay); // case-tolerant substring
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class DefaultPermissionResolverTests
 
         Assert.NotNull(denied);
         Assert.Equal(DenialReason.SecurityPolicyBlocked, denied!.Reason);
-        Assert.Contains("insufficient authority", denied.ReasonDisplay);
+        Assert.Contains("nsufficient authority", denied.ReasonDisplay);
     }
 
     [Fact]
@@ -106,16 +106,16 @@ public class DefaultPermissionResolverTests
     public async Task ResourceScopeGuard_NullResourceForApprove_Denied()
     {
         // §2.1 step 0(c): resource-scoped action requires non-null resource.
-        var (resolver, audit, _) = NewResolver(WithCaptain());
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, audit, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.MainDeck,
             ShipAction.Approve, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
         Assert.Equal(DenialReason.SecurityPolicyBlocked, denied.Reason);
-        Assert.Contains("resource-scoped", denied.ReasonDisplay);
+        Assert.Contains("esource-scoped", denied.ReasonDisplay);
     }
 
     [Fact]
@@ -124,11 +124,11 @@ public class DefaultPermissionResolverTests
         // §2.1 step 1: StandWatch requires OOD/EOOW designation. Phase 1
         // ships without IOnWatchProbe wired so all watch-required calls
         // return WatchRequired.
-        var (resolver, audit, _) = NewResolver(WithCaptain());
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, audit, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.MainDeck,
             ShipAction.StandWatch, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -140,11 +140,11 @@ public class DefaultPermissionResolverTests
     public async Task DeferralCheck_SupplyOffice_Phase2Deferred()
     {
         // §2.1 step 3: SupplyOffice short-circuits to Phase2Deferred.
-        var (resolver, _, _) = NewResolver(WithCaptain());
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, _, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.SupplyOffice, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.SupplyOffice, DeckDepth.MainDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -156,11 +156,11 @@ public class DefaultPermissionResolverTests
     public async Task DeferralCheck_Wardroom_V2Deferred()
     {
         // §2.1 step 3: Wardroom short-circuits to V2Deferred.
-        var (resolver, _, _) = NewResolver(WithCaptain());
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, _, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Wardroom, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Wardroom, DeckDepth.MainDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -170,15 +170,86 @@ public class DefaultPermissionResolverTests
     [Fact]
     public async Task RoleMatch_NoAssignment_Denied_NoMatchingRole()
     {
-        // §2.1 step 4: subject without an assignment in any tenant gets
-        // NoMatchingRole.
-        var (resolver, _, source) = NewResolver(assignments: Array.Empty<ShipRoleAssignment>());
-        source.ResolveAssignmentAsync(Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
-            .Returns(ValueTask.FromResult<ShipRoleAssignment?>(null));
+        // §2.1 step 4: subject without an assignment in the asserted
+        // tenant gets NoMatchingRole.
+        var (resolver, _, _) = NewResolver(assignments: Array.Empty<ShipRoleAssignment>());
         var stranger = NewPrincipal();
 
         var decision = await resolver.ResolveAsync(
-            stranger, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, stranger, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            ShipAction.Read, resource: null);
+
+        var denied = Assert.IsType<PermissionDecision.Denied>(decision);
+        Assert.Equal(DenialReason.NoMatchingRole, denied.Reason);
+    }
+
+    [Fact]
+    public async Task CacheStampede_ConcurrentColdLoads_HitSourceExactlyOnce()
+    {
+        // W#46 P1 pre-merge security council 2026-05-06: regression test
+        // for cache stampede. When N callers simultaneously observe an
+        // expired TTL, only ONE upstream load happens; the rest await the
+        // same in-flight Task.
+        var seed = WithCaptain();
+        var slowSource = Substitute.For<IShipRoleAssignmentSource>();
+        var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        slowSource.LoadAssignmentsAsync(Arg.Any<TenantId>(), Arg.Any<CancellationToken>())
+            .Returns(_ => new ValueTask<IReadOnlyList<ShipRoleAssignment>>(
+                release.Task.ContinueWith(_ => seed.Assignments)));
+        var resolver = new DefaultPermissionResolver(
+            slowSource, Substitute.For<IAuditTrail>(), NewSigner(),
+            NullLogger<DefaultPermissionResolver>.Instance,
+            timeProvider: new FakeTimeProvider(T0));
+
+        // Kick off 10 concurrent ResolveAsync calls; all observe the
+        // empty cache and try to load.
+        var tasks = Enumerable.Range(0, 10).Select(_ =>
+            resolver.ResolveAsync(
+                Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+                ShipAction.Read, resource: null).AsTask()).ToArray();
+
+        // Allow the in-flight load to complete.
+        release.SetResult(true);
+        await Task.WhenAll(tasks);
+
+        // Source should have been hit exactly ONCE despite 10 concurrent
+        // callers.
+        await slowSource.Received(1).LoadAssignmentsAsync(
+            Arg.Any<TenantId>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task TenantBinding_LookupRespectsCallerAssertedTenant()
+    {
+        // §Trust (W#46 P1 pre-merge security council 2026-05-06):
+        // ResolveAsync uses the caller-asserted TenantId for assignment
+        // lookups. A principal with no assignment in tenant-B receives
+        // NoMatchingRole even when the source returns assignments for
+        // tenant-A — there is no cross-tenant authority bleed.
+        var actorId = NewPrincipalId();
+        var captainInTenantA = new[]
+        {
+            new ShipRoleAssignment(
+                Tenant, ActorOf(actorId), ShipRole.Captain,
+                Division: null, T0, RotatesAt: null,
+                IssuedBy: new StandingOrderId(Guid.NewGuid())),
+        };
+        var source = Substitute.For<IShipRoleAssignmentSource>();
+        source.LoadAssignmentsAsync(Tenant, Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<IReadOnlyList<ShipRoleAssignment>>(captainInTenantA));
+        // tenant-B has no assignments for this actor.
+        source.LoadAssignmentsAsync(new TenantId("tenant-b"), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<IReadOnlyList<ShipRoleAssignment>>(Array.Empty<ShipRoleAssignment>()));
+        var audit = Substitute.For<IAuditTrail>();
+        var resolver = new DefaultPermissionResolver(
+            source, audit, NewSigner(),
+            NullLogger<DefaultPermissionResolver>.Instance,
+            timeProvider: new FakeTimeProvider(T0));
+        var subject = new Individual(actorId);
+
+        // Resolve in tenant-B → should be NoMatchingRole, NOT Granted-as-Captain.
+        var decision = await resolver.ResolveAsync(
+            new TenantId("tenant-b"), subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -189,11 +260,11 @@ public class DefaultPermissionResolverTests
     public async Task RoleMatch_SUPPO_Phase2Deferred_PerSection16()
     {
         // §1.6: SUPPO is structurally valid but operationally inert.
-        var (resolver, _, _) = NewResolver(WithRole(ShipRole.SUPPO));
-        var actor = NewPrincipal();
+        var seed = WithRole(ShipRole.SUPPO);
+        var (resolver, _, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            actor, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -205,11 +276,11 @@ public class DefaultPermissionResolverTests
     {
         // Division Officer is excluded from SickBay (medical specialist
         // territory).
-        var (resolver, _, _) = NewResolver(WithDivisionOfficer());
-        var actor = NewPrincipal();
+        var seed = WithDivisionOfficer();
+        var (resolver, _, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            actor, ShipLocation.SickBay, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.SickBay, DeckDepth.MainDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -225,7 +296,7 @@ public class DefaultPermissionResolverTests
         var stranger = NewPrincipal();
 
         var decision = await resolver.ResolveAsync(
-            stranger, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, stranger, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -238,11 +309,11 @@ public class DefaultPermissionResolverTests
     public async Task DenialEmitsAuditRecord()
     {
         // §2.4: every Denied decision emits PermissionDenied.
-        var (resolver, audit, _) = NewResolver(WithDivisionOfficer());
-        var actor = NewPrincipal();
+        var seed = WithDivisionOfficer();
+        var (resolver, audit, _) = NewResolver(seed);
 
         await resolver.ResolveAsync(
-            actor, ShipLocation.SickBay, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.SickBay, DeckDepth.MainDeck,
             ShipAction.Read, resource: null);
 
         await audit.Received(1).AppendAsync(
@@ -254,11 +325,11 @@ public class DefaultPermissionResolverTests
     public async Task GrantedDecision_DoesNotEmit_PermissionDenied()
     {
         // §2.4: Granted decisions are NOT audit-loud by default in Phase 1.
-        var (resolver, audit, _) = NewResolver(WithCaptain());
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, audit, _) = NewResolver(seed);
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
 
         Assert.IsType<PermissionDecision.Granted>(decision);
@@ -271,20 +342,20 @@ public class DefaultPermissionResolverTests
     {
         // §2.4: 11th call in the same window emits PermissionDenialRateExceeded
         // exactly once; subsequent calls within the window short-circuit.
-        var (resolver, audit, _) = NewResolver(WithDivisionOfficer());
-        var actor = NewPrincipal();
+        var seed = WithDivisionOfficer();
+        var (resolver, audit, _) = NewResolver(seed);
 
         // Call 11 times (same actor + location): each Denied(LocationOutOfScope).
         for (var i = 0; i < 11; i++)
         {
             await resolver.ResolveAsync(
-                actor, ShipLocation.SickBay, DeckDepth.MainDeck,
+                Tenant, seed.Subject, ShipLocation.SickBay, DeckDepth.MainDeck,
                 ShipAction.Read, resource: null);
         }
 
         // 12th call: short-circuit — counter (11) > limit (10).
         var decision = await resolver.ResolveAsync(
-            actor, ShipLocation.SickBay, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.SickBay, DeckDepth.MainDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -301,13 +372,12 @@ public class DefaultPermissionResolverTests
     public async Task CacheTtl_AfterExpiry_ReloadsFromSource()
     {
         // §2.5 (Phase 1 fallback): per-tenant cache reloads after 60s.
-        var assignments = WithCaptain();
+        var seed = WithCaptain();
         var time = new FakeTimeProvider(T0);
-        var (resolver, _, source) = NewResolver(assignments, time);
-        var captain = NewPrincipal();
+        var (resolver, _, source) = NewResolver(seed, time);
 
         await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
 
         // First call hits LoadAssignmentsAsync once.
@@ -316,14 +386,14 @@ public class DefaultPermissionResolverTests
         // Within the 60s TTL — no new load.
         time.Advance(TimeSpan.FromSeconds(30));
         await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
         await source.Received(1).LoadAssignmentsAsync(Arg.Any<TenantId>(), Arg.Any<CancellationToken>());
 
         // Past the TTL — reloads.
         time.Advance(TimeSpan.FromSeconds(35));
         await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
         await source.Received(2).LoadAssignmentsAsync(Arg.Any<TenantId>(), Arg.Any<CancellationToken>());
     }
@@ -339,12 +409,12 @@ public class DefaultPermissionResolverTests
             Arg.Any<CancellationToken>())
             .Returns(ValueTask.FromResult(false));
 
-        var (resolver, _, _) = NewResolver(WithCaptain(), capabilityGraph: graph);
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, _, _) = NewResolver(seed, capabilityGraph: graph);
         var resource = new Resource("res-1");
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Tactical, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Tactical, DeckDepth.MainDeck,
             ShipAction.Approve, resource);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -374,12 +444,12 @@ public class DefaultPermissionResolverTests
             Arg.Any<CancellationToken>())
             .Returns(ValueTask.FromResult<CapabilityProof?>(fakeProof));
 
-        var (resolver, _, _) = NewResolver(WithCaptain(), capabilityGraph: graph);
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, _, _) = NewResolver(seed, capabilityGraph: graph);
         var resource = new Resource("res-1");
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Tactical, DeckDepth.MainDeck,
+            Tenant, seed.Subject, ShipLocation.Tactical, DeckDepth.MainDeck,
             ShipAction.Approve, resource);
 
         var granted = Assert.IsType<PermissionDecision.Granted>(decision);
@@ -400,11 +470,11 @@ public class DefaultPermissionResolverTests
                 RemediationDisplay: "Upgrade to the Pro edition.",
                 CallToActionLabel: "Upgrade")));
 
-        var (resolver, _, _) = NewResolver(WithCaptain(), envelopeGate: gate);
-        var captain = NewPrincipal();
+        var seed = WithCaptain();
+        var (resolver, _, _) = NewResolver(seed, envelopeGate: gate);
 
         var decision = await resolver.ResolveAsync(
-            captain, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
+            Tenant, seed.Subject, ShipLocation.Quarterdeck, DeckDepth.TopDeck,
             ShipAction.Read, resource: null);
 
         var denied = Assert.IsType<PermissionDecision.Denied>(decision);
@@ -464,27 +534,38 @@ public class DefaultPermissionResolverTests
 
     // ===== Helpers =====
 
-    private static IReadOnlyList<ShipRoleAssignment> WithCaptain()
-        => WithRole(ShipRole.Captain);
+    private record struct RoleSeed(Principal Subject, IReadOnlyList<ShipRoleAssignment> Assignments);
 
-    private static IReadOnlyList<ShipRoleAssignment> WithDivisionOfficer()
-        => new[]
-        {
-            new ShipRoleAssignment(
-                Tenant, ActorOf(NewPrincipalId()), ShipRole.DivisionOfficer,
-                DivisionAssignment.DCA, T0, RotatesAt: null,
-                IssuedBy: new StandingOrderId(Guid.NewGuid())),
-        };
+    private static RoleSeed WithCaptain() => WithRole(ShipRole.Captain);
 
-    private static IReadOnlyList<ShipRoleAssignment> WithRole(ShipRole role)
-        => new[]
-        {
-            new ShipRoleAssignment(
-                Tenant, ActorOf(NewPrincipalId()), role,
-                Division: null, T0, RotatesAt: null,
-                IssuedBy: new StandingOrderId(Guid.NewGuid())),
-        };
+    private static RoleSeed WithDivisionOfficer()
+    {
+        var pid = NewPrincipalId();
+        var assignment = new ShipRoleAssignment(
+            Tenant, ActorOf(pid), ShipRole.DivisionOfficer,
+            DivisionAssignment.DCA, T0, RotatesAt: null,
+            IssuedBy: new StandingOrderId(Guid.NewGuid()));
+        return new RoleSeed(new Individual(pid), new[] { assignment });
+    }
 
+    private static RoleSeed WithRole(ShipRole role)
+    {
+        var pid = NewPrincipalId();
+        var assignment = new ShipRoleAssignment(
+            Tenant, ActorOf(pid), role,
+            Division: null, T0, RotatesAt: null,
+            IssuedBy: new StandingOrderId(Guid.NewGuid()));
+        return new RoleSeed(new Individual(pid), new[] { assignment });
+    }
+
+    /// <summary>
+    /// Test convenience: build a resolver whose source returns
+    /// <paramref name="assignments"/>. The caller pairs each test's
+    /// resolved subject with a matching assignment via <see cref="WithRole"/>
+    /// / <see cref="WithCaptain"/> / <see cref="WithDivisionOfficer"/> to
+    /// keep the assignment's <see cref="ShipRoleAssignment.Holder"/>
+    /// aligned with the principal under test.
+    /// </summary>
     private static (DefaultPermissionResolver resolver, IAuditTrail audit, IShipRoleAssignmentSource source) NewResolver(
         IReadOnlyList<ShipRoleAssignment> assignments,
         FakeTimeProvider? time = null,
@@ -492,31 +573,8 @@ public class DefaultPermissionResolverTests
         IShipActionMissionEnvelopeGate? envelopeGate = null)
     {
         var source = Substitute.For<IShipRoleAssignmentSource>();
-        // Tests pass principals but the resolver looks up assignments by
-        // ActorId derived from PrincipalId.ToBase64Url(). Wire the source
-        // to return the seeded assignments for ANY tenant (Phase 1 cache
-        // is a coarse linear scan).
         source.LoadAssignmentsAsync(Arg.Any<TenantId>(), Arg.Any<CancellationToken>())
             .Returns(ValueTask.FromResult(assignments));
-        // ResolveAssignmentAsync (cold-path) returns the first assignment
-        // (tests use a single-actor seed; the actor is whoever's principal
-        // we're resolving, and the resolver derives their actor from
-        // PrincipalId.ToBase64Url()).
-        source.ResolveAssignmentAsync(Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
-            .Returns(ci =>
-            {
-                var actor = ci.Arg<ActorId>();
-                // Rebind the seeded assignment to the actor under test.
-                return ValueTask.FromResult<ShipRoleAssignment?>(
-                    assignments.Count == 0
-                        ? null
-                        : assignments[0] with { Holder = actor });
-            });
-        // Update LoadAssignmentsAsync to return the actor-bound assignment so the
-        // cached lookup in FindAssignmentAsync hits.
-        source.LoadAssignmentsAsync(Arg.Any<TenantId>(), Arg.Any<CancellationToken>())
-            .Returns(ValueTask.FromResult(assignments));
-
         var audit = Substitute.For<IAuditTrail>();
         var signer = NewSigner();
         var resolver = new DefaultPermissionResolver(
@@ -527,6 +585,13 @@ public class DefaultPermissionResolverTests
             timeProvider: time ?? new FakeTimeProvider(T0));
         return (resolver, audit, source);
     }
+
+    private static (DefaultPermissionResolver resolver, IAuditTrail audit, IShipRoleAssignmentSource source) NewResolver(
+        RoleSeed seed,
+        FakeTimeProvider? time = null,
+        ICapabilityGraph? capabilityGraph = null,
+        IShipActionMissionEnvelopeGate? envelopeGate = null)
+        => NewResolver(seed.Assignments, time, capabilityGraph, envelopeGate);
 
     private static Principal NewPrincipal() => new Individual(NewPrincipalId());
 

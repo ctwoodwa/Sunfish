@@ -140,6 +140,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
     private readonly int _denialRateLimit;
 
     private readonly Dictionary<TenantId, CachedAssignments> _cache = new();
+    private readonly Dictionary<TenantId, Task<IReadOnlyList<ShipRoleAssignment>>> _inflightLoads = new();
     private readonly Dictionary<(ActorId, ShipLocation), DenialWindow> _denialWindows = new();
     private readonly object _gate = new();
 
@@ -178,6 +179,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
 
     /// <inheritdoc />
     public async ValueTask<PermissionDecision> ResolveAsync(
+        TenantId tenantId,
         Principal subject,
         ShipLocation location,
         DeckDepth deck,
@@ -219,7 +221,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.SecurityPolicyBlocked,
-                "resource-scoped action requires a resource reference",
+                "Resource-scoped action requires a resource reference.",
                 new Remediation(
                     RemediationKind.None,
                     "This action requires identifying the specific record being targeted.",
@@ -227,7 +229,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                     EscalationLink: null,
                     CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
@@ -243,7 +245,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.WatchRequired,
-                "this action requires the on-watch designation (OOD or EOOW)",
+                "This action requires the on-watch designation (OOD or EOOW).",
                 new Remediation(
                     RemediationKind.AwaitWatch,
                     "Wait for the next watch rotation, or contact the current Officer of the Deck.",
@@ -251,7 +253,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                     EscalationLink: null,
                     CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
@@ -269,9 +271,16 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                         v.RemediationDisplay,
                         ContactActor: null,
                         EscalationLink: null,
-                        CallToActionLabel: v.CallToActionLabel),
+                        // §Remediation contract: CallToActionLabel MUST be
+                        // null when both EscalationLink + ContactActor are
+                        // null. The gate's verdict carries an upgrade label
+                        // but no link target in Phase 1; downstream
+                        // renderers MUST derive labels from RemediationKind
+                        // until Phase 2 wires upgrade URIs from the
+                        // edition layer (W#46/§Trust amendment 2026-05-06).
+                        CallToActionLabel: null),
                     now);
-                await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+                await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
                 return denied;
             }
         }
@@ -281,7 +290,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.Phase2Deferred,
-                "Supply Office is deferred to Phase 2 commercial work",
+                "Supply Office is deferred to Phase 2 commercial work.",
                 new Remediation(
                     RemediationKind.Phase2Deferred,
                     "No current access path — Supply Office ships with the Phase 2 commercial release.",
@@ -289,14 +298,14 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                     EscalationLink: null,
                     CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
         if (location is ShipLocation.Wardroom or ShipLocation.Brig)
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.V2Deferred,
-                $"{location} is deferred to v2 (commercial agreement required)",
+                $"{location} is deferred to v2 (commercial agreement required).",
                 new Remediation(
                     RemediationKind.None,
                     "No current access path — v2 commercial agreement required.",
@@ -304,33 +313,28 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                     EscalationLink: null,
                     CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
-        // §2.1 step 4 — Role match
-        // Resolve the subject's tenant from the cached assignment lookup —
-        // Phase 1 limits role lookup to a single tenant per call by
-        // requiring the assignment source to materialize ALL tenants the
-        // subject participates in; the caller-side mapping
-        // Principal → TenantId is the consumer's responsibility (the
-        // capability graph already encodes this binding via the signed-op
-        // chain). For Phase 1 we look up across every cached tenant and
-        // pick the first matching assignment.
-        var matched = await FindAssignmentAsync(subjectActor, ct).ConfigureAwait(false);
+        // §2.1 step 4 — Role match. The caller passes tenantId explicitly
+        // (W#46 P1 pre-merge security council 2026-05-06: see remarks on
+        // IPermissionResolver.ResolveAsync); the resolver loads assignments
+        // ONLY within tenantId to prevent cross-tenant authority bleed.
+        var matched = await FindAssignmentAsync(tenantId, subjectActor, now, ct).ConfigureAwait(false);
         if (matched is null)
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.NoMatchingRole,
-                "no assigned role grants this action",
+                "No assigned role grants this action.",
                 new Remediation(
                     RemediationKind.ContactAuthority,
                     "Contact your tenant administrator to request a role assignment.",
                     ContactActor: null,
                     EscalationLink: null,
-                    CallToActionLabel: "Request role assignment"),
+                    CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
@@ -340,7 +344,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.Phase2Deferred,
-                "SUPPO role is structurally assigned but operationally deferred to Phase 2",
+                "SUPPO role is structurally assigned but operationally deferred to Phase 2.",
                 new Remediation(
                     RemediationKind.Phase2Deferred,
                     "No current access path — SUPPO ships operationally with the Phase 2 commercial release.",
@@ -348,7 +352,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                     EscalationLink: null,
                     CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
@@ -360,15 +364,15 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.LocationOutOfScope,
-                "your role does not grant access at this location",
+                "Your role does not grant access at this location.",
                 new Remediation(
                     RemediationKind.ContactAuthority,
                     "Contact the location's department head to request scoped access.",
                     ContactActor: null,
                     EscalationLink: null,
-                    CallToActionLabel: "Request access"),
+                    CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
@@ -377,15 +381,15 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             var denied = new PermissionDecision.Denied(
                 DenialReason.DeckRestriction,
-                "destructive (below-the-waterline) actions require Captain or XO authority",
+                "Destructive (below-the-waterline) actions require Captain or XO authority.",
                 new Remediation(
                     RemediationKind.ContactAuthority,
                     "Contact the Captain or Executive Officer to request a destructive-action elevation.",
                     ContactActor: null,
                     EscalationLink: null,
-                    CallToActionLabel: "Request elevation"),
+                    CallToActionLabel: null),
                 now);
-            await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+            await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
             return denied;
         }
 
@@ -399,15 +403,15 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             {
                 var denied = new PermissionDecision.Denied(
                     DenialReason.NoMatchingRole,
-                    "the capability graph does not record a grant for this subject + resource + action",
+                    "The capability graph does not record a grant for this subject + resource + action.",
                     new Remediation(
                         RemediationKind.ContactAuthority,
                         "Contact the resource owner to request a capability grant.",
                         ContactActor: null,
                         EscalationLink: null,
-                        CallToActionLabel: "Request grant"),
+                        CallToActionLabel: null),
                     now);
-                await EmitDenialAsync(subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
+                await EmitDenialAsync(tenantId, subjectActor, location, denied, action, now, ct).ConfigureAwait(false);
                 return denied;
             }
             proof = await _capabilityGraph.ExportProofAsync(subject.Id, res, capabilityAction, now, ct).ConfigureAwait(false);
@@ -440,26 +444,26 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         {
             return new PermissionDecision.Denied(
                 DenialReason.SecurityPolicyBlocked,
-                "self-promotion forbidden",
+                "Self-promotion forbidden.",
                 new Remediation(
                     RemediationKind.SecurityPolicyAppeal,
                     "Promotion must be requested from a higher-authority actor.",
                     ContactActor: null,
                     EscalationLink: null,
-                    CallToActionLabel: "Request promotion"),
+                    CallToActionLabel: null),
                 now);
         }
         if (AuthorityRank[callerRole] >= AuthorityRank[targetRole])
         {
             return new PermissionDecision.Denied(
                 DenialReason.SecurityPolicyBlocked,
-                "insufficient authority to promote to target role",
+                "Insufficient authority to promote to target role.",
                 new Remediation(
                     RemediationKind.SecurityPolicyAppeal,
                     "Promotion must be performed by an actor of strictly higher authority.",
                     ContactActor: null,
                     EscalationLink: null,
-                    CallToActionLabel: "Escalate"),
+                    CallToActionLabel: null),
                 now);
         }
         return null;
@@ -495,13 +499,13 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
     }
 
     private async ValueTask EmitDenialAsync(
-        ActorId actor, ShipLocation location, PermissionDecision.Denied denied,
-        ShipAction action, DateTimeOffset occurredAt, CancellationToken ct)
+        TenantId tenantId, ActorId actor, ShipLocation location,
+        PermissionDecision.Denied denied, ShipAction action,
+        DateTimeOffset occurredAt, CancellationToken ct)
     {
         bool emitRateLimitRecord = false;
         DateTimeOffset windowStartAt = occurredAt;
         int denialCount = 0;
-        TenantId? auditTenant = null;
 
         lock (_gate)
         {
@@ -524,10 +528,6 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             }
         }
 
-        // Resolve the audit-tenant from the most-recent cached assignment
-        // for the actor; fall back to TenantId.System when none cached.
-        auditTenant = ResolveAuditTenantOrSystem(actor);
-
         var denialPayload = new AuditPayload(new Dictionary<string, object?>
         {
             ["action"] = action.Name,
@@ -537,9 +537,9 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             ["reason"] = denied.Reason.ToString(),
             ["remediationKind"] = denied.Remediation.Kind.ToString(),
             ["severity"] = "Normal",
-            ["tenantId"] = auditTenant.Value.Value,
+            ["tenantId"] = tenantId.Value,
         });
-        await EmitAsync(AuditEventType.PermissionDenied, auditTenant.Value, denialPayload, occurredAt, ct).ConfigureAwait(false);
+        await EmitAsync(AuditEventType.PermissionDenied, tenantId, denialPayload, occurredAt, ct).ConfigureAwait(false);
 
         if (emitRateLimitRecord)
         {
@@ -549,33 +549,11 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
                 ["denialCount"] = denialCount,
                 ["location"] = location.ToString(),
                 ["severity"] = "High",
-                ["tenantId"] = auditTenant.Value.Value,
+                ["tenantId"] = tenantId.Value,
                 ["windowStartedAt"] = windowStartAt.ToString("O"),
             });
-            await EmitAsync(AuditEventType.PermissionDenialRateExceeded, auditTenant.Value, rateLimitPayload, occurredAt, ct).ConfigureAwait(false);
+            await EmitAsync(AuditEventType.PermissionDenialRateExceeded, tenantId, rateLimitPayload, occurredAt, ct).ConfigureAwait(false);
         }
-    }
-
-    private TenantId ResolveAuditTenantOrSystem(ActorId actor)
-    {
-        lock (_gate)
-        {
-            foreach (var (tenant, cached) in _cache)
-            {
-                if (cached.Assignments.Any(a => a.Holder.Equals(actor)))
-                {
-                    return tenant;
-                }
-            }
-        }
-        // TenantId.System sentinel is introduced by ADR 0084 (Proposed
-        // 2026-05-05; CO acceptance flip pending). Until ADR 0084 reaches
-        // Accepted on origin/main, fall back to TenantId.Default — audit
-        // records emitted before any per-tenant cache warm-up will be
-        // tagged with the default tenant rather than a yet-to-exist System
-        // sentinel. Once ADR 0084 lands, swap this to TenantId.System and
-        // any consumer counting on the default tenant gets re-pointed.
-        return TenantId.Default;
     }
 
     private async ValueTask EmitAsync(
@@ -606,44 +584,27 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         }
     }
 
-    private async ValueTask<ShipRoleAssignment?> FindAssignmentAsync(ActorId actor, CancellationToken ct)
+    private async ValueTask<ShipRoleAssignment?> FindAssignmentAsync(
+        TenantId tenantId, ActorId actor, DateTimeOffset now, CancellationToken ct)
     {
-        var now = _timeProvider.GetUtcNow();
-        // Linear scan over every cached tenant — Phase 1 acceptable; Phase 2
-        // will index by ActorId once the assignment source surfaces a
-        // tenant-resolution path.
-        var tenantsToCheck = SnapshotCachedTenants();
-        foreach (var tenant in tenantsToCheck)
-        {
-            var assignments = await GetAssignmentsAsync(tenant, now, ct).ConfigureAwait(false);
-            var match = assignments.FirstOrDefault(a => a.Holder.Equals(actor));
-            if (match is not null) return match;
-        }
-
-        // Cache miss — ask the source for the actor's tenant directly. The
-        // assignment source is responsible for resolving the
-        // Actor → Tenant binding (it has the StandingOrderRepository in
-        // scope; we don't).
-        var resolved = await _assignmentSource.ResolveAssignmentAsync(actor, ct).ConfigureAwait(false);
-        if (resolved is not null)
-        {
-            // Warm the cache for the discovered tenant.
-            _ = await GetAssignmentsAsync(resolved.TenantId, now, ct).ConfigureAwait(false);
-        }
-        return resolved;
-    }
-
-    private List<TenantId> SnapshotCachedTenants()
-    {
-        lock (_gate)
-        {
-            return _cache.Keys.ToList();
-        }
+        // Tenant binding is the caller's responsibility (security council
+        // 2026-05-06). Look up assignments only within the asserted tenant.
+        var assignments = await GetAssignmentsAsync(tenantId, now, ct).ConfigureAwait(false);
+        return assignments.FirstOrDefault(a => a.Holder.Equals(actor));
     }
 
     private async ValueTask<IReadOnlyList<ShipRoleAssignment>> GetAssignmentsAsync(
         TenantId tenant, DateTimeOffset now, CancellationToken ct)
     {
+        // Cache-stampede protection per the W#46 P1 pre-merge security
+        // council 2026-05-06: concurrent expired-TTL callers all observed
+        // the stale cache and all hit the upstream source. Now: the first
+        // thread under the lock installs a single in-flight Task (via TCS
+        // — the TCS is registered BEFORE the load starts so the finally
+        // cleanup cannot race ahead of the install on a synchronously-
+        // completing source mock); every subsequent thread awaits the
+        // same Task. Result is exactly one upstream load per TTL window.
+        Task<IReadOnlyList<ShipRoleAssignment>> task;
         lock (_gate)
         {
             if (_cache.TryGetValue(tenant, out var cached)
@@ -651,14 +612,47 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             {
                 return cached.Assignments;
             }
+            if (!_inflightLoads.TryGetValue(tenant, out task!))
+            {
+                var tcs = new TaskCompletionSource<IReadOnlyList<ShipRoleAssignment>>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                task = tcs.Task;
+                _inflightLoads[tenant] = task;
+                _ = ExecuteLoadAsync(tenant, now, tcs, ct);
+            }
         }
+        return await task.ConfigureAwait(false);
+    }
 
-        var fresh = await _assignmentSource.LoadAssignmentsAsync(tenant, ct).ConfigureAwait(false);
-        lock (_gate)
+    private async Task ExecuteLoadAsync(
+        TenantId tenant, DateTimeOffset now,
+        TaskCompletionSource<IReadOnlyList<ShipRoleAssignment>> tcs,
+        CancellationToken ct)
+    {
+        try
         {
-            _cache[tenant] = new CachedAssignments(fresh, now);
+            var fresh = await _assignmentSource.LoadAssignmentsAsync(tenant, ct).ConfigureAwait(false);
+            lock (_gate)
+            {
+                _cache[tenant] = new CachedAssignments(fresh, now);
+            }
+            tcs.SetResult(fresh);
         }
-        return fresh;
+        catch (OperationCanceledException oce)
+        {
+            tcs.SetCanceled(oce.CancellationToken);
+        }
+        catch (Exception ex)
+        {
+            tcs.SetException(ex);
+        }
+        finally
+        {
+            lock (_gate)
+            {
+                _inflightLoads.Remove(tenant);
+            }
+        }
     }
 
     private static bool IsWatchRequired(ShipAction action, ShipLocation location, DeckDepth deck) =>
@@ -701,6 +695,11 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         // §2.2: ShipAction → CapabilityAction translation. Phase 1 maps the
         // 9 canonical ShipAction values onto the existing CapabilityAction
         // surface; Phase 2 extends both sides as new actions appear.
+        // W#46 P1 pre-merge security council 2026-05-06: throw on an
+        // unmapped action rather than silently fall through to Read — a
+        // future ShipAction added without updating this mapping must
+        // surface as a build-time failure path, not a silent
+        // capability-downgrade.
         if (action.Equals(ShipAction.Read)) return CapabilityAction.Read;
         if (action.Equals(ShipAction.Write)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.IssueStandingOrder)) return CapabilityAction.Write;
@@ -710,7 +709,8 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         if (action.Equals(ShipAction.TransferWatch)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.Quarantine)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.OverrideQuarantine)) return CapabilityAction.Write;
-        return CapabilityAction.Read;
+        throw new InvalidOperationException(
+            $"unmapped ShipAction '{action.Name}' — update DefaultPermissionResolver.MapToCapabilityAction");
     }
 
     /// <summary>Per-tenant cache entry per §2.5 TTL fallback.</summary>

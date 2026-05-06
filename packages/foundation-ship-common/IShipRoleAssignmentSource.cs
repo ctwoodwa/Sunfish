@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Sunfish.Foundation.Assets.Common;
-using Sunfish.Foundation.MultiTenancy;
 
 namespace Sunfish.Foundation.Ship.Common;
 
@@ -13,7 +12,6 @@ namespace Sunfish.Foundation.Ship.Common;
 /// 60-second TTL per ADR 0077 §2.5 (Phase 1 fallback).
 /// </summary>
 /// <remarks>
-/// <para>
 /// <b>Why a separate interface:</b> the wire-format that materializes a
 /// <see cref="ShipRoleAssignment"/> from a <c>StandingOrder</c>'s triple
 /// payload is not specified verbatim in ADR 0077 §1.2 — implementations are
@@ -21,14 +19,6 @@ namespace Sunfish.Foundation.Ship.Common;
 /// <see cref="ShipRoleAssignment"/> fields. The resolver depends on this
 /// interface so the materialization shape stays an implementation detail
 /// of the consumer (typically the host's bootstrap layer).
-/// </para>
-/// <para>
-/// <b>Tenant resolution:</b> <see cref="ResolveAssignmentAsync"/> is the
-/// resolver's cold-path lookup when the per-tenant cache has no entry for
-/// the actor. Implementations may scan every tenant the actor participates
-/// in or maintain an
-/// <c>(ActorId → TenantId)</c> index — both are valid Phase 1 strategies.
-/// </para>
 /// </remarks>
 public interface IShipRoleAssignmentSource
 {
@@ -38,15 +28,5 @@ public interface IShipRoleAssignmentSource
     /// </summary>
     ValueTask<IReadOnlyList<ShipRoleAssignment>> LoadAssignmentsAsync(
         TenantId tenantId,
-        CancellationToken ct = default);
-
-    /// <summary>
-    /// Cold-path resolution when the cache has no entry for
-    /// <paramref name="actor"/>. Implementations resolve the
-    /// <c>(ActorId → TenantId)</c> binding and return the matching
-    /// assignment, or null when the actor has no assignment in any tenant.
-    /// </summary>
-    ValueTask<ShipRoleAssignment?> ResolveAssignmentAsync(
-        ActorId actor,
         CancellationToken ct = default);
 }
