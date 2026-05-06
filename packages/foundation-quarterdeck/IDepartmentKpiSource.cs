@@ -12,10 +12,16 @@ namespace Sunfish.Foundation.Quarterdeck;
 /// surface a single-line "department health" projection.
 /// </summary>
 /// <remarks>
-/// <b>SourceName uniqueness (§5.3):</b> mirrors
-/// <see cref="IQuarterdeckAlertSource.SourceName"/>; the
+/// <b>SourceName uniqueness (§5.3):</b> the
 /// <c>AddSunfishQuarterdeck()</c> startup hook validates uniqueness
 /// across all registered KPI sources and rejects duplicate names.
+/// The prefix <c>"sunfish.*"</c> is reserved for first-party sources;
+/// third-party KPI sources MUST use a different prefix (e.g.,
+/// <c>"acme.medbay.census"</c>) to prevent first-party-source
+/// impersonation per ADR 0080 §5.3 anti-spoofing. The reservation
+/// applies symmetrically across <see cref="IDepartmentKpiSource"/>
+/// and <see cref="IQuarterdeckAlertSource"/> — the SourceName
+/// namespace is shared.
 /// </remarks>
 public interface IDepartmentKpiSource
 {

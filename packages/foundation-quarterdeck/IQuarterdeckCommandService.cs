@@ -15,10 +15,17 @@ namespace Sunfish.Foundation.Quarterdeck;
 /// <b>Two-phase audit (§5):</b>
 /// <see cref="AcknowledgeAlertAsync"/> emits
 /// <see cref="Sunfish.Kernel.Audit.AuditEventType.AlertAcknowledgementRequested"/>
-/// (intent / pre-op) BEFORE the underlying alert source is asked to
-/// acknowledge, then emits
+/// (intent / pre-op) as the FIRST observable side-effect of the call —
+/// before the §5.2 tenant-binding check, before alertId existence
+/// resolution, before permission resolution, and before any First-Aid
+/// surface. The intent record exists to make denials of all kinds
+/// (tenant-spoofing, unknown-alert probing, permission-deny, source
+/// rejection) auditable; the only acceptable reason to skip emission
+/// is failure of the audit infrastructure itself (which surfaces as
+/// a thrown exception, not a silent skip). On success the
+/// implementation emits
 /// <see cref="Sunfish.Kernel.Audit.AuditEventType.AlertAcknowledged"/>
-/// on success. Failure is signalled by absence of the post-op event
+/// (post-op). Failure is signalled by absence of the post-op event
 /// (no separate <c>AlertAcknowledgementFailed</c> constant — the
 /// audit-trail diff IS the failure record).
 /// </para>
@@ -26,10 +33,9 @@ namespace Sunfish.Foundation.Quarterdeck;
 /// <b>Authority check (§5):</b> implementations MUST resolve
 /// <c>ShipAction.AcknowledgeAlert</c> via
 /// <see cref="Sunfish.Foundation.Ship.Common.IPermissionResolver"/>
-/// before delegating to the alert source. Denied requests still emit
-/// <see cref="Sunfish.Kernel.Audit.AuditEventType.AlertAcknowledgementRequested"/>
-/// (intent is auditable) but skip the post-op event and surface the
-/// denial via First-Aid.
+/// before delegating to the alert source — but AFTER the pre-op
+/// audit emission per the invariant above. Denied requests skip the
+/// post-op event and surface the denial via First-Aid.
 /// </para>
 /// </remarks>
 public interface IQuarterdeckCommandService

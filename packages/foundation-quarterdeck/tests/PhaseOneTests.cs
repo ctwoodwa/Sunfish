@@ -195,12 +195,12 @@ public class QuarterdeckSnapshotShapeTests
 public class QuarterdeckOptionsTests
 {
     [Fact]
-    public void QuarterdeckOptions_Default_MatchesAdr0080CanonicalValues()
+    public void QuarterdeckOptions_Default_MatchesAdr0080Section1CanonicalValues()
     {
         var defaults = QuarterdeckOptions.Default;
         Assert.Equal(TimeSpan.FromSeconds(30), defaults.HeartbeatInterval);
-        Assert.Equal(TimeSpan.FromSeconds(10), defaults.ProviderTimeout);
-        Assert.Equal(TimeSpan.FromSeconds(5), defaults.PerSourceTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(2), defaults.ProviderTimeout);
+        Assert.Equal(TimeSpan.FromMilliseconds(800), defaults.PerSourceTimeout);
     }
 
     [Fact]
@@ -216,8 +216,8 @@ public class QuarterdeckOptionsTests
         var bound = sp.GetRequiredService<IOptions<QuarterdeckOptions>>().Value;
         Assert.Equal(TimeSpan.FromSeconds(15), bound.HeartbeatInterval);
         // Defaults survive for unconfigured fields.
-        Assert.Equal(TimeSpan.FromSeconds(10), bound.ProviderTimeout);
-        Assert.Equal(TimeSpan.FromSeconds(5), bound.PerSourceTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(2), bound.ProviderTimeout);
+        Assert.Equal(TimeSpan.FromMilliseconds(800), bound.PerSourceTimeout);
     }
 }
 
@@ -237,5 +237,92 @@ public class ShipActionAndAuditEventTypeAdditionsTests
         Assert.Equal("WatchHandoverRequested", AuditEventType.WatchHandoverRequested.Value);
         Assert.Equal("AlertAcknowledgementRequested", AuditEventType.AlertAcknowledgementRequested.Value);
         Assert.Equal("AlertAcknowledged", AuditEventType.AlertAcknowledged.Value);
+    }
+}
+
+public class CouncilAmendmentTests
+{
+    [Fact]
+    public void QuarterdeckAlert_VisibilityPolicy_DefaultsToOmitForDeniedActors()
+    {
+        var alert = new QuarterdeckAlert(
+            AlertId: "sunfish.test:01HV4G7",
+            TenantId: TenantId.Default,
+            Severity: AlertSeverity.Normal,
+            Title: "Test",
+            Summary: null,
+            IssuedAt: DateTimeOffset.UtcNow,
+            ExpiresAt: null,
+            RequiresAcknowledgement: false,
+            IsAcknowledged: false,
+            AcknowledgedBy: null,
+            AcknowledgedAt: null,
+            SourceName: "sunfish.test");
+
+        Assert.Equal(AlertVisibilityPolicy.OmitForDeniedActors, alert.VisibilityPolicy);
+    }
+
+    [Fact]
+    public void QuarterdeckAlert_VisibilityPolicy_HonoursShowAllOverride()
+    {
+        var alert = new QuarterdeckAlert(
+            AlertId: "sunfish.broadcast:01HV4G8",
+            TenantId: TenantId.Default,
+            Severity: AlertSeverity.Emergency,
+            Title: "Mission Envelope failed",
+            Summary: null,
+            IssuedAt: DateTimeOffset.UtcNow,
+            ExpiresAt: null,
+            RequiresAcknowledgement: true,
+            IsAcknowledged: false,
+            AcknowledgedBy: null,
+            AcknowledgedAt: null,
+            SourceName: "sunfish.broadcast",
+            VisibilityPolicy: AlertVisibilityPolicy.ShowAll);
+
+        Assert.Equal(AlertVisibilityPolicy.ShowAll, alert.VisibilityPolicy);
+    }
+
+    [Fact]
+    public void OodRoleSummary_LegalStateA_NoWatch_HasBothNullAndNotExpired()
+    {
+        var noWatch = new OodRoleSummary(
+            OodRole.OfficerOfTheDeck,
+            CurrentActorDisplayName: null,
+            WatchStartedAt: null,
+            IsExpired: false);
+
+        // Legal state (a): no watch active.
+        Assert.Null(noWatch.CurrentActorDisplayName);
+        Assert.Null(noWatch.WatchStartedAt);
+        Assert.False(noWatch.IsExpired);
+    }
+
+    [Fact]
+    public void OodRoleSummary_LegalStateC_ActiveButExpired_HasNameAndExpired()
+    {
+        var expired = new OodRoleSummary(
+            OodRole.OfficerOfTheDeck,
+            CurrentActorDisplayName: "Lt. Vega",
+            WatchStartedAt: DateTimeOffset.UtcNow.AddHours(-12),
+            IsExpired: true);
+
+        // Legal state (c): active watch that has expired.
+        Assert.NotNull(expired.CurrentActorDisplayName);
+        Assert.NotNull(expired.WatchStartedAt);
+        Assert.True(expired.IsExpired);
+    }
+
+    [Fact]
+    public void AlertSeverity_AllFourValuesPresent()
+    {
+        // Phase 3a renderers use the enum-to-LiveRegionPoliteness mapping
+        // documented on each value; this test guards against accidental
+        // value removal that would break the Phase 3a politeness contract.
+        Assert.Equal(4, Enum.GetValues<AlertSeverity>().Length);
+        Assert.Contains(AlertSeverity.Emergency, Enum.GetValues<AlertSeverity>());
+        Assert.Contains(AlertSeverity.High, Enum.GetValues<AlertSeverity>());
+        Assert.Contains(AlertSeverity.Normal, Enum.GetValues<AlertSeverity>());
+        Assert.Contains(AlertSeverity.Informational, Enum.GetValues<AlertSeverity>());
     }
 }

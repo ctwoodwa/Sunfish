@@ -12,6 +12,12 @@ namespace Sunfish.Foundation.Quarterdeck;
 /// <param name="AlertId">
 /// Stable identifier for the alert; durable across snapshot emits so
 /// the ticker can correlate acknowledgements across heartbeats.
+/// MUST be unique across all <see cref="IQuarterdeckAlertSource"/>
+/// implementations within a tenant; the data provider drops collisions
+/// during aggregation. Format: <c>"{SourceName}:{source-local-id}"</c>;
+/// characters MUST match the regex
+/// <c>^[A-Za-z0-9_\-:]{1,128}$</c> per ADR 0080 §1. Recommended
+/// source-local-id form is a ULID for stable lexicographic ordering.
 /// </param>
 /// <param name="TenantId">
 /// Tenant the alert belongs to. Set even for cross-tenant administrative
@@ -57,8 +63,28 @@ namespace Sunfish.Foundation.Quarterdeck;
 /// <param name="SourceName">
 /// Registered name of the originating <see cref="IQuarterdeckAlertSource"/>
 /// per §5.3. The data provider validates uniqueness at startup and
-/// stamps each alert with its source for downstream traceability.
+/// stamps each alert with its source for downstream traceability. The
+/// prefix <c>"sunfish.*"</c> is reserved for first-party sources;
+/// third-party alerts MUST use a non-reserved prefix.
 /// </param>
+/// <param name="VisibilityPolicy">
+/// Per-alert disclosure policy per ADR 0080 §1 + §2.3 rule 5. Defaults
+/// to <see cref="AlertVisibilityPolicy.OmitForDeniedActors"/>; set to
+/// <see cref="AlertVisibilityPolicy.ShowAll"/> for ship-wide broadcast
+/// alerts where suppression would defeat the alert's safety purpose.
+/// The policy is point-in-time alert data — once issued, an alert
+/// keeps its disclosure policy across all snapshot emits.
+/// </param>
+/// <remarks>
+/// <b>Acknowledgement-state invariant:</b> the tuple
+/// <c>(IsAcknowledged, AcknowledgedBy, AcknowledgedAt)</c> has two
+/// legal states only — <c>(false, null, null)</c> or
+/// <c>(true, name, timestamp)</c>. Phase 2 providers MUST NOT emit
+/// the contradictory state <c>(true, null, _)</c>;
+/// <see cref="IQuarterdeckCommandService.AcknowledgeAlertAsync"/>
+/// implementations satisfy this by writing all three fields together
+/// when they transition the alert to acknowledged.
+/// </remarks>
 public sealed record QuarterdeckAlert(
     string AlertId,
     TenantId TenantId,
@@ -71,4 +97,5 @@ public sealed record QuarterdeckAlert(
     bool IsAcknowledged,
     string? AcknowledgedBy,
     DateTimeOffset? AcknowledgedAt,
-    string SourceName);
+    string SourceName,
+    AlertVisibilityPolicy VisibilityPolicy = AlertVisibilityPolicy.OmitForDeniedActors);

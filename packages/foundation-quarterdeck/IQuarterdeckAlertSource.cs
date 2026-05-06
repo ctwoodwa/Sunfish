@@ -15,14 +15,24 @@ namespace Sunfish.Foundation.Quarterdeck;
 /// a stable <see cref="SourceName"/>; the
 /// <c>AddSunfishQuarterdeck()</c> startup hook validates uniqueness
 /// across all registered sources and rejects duplicate names. The
-/// prefix <c>"sunfish.*"</c> is reserved for first-party sources.
+/// prefix <c>"sunfish.*"</c> is reserved for first-party sources;
+/// third-party alert sources MUST use a different prefix (e.g.,
+/// <c>"acme.tactical.lookout"</c>) to prevent first-party-source
+/// impersonation per ADR 0080 §5.3 anti-spoofing. The reservation
+/// applies symmetrically across <see cref="IQuarterdeckAlertSource"/>
+/// and <see cref="IDepartmentKpiSource"/> — the SourceName
+/// namespace is shared.
 /// </para>
 /// <para>
-/// <b>Visibility policy:</b> sources MAY embed an
-/// <see cref="AlertVisibilityPolicy"/> in their alerts indirectly by
-/// returning an empty enumerable for actors they do not surface to —
-/// the data provider applies the configured visibility policy at
-/// aggregation time per §2.3 rule 5.
+/// <b>Visibility policy:</b> sources stamp each emitted alert with
+/// <see cref="QuarterdeckAlert.VisibilityPolicy"/>; the data provider
+/// applies the per-alert policy at aggregation time per §2.3 rule 5
+/// to decide whether to omit the alert for actors who cannot reach
+/// the source. Default policy is
+/// <see cref="AlertVisibilityPolicy.OmitForDeniedActors"/>; sources
+/// emitting ship-wide broadcasts (mass-notification, Mission-Envelope-
+/// failed banners) set <see cref="AlertVisibilityPolicy.ShowAll"/> on
+/// the alert.
 /// </para>
 /// </remarks>
 public interface IQuarterdeckAlertSource
