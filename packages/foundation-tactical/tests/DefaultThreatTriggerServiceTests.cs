@@ -296,6 +296,50 @@ public class DefaultThreatTriggerServiceTests
         Assert.Equal(TenantA.Value, (string?)issued.Payload.Payload.Body["tenant_id"]);
     }
 
+    /// <summary>
+    /// Council amendment B1: TryAdd must guarantee exactly one concurrent caller
+    /// proceeds per (TenantId, RuleName) per dedup window. AddOrUpdate could let
+    /// two concurrent callers both see OrderId=null (in-flight) and both issue orders.
+    /// </summary>
+    [Fact]
+    public async Task TryIssueAsync_ConcurrentCallers_OnlyOneOrderIssuedPerWindow()
+    {
+        var repo = Substitute.For<IStandingOrderRepository>();
+        var appendCount = 0;
+        repo.AppendAsync(Arg.Any<StandingOrder>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                Interlocked.Increment(ref appendCount);
+                return ValueTask.CompletedTask;
+            });
+
+        // Use TacticalOptions with MaxEmergencyOrdersPerMinute=10 so rate-limit
+        // doesn't mask the dedup behavior.
+        var svc = new DefaultThreatTriggerService(
+            Options.Create(new TacticalOptions { MaxEmergencyOrdersPerMinute = 10 }),
+            PrincipalProvider(),
+            repo);
+        svc.RegisterTemplate(new ThreatTriggerTemplate(
+            "third-party.concurrent", AlertSeverity.High, "content", null));
+
+        var alert = MakeAlert(ruleName: "third-party.concurrent", alertId: "third-party.concurrent:1");
+
+        // Launch 10 concurrent TryIssueAsync calls for the same alert.
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => svc.TryIssueAsync(alert).AsTask())
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        // Exactly one unique orderId must have been minted; callers that hit
+        // the dedup cache after the first completes correctly receive the
+        // same cached orderId — so the distinct count is 1, not the non-null count.
+        var distinctOrderIds = results.Where(r => r is not null).Distinct().ToArray();
+        Assert.Single(distinctOrderIds);
+
+        // AppendAsync must have been called exactly once.
+        Assert.Equal(1, appendCount);
+    }
+
     [Fact]
     public void RegisterTemplate_RejectsDuplicateRuleName()
     {

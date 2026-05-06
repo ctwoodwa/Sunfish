@@ -225,18 +225,24 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
 
         var dedupKey = new DedupKey(alert.TenantId, alert.RuleName);
         var now = _time.GetUtcNow();
-        var dedupWindow = TimeSpan.FromSeconds(60);
 
-        // Step 4 — dedup. Atomic read-or-update so concurrent issuers
-        // can't both observe "no prior" and both proceed.
-        var dedupActual = _dedupCache.AddOrUpdate(
-            dedupKey,
-            _ => new DedupEntry(now, OrderId: null),
-            (_, entry) => now - entry.IssuedAt < dedupWindow ? entry : new DedupEntry(now, OrderId: null));
-        if (dedupActual.IssuedAt != now && dedupActual.OrderId is not null)
+        // Step 4 — dedup. TryAdd gives exactly-once first-wins semantics.
+        // AddOrUpdate cannot guarantee this: two concurrent callers both
+        // observe OrderId=null (in-flight) and both proceed — a §Trust
+        // double-issuance race (W#52 P2c council Blocking B1).
+        // TryAdd: exactly one caller returns true and owns the slot; all
+        // others read the existing entry and return early.
+        if (!_dedupCache.TryAdd(dedupKey, new DedupEntry(now, OrderId: null)))
         {
-            return dedupActual.OrderId;
+            if (_dedupCache.TryGetValue(dedupKey, out var existing))
+            {
+                // Return cached orderId (completed) or null (in-flight, suppress).
+                return existing.OrderId;
+            }
+            // Entry was swept between TryAdd and TryGetValue — suppress conservatively.
+            return null;
         }
+        // This caller owns the dedup slot; proceed through steps 5–8.
 
         // Step 5 — per-tenant rate limit. Per W#52 P2c council Major M1:
         // roll back the dedup-cache seed on early exit so the next
@@ -298,7 +304,18 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
         var orderId = orderGuid.ToString("N");
         var issuerActorId = new ActorId(systemPrincipal.Id.ToBase64Url());
 
-        await EmitIssuedAsync(alert, orderId, issuerActorId, ct).ConfigureAwait(false);
+        // Per W#52 P2c council Advisory A2: on AuditSignatureException from the
+        // Issued emission, release the dedup slot before re-throwing so a retry
+        // can proceed once the signing issue is resolved.
+        try
+        {
+            await EmitIssuedAsync(alert, orderId, issuerActorId, ct).ConfigureAwait(false);
+        }
+        catch (AuditSignatureException)
+        {
+            _dedupCache.TryRemove(dedupKey, out _);
+            throw;
+        }
 
         var standingOrderId = new StandingOrderId(orderGuid);
         var order = new StandingOrder(
