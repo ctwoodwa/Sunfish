@@ -44,3 +44,21 @@ resolves: cob-question-2026-05-06T20-15Z-w52-rule-engine-and-trigger-deferred.md
 usage limit. Security council (XO) ran in this session and found:
 - M1 (XOR guard): APPLIED in amendment commit e55a13db on feat/w52-p2-alert-router
 - M2 (exception-shadowing): disposed as Advisory (§Trust propagation policy is intentional and documented)
+
+**Post-merge security council on DefaultTacticalRuleEngine (PR #704):** returned PASS-WITH-AMENDMENTS.
+- Blocking #4 FIXED PR #707: cross-tenant error tracker (per-tenant key `(RuleName,TenantId)` now).
+- Advisory #7 FIXED PR #707: tenant_id in signed AuditPayload body.
+- Advisory findings deferred to Phase 2c (COB must address in DefaultThreatTriggerService PR):
+  - **#1 (High):** `TryEmitFailureRateDenialAsync` uses `default` CT — on engine shutdown, in-flight
+    signing/append cannot be cancelled; a caught `OperationCanceledException` would silently lose
+    the denial. Fix: plumb an engine-lifetime `CancellationTokenSource` (or derived scope token);
+    log `LogCritical` on cancelled emission, don't swallow.
+  - **#2 (High):** `_ = TryEmitFailureRateDenialAsync(...)` — discard discards the Task; a sync
+    throw before the first `await` goes unobserved. Fix: wrap in `Task.Run`+exception observer or
+    use `ConfigureAwait`-based try/catch for the synchronous entry path.
+  - **#3 (Medium):** Unbounded per-tenant pipe creation in `EvaluateStreamAsync`. A hostile signal
+    source with fabricated `TenantId` values can exhaust memory. Fix in Phase 2c or follow-up:
+    validate `TenantId` against a registry; cap concurrent pipes (configurable default 256); use
+    `BoundedChannelOptions` per advisory.
+  - **#9 (Low):** `GetRegisteredRules()` exposes rule object references. Consider returning
+    `IReadOnlyList<string>` (rule names only) to limit state leakage surface.
