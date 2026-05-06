@@ -77,7 +77,11 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
     private readonly HashSet<string> _ruleNames = new(StringComparer.Ordinal);
     private int _firstSignalProcessed; // 0 = open, 1 = closed
 
-    private readonly ConcurrentDictionary<string, RuleErrorTracker> _errorTrackers = new();
+    // Keyed by (RuleName, TenantId) so each tenant has its own error-rate
+    // window and cooldown. A shared-by-rule tracker would let tenant A's
+    // rule failures consume tenant B's denial cooldown — §Trust violation.
+    private readonly ConcurrentDictionary<(string RuleName, TenantId TenantId), RuleErrorTracker>
+        _errorTrackers = new();
 
     /// <summary>Construct the rule engine.</summary>
     public DefaultTacticalRuleEngine(
@@ -329,7 +333,8 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
 
     private void RecordRuleError(ITacticalRule rule, Exception ex, TenantId tenantId)
     {
-        var tracker = _errorTrackers.GetOrAdd(rule.RuleName, static _ => new RuleErrorTracker());
+        var tracker = _errorTrackers.GetOrAdd(
+            (rule.RuleName, tenantId), static _ => new RuleErrorTracker());
         var now = _time.GetUtcNow();
         var (count, shouldEmit) = tracker.Record(now, RuleErrorRateThresholdPerMinute);
 
@@ -365,6 +370,9 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
             {
                 ["denial_reason"] = "rule-evaluation-failure-rate",
                 ["rule_name"] = ruleName,
+                // tenant_id bound inside the signature so the outer AuditRecord.TenantId
+                // field cannot be tampered to decouple the denial from its tenant.
+                ["tenant_id"] = tenantId.Value,
                 ["throw_count"] = count,
                 ["window_seconds"] = 60,
             });

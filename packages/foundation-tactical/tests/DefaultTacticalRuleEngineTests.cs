@@ -257,6 +257,69 @@ public class DefaultTacticalRuleEngineTests
             (string?)denials[0].Payload.Payload.Body["denial_reason"]);
     }
 
+    /// <summary>
+    /// Council amendment: error-rate trackers must be per-(rule, tenant).
+    /// Tenant A's rule failures MUST NOT consume Tenant B's denial cooldown
+    /// (§Trust cross-tenant isolation invariant).
+    /// </summary>
+    [Fact]
+    public void Evaluate_RuleErrorRate_CrossTenantTrackerIsolation()
+    {
+        var trail = new RecordingAuditTrail();
+        var signer = StubSigner();
+        var fakeTime = new TestTimeProvider(DateTimeOffset.UtcNow);
+        var engine = Build(audit: trail, signer: signer, time: fakeTime);
+        engine.RegisterRule(new ThrowingRule("third-party.shared-rule"));
+
+        // Drive Tenant A past the threshold (>100 throws).
+        for (int i = 0; i < 110; i++)
+            _ = engine.Evaluate(MakeSignal(TenantA));
+
+        // Wait for Tenant A's denial to land.
+        SpinWait.SpinUntil(() => trail.Records.Count >= 1, TimeSpan.FromSeconds(2));
+
+        var countBeforeTenantB = trail.Records.Count;
+
+        // Now drive Tenant B past the threshold as well.
+        for (int i = 0; i < 110; i++)
+            _ = engine.Evaluate(MakeSignal(TenantB));
+
+        SpinWait.SpinUntil(() => trail.Records.Count >= 2, TimeSpan.FromSeconds(2));
+
+        // Tenant B must have its OWN denial record — independent of Tenant A's cooldown.
+        var denials = trail.Records
+            .Where(r => r.EventType.Equals(AuditEventType.TacticalAuthorizationDenied))
+            .ToList();
+        Assert.True(denials.Count >= 2,
+            "Each tenant must emit its own denial; cross-tenant shared tracker would suppress the second.");
+        Assert.Contains(denials, d => d.TenantId == TenantA);
+        Assert.Contains(denials, d => d.TenantId == TenantB);
+    }
+
+    /// <summary>
+    /// Council amendment: tenant_id must be present inside the signed payload
+    /// so the signature covers the tenant binding.
+    /// </summary>
+    [Fact]
+    public void Evaluate_RuleErrorRate_DenialPayload_ContainsTenantId()
+    {
+        var trail = new RecordingAuditTrail();
+        var signer = StubSigner();
+        var fakeTime = new TestTimeProvider(DateTimeOffset.UtcNow);
+        var engine = Build(audit: trail, signer: signer, time: fakeTime);
+        engine.RegisterRule(new ThrowingRule("third-party.flaky2"));
+
+        for (int i = 0; i < 110; i++)
+            _ = engine.Evaluate(MakeSignal(TenantA));
+
+        SpinWait.SpinUntil(() => trail.Records.Count >= 1, TimeSpan.FromSeconds(2));
+
+        var denial = trail.Records.First(r =>
+            r.EventType.Equals(AuditEventType.TacticalAuthorizationDenied));
+        Assert.NotNull(denial.Payload.Payload.Body["tenant_id"]);
+        Assert.Equal(TenantA.Value, (string?)denial.Payload.Payload.Body["tenant_id"]);
+    }
+
     private static async IAsyncEnumerable<TacticalSignal> ToAsync(
         IEnumerable<TacticalSignal> signals)
     {
