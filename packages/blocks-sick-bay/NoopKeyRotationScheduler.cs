@@ -13,6 +13,13 @@ namespace Sunfish.Blocks.SickBay;
 /// substrate.
 /// </summary>
 /// <remarks>
+/// <para>
+/// <b>ADR 0082-A1 WARNING:</b> This stub completes successfully without scheduling
+/// any rotation. Hosts MUST NOT register this implementation in any environment
+/// that surfaces a user-visible confirmation ("rotation triggered") — doing so
+/// creates a false security assurance. This class is intended for build-phase
+/// scaffolding only; replace with the real scheduler before any UI wiring.
+/// </para>
 /// The Phase-2 ledger row note for W#54 calls out this stub explicitly;
 /// Phase 3b PR description MUST flag the swap so audit-event flow can
 /// be re-verified.

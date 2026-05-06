@@ -33,12 +33,12 @@ extends: []
 supersedes: []
 superseded_by: null
 deprecated_in_favor_of: null
-amendments: []
+amendments: [A1]
 ---
 
 # ADR 0082 — Sick Bay Aggregation Surface + IDC Role
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-05
 **Authors:** XO research session
 **Pipeline variant:** `sunfish-feature-change`
@@ -243,7 +243,8 @@ public sealed record AtmosphereReadout
     public required NodaTime.Instant        CapturedAt         { get; init; }
 }
 
-public enum AtmosphereHealth { Green, Yellow, Orange, Red }
+// ADR 0082-A1: Unknown added as zero-value sentinel — see §A1
+public enum AtmosphereHealth { Unknown, Green, Yellow, Orange, Red }
 
 // ── Snapshot ──────────────────────────────────────────────────────────────────
 // Full Sick Bay view — aggregates all three departments + medevac state.
@@ -866,3 +867,60 @@ No existing packages are modified beyond additive changes:
     before Phase 2 merges.
 - [x] **Cold Start Test.** Implementation checklist has 5 phases / ~17 discrete steps.
   Each is independently verifiable. Phase dependencies are explicit (H1-H4 halt conditions).
+
+---
+
+## §A1 — AtmosphereHealth.Unknown sentinel + NoopKeyRotationScheduler warning
+
+**Status:** Accepted
+**Date:** 2026-05-06
+**Triggered by:** W#54 Phase 2 council (XO ruling `xo-ruling-2026-05-06T20-00Z-w54-phase2b-atmosphere-mapping.md`)
+
+### A1.1 — AtmosphereHealth.Unknown sentinel
+
+**Problem:** Phase 2 `SickBayDataProvider.BuildAtmosphereStub` returned
+`AtmosphereHealth.Green` before Mission Envelope integration landed in Phase 2b. A UI
+consumer reading `Atmosphere.OverallHealth == Green` would legitimately conclude "all
+systems normal" while the actual Mission Envelope may have degraded probes. The misleading
+Green is indistinguishable from a real Green at the API surface.
+
+**Amendment:** Add `AtmosphereHealth.Unknown` as the zero-value (first enum member,
+numeric value 0) in `foundation-sick-bay/AtmosphereHealth.cs`. Semantics:
+
+- `Unknown` = "provider has not yet projected real probe data"
+- UI **MUST** render a neutral pending state (e.g., spinner or "—") when this value
+  is observed — never Green
+- `default(AtmosphereHealth)` now yields `Unknown` (safe sentinel)
+- Phase 2 stubs **MUST** return `Unknown`, not `Green`
+- Phase 2b stubs are replaced with real probe projection; `Unknown` is only returned
+  when `IMissionEnvelopeProvider` is null or the envelope has not yet been fetched
+
+**Design rationale:** Making `Unknown` the zero-value ensures that any code that uses
+`default(AtmosphereHealth)` (e.g., uninitialized struct fields, new record parameters)
+gets the safe sentinel rather than the misleading success state. This is the same
+zero-value-as-sentinel pattern used in `SyncState` enum throughout the platform.
+
+**Breaking change scope:** Any existing code that matches on the numeric value of
+`AtmosphereHealth` members will be affected (Green was 0, now 1). The type is serialized
+via `JsonStringEnumConverter` so JSON round-trips are unaffected. Switch expressions
+without exhaustive matching will encounter a new arm. COB MUST verify in Phase 2b.
+
+### A1.2 — NoopKeyRotationScheduler stub-success warning
+
+**Problem:** `NoopKeyRotationScheduler.ScheduleAsync` returns `Task.CompletedTask`
+silently. A UI that calls through `ISickBayCommandService.TriggerKeyRotationAsync`
+will show "rotation triggered" while no rotation happens. Phase 3b wires the real
+implementation; the concern is that Phase 2 code shipped to a production-adjacent
+environment without this warning visible at the type definition site.
+
+**Amendment:** Add to `NoopKeyRotationScheduler` XML doc:
+
+> **ADR 0082-A1 WARNING:** This stub completes successfully without scheduling
+> any rotation. Hosts MUST NOT register this implementation in any environment
+> that surfaces a user-visible confirmation ("rotation triggered"). Replace with
+> the real scheduler (Phase 3b) before any UI rotation-trigger wiring.
+
+**Implementation checklist addition (§Phase 2 — already shipped):**
+- [ ] `NoopKeyRotationScheduler` is registered only in test / development / demo environments
+- [ ] Any host wiring `AddSunfishSickBay()` that exposes a `TriggerKeyRotationAsync`
+  UI button MUST swap `NoopKeyRotationScheduler` for the real scheduler before shipping
