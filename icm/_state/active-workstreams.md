@@ -27,19 +27,19 @@ Canonical "what's in flight, who owns it, what state it's in" for cross-session 
 
 ---
 
-## Current state (last updated 2026-05-06 — W#1 WS-A + WS-B Stage 06 hand-offs pre-authored (pending ADR 0084/0085 CO acceptance); W#57 added (ADR 0065-A1 event-stream, ready-to-build); W#53 Phase 1 COMPLETE (P1a #630 + P1b #633); W#54 H2 cleared (KeyFingerprint at packages/foundation/Crypto/); ADR 0066-A1 Accepted (PR #586 merged 2026-05-05))
+## Current state (last updated 2026-05-05 — W#53 Stage 06 hand-off authored; W#53 ready-to-build; unblocks W#48 Phase 1)
 
 | # | Workstream | Status | Owner (current phase) | Reference | Notes |
 |---|---|---|---|---|---|
-| 1 | Multi-tenancy type surface convention (WS-A + WS-B) | `design-in-flight` (WS-A ADR 0084 **Proposed** 2026-05-05 via PR #597 — CO acceptance flip pending; WS-B ADR 0085 Proposed 2026-05-05 via PR #606 — council complete; both pending CO acceptance) | research (WS-B council pending) | `docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B, PR pending) | **WS-A ADR 0084 Proposed 2026-05-05 (PR #597 merged by CO — authoring commit on main; CO acceptance flip pending).** Verify `status:` in ADR file. `TenantId.System`
+| 1 | Multi-tenancy type surface convention (WS-A + WS-B) | `design-in-flight` (WS-A ADR 0084 **Proposed** 2026-05-05 via PR #597 — CO acceptance flip pending; WS-B ADR 0085 Proposed 2026-05-05 via PR #606 — council complete; Stage 06 hand-offs pre-authored 2026-05-06 via PR #637 — pending CO acceptance of both ADRs) | research | `docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637) | **WS-A ADR 0084 Proposed 2026-05-05 (PR #597 merged by CO — authoring commit on main; CO acceptance flip pending).** Verify `status:` in ADR file. `TenantId.System`
 sentinel + `TenantSelection` DU (`ForSingle`/`ForMultiple`/`AllAccessible`) + implicit cast
 on TenantSelection + `IMayHaveTenant` [Obsolete] — all in `foundation` + `foundation-multitenancy`.
 **WS-B (sunfish-api-change):** ADR 0085 Proposed 2026-05-05. Migrates
 `AuditQuery.Tenant` + `EntityQuery.Tenant` + `ExportRequest.TenantId` from `TenantId?`
 → `TenantSelection?`. Adds `TenantSelection.Matches(TenantId)` helper to
 `foundation-multitenancy`. Source-compatible (implicit cast at call sites). ~3–5h / 1 PR.
-Council complete (6 BLOCKING resolved 2026-05-05). **Stage 06 hand-offs pre-authored 2026-05-06
-(pending CO acceptance).** WS-A: `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md`;
+Council complete (6 BLOCKING resolved 2026-05-05). **Stage 06 hand-offs pre-authored
+2026-05-06 (pending CO acceptance).** WS-A: `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md`;
 WS-B: `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md`.
 **Flip to `ready-to-build` once BOTH ADR 0084 AND ADR 0085 Status: Accepted AND WS-A built.** |
 | 2 | Kernel-audit Tier 1 retrofit | `built` (merged) | sunfish-PM | https://github.com/ctwoodwa/Sunfish/pull/198 (merged 2026-04-28 16:30Z) | AttestingSignature pair shape + IAuditTrail XML doc fix shipped. Tier 2 (`AuditQuery.TenantId → TenantSelection`) remains blocked on workstream #1's M2. |
@@ -167,10 +167,22 @@ Key new types: `IIntegrationAtlasProvider` + `IIntegrationAtlasContext`
 `IDecryptCapabilityProvider` + `IntegrationCapabilityPurposes`. No new
 package (additive to `packages/ui-core/Wayfinder/Integrations/`).
 
-5 build phases: P1 contract surface (gated on W#53 P1 — **CLEARED**);
-P2 reference impl + audit + SUNFISH_INTEGRATION_AUDIT001 analyzer;
-P3a/3b adapter schema providers + validators; P4 Anchor+Bridge
-rendering; P5 ledger flip + docs. ~23-35h / ~6-8 PRs. |
+**Phase 1 restructured (2026-05-06 per COB question #636):** Three
+dependency cycles block some Phase 1 types. New sequence:
+- **Phase 1a** (ship now, cycle-safe): enums + value types + constants +
+  `IIntegrationAtlasContext` + `IIntegrationProviderValidator` +
+  `ICustomIntegrationRenderer` + `IValidationStatusStore`
+- **Phase 1.5** (cycle-break moves): `StandingOrderId` + `AuditRecordId`
+  → `foundation/Assets/Common/`; `IDecryptCapability` → `foundation/Crypto/`.
+  Hand-off at `icm/_state/handoffs/atlas-integration-config-p15-cycle-break-handoff.md`.
+- **Phase 1b** (after Phase 1.5 merged): `IIntegrationAtlasProvider` +
+  `IntegrationAtlasView` + `ActiveProviderSnapshot` +
+  `IDecryptCapabilityProvider` + `AddSunfishIntegrationAtlas()` +
+  4 `AuditEventType` constants + `ContractSurfaceTests`.
+
+5 build phases: P1a/1.5/1b → P2 reference impl + audit +
+SUNFISH_INTEGRATION_AUDIT001 analyzer; P3a/3b; P4 Anchor+Bridge; P5 docs.
+~26-38h / ~7-10 PRs. |
 | 49 | **OOD Watch Rotation** (ADR 0078; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `built` (Phases 1-3 complete + P2 amendment 2026-05-06) | sunfish-PM | `docs/adrs/0078-ood-watch-rotation.md` (PR #571 merged) + `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` + `icm/_state/handoffs/ood-watch-rotation-stage06-p2-amendment-addendum.md` + `apps/docs/foundation/wayfinder/ood-watch.md` | **Phases 1-3 built + P2 amendment 2026-05-06.** PRs:
 
 - **P1 #610** — substrate types + audit constants + StandingOrder extension; council 2 Major
@@ -472,20 +484,6 @@ this PR). Phases 2+ for each cohort workstream remain. |
 
 ## Last updated
 
-**2026-05-06 (XO: W#57 added + W#54 H2 path correction + W#53 Phase 1 complete confirmation)** —
-XO research session: **W#57 added** at `ready-to-build` — ADR 0065-A1 event-stream contract
-(`StandingOrderAppliedEvent` + `IStandingOrderEventStream`); hand-off at
-`icm/_state/handoffs/wayfinder-adr-0065-a1-event-stream-handoff.md` (PR #632 merged). ~2-3h/1 PR;
-clears W#46 halt-C + W#53 H8. **W#54 H2 path corrected:** `KeyFingerprint` shipped in
-`packages/foundation/Crypto/` (not `foundation-recovery` — W#53 P1b cycle-prevention);
-sick-bay hand-off H2 check updated to `find packages/foundation/Crypto -name "KeyFingerprint*"`.
-**W#53 Phase 1 confirmed complete** (PRs #630 + #633 on origin/main): `IAtlasProvider<T>` +
-`IHelmWidget` + `IHelmWidgetRegistry` + `DefaultHelmWidgetRegistry` + `KeyFingerprint` +
-`IIdentityAtlasSurface` + 8 view-model records. Phase 2 (6 canonical Helm widgets + adapters)
-gates only on Phase 1 merged — fully unblocked. **ADR 0066-A1 confirmed merged** (PR #586
-2026-05-05) — ADR 0066 `status: Accepted`. **ADR 0066-A1** unblocks W#48 Phase 2 + ADR 0068
-Phase 2 prerequisites.
-
 **2026-05-05 (XO: W#49 Stage 06 hand-off authored — OOD Watch Rotation)** — XO research session: W#49 Stage 06 hand-off authored at `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` (3 phases, ~6-9h, ~3 PRs). ADR 0078 Accepted via PR #571. **W#49 row flipped `design-in-flight` → `ready-to-build`**. Substrate verification complete on origin/main: `StandingOrder.cs` exists in `foundation-wayfinder`; 3 call-sites identified (`DefaultStandingOrderIssuer.cs`, `StandingOrderShapeTests.cs`, `DefaultAtlasProjectorTests.cs`); binary-compat halt clear (no NuGet binary shipped yet). Key deliverables: Phase 1 (OOD types + audit constants + `StandingOrder.IssuedDuringWatchId` extension); Phase 2 (`DefaultOodWatchService` + `OodWatchExpiryService` + 8 tests); Phase 3 (docs + ledger flip). Pre-merge council + security-engineering subagent canonical for Phases 1+2. W#50 Phase 3b + W#51 Phase 3a are unblocked by W#49 Phase 1 landing.
 
 **2026-05-05 (XO: ADR 0081 Tactical Anomaly Detection authored + W#49/W#50/W#51 CO-acceptance sweep)** — XO research session: **W#52 added** at `design-in-flight` for Tactical Anomaly Detection + Threat-Trigger Surface (ADR 0081). PR #578 carries ADR + council review (32+ Critical/Major NEEDS-AMENDMENT findings all applied same session). Key contracts: `ITacticalRuleEngine` + `ITacticalRule` + `IAlertRouter` + `ISonarStore` + `ILookout` + `ITacticalDataProvider` + `ITacticalCommandService` + `IThreatTriggerService` + `ISystemPrincipalProvider`; `TacticalOptions` 7 fields with normative bounds; 13 `AuditEventType` constants + 7 `ShipAction` constants; `LookoutQuarterdeckAlertSource` (IQuarterdeckAlertSource for Quarterdeck ticker). Two packages: `foundation-tactical` + `blocks-tactical`. **CO acceptance sweep 2026-05-05:** CO merged PRs #571 (ADR 0078/W#49 OOD Watch Rotation) + #572 (ADR 0079/W#50 Engine Room Observability) + #574 (ADR 0080/W#51 Quarterdeck Entry-Point) — all three Accepted. W#49/W#50 rows updated from "awaiting CO acceptance" to Accepted; **W#51 row added** (was missing from ledger — PR #574 had merged but no ledger row existed). All four W#35 cohort ADRs (W#49/W#50/W#51/W#52) now pending Stage 06 hand-off from XO. Queue sequencing: W#49 hand-off first (smallest; ~6-9h / ~3 PRs; unblocks W#50 EOOW wiring and W#51 Phase 3a WatchBanner); W#50 next (~14-18h / ~5 PRs); W#51 next (~14-20h / ~5 PRs); W#52 after CO accepts ADR 0081.
@@ -558,5 +556,30 @@ Key Phase 1 types: `IAtlasProvider<T>` (COVARIANT; base for all Atlas specializa
 **2026-05-01 (XO: W#42 + W#43 added — Wayfinder/Standing Order ADR drafted + ADR 0009 amendment spinoff filed)** — XO research session: **W#42 added** at `design-in-flight` for the Wayfinder System + Standing Order Contract (ADR 0065). PR #479 carries the ADR (5,830 words) + in-thread council review file (10 findings across 6 adversarial perspectives + WCAG/a11y + UPF v1.2 Stage 2 meta-validation + 21 anti-pattern scan) + 8 mechanical fixes (F1, F2, F3, F6, F7, F8, F9, F10) auto-applied per Decision Discipline Rule 3. F1 was a Critical structural-citation failure (claimed `Sunfish.Foundation.Capabilities.*` did not exist; it does, in `packages/foundation/Capabilities/`) caught by council, missed by §A0 self-audit. Cohort batting average updated to 19-of-19; structural-citation failure rate ~65% NOT caught by §A0 alone (council remains canonical defense). **2 non-mechanical findings deferred to CO disposition:** F4 (split ADR 0009 amendment into separate workstream — done; see W#43) and F5 (add §7.1 complex-schema a11y contract — pending). PR #479 awaits CO Status: Proposed → Accepted. **W#43 added** at `design-in-flight` for the ADR 0009 amendment 5th-concept Wayfinder consumer (per F4 spinoff). Intake at `icm/00_intake/output/2026-05-01_adr-0009-amendment-fifth-concept-wayfinder-consumer-intake.md`. Authoring gated on W#42 reaching Status: Accepted on origin/main. **Renumbering note:** local-only gitbutler/workspace branch had renumbered substrate-cohort rows 36/37 to "Wayfinder/Tenant Security"; on origin/main, rows 36/37 remain the substrate-cohort built rows. Wayfinder lands as W#42 on origin/main reality; PR #479 ADR + council file references updated W#36 → W#42 in commit f774f7e. Token-budget note: weekly token budget at 94% Friday 2026-05-01; CO directed B+C+A path (file F4 spinoff + update Wayfinder ledger row + max-heartbeat hibernation). XO honoring token-conservation discipline per `feedback_loop_discipline`.
 
 **2026-05-05 (sunfish-PM: W#48 added — ADR 0067 Atlas Integration-Config UI Surface re-council mechanical amendments applied; PR #539 rebased)** — sunfish-PM session: **W#48 added** at `design-in-flight` for Atlas Integration-Config UI Surface (ADR 0067). Re-council (PR #559) returned NEEDS-AMENDMENT mechanical-tier (auto-acceptable per Decision Discipline Rule 3); 6 mechanical findings applied in commit `a7890f6` (Postmark probe `/servers` → `/server`; NM2 license-acknowledgement deletion residue swept at 6 dangling sites; ProviderDescriptor.Key reconciliation drift reframed; §3.5 IAuditTrail singleton clarification; §3.13 test-fixture audit-disabled overload clarified; §3.14 `IntegrationCapabilityPurposes.IntegrationValidation` named constant added as Phase 1 deliverable). Branch rebased onto origin/main; W# corrected from 46 (W#46 = Shared Design System on origin/main) to 48. Auto-merge enabled. Cohort batting average: 29-of-30.
+
+**2026-05-06 (XO: W#48 P1.5 cycle-break hand-off authored — COB question #636 resolved)** — XO research
+session: COB question beacon `cob-question-2026-05-06T17-30Z-w48-p1-cycle-halt.md` resolved. Three
+confirmed dependency cycles block a subset of W#48 Phase 1 deliverables; cycle-safe types were already
+shippable as Phase 1a. **Phase 1.5 hand-off authored** at
+`icm/_state/handoffs/atlas-integration-config-p15-cycle-break-handoff.md`. PR 1 moves `StandingOrderId`
++ `AuditRecordId` from `foundation-wayfinder` → `foundation/Assets/Common/` (breaks Chain #1:
+`ui-core → foundation-wayfinder → kernel-crdt → ui-core`). PR 2 moves `IDecryptCapability` from
+`foundation-recovery` → `foundation/Crypto/` (breaks Chain #3:
+`ui-core → foundation-recovery → kernel-security → ui-core`). Chain #2 (`IntegrationCategoryMapping`)
+deferred to Phase 2 (adapter/mapping concern, not contract surface). Phase 1b types unblocked after
+Phase 1.5 PRs land. ~2-3h / 2 PRs; no council required (mechanical moves). COB question beacon archived
+at `icm/_state/research-inbox/_archive/cob-question-2026-05-06T17-30Z-w48-p1-cycle-halt.md`. **W#48
+build estimate updated** to ~26-38h / ~7-10 PRs (was ~23-35h / ~6-8 PRs; reflects P1a/1.5/1b
+restructure).
+
+**2026-05-06 (XO: W#1 WS-A + WS-B Stage 06 hand-offs pre-authored — pending ADR 0084/0085 acceptance)**
+— XO research session: W#1 WS-A Stage 06 hand-off pre-authored at
+`icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (ADR 0084 — `TenantId.System` sentinel
++ `TenantSelection` DU + `IMayHaveTenant` [Obsolete]; gated on ADR 0084 Accepted). W#1 WS-B Stage 06
+hand-off pre-authored at `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (ADR 0085 —
+`AuditQuery.Tenant` + `EntityQuery.Tenant` + `ExportRequest.TenantId` migrated `TenantId?` →
+`TenantSelection?`; gated on ADR 0084 + ADR 0085 Accepted + WS-A built). **W#1 row remains
+`design-in-flight`** — CO must flip both ADR 0084 + ADR 0085 `Status: Proposed → Accepted` before
+COB may begin. PR #637.
 
 **2026-05-04 (XO: W#47 added — W#42 follow-on Anchor MAUI ISystemRequirementsRenderer Stage 06 hand-off authored)** — XO research session: **W#47 added** at `ready-to-build` for the W#42 follow-on Anchor MAUI concrete `ISystemRequirementsRenderer` per CO directive 2026-05-04. Hand-off at `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` (4,179 words; conforms to ADR 0073 hand-off template contract). 5 phases / 5 PRs / 13–18h sunfish-PM time. Estimate basis cites W#41 Phase 4 + W#42 Phase 4 cohort precedent envelope + `property-leasing-pipeline` Phase 5 UI-surface precedent; ±35% range applied per ADR 0073 first-of-kind estimate-honesty rule. Substrate (W#42 + W#41) is fully shipped on origin/main — `ISystemRequirementsRenderer` interface in `packages/foundation-mission-space/Services/`; `SystemRequirementsResult` + `DimensionEvaluation` in `packages/foundation-mission-space/Models/Requirements.cs`; `OverallVerdict` + `SystemRequirementsRenderMode` + `DimensionPolicyKind` + `DimensionPassFail` in `packages/foundation-mission-space/Models/RequirementsEnums.cs`; 5 audit event types (`MinimumSpecEvaluated` / `InstallBlocked` / `InstallWarned` / `PostInstallSpecRegression` / `InstallForceEnabled`) in `packages/kernel-audit/AuditEventType.cs`. Anchor architecture confirmed as **MAUI Blazor Hybrid** (`<UseMaui>true</UseMaui>` + `AddMauiBlazorWebView()`); renderer ships as Razor components, not pure XAML. Renders all three modes (`PreInstallFullPage` Phase 1 / `PostInstallInlineExplanation` Phase 2 / `PostInstallRegressionBanner` Phase 3) with WCAG 2.2 AA + EN 301 549 v3.2.1 baseline established Phase 4 via `Sunfish.UIAdapters.Blazor.A11y` harness on Win + MacCatalyst (iOS / Android deferred per ADR 0048-A1 mobile-scope gate). Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase per ADR 0065 §Decision §7 mandate; cohort batting average 22-of-22). 7 halt-conditions named including substrate-prereq verification, ledger sanity, WCAG/a11y subagent canonical, MAUI version compatibility, Win+MacCatalyst-only Phase-4 scope, audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), and `IMinimumSpecResolver` scoping respecting `IActiveTeamAccessor` per ADR 0032. Bridge React + iOS SwiftUI + Android-native renderers remain queued as future per-adapter Stage 06 hand-offs. **Next-up XO author work after this lands:** W#43 ADR 0009 amendment council; W#33 §7.2 follow-on cohort (ADR 0028-A5 cross-form-factor migration); W#34/W#35 follow-on ADRs queue (~5 ADRs, ~70-100h XO).

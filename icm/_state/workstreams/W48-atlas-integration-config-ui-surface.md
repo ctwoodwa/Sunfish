@@ -29,7 +29,19 @@ Key new types: `IIntegrationAtlasProvider` + `IIntegrationAtlasContext`
 `IDecryptCapabilityProvider` + `IntegrationCapabilityPurposes`. No new
 package (additive to `packages/ui-core/Wayfinder/Integrations/`).
 
-5 build phases: P1 contract surface (gated on W#53 P1 — **CLEARED**);
-P2 reference impl + audit + SUNFISH_INTEGRATION_AUDIT001 analyzer;
-P3a/3b adapter schema providers + validators; P4 Anchor+Bridge
-rendering; P5 ledger flip + docs. ~23-35h / ~6-8 PRs.
+**Phase 1 restructured (2026-05-06 per COB question #636):** Three
+dependency cycles block some Phase 1 types. New sequence:
+- **Phase 1a** (ship now, cycle-safe): enums + value types + constants +
+  `IIntegrationAtlasContext` + `IIntegrationProviderValidator` +
+  `ICustomIntegrationRenderer` + `IValidationStatusStore`
+- **Phase 1.5** (cycle-break moves): `StandingOrderId` + `AuditRecordId`
+  → `foundation/Assets/Common/`; `IDecryptCapability` → `foundation/Crypto/`.
+  Hand-off at `icm/_state/handoffs/atlas-integration-config-p15-cycle-break-handoff.md`.
+- **Phase 1b** (after Phase 1.5 merged): `IIntegrationAtlasProvider` +
+  `IntegrationAtlasView` + `ActiveProviderSnapshot` +
+  `IDecryptCapabilityProvider` + `AddSunfishIntegrationAtlas()` +
+  4 `AuditEventType` constants + `ContractSurfaceTests`.
+
+5 build phases: P1a/1.5/1b → P2 reference impl + audit +
+SUNFISH_INTEGRATION_AUDIT001 analyzer; P3a/3b; P4 Anchor+Bridge; P5 docs.
+~26-38h / ~7-10 PRs.

@@ -105,4 +105,29 @@ Key Phase 1 types: `IAtlasProvider<T>` (COVARIANT; base for all Atlas specializa
 
 **2026-05-05 (sunfish-PM: W#48 added — ADR 0067 Atlas Integration-Config UI Surface re-council mechanical amendments applied; PR #539 rebased)** — sunfish-PM session: **W#48 added** at `design-in-flight` for Atlas Integration-Config UI Surface (ADR 0067). Re-council (PR #559) returned NEEDS-AMENDMENT mechanical-tier (auto-acceptable per Decision Discipline Rule 3); 6 mechanical findings applied in commit `a7890f6` (Postmark probe `/servers` → `/server`; NM2 license-acknowledgement deletion residue swept at 6 dangling sites; ProviderDescriptor.Key reconciliation drift reframed; §3.5 IAuditTrail singleton clarification; §3.13 test-fixture audit-disabled overload clarified; §3.14 `IntegrationCapabilityPurposes.IntegrationValidation` named constant added as Phase 1 deliverable). Branch rebased onto origin/main; W# corrected from 46 (W#46 = Shared Design System on origin/main) to 48. Auto-merge enabled. Cohort batting average: 29-of-30.
 
+**2026-05-06 (XO: W#48 P1.5 cycle-break hand-off authored — COB question #636 resolved)** — XO research
+session: COB question beacon `cob-question-2026-05-06T17-30Z-w48-p1-cycle-halt.md` resolved. Three
+confirmed dependency cycles block a subset of W#48 Phase 1 deliverables; cycle-safe types were already
+shippable as Phase 1a. **Phase 1.5 hand-off authored** at
+`icm/_state/handoffs/atlas-integration-config-p15-cycle-break-handoff.md`. PR 1 moves `StandingOrderId`
++ `AuditRecordId` from `foundation-wayfinder` → `foundation/Assets/Common/` (breaks Chain #1:
+`ui-core → foundation-wayfinder → kernel-crdt → ui-core`). PR 2 moves `IDecryptCapability` from
+`foundation-recovery` → `foundation/Crypto/` (breaks Chain #3:
+`ui-core → foundation-recovery → kernel-security → ui-core`). Chain #2 (`IntegrationCategoryMapping`)
+deferred to Phase 2 (adapter/mapping concern, not contract surface). Phase 1b types unblocked after
+Phase 1.5 PRs land. ~2-3h / 2 PRs; no council required (mechanical moves). COB question beacon archived
+at `icm/_state/research-inbox/_archive/cob-question-2026-05-06T17-30Z-w48-p1-cycle-halt.md`. **W#48
+build estimate updated** to ~26-38h / ~7-10 PRs (was ~23-35h / ~6-8 PRs; reflects P1a/1.5/1b
+restructure).
+
+**2026-05-06 (XO: W#1 WS-A + WS-B Stage 06 hand-offs pre-authored — pending ADR 0084/0085 acceptance)**
+— XO research session: W#1 WS-A Stage 06 hand-off pre-authored at
+`icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (ADR 0084 — `TenantId.System` sentinel
++ `TenantSelection` DU + `IMayHaveTenant` [Obsolete]; gated on ADR 0084 Accepted). W#1 WS-B Stage 06
+hand-off pre-authored at `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (ADR 0085 —
+`AuditQuery.Tenant` + `EntityQuery.Tenant` + `ExportRequest.TenantId` migrated `TenantId?` →
+`TenantSelection?`; gated on ADR 0084 + ADR 0085 Accepted + WS-A built). **W#1 row remains
+`design-in-flight`** — CO must flip both ADR 0084 + ADR 0085 `Status: Proposed → Accepted` before
+COB may begin. PR #637.
+
 **2026-05-04 (XO: W#47 added — W#42 follow-on Anchor MAUI ISystemRequirementsRenderer Stage 06 hand-off authored)** — XO research session: **W#47 added** at `ready-to-build` for the W#42 follow-on Anchor MAUI concrete `ISystemRequirementsRenderer` per CO directive 2026-05-04. Hand-off at `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` (4,179 words; conforms to ADR 0073 hand-off template contract). 5 phases / 5 PRs / 13–18h sunfish-PM time. Estimate basis cites W#41 Phase 4 + W#42 Phase 4 cohort precedent envelope + `property-leasing-pipeline` Phase 5 UI-surface precedent; ±35% range applied per ADR 0073 first-of-kind estimate-honesty rule. Substrate (W#42 + W#41) is fully shipped on origin/main — `ISystemRequirementsRenderer` interface in `packages/foundation-mission-space/Services/`; `SystemRequirementsResult` + `DimensionEvaluation` in `packages/foundation-mission-space/Models/Requirements.cs`; `OverallVerdict` + `SystemRequirementsRenderMode` + `DimensionPolicyKind` + `DimensionPassFail` in `packages/foundation-mission-space/Models/RequirementsEnums.cs`; 5 audit event types (`MinimumSpecEvaluated` / `InstallBlocked` / `InstallWarned` / `PostInstallSpecRegression` / `InstallForceEnabled`) in `packages/kernel-audit/AuditEventType.cs`. Anchor architecture confirmed as **MAUI Blazor Hybrid** (`<UseMaui>true</UseMaui>` + `AddMauiBlazorWebView()`); renderer ships as Razor components, not pure XAML. Renders all three modes (`PreInstallFullPage` Phase 1 / `PostInstallInlineExplanation` Phase 2 / `PostInstallRegressionBanner` Phase 3) with WCAG 2.2 AA + EN 301 549 v3.2.1 baseline established Phase 4 via `Sunfish.UIAdapters.Blazor.A11y` harness on Win + MacCatalyst (iOS / Android deferred per ADR 0048-A1 mobile-scope gate). Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase per ADR 0065 §Decision §7 mandate; cohort batting average 22-of-22). 7 halt-conditions named including substrate-prereq verification, ledger sanity, WCAG/a11y subagent canonical, MAUI version compatibility, Win+MacCatalyst-only Phase-4 scope, audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), and `IMinimumSpecResolver` scoping respecting `IActiveTeamAccessor` per ADR 0032. Bridge React + iOS SwiftUI + Android-native renderers remain queued as future per-adapter Stage 06 hand-offs. **Next-up XO author work after this lands:** W#43 ADR 0009 amendment council; W#33 §7.2 follow-on cohort (ADR 0028-A5 cross-form-factor migration); W#34/W#35 follow-on ADRs queue (~5 ADRs, ~70-100h XO).
