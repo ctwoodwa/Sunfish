@@ -111,6 +111,15 @@ public sealed class DefaultQuarterdeckCommandService : IQuarterdeckCommandServic
             ct).ConfigureAwait(false);
 
         // Step 2: resolve actor → principal.
+        // NOTE: per IActorPrincipalResolver xmldoc the v1 in-memory
+        // resolver IGNORES tenantId (reserved for future per-tenant
+        // override paths). Cross-tenant probes therefore fall through
+        // to the IPermissionResolver gate, which denies on no-matching-
+        // role at the target tenant. The pre-op AlertAcknowledgementRequested
+        // record above ensures cross-tenant probes are auditable
+        // regardless. TODO(W#51-P3): once IActorPrincipalResolver
+        // surfaces the principal's home tenant, add an explicit
+        // tenantId-binding check here for defence-in-depth.
         var principal = await _actorResolver
             .ResolveAsync(tenantId, actor, ct)
             .ConfigureAwait(false);

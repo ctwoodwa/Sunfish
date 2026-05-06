@@ -215,4 +215,78 @@ public class DefaultQuarterdeckCommandServiceTests
         Assert.True(body.ContainsKey("granted"));
         Assert.Equal(true, body["granted"]);
     }
+
+    /// <summary>
+    /// Cross-tenant probe: actor is registered in the in-memory
+    /// resolver (which ignores tenantId per IActorPrincipalResolver
+    /// xmldoc), but the target tenant has no role for that principal.
+    /// IPermissionResolver gates the call → deny. Pre-op intent record
+    /// MUST still emit so the probe is auditable. Pins the §5.2
+    /// tenant-binding invariant from the W#51 hand-off.
+    /// </summary>
+    [Fact]
+    public async Task AcknowledgeAlert_CrossTenantProbe_DeniesViaPermissionResolver_AndEmitsRequested()
+    {
+        var foreignActor = new ActorId("bob-from-tenant-beta");
+        var foreignPrincipal = new Individual(PrincipalId.FromBytes(new byte[32]));
+        var resolver = new InMemoryActorPrincipalResolver();
+        resolver.Register(foreignActor, foreignPrincipal);
+
+        var audit = Substitute.For<IAuditTrail>();
+        // AlwaysDeny simulates "no role at TenantA for foreignPrincipal".
+        var svc = Build(AlwaysDeny(), audit, actorResolver: resolver);
+
+        var result = await svc.AcknowledgeAlertAsync(AlertId, TenantA, foreignActor);
+
+        Assert.False(result);
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.AlertAcknowledgementRequested)),
+            Arg.Any<CancellationToken>());
+        await audit.DidNotReceive().AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.AlertAcknowledged)),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// §5 FIRST-observable-side-effect ordering: pre-op
+    /// AlertAcknowledgementRequested MUST be appended to the audit
+    /// trail BEFORE the actor and permission resolvers are consulted.
+    /// Pins the invariant against future refactors that might lift
+    /// the actor/permission lookups above the audit emission for
+    /// "performance."
+    /// </summary>
+    [Fact]
+    public async Task AcknowledgeAlert_GrantedPath_EmitsRequested_BeforeActorAndPermissionResolution()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(new Individual(PrincipalId.FromBytes(new byte[32]))));
+        var permissionResolver = AlwaysGrant();
+
+        var svc = new DefaultQuarterdeckCommandService(
+            actorResolver,
+            permissionResolver,
+            audit,
+            NewSigner(),
+            NullLogger<DefaultQuarterdeckCommandService>.Instance);
+
+        await svc.AcknowledgeAlertAsync(AlertId, TenantA, ActorA);
+
+        Received.InOrder(() =>
+        {
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.AlertAcknowledgementRequested)),
+                Arg.Any<CancellationToken>());
+            actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+            permissionResolver.ResolveAsync(
+                Arg.Any<TenantId>(), Arg.Any<Principal>(),
+                Arg.Any<ShipLocation>(), Arg.Any<DeckDepth>(),
+                Arg.Any<ShipAction>(), Arg.Any<Resource?>(),
+                Arg.Any<CancellationToken>());
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.AlertAcknowledged)),
+                Arg.Any<CancellationToken>());
+        });
+    }
 }
