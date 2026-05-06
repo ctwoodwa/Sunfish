@@ -23,7 +23,7 @@ public sealed class PostgresAuditLogTests : IClassFixture<PostgresAssetStoreFixt
             VersionId: null,
             Op: op,
             Actor: new ActorId(actor),
-            Tenant: TenantId.Default,
+            Tenant: TenantId.System,
             At: DateTimeOffset.UtcNow,
             Payload: JsonDocument.Parse($$"""{"op":"{{op}}"}"""),
             Justification: "test");

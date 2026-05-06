@@ -108,5 +108,5 @@ public sealed class NativeChannelProvider : IChannelProvider, IAsyncDisposable
     // PresenceBus needs a tenant binding at construction; the multi-tenant
     // surface here lives at the call boundary (each Open/Listen takes a
     // TenantId). Phase 1 single-tenant deployments use the default sentinel.
-    private static TenantId GetDefaultTenant() => TenantId.Default;
+    private static TenantId GetDefaultTenant() => TenantId.System;
 }

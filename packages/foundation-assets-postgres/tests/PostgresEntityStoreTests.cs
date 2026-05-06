@@ -19,7 +19,7 @@ public sealed class PostgresEntityStoreTests : IClassFixture<PostgresAssetStoreF
     private static JsonDocument Body(string json) => JsonDocument.Parse(json);
 
     private static CreateOptions Opts(string scheme, string authority, string nonce, string issuer = "alice")
-        => new(scheme, authority, nonce, new ActorId(issuer), TenantId.Default);
+        => new(scheme, authority, nonce, new ActorId(issuer), TenantId.System);
 
     [Fact]
     public async Task CreateAsync_RoundTrips_BodyAndMetadata()

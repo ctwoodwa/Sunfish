@@ -16,7 +16,7 @@ public sealed class InMemoryVersionStoreTests
     }
 
     private static CreateOptions Opts(string nonce, DateTimeOffset? validFrom = null)
-        => new("property", "acme", nonce, new ActorId("alice"), TenantId.Default, ValidFrom: validFrom);
+        => new("property", "acme", nonce, new ActorId("alice"), TenantId.System, ValidFrom: validFrom);
 
     [Fact]
     public async Task GetVersionAsync_ReturnsVersion_ForValidId()

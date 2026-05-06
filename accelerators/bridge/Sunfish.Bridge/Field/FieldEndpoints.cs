@@ -49,7 +49,7 @@ public static class FieldEndpoints
     /// <summary>
     /// Sentinel tenant attribution for unauthenticated / pre-validation
     /// audit records. Substrate v1 uses an explicit sentinel because
-    /// <see cref="TenantId.Default"/> ("default") is a real tenant
+    /// <see cref="TenantId.System"/> ("default") is a real tenant
     /// candidate and would mis-attribute pre-auth records.
     /// </summary>
     private static readonly TenantId BridgeAnonymousTenant = new("bridge-anonymous");
@@ -245,7 +245,7 @@ public static class FieldEndpoints
 
         await EmitAuditAsync(auditTrail, signer,
             AuditEventType.FieldBlobAccepted,
-            tenantId: TenantId.Default,
+            tenantId: TenantId.System,
             payload: BuildBlobAcceptPayload(sha256, bytes.LongLength, request.ContentType),
             ct).ConfigureAwait(false);
 

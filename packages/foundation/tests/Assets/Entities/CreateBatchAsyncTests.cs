@@ -15,7 +15,7 @@ public sealed class CreateBatchAsyncTests
     private static JsonDocument Body(string json) => JsonDocument.Parse(json);
 
     private static CreateOptions Opts(string nonce, string authority = "acme", string issuer = "alice")
-        => new("property", authority, nonce, new ActorId(issuer), TenantId.Default);
+        => new("property", authority, nonce, new ActorId(issuer), TenantId.System);
 
     private static (InMemoryEntityStore store, InMemoryAssetStorage storage) NewStore()
     {
@@ -197,9 +197,9 @@ public sealed class CreateBatchAsyncTests
         var drafts = new List<EntityDraft>
         {
             new(Schema, Body("""{"a":1}"""),
-                new CreateOptions("property", "acme", "n-a", new ActorId("alice"), TenantId.Default, ValidFrom: t0)),
+                new CreateOptions("property", "acme", "n-a", new ActorId("alice"), TenantId.System, ValidFrom: t0)),
             new(Schema, Body("""{"b":2}"""),
-                new CreateOptions("property", "acme", "n-b", new ActorId("bob"), TenantId.Default, ValidFrom: t1,
+                new CreateOptions("property", "acme", "n-b", new ActorId("bob"), TenantId.System, ValidFrom: t1,
                     ExplicitLocalPart: "building-99")),
         };
 

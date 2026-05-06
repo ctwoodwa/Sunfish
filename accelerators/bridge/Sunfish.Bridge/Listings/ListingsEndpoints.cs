@@ -629,12 +629,12 @@ public static class ListingsEndpoints
     {
         if (string.IsNullOrEmpty(host))
         {
-            return TenantId.Default;
+            return TenantId.System;
         }
         var firstDot = host.IndexOf('.');
         if (firstDot <= 0)
         {
-            return TenantId.Default;
+            return TenantId.System;
         }
         return new TenantId(host[..firstDot]);
     }
