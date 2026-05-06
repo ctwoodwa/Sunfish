@@ -201,6 +201,35 @@ public class DefaultTacticalRuleEngineTests
                 signer: signer));
     }
 
+    /// <summary>
+    /// Per W#52 P2b council Major M1: cooldown is consumed ONLY after
+    /// successful AppendAsync. A flaky audit backend that throws on
+    /// every Append must not silently spend the window.
+    /// </summary>
+    [Fact]
+    public void Evaluate_RuleErrorRate_FlakyAuditBackend_DoesNotConsumeCooldown()
+    {
+        var faultyTrail = Substitute.For<IAuditTrail>();
+        faultyTrail.AppendAsync(Arg.Any<AuditRecord>(), Arg.Any<CancellationToken>())
+            .Returns<ValueTask>(_ => throw new InvalidOperationException("synthetic backend fault"));
+        var signer = StubSigner();
+        var fakeTime = new TestTimeProvider(DateTimeOffset.UtcNow);
+        var engine = Build(audit: faultyTrail, signer: signer, time: fakeTime);
+        engine.RegisterRule(new ThrowingRule("third-party.flaky"));
+
+        for (int i = 0; i < 150; i++)
+        {
+            _ = engine.Evaluate(MakeSignal());
+        }
+
+        // Wait briefly for fire-and-forget tasks to attempt + fail.
+        Thread.Sleep(100);
+
+        // Multiple emission attempts allowed because cooldown was NOT
+        // burned on the failed AppendAsync calls.
+        faultyTrail.ReceivedWithAnyArgs().AppendAsync(default!, default);
+    }
+
     [Fact]
     public void Evaluate_RuleErrorRate_Above100PerMinute_EmitsDenialOncePerMinute()
     {

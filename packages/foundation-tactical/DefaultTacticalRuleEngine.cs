@@ -190,9 +190,13 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
             new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
 
         // Per-tenant ordering: each tenant gets a Channel<TacticalSignal>
-        // + dedicated reader task; cross-tenant signals process in parallel.
-        var tenantWriters = new ConcurrentDictionary<TenantId, ChannelWriter<TacticalSignal>>();
-        var tenantTasks = new ConcurrentDictionary<TenantId, Task>();
+        // + dedicated reader task; cross-tenant signals process in
+        // parallel. Per W#52 P2b council Major M2: the channel + task
+        // pair is wrapped in Lazy<T> so ConcurrentDictionary.GetOrAdd
+        // factory contention can't spawn orphan reader tasks (one Lazy
+        // ever publishes; losing factories produce identical un-
+        // observed Lazy instances).
+        var tenants = new ConcurrentDictionary<TenantId, Lazy<TenantPipe>>();
 
         var dispatcher = Task.Run(async () =>
         {
@@ -200,39 +204,26 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
             {
                 await foreach (var signal in signals.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var writer = tenantWriters.GetOrAdd(signal.TenantId, tid =>
-                    {
-                        var ch = Channel.CreateUnbounded<TacticalSignal>(
-                            new UnboundedChannelOptions { SingleReader = true });
-                        var reader = ch.Reader;
-                        var task = Task.Run(async () =>
-                        {
-                            await foreach (var s in reader.ReadAllAsync(ct).ConfigureAwait(false))
-                            {
-                                foreach (var alert in Evaluate(s))
-                                {
-                                    await output.Writer.WriteAsync(alert, ct).ConfigureAwait(false);
-                                }
-                            }
-                        }, ct);
-                        tenantTasks[tid] = task;
-                        return ch.Writer;
-                    });
-                    await writer.WriteAsync(signal, ct).ConfigureAwait(false);
+                    var lazy = tenants.GetOrAdd(signal.TenantId,
+                        tid => new Lazy<TenantPipe>(
+                            () => CreateTenantPipe(output.Writer, ct),
+                            LazyThreadSafetyMode.ExecutionAndPublication));
+                    await lazy.Value.Writer.WriteAsync(signal, ct).ConfigureAwait(false);
                 }
-                foreach (var w in tenantWriters.Values)
-                {
-                    w.TryComplete();
-                }
-                await Task.WhenAll(tenantTasks.Values).ConfigureAwait(false);
+                CompleteAllTenantWriters(tenants);
+                await WaitForAllTenantTasks(tenants).ConfigureAwait(false);
                 output.Writer.TryComplete();
             }
             catch (OperationCanceledException)
             {
+                CompleteAllTenantWriters(tenants);
+                await WaitForAllTenantTasks(tenants).ConfigureAwait(false);
                 output.Writer.TryComplete();
             }
             catch (Exception ex)
             {
+                CompleteAllTenantWriters(tenants);
+                await WaitForAllTenantTasks(tenants).ConfigureAwait(false);
                 output.Writer.TryComplete(ex);
             }
         }, ct);
@@ -245,6 +236,79 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
         await dispatcher.ConfigureAwait(false);
     }
 
+    private TenantPipe CreateTenantPipe(ChannelWriter<TacticalAlert> output, CancellationToken ct)
+    {
+        var ch = Channel.CreateUnbounded<TacticalSignal>(
+            new UnboundedChannelOptions { SingleReader = true });
+        var reader = ch.Reader;
+        var task = Task.Run(async () =>
+        {
+            try
+            {
+                await foreach (var s in reader.ReadAllAsync(ct).ConfigureAwait(false))
+                {
+                    // Evaluate already swallows ITacticalRule throws; an
+                    // unexpected fault here (e.g., cancellation during
+                    // output write) terminates this tenant's drain — log
+                    // so we don't fail silently per W#52 P2b council
+                    // Minor on reader-task fault isolation.
+                    try
+                    {
+                        foreach (var alert in Evaluate(s))
+                        {
+                            await output.WriteAsync(alert, ct).ConfigureAwait(false);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex,
+                            "Tactical per-tenant reader hit unexpected fault for {TenantId}; continuing drain.",
+                            s.TenantId);
+                    }
+                }
+            }
+            catch (OperationCanceledException) { /* expected on cancel */ }
+        }, ct);
+        return new TenantPipe(ch.Writer, task);
+    }
+
+    private static void CompleteAllTenantWriters(
+        ConcurrentDictionary<TenantId, Lazy<TenantPipe>> tenants)
+    {
+        foreach (var lazy in tenants.Values)
+        {
+            if (lazy.IsValueCreated)
+            {
+                lazy.Value.Writer.TryComplete();
+            }
+        }
+    }
+
+    private static async Task WaitForAllTenantTasks(
+        ConcurrentDictionary<TenantId, Lazy<TenantPipe>> tenants)
+    {
+        var tasks = tenants.Values
+            .Where(l => l.IsValueCreated)
+            .Select(l => l.Value.Task);
+        try
+        {
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Reader-task faults are logged inside the reader; don't
+            // re-throw them out of cleanup.
+        }
+    }
+
+    private readonly record struct TenantPipe(
+        ChannelWriter<TacticalSignal> Writer,
+        Task Task);
+
     /// <inheritdoc />
     public IReadOnlyList<ITacticalRule> GetRegisteredRules()
     {
@@ -254,6 +318,12 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
         }
     }
 
+    // TODO(W#52 P2c): harden first-party identity check. Today this is a
+    // Phase 2b proxy — an assembly named "Sunfish.MaliciousModule" passes.
+    // Phase 2c should add Assembly.GetName().GetPublicKeyToken() comparison
+    // against the canonical Sunfish strong-name OR replace with an
+    // [InternalsVisibleTo]-only registration overload that bypasses the
+    // public RegisterRule for first-party rules.
     private static bool IsFirstPartyAssembly(Type t) =>
         t.Assembly.GetName().Name?.StartsWith("Sunfish.", StringComparison.Ordinal) == true;
 
@@ -269,9 +339,12 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
 
         if (shouldEmit)
         {
-            // Best-effort fire-and-forget; we want emission to NOT
-            // throw out of Evaluate's hot path.
-            _ = TryEmitFailureRateDenialAsync(rule.RuleName, tenantId, count, now);
+            // Per W#52 P2b council Major M1: the cooldown is consumed
+            // ONLY on emission success (MarkEmitted called after
+            // AppendAsync returns). A flaky audit backend therefore does
+            // not silently spend the cooldown window and let a runaway
+            // rule throw unaudited.
+            _ = TryEmitFailureRateDenialAsync(rule.RuleName, tenantId, count, now, tracker);
         }
     }
 
@@ -279,7 +352,8 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
         string ruleName,
         TenantId tenantId,
         int count,
-        DateTimeOffset occurredAt)
+        DateTimeOffset occurredAt,
+        RuleErrorTracker tracker)
     {
         if (_auditTrail is null || _signer is null)
         {
@@ -306,11 +380,16 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
                 Payload: signed,
                 AttestingSignatures: Array.Empty<AttestingSignature>());
             await _auditTrail.AppendAsync(record, default).ConfigureAwait(false);
+            // Success — burn the cooldown so we don't double-emit within
+            // the same window.
+            tracker.MarkEmitted(occurredAt);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex,
-                "Tactical rule-error-rate denial emission failed for {RuleName}.", ruleName);
+                "Tactical rule-error-rate denial emission failed for {RuleName}; "
+                + "cooldown not consumed — next throw above threshold will retry.",
+                ruleName);
         }
     }
 
@@ -320,6 +399,14 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
         private readonly Queue<DateTimeOffset> _ticks = new();
         private DateTimeOffset _lastEmittedAt = DateTimeOffset.MinValue;
 
+        /// <summary>
+        /// Returns the current count + whether a denial SHOULD be emitted
+        /// (count above threshold AND outside the cooldown window). Per
+        /// W#52 P2b council M1: the cooldown is NOT consumed here —
+        /// callers MUST call <see cref="MarkEmitted"/> on emission
+        /// success so a failing audit backend can't silently spend the
+        /// cooldown.
+        /// </summary>
         public (int Count, bool ShouldEmit) Record(
             DateTimeOffset now, int thresholdPerMinute)
         {
@@ -332,12 +419,24 @@ public sealed class DefaultTacticalRuleEngine : ITacticalRuleEngine
                 }
                 _ticks.Enqueue(now);
                 var count = _ticks.Count;
-                if (count > thresholdPerMinute && now - _lastEmittedAt >= window)
+                var shouldEmit = count > thresholdPerMinute
+                    && now - _lastEmittedAt >= window;
+                return (count, shouldEmit);
+            }
+        }
+
+        /// <summary>
+        /// Burn the cooldown after a successful emission. Idempotent on
+        /// repeated calls within the same window.
+        /// </summary>
+        public void MarkEmitted(DateTimeOffset occurredAt)
+        {
+            lock (_gate)
+            {
+                if (occurredAt > _lastEmittedAt)
                 {
-                    _lastEmittedAt = now;
-                    return (count, true);
+                    _lastEmittedAt = occurredAt;
                 }
-                return (count, false);
             }
         }
     }
