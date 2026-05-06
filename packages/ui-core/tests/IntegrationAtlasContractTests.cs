@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Sunfish.UICore.Wayfinder.Integrations;
 using Xunit;
 
@@ -148,5 +149,174 @@ public class IntegrationAtlasContractTests
         Assert.NotNull(prop);
         Assert.Equal(typeof(System.Collections.Generic.IReadOnlyList<CredentialFieldSpec>),
             prop!.PropertyType);
+    }
+
+    // ===== Phase 1b additions =====
+
+    [Fact]
+    public void IIntegrationAtlasProvider_NoMethodReturnsDecryptedBytes()
+    {
+        var t = typeof(IIntegrationAtlasProvider);
+        var disallowed = new[]
+        {
+            typeof(byte[]),
+            typeof(System.ReadOnlyMemory<byte>),
+            typeof(System.Memory<byte>),
+        };
+        foreach (var method in t.GetMethods())
+        {
+            var rt = method.ReturnType;
+            if (rt.IsGenericType && rt.GetGenericTypeDefinition() == typeof(System.Threading.Tasks.Task<>))
+            {
+                rt = rt.GetGenericArguments()[0];
+            }
+            Assert.DoesNotContain(rt, disallowed);
+
+            var nameLower = method.Name.ToLowerInvariant();
+            if ((nameLower.Contains("decrypt") || nameLower.Contains("credential")) && rt == typeof(string))
+            {
+                Assert.Fail($"{method.Name} returns string + carries credential / decrypt semantics — §Trust regression.");
+            }
+        }
+    }
+
+    [Fact]
+    public void IIntegrationAtlasProvider_ExtendsIAtlasProviderOfIntegrationAtlasView()
+    {
+        var t = typeof(IIntegrationAtlasProvider);
+        Assert.Contains(
+            typeof(Sunfish.UICore.Wayfinder.IAtlasProvider<IntegrationAtlasView>),
+            t.GetInterfaces());
+    }
+
+    [Fact]
+    public void IIntegrationAtlasProvider_IssueMethods_ReturnTaskOfStandingOrderId()
+    {
+        // Cycle-break: hand-off cited Task<StandingOrder>; cycle-safe
+        // substitute is Task<StandingOrderId>.
+        var t = typeof(IIntegrationAtlasProvider);
+        foreach (var name in new[] {
+            nameof(IIntegrationAtlasProvider.IssueProviderChangeAsync),
+            nameof(IIntegrationAtlasProvider.IssueSensitiveCredentialAsync),
+            nameof(IIntegrationAtlasProvider.IssueNonSensitiveCredentialAsync),
+            nameof(IIntegrationAtlasProvider.IssueRoutingAsync),
+        })
+        {
+            var m = t.GetMethod(name);
+            Assert.NotNull(m);
+            var rt = m!.ReturnType;
+            Assert.True(rt.IsGenericType);
+            Assert.Equal(typeof(System.Threading.Tasks.Task<>), rt.GetGenericTypeDefinition());
+            Assert.Equal(
+                typeof(Sunfish.Foundation.Assets.Common.StandingOrderId),
+                rt.GetGenericArguments()[0]);
+        }
+    }
+
+    [Fact]
+    public void IDecryptCapabilityProvider_AcquireAsync_ReturnsTaskOfNullableCapability()
+    {
+        var t = typeof(Sunfish.Foundation.Crypto.IDecryptCapabilityProvider);
+        var m = t.GetMethod(nameof(Sunfish.Foundation.Crypto.IDecryptCapabilityProvider.AcquireAsync));
+        Assert.NotNull(m);
+        var rt = m!.ReturnType;
+        Assert.True(rt.IsGenericType);
+        Assert.Equal(typeof(System.Threading.Tasks.Task<>), rt.GetGenericTypeDefinition());
+        Assert.Equal(
+            typeof(Sunfish.Foundation.Crypto.IDecryptCapability),
+            rt.GetGenericArguments()[0]);
+    }
+
+    [Fact]
+    public void AddSunfishIntegrationAtlas_ThrowsWhenDecryptCapabilityProviderMissing()
+    {
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        var ex = Assert.Throws<InvalidOperationException>(() => services.AddSunfishIntegrationAtlas());
+        Assert.Contains("AddSunfishRecoveryCoordinator", ex.Message);
+    }
+
+    [Fact]
+    public void AddSunfishIntegrationAtlas_RegistersValidationStatusStoreOnceWhenDecryptCapabilityPresent()
+    {
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddSingleton<Sunfish.Foundation.Crypto.IDecryptCapabilityProvider>(_ =>
+            throw new NotSupportedException("placeholder; not invoked in this test"));
+
+        services.AddSunfishIntegrationAtlas();
+
+        var sp = services.BuildServiceProvider();
+        var store = sp.GetRequiredService<IValidationStatusStore>();
+        Assert.IsType<InMemoryValidationStatusStore>(store);
+
+        // Idempotency: second call leaves the existing registration intact.
+        services.AddSunfishIntegrationAtlas();
+        Assert.Single(services, d => d.ServiceType == typeof(IValidationStatusStore));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task InMemoryValidationStatusStore_GetCurrent_RoundTripsLatestUpdate()
+    {
+        var store = new InMemoryValidationStatusStore();
+        var tenant = Sunfish.Foundation.Assets.Common.TenantId.Default;
+        var category = IntegrationCategory.Payments;
+        var providerId = "stripe";
+
+        Assert.Null(await store.GetCurrentAsync(tenant, category, providerId));
+
+        var result = new IntegrationValidationResult(
+            ProviderValidationStatus.Valid,
+            DateTimeOffset.UtcNow,
+            null,
+            null);
+        await store.UpdateAsync(tenant, category, providerId, result, "alice");
+
+        var current = await store.GetCurrentAsync(tenant, category, providerId);
+        Assert.NotNull(current);
+        Assert.Equal(ProviderValidationStatus.Valid, current!.Result.Status);
+        Assert.Equal("alice", current.RecordedBy.Value);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task InMemoryValidationStatusStore_HistoryAsync_ReturnsNewestFirstUpToCap()
+    {
+        var store = new InMemoryValidationStatusStore();
+        var tenant = Sunfish.Foundation.Assets.Common.TenantId.Default;
+        var category = IntegrationCategory.MeshVpn;
+        var providerId = "headscale";
+        var baseAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+
+        for (var i = 0; i < 5; i++)
+        {
+            await store.UpdateAsync(tenant, category, providerId,
+                new IntegrationValidationResult(
+                    ProviderValidationStatus.Valid,
+                    baseAt.AddMinutes(i),
+                    null,
+                    null),
+                "ops");
+        }
+
+        var collected = new System.Collections.Generic.List<ProviderValidationStatusEntry>();
+        await foreach (var entry in store.HistoryAsync(tenant, category, providerId, maxEntries: 3))
+        {
+            collected.Add(entry);
+        }
+
+        Assert.Equal(3, collected.Count);
+        Assert.True(collected[0].Result.ValidatedAt > collected[1].Result.ValidatedAt);
+        Assert.True(collected[1].Result.ValidatedAt > collected[2].Result.ValidatedAt);
+    }
+
+    [Fact]
+    public void NewAuditEventTypes_HaveExpectedStringValues()
+    {
+        Assert.Equal("IntegrationProviderChanged",
+            Sunfish.Kernel.Audit.AuditEventType.IntegrationProviderChanged.Value);
+        Assert.Equal("IntegrationCredentialUpdated",
+            Sunfish.Kernel.Audit.AuditEventType.IntegrationCredentialUpdated.Value);
+        Assert.Equal("IntegrationValidationSucceeded",
+            Sunfish.Kernel.Audit.AuditEventType.IntegrationValidationSucceeded.Value);
+        Assert.Equal("IntegrationValidationFailed",
+            Sunfish.Kernel.Audit.AuditEventType.IntegrationValidationFailed.Value);
     }
 }

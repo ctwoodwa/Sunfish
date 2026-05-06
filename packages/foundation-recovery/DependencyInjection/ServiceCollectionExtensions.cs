@@ -54,6 +54,12 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IRecoveryStateStore, InMemoryRecoveryStateStore>();
         services.TryAddSingleton<IRecoveryCoordinator, RecoveryCoordinator>();
 
+        // ADR 0067 §5.3.1 — IDecryptCapabilityProvider seam (W#48 Phase
+        // 1b companion). The interface lives in foundation/Crypto/ for
+        // cycle-safety; the ui-core AddSunfishIntegrationAtlas() guard
+        // throws InvalidOperationException when this is missing.
+        services.TryAddSingleton<IDecryptCapabilityProvider, TenantKeyDecryptCapabilityProvider>();
+
         // ADR 0046-A4/A5 — field-encryption substrate (W#32). The decryptor
         // requires BOTH IAuditTrail + IOperationSigner together (audit-enabled
         // overload) OR neither (audit-disabled overload). The factory throws
