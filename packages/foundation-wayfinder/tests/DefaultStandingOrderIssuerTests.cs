@@ -29,21 +29,22 @@ public sealed class DefaultStandingOrderIssuerTests
         "switch the value",
         ApprovalChain: null);
 
-    private static (DefaultStandingOrderIssuer Issuer, CrdtStandingOrderRepository Repo, IAuditTrail Audit, FakeSigner Signer)
+    private static (DefaultStandingOrderIssuer Issuer, CrdtStandingOrderRepository Repo, IAuditTrail Audit, FakeSigner Signer, InMemoryStandingOrderEventStream EventStream)
         Build(params IStandingOrderValidator[] validators)
     {
         var repo = new CrdtStandingOrderRepository(new StubCrdtEngine());
         var audit = Substitute.For<IAuditTrail>();
         var signer = new FakeSigner();
         var time = new TestTimeProvider();
-        var issuer = new DefaultStandingOrderIssuer(repo, validators, signer, time);
-        return (issuer, repo, audit, signer);
+        var eventStream = new InMemoryStandingOrderEventStream();
+        var issuer = new DefaultStandingOrderIssuer(repo, validators, signer, time, eventStream);
+        return (issuer, repo, audit, signer, eventStream);
     }
 
     [Fact]
     public async Task IssueAsync_AcceptedOrder_EmitsStandingOrderIssued()
     {
-        var (issuer, _, audit, _) = Build();
+        var (issuer, _, audit, _, _) = Build();
         var order = await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
 
         Assert.Equal(StandingOrderState.Validated, order.State);
@@ -58,7 +59,7 @@ public sealed class DefaultStandingOrderIssuerTests
         var blocker = new InlineValidator(StandingOrderValidatorPriority.Policy,
             new StandingOrderValidationIssue(StandingOrderValidationSeverity.Block,
                 "anchor.maui.theme", "not allowed in production", null));
-        var (issuer, _, audit, _) = Build(blocker);
+        var (issuer, _, audit, _, _) = Build(blocker);
 
         var order = await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
 
@@ -81,7 +82,7 @@ public sealed class DefaultStandingOrderIssuerTests
         var conflictV = new RecordingValidator(StandingOrderValidatorPriority.Conflict, calls);
 
         // Register out of priority order; issuer must sort.
-        var (issuer, _, audit, _) = Build(conflictV, schemaV, authV, policyV);
+        var (issuer, _, audit, _, _) = Build(conflictV, schemaV, authV, policyV);
         await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
 
         Assert.Equal(
@@ -101,7 +102,7 @@ public sealed class DefaultStandingOrderIssuerTests
         var noisy = new InlineValidator(StandingOrderValidatorPriority.Policy,
             new StandingOrderValidationIssue(StandingOrderValidationSeverity.Warning,
                 "anchor.maui.theme", "consider documenting this", null));
-        var (issuer, _, audit, _) = Build(noisy);
+        var (issuer, _, audit, _, _) = Build(noisy);
         var order = await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
 
         Assert.Equal(StandingOrderState.Validated, order.State);
@@ -110,7 +111,7 @@ public sealed class DefaultStandingOrderIssuerTests
     [Fact]
     public async Task RescindAsync_EmitsRescindedRecord_AndOriginalIssuedRecordPreserved()
     {
-        var (issuer, _, audit, _) = Build();
+        var (issuer, _, audit, _, _) = Build();
         var order = await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
         var rescinded = await issuer.RescindAsync(order.Id, ActorA, "reverted policy decision", audit, CancellationToken.None);
 
@@ -131,7 +132,7 @@ public sealed class DefaultStandingOrderIssuerTests
     [Fact]
     public async Task RescindAsync_UnknownId_Throws()
     {
-        var (issuer, _, audit, _) = Build();
+        var (issuer, _, audit, _, _) = Build();
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await issuer.RescindAsync(new StandingOrderId(Guid.NewGuid()), ActorA, "n/a", audit, CancellationToken.None));
     }
@@ -139,7 +140,7 @@ public sealed class DefaultStandingOrderIssuerTests
     [Fact]
     public async Task IssueAsync_AuditPayload_ContainsExpectedKeys()
     {
-        var (issuer, _, audit, _) = Build();
+        var (issuer, _, audit, _, _) = Build();
         AuditRecord? captured = null;
         await audit.AppendAsync(Arg.Do<AuditRecord>(r => captured ??= r), Arg.Any<CancellationToken>());
 
@@ -159,9 +160,53 @@ public sealed class DefaultStandingOrderIssuerTests
     [Fact]
     public async Task IssueAsync_NullDraft_ThrowsArgumentNullException()
     {
-        var (issuer, _, audit, _) = Build();
+        var (issuer, _, audit, _, _) = Build();
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             await issuer.IssueAsync(null!, ActorA, audit, CancellationToken.None));
+    }
+
+    // ===== W#57 — Standing-Order applied-event publish =====
+
+    [Fact]
+    public async Task IssueAsync_AcceptedOrder_PublishesStandingOrderAppliedEvent()
+    {
+        var (issuer, _, audit, _, eventStream) = Build();
+        var order = await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
+
+        var events = eventStream.ReplayAll();
+        Assert.Single(events);
+        var evt = events[0];
+        Assert.Equal(order.Id, evt.StandingOrderId);
+        Assert.Equal(TenantA, evt.TenantId);
+        Assert.Equal(ActorA, evt.IssuedBy);
+        Assert.Equal(order.Scope, evt.Scope);
+        Assert.Equal(order.Triples, evt.Triples);
+        Assert.Equal(order.Rationale, evt.Rationale);
+    }
+
+    [Fact]
+    public async Task IssueAsync_RejectedOrder_DoesNotPublishAppliedEvent()
+    {
+        var blocker = new InlineValidator(StandingOrderValidatorPriority.Policy,
+            new StandingOrderValidationIssue(StandingOrderValidationSeverity.Block,
+                "anchor.maui.theme", "not allowed", null));
+        var (issuer, _, audit, _, eventStream) = Build(blocker);
+
+        await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
+
+        Assert.Empty(eventStream.ReplayAll());
+    }
+
+    [Fact]
+    public async Task RescindAsync_DoesNotPublishAppliedEvent()
+    {
+        var (issuer, _, audit, _, eventStream) = Build();
+        var order = await issuer.IssueAsync(NewDraft("anchor.maui.theme"), ActorA, audit, CancellationToken.None);
+        // Issue published 1 event; rescind must NOT publish a second.
+        Assert.Single(eventStream.ReplayAll());
+
+        await issuer.RescindAsync(order.Id, ActorA, "reverted", audit, CancellationToken.None);
+        Assert.Single(eventStream.ReplayAll());
     }
 
     // ===== Test helpers =====

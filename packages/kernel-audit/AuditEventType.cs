@@ -480,6 +480,9 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A pair of concurrent <c>StandingOrder</c> issuances on the same (<c>Scope</c>, <c>Path</c>) was reconciled via the LWW tie-break; emitted once per pair, citing both <c>StandingOrderId</c> values. Per ADR 0065 §2 / §4.</summary>
     public static readonly AuditEventType StandingOrderConflictResolved = new("StandingOrderConflictResolved");
 
+    /// <summary>A <c>StandingOrder</c> reached the post-issuance, post-CRDT-merge, post-Atlas-projection state — the projected configuration is now live for downstream consumers (Helm widgets, permission caches, feature-management invalidation). Distinct from <see cref="StandingOrderIssued"/> (validation-passed grain); <c>StandingOrderApplied</c> fires when the in-process apply pipeline completes. v1 substrate publishes at the issuer's success path because CRDT-merge + Atlas-projection are synchronous in-process; a future amendment may move <c>StandingOrderApplied</c> to a dedicated applier service. Per ADR 0065-A1 §A1.3.</summary>
+    public static readonly AuditEventType StandingOrderApplied = new("StandingOrderApplied");
+
     // ===== ADR 0028-A2.6 + A9 — W#23 iOS Field-Capture App (P4 + P4.5) =====
 
     /// <summary>An iOS-paired device successfully posted a field-event envelope to <c>POST /api/v1/field/event</c>; per W#23 P4.5 unblock addendum.</summary>
