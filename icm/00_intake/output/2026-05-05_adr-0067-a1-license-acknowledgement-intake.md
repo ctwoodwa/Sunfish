@@ -4,7 +4,8 @@
 **Requestor:** XO research session (council fix-pass on ADR 0067 PR #539)
 **Request:** Follow-up amendment to ADR 0067 designing the SSPL/BSL admin-acknowledgement opt-in track. Cut from ADR 0067 v1 per the council fix-pass because ADR 0061's actual posture excludes such adapters at compile time via `BannedSymbols.txt` analyzer enforcement; an admin-opt-in path requires its own ADR amendment (touching ADR 0061 and/or general counsel sign-off).
 **Pipeline variant:** `sunfish-feature-change` (amendment to ADR 0067)
-**Stage:** 00 — pending CO promotion to active
+**Stage:** 00 — closed; will not proceed
+**Status:** `won't-do` — deferred indefinitely per CO directive 2026-05-06
 
 ---
 
@@ -101,6 +102,35 @@ ADR 0067-A1 is technically an amendment to ADR 0067 (frontmatter `amendments:` l
 - Filed by XO during the ADR 0067 PR #539 council fix-pass.
 - Cohort discipline: 28-of-29 substrate amendments needed council fixes. ADR 0067 makes it 29-of-30; ADR 0067-A1 will be 30-of-31.
 - Pre-merge council canonical from intake.
+
+---
+
+## Disposition
+
+**Decision:** Won't Do — deferred indefinitely.
+
+**Date:** 2026-05-06
+
+**Authority:** CO directive (Christopher Wood, BDFL) — XO session 2026-05-06.
+
+**Rationale:** OSS substitutability principle. Tailscale (BSL-1.1), the canonical example prompting this intake, is fully substitutable by Headscale (BSD-3),
+Netbird (BSD-3), OpenVPN, or any WireGuard-based mesh that ships under a permissive license. Sunfish's design contract — ADR 0013 provider neutrality + ADR 0014
+adapter parity — means any provider-gated feature can be satisfied by a permissive-licensed substitute. No proprietary or restrictive-license provider justifies
+new acknowledgement substrate. CO verbatim (2026-05-06): *"Tailscale is not essential only the features it provides. Any similar provider or alternative is
+allowed. This same applies to all features, any can be substituted replaced or extended. This is the point of sunfish and why oss was choosen."*
+
+**Effect on cohort:**
+
+- ADR 0061's `BannedSymbols.txt` enforcement remains absolute — no exception path added, no `LicensePostureKind` enum, no
+  `LicenseAcknowledgementRequiredException`, no `IssueLicenseAcknowledgementAsync` method, no `IntegrationLicenseAcknowledged` audit event, no
+  `license-acknowledged.{provider}` Standing-Order path.
+- No admin-acknowledgement modal flow will be added to the Atlas Integration-Config surface (ADR 0067).
+- General-counsel engagement loop is unnecessary — the answer is substitution, not accommodation.
+- The filing-notes cohort counter (`30-of-31`) is voided: this amendment will not ship, so the cohort counter does not advance.
+
+**Principle codified:** OSS substitutability is the substrate (see feedback memory `feedback_oss_substitutability_principle.md`). When a capability is gated on
+a restrictive-license or otherwise-complex provider, the answer is to use a permissive substitute — not to add infrastructure that accommodates the restricted
+provider.
 
 ---
 
