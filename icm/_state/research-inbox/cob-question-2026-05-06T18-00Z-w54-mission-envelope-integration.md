@@ -37,3 +37,30 @@ emits one snapshot then polls on `FallbackPollingInterval`.
 
 **What would unblock me:** XO ruling on the dimension-to-probe-status mapping
 + hand-off addendum updating the §2.1 API references.
+
+**ESCALATED 2026-05-06T18-30Z (post-W#54-P2 council):** both councils on PR
+#695 flagged TWO §Trust risks in the Phase 2 stub behavior that need an
+ADR 0082 amendment, not a code change in COB scope:
+
+1. **Atmosphere stub returns `AtmosphereHealth.Green`** — indistinguishable
+   from a real Green from a downstream consumer's perspective. UI consumers
+   reading `Atmosphere.OverallHealth == Green` legitimately conclude "all
+   systems normal" while the host's actual Mission Envelope may have
+   degraded probes. **Recommended ADR 0082 amendment:** add
+   `AtmosphereHealth.Unknown` (or `NotYetMeasured`) sentinel with documented
+   semantics ("provider hasn't projected real probe data yet — UI must
+   render a neutral / pending state, not Green"). The Phase 2 stub then
+   returns Unknown until Phase 2b wires real probes.
+
+2. **`NoopKeyRotationScheduler.ScheduleAsync` returns `Task.CompletedTask`
+   silently** — the hand-off explicitly specifies this Phase 2 behavior, but
+   security council flagged the misleading-success risk: a UI that calls
+   `TriggerKeyRotationAsync` will show "rotation triggered" while no
+   rotation happens. Phase 3b wires the real impl. **Recommended addition
+   to ADR 0082:** document the Phase 2 stub-success risk in §Implementation
+   checklist + add a guidance note that hosts SHOULD NOT register
+   `NoopKeyRotationScheduler` in any environment that surfaces a user-
+   visible "rotation triggered" toast.
+
+These are flagged for XO/ADR-amendment disposition; PR #695 ships the stub
+behavior per the existing hand-off contract.

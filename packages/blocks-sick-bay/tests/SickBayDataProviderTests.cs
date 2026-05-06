@@ -107,57 +107,80 @@ public class SickBayDataProviderTests
     /// separate per-document detail surface.
     /// </summary>
     /// <remarks>
-    /// The check uses two-layered evidence:
-    /// (1) the implementation assembly does NOT carry an
-    ///     <c>AssemblyName</c> reference to <c>Sunfish.Foundation.Recovery</c>;
-    /// (2) the IL of <see cref="SickBayDataProvider"/> does NOT mention the
-    ///     fully-qualified <c>IFieldDecryptor</c> type token.
-    /// Either alone is sufficient under the H4 §Trust contract; both
-    /// together short-circuit transitive-reference accidents.
+    /// Two-layered evidence:
+    /// (1) <b>AssemblyName-level (load-bearing):</b> the implementation
+    ///     assembly does NOT carry a <c>Sunfish.Foundation.Recovery</c>
+    ///     reference. Without a direct ProjectReference, internal-sealed
+    ///     types from foundation-recovery cannot leak in transitively;
+    ///     this is the actual cohort guarantee.
+    /// (2) <b>Type-graph walk (defence-in-depth):</b> every member surface
+    ///     reachable on the provider type — fields, ctor parameters,
+    ///     method parameters, return types, generic args, and method-body
+    ///     local variables — is checked against the
+    ///     <c>IFieldDecryptor</c> name. Per W#54 P2 council Major: the
+    ///     prior local-variables-only walk missed parameters, fields, and
+    ///     return types — the realistic mistake surface. Mono.Cecil-based
+    ///     IL token scanning is deferred to a follow-up analyzer.
     /// </remarks>
     [Fact]
     public void SickBayDataProvider_DoesNotReference_IFieldDecryptor()
     {
+        const string ForbiddenName = "IFieldDecryptor";
         var assembly = typeof(SickBayDataProvider).Assembly;
 
-        // (1) AssemblyName-level check: blocks-sick-bay must not reference
-        //     foundation-recovery directly.
+        // (1) AssemblyName-level check.
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .ToList();
         Assert.DoesNotContain("Sunfish.Foundation.Recovery", referencedAssemblies);
 
-        // (2) Type-token-level check: walk every method's IL bytes for the
-        //     IFieldDecryptor full name. Cheap reflection scan; no Mono.Cecil.
+        // (2) Type-graph walk on the provider type itself.
         var providerType = typeof(SickBayDataProvider);
-        var allTypes = assembly.GetTypes();
-        foreach (var t in allTypes)
+        const BindingFlags AllMembers =
+            BindingFlags.Public | BindingFlags.NonPublic |
+            BindingFlags.Instance | BindingFlags.Static |
+            BindingFlags.DeclaredOnly;
+
+        // Fields
+        foreach (var field in providerType.GetFields(AllMembers))
         {
-            if (t != providerType && !providerType.IsAssignableFrom(t))
+            AssertNotForbidden(field.FieldType, $"field {field.Name}", ForbiddenName);
+        }
+
+        // Constructor parameters
+        foreach (var ctor in providerType.GetConstructors(AllMembers))
+        {
+            foreach (var p in ctor.GetParameters())
             {
-                continue;
+                AssertNotForbidden(p.ParameterType, $"ctor parameter {p.Name}", ForbiddenName);
             }
-            foreach (var method in t.GetMethods(
-                BindingFlags.Public | BindingFlags.NonPublic |
-                BindingFlags.Instance | BindingFlags.Static |
-                BindingFlags.DeclaredOnly))
+        }
+
+        // Methods: parameters, return types, locals
+        foreach (var method in providerType.GetMethods(AllMembers))
+        {
+            AssertNotForbidden(method.ReturnType, $"return of {method.Name}", ForbiddenName);
+            foreach (var p in method.GetParameters())
             {
-                var body = method.GetMethodBody();
-                if (body is null) continue;
-                // The `Sunfish.Foundation.Recovery` namespace is the only
-                // place IFieldDecryptor lives; the AssemblyName check above
-                // already pins the assembly-level invariant. The IL-level
-                // scan would require Mono.Cecil for full robustness; here
-                // we trust the assembly check + type-discovery walk and
-                // confirm no IFieldDecryptor type loads through this
-                // assembly's resolved type graph.
-                var locals = body.LocalVariables;
-                foreach (var local in locals)
-                {
-                    Assert.DoesNotContain(
-                        "IFieldDecryptor",
-                        local.LocalType.FullName ?? string.Empty);
-                }
+                AssertNotForbidden(p.ParameterType, $"parameter {p.Name} of {method.Name}", ForbiddenName);
+            }
+            var body = method.GetMethodBody();
+            if (body is null) continue;
+            foreach (var local in body.LocalVariables)
+            {
+                AssertNotForbidden(local.LocalType, $"local in {method.Name}", ForbiddenName);
+            }
+        }
+    }
+
+    private static void AssertNotForbidden(Type type, string site, string forbiddenName)
+    {
+        Assert.DoesNotContain(forbiddenName, type.FullName ?? string.Empty);
+        if (type.IsGenericType)
+        {
+            foreach (var arg in type.GetGenericArguments())
+            {
+                AssertNotForbidden(arg, site + " (generic arg)", forbiddenName);
             }
         }
     }

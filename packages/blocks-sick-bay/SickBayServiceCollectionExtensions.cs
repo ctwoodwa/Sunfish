@@ -43,6 +43,10 @@ public static class SickBayServiceCollectionExtensions
     public static IServiceCollection AddSunfishSickBayDefaults(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        // Defensive: idempotent options registration so callers who skip
+        // AddSunfishSickBay() get a working IOptions<SickBayOptions> rather
+        // than a silent blank-snapshot foot-gun (W#54 P2 council Major).
+        services.AddOptions<SickBayOptions>();
         services.TryAddSingleton<ISickBayDataProvider, SickBayDataProvider>();
         services.TryAddSingleton<IFirstAidSurface, DefaultFirstAidSurface>();
         services.TryAddSingleton<IStretcherBearerPolicy, DefaultStretcherBearerPolicy>();
