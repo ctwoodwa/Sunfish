@@ -4,10 +4,10 @@ number: 46
 slug: shared-design-system-load-bearing-w-35-ship-architecture-fol
 title: "**Shared Design System** (ADR 0077; `sunfish-feature-change` pipeline) — load-bearing W#35 Ship Architecture follow-on; sequences first per W#35 §9.2"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phase 2a merged 2026-05-06 via PR #639; Phase 3 merged 2026-05-06 via PR #645; **halt-C CLEARED** W#57 shipped PR #662 — DefaultPermissionResolver subscribe-before-load invalidation now implementable in Phase 4; Phase 2b + Phases 4-6 pending)"
+status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phase 2a merged 2026-05-06 via PR #639; Phase 3 merged 2026-05-06 via PR #645; **halt-C CLEARED** W#57 shipped PR #662 — see Phase 1b follow-up addendum; Phase 2b + Phase 1b-follow-up + Phases 4-6 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged)"
+reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `icm/_state/handoffs/shared-design-system-permres-cache-invalidation-addendum.md` (Phase 1b follow-up: halt-C subscribe-before-load) + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged)"
 ---
 
 ## Notes
@@ -37,7 +37,9 @@ updated: 28-of-32 substrate amendments needed council fixes.**
   static helper available for caller pipelines today)
 - `ITenantSecurityPolicy` for step 7 (W#37 / ADR 0068)
 - Subscribe-before-load cache invalidation (**halt-condition C — CLEARED 2026-05-06**;
-  `IStandingOrderEventStream` shipped W#57 PR #662; implement in Phase 4)
+  `IStandingOrderEventStream` shipped W#57 PR #662; spec at
+  `shared-design-system-permres-cache-invalidation-addendum.md`; ship as Phase 1b
+  follow-up PR BEFORE Phase 4)
 - Audit-loud `Granted` emission for `AuditLoudActions`
 - `TenantId.System` swap for current `TenantId.Default` fallback (ADR 0084)
 
