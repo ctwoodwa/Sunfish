@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Foundation.Ship.Common;
 
 namespace Sunfish.Foundation.Quarterdeck;
 
@@ -52,15 +53,19 @@ public static class QuarterdeckServiceCollectionExtensions
             configure?.Invoke(opts);
         });
 
-        // W#51 Phase 2: register the reference data provider. Hosts
-        // MUST separately register IPermissionResolver (W#46 P1) +
-        // IOodWatchService (W#49 P1) + IStandingOrderRepository (W#42)
-        // + IMissionEnvelopeProvider (W#40) before resolving
-        // IQuarterdeckDataProvider; the provider's constructor takes
-        // each as a non-optional dependency. IEnumerable<
-        // IQuarterdeckAlertSource> + IEnumerable<IDepartmentKpiSource>
-        // resolve as empty when no source is registered (cohort
-        // precedent for read-side aggregators).
+        // W#51 Phase 2: register the actor → principal resolver +
+        // the reference data provider. Per actor-principal-resolver
+        // hand-off §DI registration, each Phase 2 package registers
+        // IActorPrincipalResolver via TryAddSingleton in its own
+        // AddSunfishX() so the seam is wired regardless of which
+        // umbrella extension the host uses. Hosts MUST separately
+        // register IPermissionResolver (W#46 P1) + IOodWatchService
+        // (W#49 P1) + IStandingOrderRepository (W#42) +
+        // IMissionEnvelopeProvider (W#40) before resolving
+        // IQuarterdeckDataProvider. IEnumerable<IQuarterdeckAlertSource>
+        // + IEnumerable<IDepartmentKpiSource> resolve as empty when
+        // no source is registered.
+        services.TryAddSingleton<IActorPrincipalResolver, InMemoryActorPrincipalResolver>();
         services.TryAddSingleton<IQuarterdeckDataProvider, DefaultQuarterdeckDataProvider>();
 
         return services;

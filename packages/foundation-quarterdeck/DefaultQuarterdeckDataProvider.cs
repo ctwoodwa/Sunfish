@@ -60,6 +60,7 @@ public sealed class DefaultQuarterdeckDataProvider : IQuarterdeckDataProvider
         (ShipLocation.SupplyOffice, "Supply Office"),
     };
 
+    private readonly IActorPrincipalResolver _actorResolver;
     private readonly IPermissionResolver _permissionResolver;
     private readonly IOodWatchService _oodWatchService;
     private readonly IStandingOrderRepository _standingOrders;
@@ -75,6 +76,7 @@ public sealed class DefaultQuarterdeckDataProvider : IQuarterdeckDataProvider
     /// does not racey-iterate the DI enumeration.
     /// </summary>
     public DefaultQuarterdeckDataProvider(
+        IActorPrincipalResolver actorResolver,
         IPermissionResolver permissionResolver,
         IOodWatchService oodWatchService,
         IStandingOrderRepository standingOrders,
@@ -82,6 +84,7 @@ public sealed class DefaultQuarterdeckDataProvider : IQuarterdeckDataProvider
         IEnumerable<IQuarterdeckAlertSource> alertSources,
         IEnumerable<IDepartmentKpiSource> kpiSources)
     {
+        ArgumentNullException.ThrowIfNull(actorResolver);
         ArgumentNullException.ThrowIfNull(permissionResolver);
         ArgumentNullException.ThrowIfNull(oodWatchService);
         ArgumentNullException.ThrowIfNull(standingOrders);
@@ -89,6 +92,7 @@ public sealed class DefaultQuarterdeckDataProvider : IQuarterdeckDataProvider
         ArgumentNullException.ThrowIfNull(alertSources);
         ArgumentNullException.ThrowIfNull(kpiSources);
 
+        _actorResolver = actorResolver;
         _permissionResolver = permissionResolver;
         _oodWatchService = oodWatchService;
         _standingOrders = standingOrders;
@@ -107,7 +111,19 @@ public sealed class DefaultQuarterdeckDataProvider : IQuarterdeckDataProvider
         EnsureNotEmpty(actor);
 
         var cache = new QuarterdeckPermissionCache();
-        var principal = ActorToPrincipal(actor);
+        var principal = await _actorResolver
+            .ResolveAsync(tenantId, actor, ct)
+            .ConfigureAwait(false);
+        if (principal is null)
+        {
+            // §5.2 fail-closed: actor cannot be resolved → emit a
+            // snapshot with all-Denied DepartmentLinks (denied-not-
+            // hidden invariant preserved) and empty Alerts/KPIs.
+            // Phase 2c may surface a discriminating SyncState.Stale +
+            // "actor unresolved" affordance; v1 returns the standard
+            // Denied surface so the operator sees no-access uniformly.
+            return await BuildUnresolvedActorSnapshotAsync(tenantId, ct).ConfigureAwait(false);
+        }
 
         // 1+2 in parallel: per-location permission pre-resolution +
         // OOD watch reads. Permission pre-resolution populates the
@@ -440,23 +456,36 @@ public sealed class DefaultQuarterdeckDataProvider : IQuarterdeckDataProvider
         return decision;
     }
 
-    private static Principal ActorToPrincipal(ActorId actor)
+    private async Task<QuarterdeckSnapshot> BuildUnresolvedActorSnapshotAsync(
+        TenantId tenantId, CancellationToken ct)
     {
-        // Phase-2 placeholder: derive a deterministic 32-byte
-        // PrincipalId from the ActorId string via SHA-256.
-        // PrincipalId is meant to be an Ed25519 public key (32 bytes
-        // of cryptographic identity); ActorId is an opaque string in
-        // the v1 substrate. A future amendment will introduce an
-        // IActorPrincipalResolver seam (host-registered ActorId →
-        // Principal mapping) so the resolver receives the real
-        // public-key principal, not a string-derived stand-in. Until
-        // then, the SHA-256 derivation gives the IPermissionResolver
-        // a stable, structurally-valid PrincipalId — the resolver's
-        // tenant + role lookup is keyed on the same derived id, so
-        // round-trips are consistent.
-        var bytes = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(actor.Value));
-        return new Individual(PrincipalId.FromBytes(bytes));
+        // Fail-closed default per §5.2: when IActorPrincipalResolver
+        // returns null, every department surface as Denied with a
+        // generic "actor not resolved" reason. Watch / mission
+        // envelope still resolve (host-side state); alerts + KPIs
+        // empty (require principal-scoped resolution).
+        var oodTask = ReadOodWatchAsync(tenantId, ct);
+        var envelopeTask = ReadMissionEnvelopeAsync(ct);
+        await Task.WhenAll(oodTask, envelopeTask).ConfigureAwait(false);
+
+        var deniedLinks = new List<DepartmentLink>(DepartmentDirectory.Length);
+        foreach (var (location, displayName) in DepartmentDirectory)
+        {
+            deniedLinks.Add(new DepartmentLink(
+                location,
+                displayName,
+                DepartmentStatus.Denied,
+                DenialReason: "Actor identity could not be resolved."));
+        }
+
+        return new QuarterdeckSnapshot(
+            OodWatch: oodTask.Result,
+            MissionEnvelope: envelopeTask.Result,
+            RecentOrders: Array.Empty<StandingOrderSummary>(),
+            PendingAlerts: Array.Empty<QuarterdeckAlert>(),
+            KpiCards: Array.Empty<DepartmentKpi>(),
+            DepartmentLinks: deniedLinks,
+            SnapshotAt: DateTimeOffset.UtcNow);
     }
 
     private static void EnsureNotEmpty(ActorId actor)

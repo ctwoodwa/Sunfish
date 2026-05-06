@@ -22,6 +22,18 @@ public class DefaultQuarterdeckDataProviderTests
     private static readonly TenantId TenantA = new("tenant-a");
     private static readonly ActorId ActorA = new("alice");
 
+    private static IActorPrincipalResolver TestResolver()
+    {
+        // Test fixtures use non-canonical ActorId values
+        // ("alice", etc.). Register an explicit override so the
+        // resolver returns a stable Principal without requiring a
+        // real Ed25519 keypair in every test.
+        var resolver = new InMemoryActorPrincipalResolver();
+        var pid = Sunfish.Foundation.Crypto.KeyPair.Generate().PrincipalId;
+        resolver.Register(ActorA, new Individual(pid));
+        return resolver;
+    }
+
     private static IPermissionResolver AlwaysGrant()
     {
         var resolver = Substitute.For<IPermissionResolver>();
@@ -91,6 +103,7 @@ public class DefaultQuarterdeckDataProviderTests
     }
 
     private static DefaultQuarterdeckDataProvider Build(
+        IActorPrincipalResolver? actorResolver = null,
         IPermissionResolver? resolver = null,
         IOodWatchService? watchService = null,
         IStandingOrderRepository? standingOrders = null,
@@ -98,6 +111,7 @@ public class DefaultQuarterdeckDataProviderTests
         IEnumerable<IQuarterdeckAlertSource>? alertSources = null,
         IEnumerable<IDepartmentKpiSource>? kpiSources = null) =>
         new DefaultQuarterdeckDataProvider(
+            actorResolver ?? TestResolver(),
             resolver ?? AlwaysGrant(),
             watchService ?? NoActiveWatch(),
             standingOrders ?? EmptyRepo(),
@@ -262,6 +276,28 @@ public class DefaultQuarterdeckDataProviderTests
         var provider = Build();
         await Assert.ThrowsAsync<ArgumentException>(async () =>
             await provider.GetSnapshotAsync(TenantA, new ActorId(string.Empty)));
+    }
+
+    [Fact]
+    public async Task GetSnapshot_UnresolvableActor_ReturnsAllDeniedSnapshot()
+    {
+        // §5.2 fail-closed: when IActorPrincipalResolver returns
+        // null, every department is Denied with a clear reason.
+        // Watch + envelope still resolve (host-side state); alerts +
+        // KPIs are empty.
+        var emptyResolver = new InMemoryActorPrincipalResolver(); // no overrides
+        var provider = Build(actorResolver: emptyResolver);
+
+        var snapshot = await provider.GetSnapshotAsync(
+            TenantA, new ActorId("not-a-canonical-base64url-key"));
+
+        Assert.All(snapshot.DepartmentLinks, l =>
+            Assert.Equal(DepartmentStatus.Denied, l.AccessDecision));
+        Assert.All(snapshot.DepartmentLinks, l =>
+            Assert.Contains("not be resolved", l.DenialReason ?? ""));
+        Assert.Empty(snapshot.PendingAlerts);
+        Assert.Empty(snapshot.KpiCards);
+        Assert.Empty(snapshot.RecentOrders);
     }
 
     [Fact]
