@@ -91,6 +91,38 @@ public sealed class IdentityTypeJsonConverterTests
         Assert.Equal(original, restored);
     }
 
+    /// <summary>
+    /// W#1 WS-A security follow-up MF-4 — the JSON converter MUST refuse
+    /// to materialize Sunfish system sentinels (values starting with the
+    /// reserved <c>"__"</c> prefix). External wire input cannot mint a
+    /// system sentinel; only internal <c>CreateSentinel</c> may. Per
+    /// ADR 0084 §1.
+    /// </summary>
+    [Fact]
+    public void TenantId_DeserializeSystemSentinel_Throws()
+    {
+        // The converter delegates to the public ctor, which rejects "__"
+        // prefixes; JsonException is the wrapper surfaced through
+        // System.Text.Json.
+        var ex = Assert.ThrowsAny<Exception>(() =>
+            JsonSerializer.Deserialize<TenantId>("\"__system__\""));
+        Assert.True(ex is ArgumentException || ex is JsonException,
+            $"Expected ArgumentException or JsonException; got {ex.GetType().Name}: {ex.Message}");
+    }
+
+    /// <summary>
+    /// W#1 WS-A security follow-up MF-4 — additional reserved-prefix
+    /// values (any <c>"__"</c>-leading string) must also be refused, not
+    /// just the canonical <c>__system__</c>.
+    /// </summary>
+    [Fact]
+    public void TenantId_DeserializeReservedPrefix_Throws()
+    {
+        var ex = Assert.ThrowsAny<Exception>(() =>
+            JsonSerializer.Deserialize<TenantId>("\"__future_sentinel__\""));
+        Assert.True(ex is ArgumentException || ex is JsonException);
+    }
+
     // ──────────────────────────── EntityId ────────────────────────────
 
     [Fact]
