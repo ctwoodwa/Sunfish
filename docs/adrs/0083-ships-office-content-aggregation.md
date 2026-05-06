@@ -1,7 +1,7 @@
 ---
 id: 83
 title: Ship's Office Content Aggregation Surface + Scribe Role
-status: Proposed
+status: Accepted
 date: 2026-05-05
 tier: ui-core
 pipeline_variant: sunfish-feature-change

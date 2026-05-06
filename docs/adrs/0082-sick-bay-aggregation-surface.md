@@ -1,7 +1,7 @@
 ---
 id: 82
 title: Sick Bay Aggregation Surface + IDC Role
-status: Proposed
+status: Accepted
 date: 2026-05-05
 tier: ui-core
 pipeline_variant: sunfish-feature-change

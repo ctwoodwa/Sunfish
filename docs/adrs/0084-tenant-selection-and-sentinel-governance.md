@@ -1,7 +1,7 @@
 ---
 id: 84
 title: "TenantId Sentinel Governance + TenantSelection Introduction (W#1 WS-A)"
-status: Proposed
+status: Accepted
 date: 2026-05-05
 tier: foundation
 pipeline_variant: sunfish-feature-change

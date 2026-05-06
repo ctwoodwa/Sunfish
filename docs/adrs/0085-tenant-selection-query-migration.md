@@ -1,7 +1,7 @@
 ---
 id: 85
 title: TenantSelection Query Migration (W#1 WS-B)
-status: Proposed
+status: Accepted
 date: 2026-05-05
 tier: foundation
 pipeline_variant: sunfish-api-change
