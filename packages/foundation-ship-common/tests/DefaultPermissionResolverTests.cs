@@ -483,11 +483,13 @@ public class DefaultPermissionResolverTests
     }
 
     [Fact]
-    public async Task ActionMinimumDeck_ContainsAllNineCanonicalActions()
+    public async Task ActionMinimumDeck_ContainsAllCanonicalActions()
     {
         // §2.1 step 0(a): every ShipAction has a minimum-deck entry.
+        // Cardinality is the 9 ADR 0077 §2 canonical actions PLUS any
+        // cohort-extension actions added by downstream W#35 ADRs (e.g.,
+        // ADR 0083 §4 added the 4 Ship's Office actions in W#55 P1).
         var keys = DefaultPermissionResolver.ActionMinimumDeck.Keys.ToList();
-        Assert.Equal(9, keys.Count);
         Assert.Contains(ShipAction.Read, keys);
         Assert.Contains(ShipAction.Write, keys);
         Assert.Contains(ShipAction.IssueStandingOrder, keys);
@@ -497,6 +499,11 @@ public class DefaultPermissionResolverTests
         Assert.Contains(ShipAction.TransferWatch, keys);
         Assert.Contains(ShipAction.Quarantine, keys);
         Assert.Contains(ShipAction.OverrideQuarantine, keys);
+        // W#55 Ship's Office cohort additions.
+        Assert.Contains(ShipAction.ViewShipsOffice, keys);
+        Assert.Contains(ShipAction.EditShipsOfficeDocument, keys);
+        Assert.Contains(ShipAction.PublishShipsOfficeDocument, keys);
+        Assert.Contains(ShipAction.ArchiveShipsOfficeDocument, keys);
 
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.Quarantine]);
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.OverrideQuarantine]);

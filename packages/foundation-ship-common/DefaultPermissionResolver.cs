@@ -98,6 +98,14 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             KeyValuePair.Create(ShipAction.TransferWatch, DeckDepth.MainDeck),
             KeyValuePair.Create(ShipAction.Quarantine, DeckDepth.BelowTheWaterline),
             KeyValuePair.Create(ShipAction.OverrideQuarantine, DeckDepth.BelowTheWaterline),
+            // ADR 0083 §4 — W#55 Ship's Office cohort extension. Role-
+            // minimum enforcement (Scribe / XO+) is a Phase 2 follow-up:
+            // the Phase 1 resolver gates on location + deck only;
+            // ITenantSecurityPolicy (W#37) wires per-action role minimums.
+            KeyValuePair.Create(ShipAction.ViewShipsOffice, DeckDepth.TopDeck),
+            KeyValuePair.Create(ShipAction.EditShipsOfficeDocument, DeckDepth.TopDeck),
+            KeyValuePair.Create(ShipAction.PublishShipsOfficeDocument, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.ArchiveShipsOfficeDocument, DeckDepth.MainDeck),
         });
 
     /// <summary>
@@ -709,6 +717,11 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         if (action.Equals(ShipAction.TransferWatch)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.Quarantine)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.OverrideQuarantine)) return CapabilityAction.Write;
+        // ADR 0083 §4 — W#55 Ship's Office cohort extension.
+        if (action.Equals(ShipAction.ViewShipsOffice)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.EditShipsOfficeDocument)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.PublishShipsOfficeDocument)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.ArchiveShipsOfficeDocument)) return CapabilityAction.Write;
         throw new InvalidOperationException(
             $"unmapped ShipAction '{action.Name}' — update DefaultPermissionResolver.MapToCapabilityAction");
     }
