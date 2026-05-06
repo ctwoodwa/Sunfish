@@ -67,7 +67,7 @@ public sealed class DefaultStandingOrderIssuer : IStandingOrderIssuer
         IEnumerable<IStandingOrderValidator> validators,
         IOperationSigner signer,
         TimeProvider time,
-        InMemoryStandingOrderEventStream eventStream)
+        IStandingOrderEventStream eventStream)
     {
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(validators);
@@ -75,11 +75,21 @@ public sealed class DefaultStandingOrderIssuer : IStandingOrderIssuer
         ArgumentNullException.ThrowIfNull(time);
         ArgumentNullException.ThrowIfNull(eventStream);
 
+        if (eventStream is not InMemoryStandingOrderEventStream concreteStream)
+        {
+            throw new ArgumentException(
+                $"DefaultStandingOrderIssuer requires the {nameof(InMemoryStandingOrderEventStream)} "
+                + $"implementation of {nameof(IStandingOrderEventStream)}; the issuer publishes to "
+                + "that concrete instance directly to keep the only-the-issuer-publishes invariant "
+                + "(ADR 0065-A1 §A1.5).",
+                nameof(eventStream));
+        }
+
         _repository = repository;
         _validators = validators.OrderBy(v => (int)v.Priority).ToArray();
         _signer = signer;
         _time = time;
-        _eventStream = eventStream;
+        _eventStream = concreteStream;
     }
 
     /// <inheritdoc />

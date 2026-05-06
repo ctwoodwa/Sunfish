@@ -10,19 +10,19 @@ namespace Sunfish.Foundation.Wayfinder;
 /// ADR 0065-A1 §A1.4 (lock + list + subscriber-snapshot pattern).
 /// </summary>
 /// <remarks>
-/// <b>Public-with-internal-Publish:</b> the type is public so
-/// <see cref="DefaultStandingOrderIssuer"/>'s public constructor can
-/// accept it — Microsoft.Extensions.DependencyInjection requires
-/// public constructors for concrete service registrations, and
-/// constructor-parameter types must be at least as accessible as
-/// the constructor itself. The publish surface (the
-/// <see cref="Publish"/> method) is <c>internal</c> so only code
-/// inside <c>foundation-wayfinder</c> can publish; external
-/// consumers see only <see cref="IStandingOrderEventStream"/>'s
-/// read + subscribe surface, preserving the
-/// "only-the-issuer-publishes" invariant per ADR 0065-A1 §A1.5.
+/// <b>Internal-sealed:</b> hidden from package consumers — code
+/// outside <c>foundation-wayfinder</c> resolves the
+/// <see cref="IStandingOrderEventStream"/> abstraction.
+/// <see cref="DefaultStandingOrderIssuer"/> takes the public
+/// abstraction in its constructor and casts to this concrete type
+/// internally (mirroring
+/// <c>Sunfish.Kernel.Audit.EventLogBackedAuditTrail</c>'s pattern
+/// at <c>EventLogBackedAuditTrail.cs</c>) so the publish surface
+/// (the <see cref="Publish"/> method) is reachable only from
+/// <c>foundation-wayfinder</c>'s assembly. Per ADR 0065-A1 §A1.4
+/// + §A1.5 — "only the issuer publishes."
 /// </remarks>
-public sealed class InMemoryStandingOrderEventStream : IStandingOrderEventStream
+internal sealed class InMemoryStandingOrderEventStream : IStandingOrderEventStream
 {
     private readonly object _gate = new();
     private readonly List<StandingOrderAppliedEvent> _events = new();

@@ -138,7 +138,7 @@ public sealed class StandingOrderEventStreamTests
     }
 
     [Fact]
-    public void SubscribeThenReplay_DedupPattern_CovergesExactlyOnce()
+    public void SubscribeThenReplay_DedupPattern_ConvergesExactlyOnce()
     {
         // §A1.6 catch-up cache idiom: subscribe first, then replay,
         // dedup on StandingOrderId via HashSet.
@@ -177,6 +177,46 @@ public sealed class StandingOrderEventStreamTests
         // (live observed before replay) + (replay-observed) equals every
         // published event with no duplicates.
         Assert.Equal(3, liveCount + replayCount);
+    }
+
+    [Fact]
+    public void ReplayThenSubscribe_LosesEventsInGap_DemonstratesWhyA16InvertsTheOrder()
+    {
+        // Companion to SubscribeThenReplay_DedupPattern_ConvergesExactlyOnce.
+        // The §A1.6 idiom is "subscribe FIRST, then replay" — this test
+        // demonstrates the failure mode of the wrong order: an event
+        // landing in the gap between ReplayAll and Subscribe is missed
+        // by both halves of a naïve catch-up cache.
+        var stream = new InMemoryStandingOrderEventStream();
+        var historical = SampleEvent();
+        stream.Publish(historical);
+
+        var seen = new HashSet<StandingOrderId>();
+
+        // Wrong order: replay first…
+        foreach (var evt in stream.ReplayAll())
+        {
+            seen.Add(evt.StandingOrderId);
+        }
+        // …then a publish lands in the gap…
+        var inGap = SampleEvent();
+        stream.Publish(inGap);
+        // …then subscribe.
+        using var _ = stream.Subscribe(evt => seen.Add(evt.StandingOrderId));
+
+        // Final state: only `historical` is in `seen`. The `inGap`
+        // event landed AFTER ReplayAll snapshotted its state and
+        // BEFORE Subscribe registered the handler — both halves
+        // missed it. ReplayAll() now contains it, but the consumer
+        // already iterated their stale snapshot.
+        Assert.Single(seen);
+        Assert.Contains(historical.StandingOrderId, seen);
+        Assert.DoesNotContain(inGap.StandingOrderId, seen);
+
+        // Confirms §A1.6 inverts the order specifically to close this
+        // gap — subscribe-first means the live handler catches the
+        // gap-window publish; replay-then-dedup catches the
+        // before-subscribe publishes.
     }
 
     [Fact]
