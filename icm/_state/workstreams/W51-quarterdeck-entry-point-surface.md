@@ -4,7 +4,7 @@ number: 51
 slug: quarterdeck-entry-point-surface
 title: "**Quarterdeck Entry-Point Surface** (ADR 0080; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 PR #651 — `foundation-quarterdeck` substrate + `IQuarterdeckAlertSource` + `QuarterdeckAlert` on origin/main; **Phase 2 PARTIAL** — `DefaultQuarterdeckDataProvider` shipped PR #670; Phase 2b (`AcknowledgeAlertAsync` + `DefaultQuarterdeckCommandService`) deferred; Phase 3a unblocked W#46 P3 ✓; Phases 2b–4 pending)"
+status_cell: "`building` (Phase 1 merged PR #651; **Phase 2 COMPLETE** — `DefaultQuarterdeckDataProvider` PR #670 + `DefaultQuarterdeckCommandService` PR #689 both merged 2026-05-06; two-phase audit + IActorPrincipalResolver wired; Phase 3a next; Phases 3-4 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0080-quarterdeck-entry-point.md` (PR #574 merged)"
