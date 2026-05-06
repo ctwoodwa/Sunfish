@@ -118,6 +118,16 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             KeyValuePair.Create(ShipAction.QuarantineDocument, DeckDepth.MainDeck),
             KeyValuePair.Create(ShipAction.ReleaseQuarantine, DeckDepth.MainDeck),
             KeyValuePair.Create(ShipAction.CompactDocument, DeckDepth.MainDeck),
+            // ADR 0082 §5 — W#54 Sick Bay cohort extension. Role-minimum
+            // enforcement (IDC / Captain / XO per §5 table) is a Phase 2
+            // follow-up gated on ITenantSecurityPolicy.
+            KeyValuePair.Create(ShipAction.ViewSickBay, DeckDepth.TopDeck),
+            KeyValuePair.Create(ShipAction.ViewPharmacy, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.ManageRecoveryContacts, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.TriggerKeyRotation, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.InitiateMedevac, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.AuthorizeMedevac, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.ViewFirstAid, DeckDepth.TopDeck),
         });
 
     /// <summary>
@@ -149,6 +159,13 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             ShipAction.QuarantineDocument,
             ShipAction.ReleaseQuarantine,
             ShipAction.CompactDocument,
+            // ADR 0082 §5 — W#54 Sick Bay resource-scoped actions.
+            // ManageRecoveryContacts targets a specific contact record;
+            // TriggerKeyRotation targets a specific field-purpose. Both
+            // are resource-scoped; null-resource short-circuits to
+            // SecurityPolicyBlocked at step 0(c).
+            ShipAction.ManageRecoveryContacts,
+            ShipAction.TriggerKeyRotation,
         });
 
     /// <summary>
@@ -760,6 +777,14 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         if (action.Equals(ShipAction.QuarantineDocument)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.ReleaseQuarantine)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.CompactDocument)) return CapabilityAction.Write;
+        // ADR 0082 §5 — W#54 Sick Bay cohort extension.
+        if (action.Equals(ShipAction.ViewSickBay)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.ViewPharmacy)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.ManageRecoveryContacts)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.TriggerKeyRotation)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.InitiateMedevac)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.AuthorizeMedevac)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.ViewFirstAid)) return CapabilityAction.Read;
         throw new InvalidOperationException(
             $"unmapped ShipAction '{action.Name}' — update DefaultPermissionResolver.MapToCapabilityAction");
     }

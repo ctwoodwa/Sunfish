@@ -90,4 +90,27 @@ public readonly record struct ShipAction(string Name)
 
     /// <summary>Compact a CRDT document's representation (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.EngineerOfficer"/> per §Trust).</summary>
     public static readonly ShipAction CompactDocument = new("compact-document");
+
+    // ===== ADR 0082 §5 — W#54 Sick Bay =====
+
+    /// <summary>Browse the Sick Bay surface (location-scoped; <see cref="DeckDepth.TopDeck"/>; minimum role <see cref="ShipRole.IDC"/> / Captain / XO per §5).</summary>
+    public static readonly ShipAction ViewSickBay = new("view-sick-bay");
+
+    /// <summary>Browse the Sick Bay Pharmacy tab (location-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.IDC"/> only per §5).</summary>
+    public static readonly ShipAction ViewPharmacy = new("view-pharmacy");
+
+    /// <summary>Manage recovery-contact list (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.IDC"/> / Captain per §5).</summary>
+    public static readonly ShipAction ManageRecoveryContacts = new("manage-recovery-contacts");
+
+    /// <summary>Trigger a manual key rotation (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.Captain"/> per §5; System for emergency override).</summary>
+    public static readonly ShipAction TriggerKeyRotation = new("trigger-key-rotation");
+
+    /// <summary>File a medevac request (location-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.IDC"/> / Captain per §5).</summary>
+    public static readonly ShipAction InitiateMedevac = new("initiate-medevac");
+
+    /// <summary>Authorize a pending medevac (location-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.Captain"/> only per §5; four-eyes enforced in <c>IMedevacService.AuthorizeAsync</c>).</summary>
+    public static readonly ShipAction AuthorizeMedevac = new("authorize-medevac");
+
+    /// <summary>Browse First-Aid contextual help (location-scoped; <see cref="DeckDepth.TopDeck"/>; ALL authenticated roles per §5 — NO role gate).</summary>
+    public static readonly ShipAction ViewFirstAid = new("view-first-aid");
 }

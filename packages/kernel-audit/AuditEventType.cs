@@ -611,6 +611,48 @@ public readonly record struct AuditEventType(string Value)
     /// </summary>
     public static readonly AuditEventType DamageControlAuthorizationDenied = new("DamageControlAuthorizationDenied");
 
+    // ===== ADR 0082 §6 — W#54 Sick Bay =====
+    // Wire format is PascalCase per cohort precedent (W#46 / W#49 / W#50 /
+    // W#55 all use PascalCase wire values); the W#54 hand-off cited
+    // kebab-case-with-dots, but cohort consistency wins for replay /
+    // audit-log search ergonomics.
+
+    /// <summary>The Sick Bay Pharmacy tab was opened (one event per open per session, NOT per render). Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayPharmacyViewed = new("SickBayPharmacyViewed");
+
+    /// <summary>A key rotation was triggered via <c>ISickBayCommandService.TriggerKeyRotationAsync</c>. Per ADR 0082 §6 audit-emission ordering.</summary>
+    public static readonly AuditEventType SickBayKeyRotationTriggered = new("SickBayKeyRotationTriggered");
+
+    /// <summary>The Sick Bay Lab tab was opened. Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayLabDiagnosticViewed = new("SickBayLabDiagnosticViewed");
+
+    /// <summary>The Sick Bay Atmosphere tab was opened. Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayAtmosphereViewed = new("SickBayAtmosphereViewed");
+
+    /// <summary>A medevac request was filed via <c>IMedevacService.RequestAsync</c>. Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayMedevacInitiated = new("SickBayMedevacInitiated");
+
+    /// <summary>A medevac was authorized via <c>IMedevacService.AuthorizeAsync</c> (post-four-eyes-check). Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayMedevacAuthorized = new("SickBayMedevacAuthorized");
+
+    /// <summary>A medevac was cancelled via <c>IMedevacService.CancelAsync</c>. Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayMedevacCancelled = new("SickBayMedevacCancelled");
+
+    /// <summary>A medevac was marked complete via <c>IMedevacService.CompleteAsync</c>. Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayMedevacCompleted = new("SickBayMedevacCompleted");
+
+    /// <summary>
+    /// A medevac authorize request was rejected because the authorizing principal
+    /// equaled the requesting principal. Per ADR 0082 §Trust four-eyes invariant —
+    /// implementations emit this event AND throw <see cref="System.InvalidOperationException"/>;
+    /// the dual emission lets the Sick Bay timeline surface the rejection alongside
+    /// the throw.
+    /// </summary>
+    public static readonly AuditEventType SickBayMedevacSelfApprovalRejected = new("SickBayMedevacSelfApprovalRejected");
+
+    /// <summary>A recovery contact was added / updated / removed via the Sick Bay surface. Per ADR 0082 §6.</summary>
+    public static readonly AuditEventType SickBayRecoveryContactManaged = new("SickBayRecoveryContactManaged");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

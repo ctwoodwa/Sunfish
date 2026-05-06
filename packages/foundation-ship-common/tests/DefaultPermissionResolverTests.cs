@@ -528,6 +528,14 @@ public class DefaultPermissionResolverTests
         Assert.Contains(ShipAction.QuarantineDocument, keys);
         Assert.Contains(ShipAction.ReleaseQuarantine, keys);
         Assert.Contains(ShipAction.CompactDocument, keys);
+        // W#54 Sick Bay cohort additions.
+        Assert.Contains(ShipAction.ViewSickBay, keys);
+        Assert.Contains(ShipAction.ViewPharmacy, keys);
+        Assert.Contains(ShipAction.ManageRecoveryContacts, keys);
+        Assert.Contains(ShipAction.TriggerKeyRotation, keys);
+        Assert.Contains(ShipAction.InitiateMedevac, keys);
+        Assert.Contains(ShipAction.AuthorizeMedevac, keys);
+        Assert.Contains(ShipAction.ViewFirstAid, keys);
 
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.Quarantine]);
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.OverrideQuarantine]);
