@@ -635,9 +635,14 @@ If no capabilities, renders "No capabilities active."
 #### `QuickTogglesWidget` (slot: ActionStack, orderHint: 100)
 
 Composes `IStandingOrderIssuer` via three toggle actions:
-- Offline mode: `Path = "system.network.offline"`, `Scope = StandingOrderScope.System`
+- Offline mode: `Path = "system.network.offline"`, `Scope = StandingOrderScope.Platform`
 - DND mode: `Path = "system.notifications.dnd"`, `Scope = StandingOrderScope.User`
-- Pause sync: `Path = "system.sync.paused"`, `Scope = StandingOrderScope.System`
+- Pause sync: `Path = "system.sync.paused"`, `Scope = StandingOrderScope.Platform`
+
+**Scope note:** `StandingOrderScope.System` does not exist. The live enum values are
+`User`, `Tenant`, `Platform`, `Integration`, `Security` (see
+`packages/foundation-wayfinder/StandingOrderScope.cs`). Network/sync-wide toggles use
+`Platform` (spans tenants on the local node); per-user preferences use `User`.
 
 Each action is `HelmActionInvocationKind.IssueStandingOrder`. Per H8 below, reactive
 post-issuance refresh falls back to periodic refresh until ADR 0065-A1 ships.
