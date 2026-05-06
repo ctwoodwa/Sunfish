@@ -605,6 +605,9 @@ public readonly record struct AuditEventType(string Value)
     /// A Damage Control operation (quarantine / release / compact) was denied at the
     /// permission gate. Per ADR 0079 §Trust — distinct from the generic <see cref="PermissionDenied"/>
     /// event so the Engine Room dashboard renders its own §Trust-elevated denial timeline.
+    /// Emitted IN ADDITION TO the generic <see cref="PermissionDenied"/> event (not a
+    /// replacement) per W#50 P1 council Minor m2; the dual emission lets the Engine Room
+    /// dashboard timeline render alongside the standard audit feed.
     /// </summary>
     public static readonly AuditEventType DamageControlAuthorizationDenied = new("DamageControlAuthorizationDenied");
 

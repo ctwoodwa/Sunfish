@@ -25,7 +25,8 @@ namespace Sunfish.Foundation.EngineRoom;
 /// <see cref="SubscribeHealthAsync"/> emits one
 /// <see cref="EngineRoomHealthSummary"/> immediately on subscribe, then
 /// on each status change, then every <c>HeartbeatInterval</c> (default
-/// 30s — configured via <c>EngineRoomOptions</c> shipping with Phase 2).
+/// 30s — configured via <c>EngineRoomOptions</c> shipping with Phase 2
+/// <c>blocks-engine-room</c>).
 /// </para>
 /// </remarks>
 public interface IEngineRoomDataProvider

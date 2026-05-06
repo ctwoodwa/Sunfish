@@ -125,12 +125,30 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
     /// any of these short-circuits to <see cref="DenialReason.SecurityPolicyBlocked"/>
     /// at step 0(c).
     /// </summary>
+    /// <remarks>
+    /// W#50 P1 pre-merge security council 2026-05-06 (Major M1): the W#50
+    /// Damage Control actions (<see cref="ShipAction.QuarantineDocument"/>
+    /// / <see cref="ShipAction.ReleaseQuarantine"/> /
+    /// <see cref="ShipAction.CompactDocument"/>) target a per-document
+    /// identifier on the command service; they are resource-scoped, so
+    /// they MUST be in this set. The §Trust-elevated default is
+    /// "deny on null resource" — Phase 2 wiring may synthesize a
+    /// <see cref="Resource"/> from <c>documentId</c>, but the substrate-
+    /// level guard closes the null-resource bypass at the resolver tier.
+    /// Read-only Engine Room views (<see cref="ShipAction.ViewEngineRoom"/>
+    /// / <see cref="ShipAction.ViewDamageControl"/>) stay location-scoped
+    /// (correct) and are NOT in this set.
+    /// </remarks>
     private static readonly ImmutableHashSet<ShipAction> ResourceScopedActions =
         ImmutableHashSet.CreateRange(new[]
         {
             ShipAction.Approve,
             ShipAction.Quarantine,
             ShipAction.OverrideQuarantine,
+            // ADR 0079 §4 — W#50 Damage Control resource-scoped actions.
+            ShipAction.QuarantineDocument,
+            ShipAction.ReleaseQuarantine,
+            ShipAction.CompactDocument,
         });
 
     /// <summary>

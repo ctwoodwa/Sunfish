@@ -15,11 +15,22 @@ namespace Sunfish.Foundation.EngineRoom;
 /// <c>AuditEventType.DamageControlAuthorizationDenied</c> per §Trust.
 /// </summary>
 /// <remarks>
+/// <para>
 /// W#50 P1 substrate: the contract requires throwing on denial (rather
 /// than returning a structured outcome) because Damage Control
 /// operations are §Trust-elevated and the cohort precedent (W#55
 /// PublishOutcome) is for non-elevated operations. Throwing prevents the
 /// silent-rejection foot-gun for write-class destructive actions.
+/// </para>
+/// <para>
+/// <b>Audit-emission ordering (per §5; W#50 P1 council Minor m1):</b>
+/// the pre-op <c>*Requested</c> audit-event MUST be appended BEFORE
+/// invoking <c>IPermissionResolver.ResolveAsync</c>, so denied requests
+/// still leave a forensic trail. On denial: emit
+/// <c>DamageControlAuthorizationDenied</c> + throw
+/// <see cref="EngineRoomUnauthorizedException"/>. On success: emit the
+/// post-op <c>*ed</c> audit-event AFTER the persistence layer accepts.
+/// </para>
 /// </remarks>
 public interface IEngineRoomCommandService
 {
