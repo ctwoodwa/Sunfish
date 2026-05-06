@@ -32,12 +32,13 @@ namespace Sunfish.Foundation.Ship.Common;
 /// resolution with no audit trail (W#49 cohort precedent).
 /// </para>
 /// <para>
-/// <b>Cache (per ADR 0077 §2.5; halt-condition C):</b> the not-yet-shipped <c>IStandingOrderEventStream</c>
-/// is not yet built (ADR 0065-A1 spec-only). Phase 1 ships a per-tenant 60-second
-/// TTL cache of role assignments. Subscribe-before-load invalidation is a
-/// follow-up once the not-yet-shipped <c>IStandingOrderEventStream</c> ships in
-/// <c>packages/foundation-wayfinder/</c>. See PR description for the
-/// follow-up tracking.
+/// <b>Cache (per ADR 0077 §2.5):</b> Per-tenant 60-second TTL cache of role
+/// assignments. When <c>IStandingOrderEventStream</c> is provided
+/// (registered via <c>AddSunfishHelm()</c> or equivalent), the cache for the
+/// affected tenant is invalidated immediately on each
+/// <c>StandingOrderAppliedEvent</c> (subscribe-before-load; halt-condition C
+/// resolved by W#57). When the event stream is NOT provided (e.g., in
+/// isolated unit tests), the TTL behaviour applies.
 /// </para>
 /// <para>
 /// <b>Rate-limiting (per §2.4):</b> Per-<c>(ActorId, ShipLocation)</c> denial
@@ -196,7 +197,9 @@ public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
 
     private readonly Dictionary<TenantId, CachedAssignments> _cache = new();
     private readonly Dictionary<TenantId, Task<IReadOnlyList<ShipRoleAssignment>>> _inflightLoads = new();
+    private readonly Dictionary<TenantId, int> _tenantInvalidationEpoch = new();
     private readonly IDisposable? _eventStreamSubscription;
+    private bool _disposed;
     private readonly Dictionary<(ActorId, ShipLocation), DenialWindow> _denialWindows = new();
     private readonly object _gate = new();
 
@@ -248,6 +251,13 @@ public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
         //  - Integration → no-op (integration-config doesn't touch role
         //    assignments or capability graph)
         //  - User / Tenant / Security → invalidate the event's tenant only
+        //
+        // Per W#46 P1b council M1: bump the per-tenant invalidation
+        // epoch so an in-flight load that started BEFORE the event
+        // arrives does not write its (potentially pre-applied) snapshot
+        // back into the cache. ExecuteLoadAsync compares its captured
+        // epoch against the current epoch under _gate and discards the
+        // result on mismatch.
         lock (_gate)
         {
             switch (e.Scope)
@@ -255,24 +265,53 @@ public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
                 case StandingOrderScope.Platform:
                     _cache.Clear();
                     _inflightLoads.Clear();
+                    BumpAllEpochs();
                     break;
                 case StandingOrderScope.Integration:
                     break;
                 default:
                     _cache.Remove(e.TenantId);
                     _inflightLoads.Remove(e.TenantId);
+                    BumpEpoch(e.TenantId);
                     break;
             }
         }
     }
 
+    private void BumpEpoch(TenantId tenant)
+    {
+        _tenantInvalidationEpoch.TryGetValue(tenant, out var current);
+        _tenantInvalidationEpoch[tenant] = unchecked(current + 1);
+    }
+
+    private void BumpAllEpochs()
+    {
+        var keys = _tenantInvalidationEpoch.Keys.ToArray();
+        foreach (var k in keys)
+        {
+            _tenantInvalidationEpoch[k] = unchecked(_tenantInvalidationEpoch[k] + 1);
+        }
+    }
+
+    private int CurrentEpoch(TenantId tenant)
+    {
+        _tenantInvalidationEpoch.TryGetValue(tenant, out var epoch);
+        return epoch;
+    }
+
     /// <summary>
     /// Unsubscribes from the optional <see cref="IStandingOrderEventStream"/>.
-    /// DI containers (Microsoft.Extensions.DependencyInjection) call this on
-    /// singleton dispose at application shutdown.
+    /// Idempotent — safe to call multiple times. DI containers
+    /// (Microsoft.Extensions.DependencyInjection) call this on singleton
+    /// dispose at application shutdown.
     /// </summary>
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+        _disposed = true;
         _eventStreamSubscription?.Dispose();
     }
 
@@ -707,6 +746,7 @@ public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
         // completing source mock); every subsequent thread awaits the
         // same Task. Result is exactly one upstream load per TTL window.
         Task<IReadOnlyList<ShipRoleAssignment>> task;
+        int loadEpoch;
         lock (_gate)
         {
             if (_cache.TryGetValue(tenant, out var cached)
@@ -714,20 +754,21 @@ public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
             {
                 return cached.Assignments;
             }
+            loadEpoch = CurrentEpoch(tenant);
             if (!_inflightLoads.TryGetValue(tenant, out task!))
             {
                 var tcs = new TaskCompletionSource<IReadOnlyList<ShipRoleAssignment>>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
                 task = tcs.Task;
                 _inflightLoads[tenant] = task;
-                _ = ExecuteLoadAsync(tenant, now, tcs, ct);
+                _ = ExecuteLoadAsync(tenant, now, loadEpoch, tcs, ct);
             }
         }
         return await task.ConfigureAwait(false);
     }
 
     private async Task ExecuteLoadAsync(
-        TenantId tenant, DateTimeOffset now,
+        TenantId tenant, DateTimeOffset now, int loadEpoch,
         TaskCompletionSource<IReadOnlyList<ShipRoleAssignment>> tcs,
         CancellationToken ct)
     {
@@ -736,7 +777,20 @@ public sealed class DefaultPermissionResolver : IPermissionResolver, IDisposable
             var fresh = await _assignmentSource.LoadAssignmentsAsync(tenant, ct).ConfigureAwait(false);
             lock (_gate)
             {
-                _cache[tenant] = new CachedAssignments(fresh, now);
+                // W#46 P1b council M1 — generation-counter race fix:
+                // an applied-event arriving while this load was in-flight
+                // bumps the tenant's invalidation epoch. If the epoch
+                // changed since this load began, the snapshot is
+                // potentially pre-applied state — DO NOT write it into
+                // the cache. The next call observes the missing cache
+                // entry and re-loads. The Task still resolves to the
+                // fresh value so awaiting callers in this batch are
+                // not blocked, but subsequent callers see an empty
+                // cache and trigger a fresh load.
+                if (CurrentEpoch(tenant) == loadEpoch)
+                {
+                    _cache[tenant] = new CachedAssignments(fresh, now);
+                }
             }
             tcs.SetResult(fresh);
         }

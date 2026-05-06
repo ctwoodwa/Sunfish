@@ -218,6 +218,20 @@ public class DefaultPermissionResolverCacheInvalidationTests
     }
 
     [Fact]
+    public void Dispose_IsIdempotent()
+    {
+        var stream = new TestEventStream();
+        var resolver = new DefaultPermissionResolver(
+            Substitute.For<IShipRoleAssignmentSource>(),
+            Substitute.For<IAuditTrail>(), NewSigner(),
+            NullLogger<DefaultPermissionResolver>.Instance,
+            eventStream: stream);
+
+        resolver.Dispose();
+        resolver.Dispose(); // must not throw — _disposed guard short-circuits.
+    }
+
+    [Fact]
     public async Task Dispose_UnsubscribesFromEventStream()
     {
         var pid = NewPrincipalId();
