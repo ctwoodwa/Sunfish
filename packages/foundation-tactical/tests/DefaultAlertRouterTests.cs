@@ -297,6 +297,20 @@ public class DefaultAlertRouterTests
         public TenantMetadata? Tenant { get; }
     }
 
+    [Fact]
+    public void Ctor_AuditTrailWithoutSigner_Throws()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Build(audit: new RecordingAuditTrail(), signer: null));
+    }
+
+    [Fact]
+    public void Ctor_SignerWithoutAuditTrail_Throws()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Build(audit: null, signer: StubSigner()));
+    }
+
     private sealed class RecordingAuditTrail : IAuditTrail
     {
         public List<AuditRecord> Records { get; } = new();

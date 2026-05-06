@@ -76,6 +76,12 @@ public sealed class DefaultAlertRouter : IAlertRouter
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(lookout);
         ArgumentNullException.ThrowIfNull(sonar);
+        if ((auditTrail is null) ^ (signer is null))
+        {
+            throw new ArgumentException(
+                "auditTrail and signer must both be supplied together, or both null. " +
+                "Registering only one creates silent §Trust gaps in audit emission.");
+        }
         _options = options;
         _lookout = lookout;
         _sonar = sonar;
