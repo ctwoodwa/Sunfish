@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Foundation.Tactical.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Foundation.Tactical.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sunfish.Foundation.Tactical.csproj" />
+    <!-- Explicit references so the test project compiles standalone. -->
+    <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+
+</Project>

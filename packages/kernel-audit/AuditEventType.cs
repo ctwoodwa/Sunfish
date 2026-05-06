@@ -664,6 +664,47 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>Post-op success for a Quarterdeck alert acknowledgement: emitted ONLY after the underlying alert source confirms acknowledgement. Absence of this event after <see cref="AlertAcknowledgementRequested"/> in the audit trail IS the failure signal — there is no separate <c>AlertAcknowledgementFailed</c> constant. Per ADR 0080 §5 two-phase audit.</summary>
     public static readonly AuditEventType AlertAcknowledged = new("AlertAcknowledged");
 
+    // ===== ADR 0081 §8 — W#52 Tactical Anomaly Detection =====
+
+    /// <summary>An <c>ITacticalRule</c> matched a signal and emitted an alert. First post-route audit event per ADR 0081 §2 order-of-operations.</summary>
+    public static readonly AuditEventType AnomalyDetected = new("AnomalyDetected");
+
+    /// <summary>An alert was routed to its destination (Lookout or Sonar) per <see cref="AnomalyDetected"/>. Emitted after <see cref="AnomalyDetected"/> + before the destination-write call. Per ADR 0081 §2.</summary>
+    public static readonly AuditEventType AlertRouted = new("AlertRouted");
+
+    /// <summary>An active Tactical alert reached <c>AlertTtl</c> without acknowledgement and transitioned to Expired. Per ADR 0081 §1.</summary>
+    public static readonly AuditEventType TacticalAlertExpired = new("TacticalAlertExpired");
+
+    /// <summary>A Lookout alert was evicted (LRU-by-DetectedAt) past <c>MaxActiveAlerts</c>. Distinct from <see cref="TacticalAlertExpired"/> — eviction is capacity-driven, expiry is time-driven. Per ADR 0081 §2.</summary>
+    public static readonly AuditEventType LookoutAlertEvicted = new("LookoutAlertEvicted");
+
+    /// <summary>Pre-op intent for a Tactical alert acknowledgement: emitted as the FIRST observable side-effect of <c>ITacticalCommandService.AcknowledgeAlertAsync</c>, before tenant-binding / alertId resolution / permission resolution. Per ADR 0081 §8 two-phase audit.</summary>
+    public static readonly AuditEventType TacticalAlertAcknowledgementRequested = new("TacticalAlertAcknowledgementRequested");
+
+    /// <summary>Post-op success for a Tactical alert acknowledgement: emitted ONLY after the alert transitions to <c>AlertStatus.Acknowledged</c>. Absence after <see cref="TacticalAlertAcknowledgementRequested"/> IS the failure signal. Per ADR 0081 §8 two-phase audit.</summary>
+    public static readonly AuditEventType TacticalAlertAcknowledged = new("TacticalAlertAcknowledged");
+
+    /// <summary>Pre-op intent for opening a Tactical incident: emitted as the FIRST observable side-effect of <c>ITacticalCommandService.OpenIncidentAsync</c>. Per ADR 0081 §8 two-phase audit.</summary>
+    public static readonly AuditEventType IncidentOpenRequested = new("IncidentOpenRequested");
+
+    /// <summary>Post-op success for opening a Tactical incident. Per ADR 0081 §8 two-phase audit.</summary>
+    public static readonly AuditEventType IncidentOpened = new("IncidentOpened");
+
+    /// <summary>Pre-op intent for closing a Tactical incident: emitted as the FIRST observable side-effect of <c>ITacticalCommandService.CloseIncidentAsync</c>. Per ADR 0081 §8 two-phase audit.</summary>
+    public static readonly AuditEventType IncidentCloseRequested = new("IncidentCloseRequested");
+
+    /// <summary>Post-op success for closing a Tactical incident. Per ADR 0081 §8 two-phase audit.</summary>
+    public static readonly AuditEventType IncidentClosed = new("IncidentClosed");
+
+    /// <summary>Post-op success for an emergency Standing Order issued by <c>IThreatTriggerService.TryIssueAsync</c>. The issuing principal is always system-resolved per ADR 0081 §4.1.</summary>
+    public static readonly AuditEventType EmergencyStandingOrderIssued = new("EmergencyStandingOrderIssued");
+
+    /// <summary>Failure record for an emergency Standing Order issuance attempt: rate-limit breach, severity-threshold mismatch, or underlying issuer denial. Carries a <c>denialReason</c> in the payload. Per ADR 0081 §4.1.</summary>
+    public static readonly AuditEventType EmergencyStandingOrderIssuanceFailed = new("EmergencyStandingOrderIssuanceFailed");
+
+    /// <summary>Catch-all denial event emitted by <c>IAlertRouter</c>, <c>ITacticalRuleEngine</c>, and <c>ITacticalCommandService</c> on authority refusal, rate-limit breach, allowlist mismatch, or rule-evaluation-failure-rate breach. Carries a <c>denialReason</c> in the payload. Per ADR 0081 §2 + §8.</summary>
+    public static readonly AuditEventType TacticalAuthorizationDenied = new("TacticalAuthorizationDenied");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

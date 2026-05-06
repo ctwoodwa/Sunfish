@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Tactical</PackageId>
+    <RootNamespace>Sunfish.Foundation.Tactical</RootNamespace>
+    <Description>Foundation-tier substrate for Tactical Anomaly Detection + Threat-Trigger Surface (ADR 0081): ITacticalRuleEngine + IAlertRouter + IThreatTriggerService contracts, Sonar/Lookout disclosure split, the TacticalSignal/TacticalAlert/IncidentRecord/TacticalSnapshot/ThreatTriggerTemplate data model, TacticalOptions with normative bounds, TacticalUnauthorizedException, ISystemPrincipalProvider seam, and 13 AuditEventType + 7 ShipAction constants. Per ADR 0081 §1+§2+§4, W#52 Phase 1.</Description>
+    <PackageTags>sunfish;foundation;tactical;adr-0081</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Tactical.Tests" />
+  </ItemGroup>
+</Project>
