@@ -12,6 +12,11 @@ reference_cell: "`icm/_state/handoffs/tenant-security-policy-stage06-handoff.md`
 
 ## Notes
 
+XO should start any legal-not-required scope-cut authoring from the canonical
+pre-legal research prompt at `_shared/engineering/pre-legal-research-prompt.md`.
+Pedantic-Lawyer perspective applies during §A0 self-audit + cohort council;
+general-counsel engagement is the final-mile gate before Status: Accepted.
+
 **Hand-off ready 2026-05-05.** ADR 0068 **Proposed** (CO acceptance flip pending; verify `status:` field before building); extended pre-merge council complete
 (adversarial + security-engineering + WCAG/a11y + Pedantic Lawyer). New package:
 `foundation-security-policy` (5 sub-domains: MFA enrollment / device attestation / audit
