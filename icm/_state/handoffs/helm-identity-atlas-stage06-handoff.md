@@ -601,6 +601,10 @@ Composes `SyncState` from `HelmRenderContext.Envelope`. Per ADR 0036 five-channe
 encoding: `SyncState` value → label + icon hint. Widget renders the ambient
 envelope sync state.
 
+**Type note:** `MissionEnvelope.SyncState` is `SyncStateSnapshot` (record with `.State`,
+`.LastSyncedAt`, `.ConflictCount`, `.ProbeStatus`). Unwrap to the `SyncState` enum
+before calling `ToCanonicalIdentifier()` and before passing to `HelmWidgetViewState`.
+
 ```csharp
 public sealed class SyncStateWidget : IHelmWidget
 {
@@ -610,18 +614,14 @@ public sealed class SyncStateWidget : IHelmWidget
     public ValueTask<HelmWidgetViewState> ComputeAsync(
         HelmRenderContext context, CancellationToken ct = default)
     {
-        var syncState = context.Envelope.SyncState; // per ADR 0036
+        var snapshot = context.Envelope.SyncState;    // SyncStateSnapshot
+        var syncState = snapshot.State;               // SyncState enum
         var label = syncState.ToCanonicalIdentifier(); // e.g., "healthy"
         return ValueTask.FromResult(new HelmWidgetViewState(
             syncState, label, null, []));
     }
 }
 ```
-
-Check `MissionEnvelope` for the `SyncState` property path — if it's exposed as
-a computed property or via a different accessor, use the actual accessor. Do NOT
-hallucinate the property name; grep `packages/foundation-mission-space/Models/MissionEnvelope.cs`
-first.
 
 #### `ActiveTeamWidget` (slot: GlanceBand, orderHint: 300)
 
