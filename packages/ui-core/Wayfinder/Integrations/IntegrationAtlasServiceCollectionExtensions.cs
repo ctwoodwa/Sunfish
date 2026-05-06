@@ -39,6 +39,25 @@ public static class IntegrationAtlasServiceCollectionExtensions
     /// fail-fast guard prevents silent capability-flow degradation.
     /// </para>
     /// <para>
+    /// <b>Additional prerequisite — tenant-key wiring:</b> the
+    /// reference <see cref="IDecryptCapabilityProvider"/>
+    /// implementation
+    /// (<c>Sunfish.Foundation.Recovery.Crypto.TenantKeyDecryptCapabilityProvider</c>)
+    /// transitively depends on
+    /// <c>Sunfish.Foundation.Recovery.TenantKey.ITenantKeyProvider</c>.
+    /// Hosts MUST register an <c>ITenantKeyProvider</c> implementation
+    /// (e.g., the recovery package's HKDF-backed default) before
+    /// resolving <see cref="IIntegrationAtlasProvider"/> at
+    /// runtime. The Phase 1b guard cannot check for
+    /// <c>ITenantKeyProvider</c> directly without taking a
+    /// <c>foundation-recovery</c> ProjectReference (which would form
+    /// a cycle: <c>ui-core → foundation-recovery → kernel-security →
+    /// ui-core</c>). DI resolution at <c>BuildServiceProvider()</c>
+    /// time surfaces the missing registration as a standard
+    /// "no service for ITenantKeyProvider" exception pointing at
+    /// <c>TenantKeyDecryptCapabilityProvider</c>'s constructor.
+    /// </para>
+    /// <para>
     /// <b>What this extension does NOT register:</b>
     /// <list type="bullet">
     /// <item><description><see cref="IIntegrationAtlasProvider"/>

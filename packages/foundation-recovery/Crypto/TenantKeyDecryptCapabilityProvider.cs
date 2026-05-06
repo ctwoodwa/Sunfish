@@ -26,11 +26,15 @@ namespace Sunfish.Foundation.Recovery.Crypto;
 /// <see cref="IDecryptCapabilityProvider.AcquireAsync"/>.
 /// </para>
 /// <para>
-/// <b>Purpose allowlist:</b> Phase 1b accepts every well-formed
-/// non-empty purpose string. A future amendment may narrow this to
-/// the
-/// <c>Sunfish.UICore.Wayfinder.Integrations.IntegrationCapabilityPurposes</c>
-/// taxonomy + similar registered taxonomies.
+/// <b>Purpose allowlist (fail-closed):</b> Phase 1b accepts ONLY
+/// purposes in the <see cref="AcceptedPurposes"/> set —
+/// currently <c>"integration-validation"</c>. Requests with any
+/// other purpose return <c>null</c> per the
+/// <see cref="IDecryptCapabilityProvider.AcquireAsync"/> fail-closed
+/// contract. A future amendment may extend the allowlist; the
+/// default is deliberately narrow so a misuse of an off-allowlist
+/// purpose surfaces as a deterministic deny rather than a
+/// silently-issued mismatched-purpose capability.
 /// </para>
 /// <para>
 /// <b>TTL clamp:</b> the requested TTL is honored verbatim up to a
@@ -42,6 +46,18 @@ namespace Sunfish.Foundation.Recovery.Crypto;
 public sealed class TenantKeyDecryptCapabilityProvider : IDecryptCapabilityProvider
 {
     private static readonly TimeSpan MaxTtl = TimeSpan.FromMinutes(30);
+
+    /// <summary>
+    /// Closed allowlist of purposes this Phase 1b implementation
+    /// accepts. Requests for any other purpose return <c>null</c>
+    /// per the fail-closed contract. Extend via ADR amendment when
+    /// new capability-acquisition flows ship.
+    /// </summary>
+    public static readonly System.Collections.Generic.IReadOnlySet<string> AcceptedPurposes =
+        new System.Collections.Generic.HashSet<string>(System.StringComparer.Ordinal)
+        {
+            "integration-validation",
+        };
 
     private readonly ITenantKeyProvider _tenantKeys;
     private readonly Sunfish.Foundation.Recovery.IRecoveryClock _clock;
@@ -67,6 +83,14 @@ public sealed class TenantKeyDecryptCapabilityProvider : IDecryptCapabilityProvi
     {
         if (string.IsNullOrWhiteSpace(purpose))
         {
+            return null;
+        }
+        if (!AcceptedPurposes.Contains(purpose))
+        {
+            // M2 fail-closed: Phase 1b only honors purposes on the
+            // allowlist. Off-allowlist purposes return null so a
+            // mistakenly-requested purpose can never be issued an
+            // unrelated key-domain's capability.
             return null;
         }
         if (ttl <= TimeSpan.Zero)
