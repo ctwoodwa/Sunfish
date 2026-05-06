@@ -240,7 +240,72 @@ ADR 0068 Accepted). |
 | 52 | **Tactical Anomaly Detection + Threat-Trigger Surface** (ADR 0081; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0081 Accepted 2026-05-05 via PR #578; Stage 06 hand-off at `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md`; sunfish-PM may begin Phase 1 when W#46 Phase 1 lands) | research (XO) ✓ | `docs/adrs/0081-tactical-anomaly-detection.md` (PR #578 merged) + `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md` | Hard prerequisites: ADR 0077 W#46 Accepted ✓ + ADR 0065 W#42 built ✓. Soft cross-reference: ADR 0080 W#51 (`LookoutQuarterdeckAlertSource` supplies Quarterdeck ticker); ADR 0068 W#37 (security policy). Key types: `ITacticalRuleEngine` + `ITacticalRule` + `IAlertRouter` + `ISonarStore` + `ILookout` + `ITacticalDataProvider` + `ITacticalCommandService` + `IThreatTriggerService` + `ISystemPrincipalProvider` + `LookoutQuarterdeckAlertSource`; `TacticalOptions` (7 fields with normative bounds); 13 `AuditEventType` constants; 7 `ShipAction` constants (IssueEmergencyStandingOrder = System-only; ManageThreatTriggers = reserved v1). Two new packages: `foundation-tactical` + `blocks-tactical`. 4–5 phase build: ~16-22h / ~6 PRs. Pre-merge council canonical (WCAG/a11y + security subagents mandatory for all UI-bearing and authority-chain phases per §Trust + §8.5). |
 | 53 | **Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1** | `ready-to-build` (ADR 0066 Accepted 2026-05-05 via PR #529; Stage 06 hand-off at `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md`; sunfish-PM may begin Phase 1 immediately — prerequisites H1+H2 verified on origin/main) | sunfish-PM | `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) | **Hand-off authored 2026-05-05. ~18-28h / ~5-6 PRs.** 2 build phases (Phase 3 identity Atlas implementations deferred to W#54). Phase 1: `IAtlasProvider<T>` + `IHelmWidget` + `IHelmWidgetRegistry` + `DefaultHelmWidgetRegistry` + `HelmServiceCollectionExtensions` (two-overload `AddSunfishHelm` + `AddHelmWidget<T>`) + `KeyFingerprint` (additive to `packages/foundation-recovery/`) + `IIdentityAtlasSurface` + view-model records + `RecoveryContact`. Phase 2: 6 canonical widgets + Blazor/React adapter renderers + WCAG tests. **W#48 Phase 1 unblocks when W#53 Phase 1 merges** (`IAtlasProvider<T>` on origin/main). Halt H7 (HistoricalKeysProjection absent → placeholder approach); H8 (IObservable<StandingOrderAppliedEvent> absent → periodic fallback). OQ-1/2/3/4/5/6 all resolved in hand-off. |
 | 47 | **W#42 follow-on — Anchor MAUI `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; mounts ADR 0063-A1.1 `SystemRequirementsResult` onto Anchor's MAUI Blazor Hybrid shell | `ready-to-build` (W#42 substrate built 2026-05-04 across PRs #503/#504/#505/#510/#513/#514; Stage 06 hand-off authored 2026-05-04; sunfish-PM may begin Phase 1 once a COB capacity slot opens) | sunfish-PM | `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` + `docs/adrs/0063-mission-space-requirements.md` (substrate spec) + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Decision §7 (WCAG mandate) + `docs/adrs/0048-anchor-multi-backend-maui.md` (multi-backend) + `docs/adrs/0032-multi-team-anchor-workspace-switching.md` (active-team scoping) | **Hand-off ready 2026-05-04.** First per-adapter renderer hand-off in the W#42 follow-on chain (Anchor MAUI; Bridge React + iOS SwiftUI + Android-native still queued as future hand-offs). Implementation: 13–18h sunfish-PM / 5 PRs / 5 phases. **Phase 1:** `PreInstallFullPage` Razor page + `SystemRequirementsDimensionRow` component + 26 localization keys + 6 unit tests (~4–5h). **Phase 2:** `PostInstallInlineExplanation` mode + `AnchorMauiSystemRequirementsRenderer` + `AnchorMauiSystemRequirementsSurface` + 4 unit tests (~2–3h). **Phase 3:** `PostInstallRegressionBanner` + `SystemRequirementsRegressionObserver` (`IMissionEnvelopeObserver`) + `aria-live="assertive"` + 5 unit tests (~2h). **Phase 4:** `AddAnchorSystemRequirementsRenderer` DI extension + per-platform native-a11y (UIA / NSAccessibility on Win + MacCatalyst Phase-1 RIDs; iOS/Android deferred per ADR 0048-A1) + 3 a11y harness tests via `Sunfish.UIAdapters.Blazor.A11y` + WCAG 2.2 AA + EN 301 549 v3.2.1 baseline append in `apps/docs/foundation/wayfinder/wcag.md` (~3–4h). **Phase 5:** ledger flip + memory + close (~30min). **7 halt-conditions named** including (a) substrate prereq verification on origin/main, (b) ledger-row sanity check, (c) WCAG/a11y subagent pre-merge canonical per ADR 0065 §7 mandate (non-negotiable for UI-bearing phases), (d) MAUI-version compatibility, (e) Win+MacCatalyst-only Phase-4 scope, (f) audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), (g) `IMinimumSpecResolver` scoping must respect `IActiveTeamAccessor`. Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase; cohort batting average 22-of-22). |
-| 54 | **Sick Bay Aggregation Surface + IDC Role** (ADR 0082; W#35 Ship Architecture follow-on #6; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0082 Proposed 2026-05-05 via PR #589; Stage 06 hand-off authored 2026-05-05; sunfish-PM may begin Phase 1 when H1 / W#46 Phase 1 lands `foundation-ship-common` on origin/main) | research (XO) ✓ | `icm/_state/handoffs/sick-bay-stage06-handoff.md` + `docs/adrs/0082-sick-bay-aggregation-surface.md` (PR #589 merged) + `icm/00_intake/output/2026-05-01_sick-bay-aggregation-intake.md` | **Hand-off authored 2026-05-05.** ~14-20h sunfish-PM / 5 phases / ~5 PRs. New packages: `foundation-sick-bay` (contracts) + `blocks-sick-bay` (Blazor UI). Key design: `PharmacyRecordCount` k-anonymity floor k=3; `IMedevacService` four-eyes self-approval rejection (`SickBayMedevacSelfApprovalRejected`); `IKeyRotationScheduler` new contract introduced by this ADR; `StretcherBearerRole` constrained enum (not `ShipRole`); `FirstAidHint.Body` plain-text-validated. 11 `AuditEventType` constants; `ShipRole.IDC` + 7 `ShipAction` (`ViewSickBay` / `ViewPharmacy` / `ManageRecoveryContacts` / `TriggerKeyRotation` / `InitiateMedevac` / `AuthorizeMedevac` / `ViewFirstAid`). WCAG 2.2 AA: 11 SCs (SC 1.3.1, 1.4.1, 1.4.3, 2.1.1, 2.2.1, 2.4.3, 2.4.7, 3.3.1, 3.3.4, 3.3.8, 4.1.3). **Halt-conditions:** H1 `foundation-ship-common` on origin/main (W#46 Phase 1; gates `ShipRole.IDC` + `ShipAction` constants); H2 `KeyFingerprint` on origin/main (W#53 Phase 1; gates `KeyFingerprintDisplay.razor` Phase 3a only); H3 ADR 0068 Status: Accepted (gates `KeyRotationTrigger` Phase 2 type-swap; Phase 1 ships `string triggerReason`); H4 security council pre-Phase-2 reflection test verifies `IFieldDecryptor` absence in `SickBayDataProvider`. Pre-merge council canonical (security-engineering mandatory Phases 2 + 3b; WCAG/a11y mandatory Phase 3a per §8). 10 enumerated operational halt-conditions in hand-off Appendix. W#35 cohort follow-on #6 of 7 (W#55 Ship's Office hand-off paired in same XO authoring batch). |
+| 54 | **Sick Bay Aggregation Surface + IDC Role** (ADR 0082; W#35 Ship Architecture follow-on #6; `sunfish-feature-change` pipeline) | `building` (Phase 1 merged 2026-05-06 via PR #628; Phases 2-5 pending) | sunfish-PM | `icm/_state/handoffs/sick-bay-stage06-handoff.md` + `docs/adrs/0082-sick-bay-aggregation-surface.md` (PR #589 merged) + `packages/foundation-sick-bay/` (P1 merged) + `icm/00_intake/output/2026-05-01_sick-bay-aggregation-intake.md` | **Phase 1 merged 2026-05-06 via PR #628.** New `Sunfish.Foundation.SickBay`
+package shipped: 12 data-model types (PharmacyRecordCount k=3 floor + 4 enums
++ PharmacyInventoryEntry / LabDiagnosticResult / AtmosphereReadout /
+SickBaySnapshot / FirstAidHint / StretcherBearerRole) + 6 contract
+interfaces (ISickBayDataProvider / ISickBayCommandService / IMedevacService
+/ IFirstAidSurface / IStretcherBearerPolicy / IKeyRotationScheduler);
+SickBayOptions; AddSunfishSickBay() DI extension. PascalCase audit wire
+format per cohort precedent (diverging from hand-off's kebab-case-with-dots).
+
+**Pre-merge council** (standard 4-perspective adversarial; Opus + xhigh)
+returned READY-TO-MERGE with 4 opportunistic Minor docstring items
+(MedevacState.Complete terminal contract + IStretcherBearerPolicy
+empty-list semantics + PharmacyRecordCount §Trust justification +
+FirstAidHint `&` rejection rationale). All applied pre-merge for cohort
+hygiene. **Cohort batting average: 30-of-35** substrate amendments
+needed council fixes (W#54 P1 was the cleanest substrate yet — 0 Major
+findings).
+
+**Constants added**: 10 new `AuditEventType` (PascalCase per cohort:
+SickBayPharmacyViewed / KeyRotationTriggered / LabDiagnosticViewed /
+AtmosphereViewed / MedevacInitiated / MedevacAuthorized / MedevacCancelled
+/ MedevacCompleted / MedevacSelfApprovalRejected /
+RecoveryContactManaged) + 7 new `ShipAction` (kebab-case: view-sick-bay
+/ view-pharmacy / manage-recovery-contacts / trigger-key-rotation /
+initiate-medevac / authorize-medevac / view-first-aid).
+
+**Resolver cohort extension**: `ActionMinimumDeck` extended (7 entries;
+cardinality now 25); `MapToCapabilityAction` extended (7 entries);
+`ResourceScopedActions` extended (+ ManageRecoveryContacts +
+TriggerKeyRotation; cardinality now 8 — per W#50 P1 council Major M1
+precedent that resource-scoped actions default-deny on null resource at
+substrate tier).
+
+**Tests**: 27/27 in foundation-sick-bay (PharmacyRecordCount k=3 floor +
+FirstAidHint plain-text-validation + MedevacState 6-state + contract
+surface + audit constants + ShipAction kebab-case + StretcherBearerRole
+subset + Options + DI). 26/26 in foundation-ship-common still pass
+(cardinality test extended).
+
+**Phase 1 Phase-2 follow-up TODOs**:
+- Concrete impls in `blocks-sick-bay` (Phase 2 + Phase 3b)
+- `KeyRotationTrigger` typed enum (Phase 2 / H3 — ADR 0068 Accepted)
+- `PendingTriggerLabel` field on `PharmacyInventoryEntry` (Phase 2)
+- `KeyFingerprint` field on PharmacyInventoryEntry (Phase 3a; H2 gated
+  on W#53 P1)
+- Role-minimum enforcement (IDC / Captain / XO per §5 table) — gated on
+  W#37 / `ITenantSecurityPolicy`
+- Phase 2 reflection test verifying `IFieldDecryptor` absence in
+  `SickBayDataProvider` (H4 council requirement)
+
+**Remaining phases** (per hand-off):
+- **Phase 2** (~3-4h): reference impls + DefaultStretcherBearerPolicy +
+  DefaultFirstAidSurface + NoopKeyRotationScheduler + DI registration
+  finalize; pre-merge security-engineering subagent mandatory (H4
+  reflection test).
+- **Phase 3a** (~3-4h): `blocks-sick-bay` Blazor UI (Pharmacy + Lab +
+  Atmosphere tabs); pre-merge WCAG/a11y subagent mandatory; H2
+  (KeyFingerprint) gates KeyFingerprintDisplay.razor.
+- **Phase 3b** (~3-4h): SickBayCommandService + MedevacOrchestrator +
+  real IKeyRotationScheduler impl; pre-merge security-engineering
+  mandatory.
+- **Phase 4** (~2-3h): Anchor wiring + apps/docs + ledger flip.
+
+**W#35 cohort progress**: substrate now 5/7 on origin/main (W#46 P1 +
+W#49 all + W#55 P1 + W#50 P1 + W#54 P1). Remaining: W#51 (Quarterdeck —
+gated on W#46 P3) + W#52 (Tactical — gated on W#46 P3). |
 | 55 | **Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline) | `building` (Phase 1 merged 2026-05-06 via PR #624; Phases 2-6 pending — Phase 2 reference impl + analyzer; Phase 3 Blazor UI; Phase 4 React UI; Phase 5 conditional on ADR 0055) | sunfish-PM | `icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md` | **Phase 1 merged 2026-05-06 via PR #624.** New `Sunfish.Foundation.ShipsOffice`
 package shipped: 8 data-model types + 4 contract interfaces
 (`IShipsOfficeDataProvider`, `IShipsOfficeCommandService`,
