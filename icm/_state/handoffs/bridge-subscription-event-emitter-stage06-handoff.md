@@ -8,7 +8,7 @@
 **Approval:** ADR 0031-A1+A1.12 Accepted on origin/main; council batting average 17-of-17; A1.12 absorbed all 4 Required council recommendations
 **Estimated cost:** ~6–10h sunfish-PM (Bridge event-emitter substrate + ~12 type signatures + webhook + SSE delivery + retry/dedup + 10 audit constants + ~30–40 tests + DI + apps/docs page)
 **Pipeline:** `sunfish-api-change`
-**Audit before build:** `ls /Users/christopherwood/Projects/Sunfish/packages/ | grep bridge-subscription` to confirm no collision (audit not yet run; COB confirms before Phase 1 commit)
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep bridge-subscription` to confirm no collision (audit not yet run; COB confirms before Phase 1 commit)
 
 ---
 

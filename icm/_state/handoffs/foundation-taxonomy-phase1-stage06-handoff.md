@@ -8,7 +8,7 @@
 **Approval:** ADR 0056 Accepted by CTO 2026-04-29 (technical merit; council-review subagent dispatch waived per cluster decision-velocity preference); 8/8 pre-acceptance self-audit complete in ADR
 **Estimated cost:** ~5–10 hours sunfish-PM (foundation-tier package scaffold + 8 entity types + 2 service interfaces + in-memory impl + 8 audit record types + ~30-40 tests + kitchen-sink seed + docs page)
 **Pipeline:** `sunfish-feature-change`
-**Audit before build:** `ls /Users/christopherwood/Projects/Sunfish/packages/ | grep -E "^foundation-taxonomy"` confirmed no collision (audit run 2026-04-29 by CTO)
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep -E "^foundation-taxonomy"` confirmed no collision (audit run 2026-04-29 by CTO)
 
 ---
 

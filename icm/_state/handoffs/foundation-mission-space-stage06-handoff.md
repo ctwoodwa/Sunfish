@@ -8,7 +8,7 @@
 **Approval:** ADR 0062 + A1 Accepted on origin/main; council batting average 17-of-17 + A1.13 + A1.20 stance reframe + A8.4 / A8.5 council-discipline anchors all integrated
 **Estimated cost:** ~10–14h sunfish-PM (foundation-tier substrate package + ~16 type signatures + central coordinator + 10-dimension probe pattern + 5-value DegradationKind taxonomy + 9 audit constants + ~30–40 tests + DI + apps/docs page)
 **Pipeline:** `sunfish-feature-change`
-**Audit before build:** `ls /Users/christopherwood/Projects/Sunfish/packages/ | grep mission-space` to confirm no collision (audit not yet run; COB confirms before commit)
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep mission-space` to confirm no collision (audit not yet run; COB confirms before commit)
 
 ---
 

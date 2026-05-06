@@ -8,7 +8,7 @@
 **Approval:** ADR 0028-A6+A7 Accepted on origin/main; council review at `icm/07_review/output/adr-audits/0028-A6-council-review-2026-04-30.md` (PR #396, merged); A7 absorbed all 10 council recommendations
 **Estimated cost:** ~12–16h sunfish-PM (foundation-tier package scaffold + ~10 type signatures + handshake protocol + 2 service interfaces + audit factory + ~30–40 tests + DI + apps/docs page)
 **Pipeline:** `sunfish-feature-change`
-**Audit before build:** `ls /Users/christopherwood/Projects/Sunfish/packages/ | grep -E "^foundation-versioning"` to confirm no collision (audit not yet run; COB confirms before Phase 1 commit)
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep -E "^foundation-versioning"` to confirm no collision (audit not yet run; COB confirms before Phase 1 commit)
 
 ---
 
