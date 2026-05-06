@@ -4,7 +4,7 @@ number: 46
 slug: shared-design-system-load-bearing-w-35-ship-architecture-fol
 title: "**Shared Design System** (ADR 0077; `sunfish-feature-change` pipeline) — load-bearing W#35 Ship Architecture follow-on; sequences first per W#35 §9.2"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phase 2a merged 2026-05-06 via PR #639; Phase 3 merged 2026-05-06 via PR #645; **halt-C CLEARED** W#57 shipped PR #662 — see Phase 1b follow-up addendum; Phase 2b + Phase 1b-follow-up + Phases 4-6 pending)"
+status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phase 2a merged 2026-05-06 via PR #639; Phase 3 merged 2026-05-06 via PR #645; **Phase 1b follow-up SHIPPED PR #680** — `DefaultPermissionResolver` subscribe-before-load cache invalidation on origin/main; **Phase 4 UNBLOCKED**; Phase 2b + Phases 4-6 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `icm/_state/handoffs/shared-design-system-permres-cache-invalidation-addendum.md` (Phase 1b follow-up: halt-C subscribe-before-load) + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged)"
