@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -132,6 +133,16 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Templates are GLOBAL — keyed by <see cref="ThreatTriggerTemplate.RuleName"/>
+    /// without a tenant scope. This is by design per ADR 0081 §4: the
+    /// template library is host-admin configuration, not user data, and
+    /// every tenant's rule X uses the same emergency-order template.
+    /// Per W#52 P2c council Major: registration is gated by the
+    /// <c>open-then-closed</c> first-issue epoch (callers must register
+    /// at startup before the first <see cref="TryIssueAsync"/> call);
+    /// post-startup template injection is therefore impossible.
+    /// </remarks>
     public void RegisterTemplate(ThreatTriggerTemplate template)
     {
         ArgumentNullException.ThrowIfNull(template);
@@ -169,6 +180,12 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
         ArgumentNullException.ThrowIfNull(alert);
         ct.ThrowIfCancellationRequested();
         Interlocked.Exchange(ref _firstIssueProcessed, 1);
+
+        // Per W#52 P2c council Major M2: opportunistic sweep of stale
+        // dedup entries to bound memory under long-running tenants
+        // with many rules. Cheap: O(n) walk on call-paths only, no
+        // background timer.
+        SweepStaleDedupEntries(_time.GetUtcNow());
 
         // Step 1 — tenant binding (per §8.2).
         if (_tenantContext is not null)
@@ -221,11 +238,15 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
             return dedupActual.OrderId;
         }
 
-        // Step 5 — per-tenant rate limit.
+        // Step 5 — per-tenant rate limit. Per W#52 P2c council Major M1:
+        // roll back the dedup-cache seed on early exit so the next
+        // legitimate caller within the window doesn't observe a stale
+        // null-orderId entry.
         var rateCounter = _tenantRateCounters.GetOrAdd(alert.TenantId,
             static _ => new RateCounter());
         if (!rateCounter.TryAdmit(now, _options.Value.MaxEmergencyOrdersPerMinute))
         {
+            _dedupCache.TryRemove(dedupKey, out _);
             await EmitDenialAsync(alert,
                 AuditEventType.EmergencyStandingOrderIssuanceFailed, "rate-limit",
                 ct).ConfigureAwait(false);
@@ -246,6 +267,7 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
             _logger.LogError(ex,
                 "ISystemPrincipalProvider threw resolving system principal for tenant {TenantId}.",
                 alert.TenantId);
+            _dedupCache.TryRemove(dedupKey, out _);
             await EmitDenialAsync(alert,
                 AuditEventType.EmergencyStandingOrderIssuanceFailed,
                 "no-system-principal-registered", ct).ConfigureAwait(false);
@@ -253,6 +275,7 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
         }
         if (systemPrincipal is null)
         {
+            _dedupCache.TryRemove(dedupKey, out _);
             await EmitDenialAsync(alert,
                 AuditEventType.EmergencyStandingOrderIssuanceFailed,
                 "no-system-principal-registered", ct).ConfigureAwait(false);
@@ -263,6 +286,7 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
         var substituted = SubstituteTemplate(template.OrderContent, alert);
         if (substituted.Length > MaxOrderContentChars)
         {
+            _dedupCache.TryRemove(dedupKey, out _);
             throw new ArgumentException(
                 $"Substituted OrderContent for rule '{alert.RuleName}' is "
                 + $"{substituted.Length} chars; exceeds {MaxOrderContentChars}-char cap.",
@@ -322,14 +346,31 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
         return orderId;
     }
 
-    private static string SubstituteTemplate(string content, TacticalAlert alert)
-    {
-        return content
-            .Replace("{AlertId}", alert.AlertId, StringComparison.Ordinal)
-            .Replace("{RuleName}", alert.RuleName, StringComparison.Ordinal)
-            .Replace("{Severity}", alert.Severity.ToString(), StringComparison.Ordinal)
-            .Replace("{DetectedAt}", alert.DetectedAt.ToString("o"), StringComparison.Ordinal);
-    }
+    // ADR 0081 §4 supported placeholders.
+    private static readonly Regex PlaceholderRegex = new(
+        @"\{(AlertId|RuleName|Severity|DetectedAt)\}",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Single-pass placeholder substitution. Sequential
+    /// <see cref="string.Replace(string, string, StringComparison)"/>
+    /// would be vulnerable to sequence-injection: an attacker-controlled
+    /// <see cref="TacticalAlert.AlertId"/> containing the literal
+    /// <c>{RuleName}</c> would, after the first Replace, get its
+    /// embedded token expanded by subsequent Replace calls — letting
+    /// the persisted <see cref="StandingOrder.Rationale"/> spoof a
+    /// rule name. Per W#52 P2c council Critical C1: a single-pass
+    /// regex callback closes the hole.
+    /// </summary>
+    private static string SubstituteTemplate(string content, TacticalAlert alert) =>
+        PlaceholderRegex.Replace(content, m => m.Groups[1].Value switch
+        {
+            "AlertId" => alert.AlertId,
+            "RuleName" => alert.RuleName,
+            "Severity" => alert.Severity.ToString(),
+            "DetectedAt" => alert.DetectedAt.ToString("o"),
+            _ => m.Value,
+        });
 
     private ValueTask EmitDenialAsync(
         TacticalAlert alert,
@@ -405,6 +446,19 @@ public sealed class DefaultThreatTriggerService : IThreatTriggerService
         foreach (var p in pairs)
         {
             yield return new KeyValuePair<string, object?>(p.Key, p.Value);
+        }
+    }
+
+    private void SweepStaleDedupEntries(DateTimeOffset now)
+    {
+        var window = TimeSpan.FromSeconds(60);
+        foreach (var kvp in _dedupCache)
+        {
+            if (now - kvp.Value.IssuedAt > window)
+            {
+                _dedupCache.TryRemove(
+                    new KeyValuePair<DedupKey, DedupEntry>(kvp.Key, kvp.Value));
+            }
         }
     }
 

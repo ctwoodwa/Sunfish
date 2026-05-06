@@ -200,6 +200,43 @@ public class DefaultThreatTriggerServiceTests
             "tenant-mismatch".Equals(r.Payload.Payload.Body["denial_reason"]));
     }
 
+    /// <summary>
+    /// Per W#52 P2c council Critical C1: <see cref="TacticalAlert.AlertId"/>
+    /// is attacker-controlled and persists into
+    /// <see cref="StandingOrder.Rationale"/> via template substitution.
+    /// Sequential <c>string.Replace</c> would let an evil AlertId
+    /// containing the literal <c>{RuleName}</c> get its embedded token
+    /// expanded by subsequent passes — a persistent message-spoofing
+    /// surface in a §Trust-relevant artifact. The single-pass regex
+    /// substitution closes the hole; this test pins it.
+    /// </summary>
+    [Fact]
+    public async Task TryIssueAsync_TemplateSubstitution_AttackerControlledAlertId_DoesNotInjectTokens()
+    {
+        var repo = Substitute.For<IStandingOrderRepository>();
+        StandingOrder? captured = null;
+        repo.WhenForAnyArgs(r => r.AppendAsync(default!, default))
+            .Do(call => captured = call.Arg<StandingOrder>());
+
+        var svc = Build(repo: repo, audit: new RecordingAuditTrail(), signer: StubSigner());
+        svc.RegisterTemplate(new ThreatTriggerTemplate(
+            "third-party.test",
+            AlertSeverity.High,
+            "alert={AlertId}; rule={RuleName}",
+            null));
+
+        // Evil AlertId contains the literal placeholder for RuleName.
+        var evilId = "evil{RuleName}";
+        await svc.TryIssueAsync(MakeAlert(alertId: evilId));
+
+        Assert.NotNull(captured);
+        // Single-pass substitution preserves the literal embedded
+        // braces — they MUST NOT be expanded as a second-pass placeholder.
+        Assert.Contains("evil{RuleName}", captured!.Rationale);
+        // The rule placeholder is still substituted exactly once.
+        Assert.Contains("rule=third-party.test", captured.Rationale);
+    }
+
     [Fact]
     public async Task TryIssueAsync_ThrowsOnPostSubstitutionOverflow_2048()
     {
