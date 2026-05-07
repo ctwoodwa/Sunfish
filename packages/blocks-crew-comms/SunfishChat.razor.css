@@ -1,0 +1,181 @@
+/*
+ * W#59 Phase 4 — SunfishChat scoped styles. Per ADR 0065 §7 + W#34 §5.7
+ * accessibility mandates: every visual signal MUST also carry a non-colour
+ * channel (icon + label). Touch targets ≥44×44 CSS px (WCAG 2.5.5 AAA).
+ *
+ * Scoped via Razor's CSS isolation — the ::deep selector is only used when
+ * we need to reach into rendered descendants generated outside this file
+ * (we don't, in v0).
+ */
+
+.sunfish-chat {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 3fr;
+    gap: 1rem;
+    block-size: 100%;
+    inline-size: 100%;
+    box-sizing: border-box;
+}
+
+.sunfish-chat-presence {
+    border-inline-end: 1px solid var(--sunfish-color-border, #d0d0d0);
+    padding-inline-end: 0.75rem;
+    overflow-y: auto;
+}
+
+.sunfish-chat-empty {
+    color: var(--sunfish-color-muted, #666);
+    font-style: italic;
+    padding: 0.5rem 0;
+}
+
+.sunfish-chat-crew-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sunfish-chat-crew-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block: 0.5rem;
+    min-block-size: 44px; /* WCAG 2.5.5 — touch target. */
+}
+
+.sunfish-chat-presence-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    border-radius: 50%;
+    /* Colour AND text: the IconText (●) is rendered visibly so screen
+       readers announce the aria-label, and sighted users with colour-
+       discrimination differences still see a filled circle that varies
+       by attribute selector below. */
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.sunfish-chat-presence-dot[data-presence-css="online"] {
+    color: var(--sunfish-presence-online, #2e7d32);
+    background-color: var(--sunfish-presence-online-bg, #c8e6c9);
+}
+
+.sunfish-chat-presence-dot[data-presence-css="offline"] {
+    color: var(--sunfish-presence-offline, #757575);
+    background-color: var(--sunfish-presence-offline-bg, #e0e0e0);
+}
+
+.sunfish-chat-presence-dot[data-presence-css="stale"] {
+    color: var(--sunfish-presence-stale, #f57c00);
+    background-color: var(--sunfish-presence-stale-bg, #ffe0b2);
+}
+
+.sunfish-chat-crew-name {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sunfish-chat-invite-button {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding: 0.25rem 0.75rem;
+}
+
+.sunfish-chat-thread-pane {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+    min-block-size: 0; /* Allow inner overflow. */
+}
+
+.sunfish-chat-thread {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+    background-color: var(--sunfish-thread-bg, #fafafa);
+}
+
+.sunfish-chat-msg {
+    display: block;
+    padding-block: 0.25rem;
+}
+
+.sunfish-chat-msg[data-from="local"] .sunfish-chat-msg-body {
+    color: var(--sunfish-msg-local, #1565c0);
+    font-weight: 600;
+}
+
+.sunfish-chat-msg-sender {
+    color: var(--sunfish-color-muted, #666);
+    font-size: 0.875rem;
+    margin-inline-end: 0.5rem;
+}
+
+.sunfish-chat-send {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-block-start: 1px solid var(--sunfish-color-border, #d0d0d0);
+}
+
+.sunfish-chat-send-label {
+    /* Visually hidden but available to screen readers per WCAG 1.3.1. */
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.sunfish-chat-send-input {
+    flex: 1 1 auto;
+    min-block-size: 44px;
+    padding: 0.25rem 0.5rem;
+}
+
+.sunfish-chat-send-button {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding: 0.25rem 0.75rem;
+}
+
+.sunfish-chat-invitation-prompt {
+    /* Centered alertdialog overlay; hosts may compose with a backdrop. */
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--sunfish-modal-bg, #ffffff);
+    border: 1px solid var(--sunfish-color-border, #d0d0d0);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 1rem 1.5rem;
+    max-inline-size: 28rem;
+    min-inline-size: 18rem;
+    z-index: 100;
+}
+
+.sunfish-chat-invitation-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-block-start: 1rem;
+}
+
+.sunfish-chat-invitation-accept,
+.sunfish-chat-invitation-reject {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding: 0.5rem 1rem;
+}

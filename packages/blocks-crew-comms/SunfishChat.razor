@@ -1,0 +1,403 @@
+@*
+    W#59 Phase 4 — SunfishChat Blazor component per ADR 0076 + the
+    crew-comms-anchor-mvp-stage06-handoff.md spec. Closes the last MVP
+    demo gap (D, no UI). Mac↔Mac LAN-mDNS demo target 2026-05-08.
+
+    Layout:
+      .sunfish-chat
+        .sunfish-chat-presence    (left panel — CrewMember rows)
+        .sunfish-chat-thread      (right panel — message list + send)
+
+    Accessibility (non-negotiable per ADR 0065 §7):
+      - Outer landmark <section role="region" aria-label="Crew chat">
+      - Presence dots: aria-label + visible icon + colour (no colour-only)
+      - Thread: role="log" aria-live="polite" aria-atomic="false"
+      - Invitation prompt: role="alertdialog" aria-modal="true" with
+        focused Accept button
+      - Send input: <label> association; full keyboard navigation; Enter
+        sends when input non-empty.
+
+    Out of scope for v0 (P4.5 / W#45 follow-up):
+      - TYPING / DELIVERED indicators (P4.5 PR 2)
+      - Glare-wiring (P4.5 PR 3)
+      - Audio (Phase 3 ADR 0076) / video (Phase 4 ADR 0076)
+*@
+
+@implements IDisposable
+
+<section class="sunfish-chat" role="region" aria-label="Crew chat" data-test-id="sunfish-chat">
+    <aside class="sunfish-chat-presence" aria-label="Crew presence">
+        @if (Roster is null || _crew.Count == 0)
+        {
+            <p class="sunfish-chat-empty" data-test-id="presence-empty">No crew members online.</p>
+        }
+        else
+        {
+            <ul class="sunfish-chat-crew-list">
+                @foreach (var member in _crew)
+                {
+                    var presence = ResolvePresence(member);
+                    <li @key="member.Peer.Value"
+                        class="sunfish-chat-crew-row"
+                        data-test-id="crew-row"
+                        data-peer-id="@member.Peer.Value"
+                        data-presence-status="@presence.Css">
+                        <span class="sunfish-chat-presence-dot"
+                              aria-label="@presence.AriaLabel"
+                              role="img"
+                              data-presence-css="@presence.Css">@presence.IconText</span>
+                        <span class="sunfish-chat-crew-name">@member.DisplayName</span>
+                        <button type="button"
+                                class="sunfish-chat-invite-button"
+                                data-test-id="invite-button"
+                                disabled="@(!presence.CanInvite || ActiveSession is not null)"
+                                @onclick="() => HandleInviteClickAsync(member.Peer)">
+                            Invite
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    </aside>
+
+    <div class="sunfish-chat-thread-pane">
+        <ol class="sunfish-chat-thread"
+            role="log"
+            aria-live="polite"
+            aria-atomic="false"
+            aria-label="Chat messages"
+            data-test-id="thread">
+            @foreach (var message in _messages)
+            {
+                <li @key="message.Id"
+                    class="sunfish-chat-msg"
+                    data-from="@message.From"
+                    data-test-id="chat-msg">
+                    <span class="sunfish-chat-msg-sender">@message.SenderName</span>
+                    <span class="sunfish-chat-msg-body">@message.Body</span>
+                </li>
+            }
+        </ol>
+
+        <form class="sunfish-chat-send"
+              @onsubmit="HandleSendAsync"
+              @onsubmit:preventDefault="true">
+            <label for="@_inputId" class="sunfish-chat-send-label">Message</label>
+            <input id="@_inputId"
+                   type="text"
+                   class="sunfish-chat-send-input"
+                   data-test-id="send-input"
+                   placeholder="Type a message"
+                   value="@_draft"
+                   disabled="@(ActiveSession is null)"
+                   @oninput="(e) => _draft = e.Value?.ToString() ?? string.Empty" />
+            <button type="submit"
+                    class="sunfish-chat-send-button"
+                    data-test-id="send-button"
+                    disabled="@(string.IsNullOrWhiteSpace(_draft) || ActiveSession is null)">
+                Send
+            </button>
+        </form>
+    </div>
+
+    @if (_pendingInvitation is not null)
+    {
+        <div class="sunfish-chat-invitation-prompt"
+             role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="@_inviteHeadingId"
+             aria-describedby="@_inviteBodyId"
+             data-test-id="invitation-prompt">
+            <h2 id="@_inviteHeadingId" class="sunfish-chat-invitation-heading">Incoming chat request</h2>
+            <p id="@_inviteBodyId" class="sunfish-chat-invitation-body">
+                <strong>@ResolveDisplayName(_pendingInvitation.FromPeer)</strong> wants to chat with you.
+            </p>
+            <div class="sunfish-chat-invitation-actions">
+                @* Accept button is the autofocus target per WCAG 2.4.3 +
+                   the alertdialog convention (focus the primary action). *@
+                <button type="button"
+                        class="sunfish-chat-invitation-accept"
+                        data-test-id="invitation-accept"
+                        @ref="_acceptButtonRef"
+                        @onclick="HandleAcceptInvitationAsync">
+                    Accept
+                </button>
+                <button type="button"
+                        class="sunfish-chat-invitation-reject"
+                        data-test-id="invitation-reject"
+                        @onclick="HandleRejectInvitationAsync">
+                    Reject
+                </button>
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private readonly string _inputId = $"sunfish-chat-input-{Guid.NewGuid():N}";
+    private readonly string _inviteHeadingId = $"sunfish-chat-invite-h-{Guid.NewGuid():N}";
+    private readonly string _inviteBodyId = $"sunfish-chat-invite-b-{Guid.NewGuid():N}";
+
+    private readonly List<ChatMessage> _messages = new();
+    private List<CrewMember> _crew = new();
+    private string _draft = string.Empty;
+    private IChannelInvitation? _pendingInvitation;
+    private IDisposable? _invitationSubscription;
+    private IDisposable? _presenceSubscription;
+    private ElementReference _acceptButtonRef;
+    private bool _shouldFocusAcceptButton;
+
+    /// <summary>The ambient channel provider (NativeChannelProvider on Anchor).</summary>
+    [Parameter, EditorRequired]
+    public IChannelProvider? Provider { get; set; }
+
+    /// <summary>The crew roster surface; queried on parameter-change for the active tenant.</summary>
+    [Parameter, EditorRequired]
+    public ICrewRoster? Roster { get; set; }
+
+    /// <summary>
+    /// Inbound channel invitations forwarded by the host's listener
+    /// service (e.g., Anchor's <c>CrewCommsListenerHostedService</c>).
+    /// The component subscribes on init and disposes the subscription on
+    /// dispose; faulty observers don't poison sibling delivery (the
+    /// host's bus implementation owns isolation).
+    /// </summary>
+    [Parameter, EditorRequired]
+    public IObservable<IChannelInvitation>? InboundInvitations { get; set; }
+
+    /// <summary>
+    /// Optional presence-update stream. When supplied, presence changes
+    /// trigger a re-render so the roster panel can refresh. Hosts that
+    /// don't yet emit presence may pass <c>null</c>.
+    /// </summary>
+    [Parameter]
+    public IObservable<CrewPresence>? PresenceUpdates { get; set; }
+
+    /// <summary>The currently-active session; null when no chat is open.</summary>
+    [Parameter]
+    public IChannelSession? ActiveSession { get; set; }
+
+    /// <summary>The current tenant — used by Roster.GetCrewAsync.</summary>
+    [Parameter, EditorRequired]
+    public TenantId Tenant { get; set; }
+
+    /// <summary>Display name shown alongside the local operator's outbound messages.</summary>
+    [Parameter]
+    public string LocalDisplayName { get; set; } = "You";
+
+    /// <summary>Fired when this component opens a session via Provider.OpenAsync.</summary>
+    [Parameter]
+    public EventCallback<IChannelSession> OnSessionOpened { get; set; }
+
+    /// <summary>Fired when the local operator dismisses an active session.</summary>
+    [Parameter]
+    public EventCallback OnSessionClosed { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Roster is not null)
+        {
+            try
+            {
+                var crew = await Roster.GetCrewAsync(Tenant, CancellationToken.None);
+                _crew = crew?.ToList() ?? new List<CrewMember>();
+            }
+            catch
+            {
+                // Roster query failures are not fatal; render an empty
+                // presence panel rather than crashing the chat surface.
+                _crew = new List<CrewMember>();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (InboundInvitations is not null)
+        {
+            _invitationSubscription = InboundInvitations.Subscribe(
+                new InvitationObserver(this));
+        }
+        if (PresenceUpdates is not null)
+        {
+            _presenceSubscription = PresenceUpdates.Subscribe(
+                new PresenceObserver(this));
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shouldFocusAcceptButton)
+        {
+            _shouldFocusAcceptButton = false;
+            try
+            {
+                await _acceptButtonRef.FocusAsync();
+            }
+            catch
+            {
+                // FocusAsync may not be supported in all hosts (test
+                // harness etc.). Failing silently is OK — the dialog is
+                // still operable via Tab + Enter.
+            }
+        }
+    }
+
+    private async Task HandleInviteClickAsync(PeerId peer)
+    {
+        if (Provider is null || ActiveSession is not null)
+        {
+            return;
+        }
+        try
+        {
+            var session = await Provider.OpenAsync(
+                Tenant, peer, ChannelCapability.Text, CancellationToken.None);
+            // ActiveSession is parent-owned per Blazor parameter contract;
+            // we MUST NOT write back to a [Parameter] setter. The parent
+            // re-supplies ActiveSession after observing the OnSessionOpened
+            // callback; the disabled-state on Send + Invite transitions on
+            // the next render-pass driven by the parent.
+            await OnSessionOpened.InvokeAsync(session);
+        }
+        catch
+        {
+            // Invitation failures bubble up via UI surfaces in a future
+            // amendment (toast / inline error); for the MVP demo, swallow
+            // so the Send-on-empty-session path stays disabled.
+        }
+    }
+
+    private async Task HandleSendAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_draft) || ActiveSession is null)
+        {
+            return;
+        }
+        var body = _draft.Trim();
+        try
+        {
+            await ActiveSession.SendTextAsync(body, CancellationToken.None);
+            _messages.Add(new ChatMessage(From: "local", SenderName: LocalDisplayName, Body: body));
+            _draft = string.Empty;
+        }
+        catch
+        {
+            // Send failure: leave draft intact for retry; future amendment
+            // surfaces an inline error indicator.
+        }
+    }
+
+    private async Task HandleAcceptInvitationAsync()
+    {
+        if (_pendingInvitation is null)
+        {
+            return;
+        }
+        var invitation = _pendingInvitation;
+        _pendingInvitation = null;
+        try
+        {
+            var session = await invitation.AcceptAsync(CancellationToken.None);
+            // ActiveSession is parent-owned per Blazor parameter contract;
+            // we MUST NOT write back to a [Parameter] setter. The parent
+            // re-supplies ActiveSession after observing the OnSessionOpened
+            // callback; the disabled-state on Send + Invite transitions on
+            // the next render-pass driven by the parent.
+            await OnSessionOpened.InvokeAsync(session);
+        }
+        catch
+        {
+            // Accept failure leaves the operator without an active session.
+        }
+    }
+
+    private async Task HandleRejectInvitationAsync()
+    {
+        if (_pendingInvitation is null)
+        {
+            return;
+        }
+        var invitation = _pendingInvitation;
+        _pendingInvitation = null;
+        try
+        {
+            await invitation.RejectAsync("Operator declined.", CancellationToken.None);
+        }
+        catch
+        {
+            // Reject is best-effort; if the network is gone the inviter
+            // will time out anyway.
+        }
+    }
+
+    private PresenceVm ResolvePresence(CrewMember member)
+    {
+        // MVP: roster-only — no live presence wiring yet (PresenceBus
+        // updates flow through InvitationBus.PresenceUpdates but we
+        // don't track per-peer state in v0). Default to "Online" for
+        // any roster entry; presence updates from the bus would refine
+        // this in a future amendment.
+        return new PresenceVm(
+            Css: "online",
+            AriaLabel: "Online",
+            IconText: "●",
+            CanInvite: true);
+    }
+
+    private string ResolveDisplayName(PeerId peer)
+    {
+        var match = _crew.FirstOrDefault(m =>
+            string.Equals(m.Peer.Value, peer.Value, StringComparison.Ordinal));
+        return match?.DisplayName ?? peer.Value;
+    }
+
+    private void OnInvitationFromBus(IChannelInvitation invitation)
+    {
+        _pendingInvitation = invitation;
+        _shouldFocusAcceptButton = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnPresenceFromBus(CrewPresence presence)
+    {
+        // v0: presence updates trigger a re-render so the roster panel
+        // can pull a fresh GetCrewAsync. Future amendment will track
+        // per-peer presence-status in _crew directly.
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _invitationSubscription?.Dispose();
+        _presenceSubscription?.Dispose();
+    }
+
+    private sealed record ChatMessage(string From, string SenderName, string Body)
+    {
+        // Stable per-instance key for @key — record value-equality would
+        // collapse two messages with identical (From, SenderName, Body)
+        // onto the same DOM node and break the diff after a fast retry.
+        public Guid Id { get; } = Guid.NewGuid();
+    }
+
+    private sealed record PresenceVm(string Css, string AriaLabel, string IconText, bool CanInvite);
+
+    private sealed class InvitationObserver : IObserver<IChannelInvitation>
+    {
+        private readonly SunfishChat _owner;
+        public InvitationObserver(SunfishChat owner) => _owner = owner;
+        public void OnNext(IChannelInvitation value) => _owner.OnInvitationFromBus(value);
+        public void OnError(Exception error) { }
+        public void OnCompleted() { }
+    }
+
+    private sealed class PresenceObserver : IObserver<CrewPresence>
+    {
+        private readonly SunfishChat _owner;
+        public PresenceObserver(SunfishChat owner) => _owner = owner;
+        public void OnNext(CrewPresence value) => _owner.OnPresenceFromBus(value);
+        public void OnError(Exception error) { }
+        public void OnCompleted() { }
+    }
+}
