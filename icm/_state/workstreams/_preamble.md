@@ -20,7 +20,7 @@ Canonical "what's in flight, who owns it, what state it's in" for cross-session 
 
 ---
 
-## Current state (last updated 2026-05-06 — W#44 ExtensionFields built; cross-repo coordination inbox migrated to parent `SunfishSoftware/coordination/`)
+## Current state (last updated 2026-05-06 — W#59 Crew Comms Anchor MVP hand-off authored; CO directive top priority this week)
 
 | # | Workstream | Status | Owner (current phase) | Reference | Notes |
 |---|---|---|---|---|---|
