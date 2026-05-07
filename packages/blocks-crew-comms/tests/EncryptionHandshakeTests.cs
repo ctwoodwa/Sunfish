@@ -127,8 +127,14 @@ public class EncryptionHandshakeTests
         var idB = NewIdentityPublicKey();
         var tenant = EncryptionHandshake.TenantBytes(Tenant);
 
-        var t1 = EncryptionHandshake.ComputeTranscriptHash(ephemA, idA, ephemB, idB, tenant, (byte)ChannelCapability.Text);
-        var t2 = EncryptionHandshake.ComputeTranscriptHash(ephemA, idA, ephemB, idB, tenant, (byte)ChannelCapability.Text);
+        var t1 = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: (byte)ChannelCapability.Text,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x03);
+        var t2 = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: (byte)ChannelCapability.Text,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x03);
 
         Assert.Equal(t1, t2);
         Assert.True(EncryptionHandshake.TranscriptsMatch(t1, t2));
@@ -147,8 +153,14 @@ public class EncryptionHandshakeTests
         var idB = NewIdentityPublicKey();
         var tenant = EncryptionHandshake.TenantBytes(Tenant);
 
-        var t1 = EncryptionHandshake.ComputeTranscriptHash(ephemA, idA, ephemB, idB, tenant, (byte)ChannelCapability.Text);
-        var t2 = EncryptionHandshake.ComputeTranscriptHash(ephemA, idA, ephemB, idB, tenant, (byte)ChannelCapability.Audio);
+        var t1 = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: (byte)ChannelCapability.Text,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x07);
+        var t2 = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: (byte)ChannelCapability.Audio,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x07);
 
         Assert.NotEqual(t1, t2);
         Assert.False(EncryptionHandshake.TranscriptsMatch(t1, t2));
@@ -157,6 +169,122 @@ public class EncryptionHandshakeTests
         var tampered = (byte[])t1.Clone();
         tampered[0] ^= 0xFF;
         Assert.False(EncryptionHandshake.TranscriptsMatch(t1, tampered));
+    }
+
+    [Fact]
+    public void TranscriptHash_DivergesOnInviteCapabilities()
+    {
+        // ADR 0076-A2: a relay-MITM that downgrades INVITE.capabilities (0x07
+        // → 0x01) without touching ACCEPT.capability would otherwise produce
+        // matching transcripts on both peers. Binding inviteCapabilities into
+        // the hash means the responder's transcript (computed over the bytes
+        // it actually saw on the wire) diverges from the initiator's
+        // transcript (computed over the bytes it sent), surfacing as
+        // ChannelTerminationReason.TranscriptMismatch on CONFIRM exchange.
+        var ephemA = NewEphemeralPublicKey();
+        var ephemB = NewEphemeralPublicKey();
+        var idA = NewIdentityPublicKey();
+        var idB = NewIdentityPublicKey();
+        var tenant = EncryptionHandshake.TenantBytes(Tenant);
+
+        var initiatorView = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: 0x01,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x07);
+        var responderViewAfterMitm = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x01, negotiatedCapability: 0x01,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x07);
+
+        Assert.False(EncryptionHandshake.TranscriptsMatch(initiatorView, responderViewAfterMitm));
+    }
+
+    [Fact]
+    public void TranscriptHash_DivergesOnPresenceCaps()
+    {
+        // ADR 0076-A1: a relay-MITM that rewrites HELLO.presence.caps in
+        // either direction must surface as a transcript mismatch — same
+        // mechanic as the INVITE.capabilities downgrade, applied to the
+        // presence broadcast bytes both peers commit to during HELLO.
+        var ephemA = NewEphemeralPublicKey();
+        var ephemB = NewEphemeralPublicKey();
+        var idA = NewIdentityPublicKey();
+        var idB = NewIdentityPublicKey();
+        var tenant = EncryptionHandshake.TenantBytes(Tenant);
+
+        var initiatorView = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: 0x01,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x07);
+        var responderViewAfterPresenceTamper = EncryptionHandshake.ComputeTranscriptHash(
+            ephemA, idA, ephemB, idB, tenant,
+            inviteCapabilities: 0x07, negotiatedCapability: 0x01,
+            presenceCapsInitiator: 0x07, presenceCapsResponder: 0x01);
+
+        Assert.False(EncryptionHandshake.TranscriptsMatch(initiatorView, responderViewAfterPresenceTamper));
+    }
+
+    [Theory]
+    [InlineData(
+        // V7: tenant 'tenant-001-acme'; inviteCaps=0x07; negotiatedCap=0x01;
+        // presenceCapsA=0x07; presenceCapsB=0x03. Expected hash from the
+        // canonical ADR 0076-A1+A2 generator at tools/icm/generate-channel-vectors.py.
+        "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+        "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "tenant-001-acme",
+        (byte)0x07, (byte)0x01, (byte)0x07, (byte)0x03,
+        "5c38292a921ea0bff9a3b20b49e255d8e8eb06579e1aaa44aa11ad539f03a8fb")]
+    [InlineData(
+        // V8: zero-length tenant edge case (uint32BE(0) length-prefix with no
+        // tenant bytes); all caps=0x01.
+        "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+        "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "",
+        (byte)0x01, (byte)0x01, (byte)0x01, (byte)0x01,
+        "de32c848e5a0c63e7919201a2d984a2d7fc0efef0ba928a4a3845ba02ee4d039")]
+    [InlineData(
+        // V9: UTF-8 multi-byte tenant; inviteCaps=0x07 → negotiatedCap=0x02
+        // (audio); presenceCapsA=0x07; presenceCapsB=0x06.
+        "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+        "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "tenant-é-ünïcödë",
+        (byte)0x07, (byte)0x02, (byte)0x07, (byte)0x06,
+        "852c278135eccb596882767608598806eeefca4c5b546e22984497102d906cb6")]
+    public void TranscriptHash_KnownAnswerVectors_MatchAdr0076A1A2Generator(
+        string initEphemHex, string initIdHex,
+        string respEphemHex, string respIdHex,
+        string tenantValue,
+        byte inviteCaps, byte negotiatedCap,
+        byte presenceCapsA, byte presenceCapsB,
+        string expectedSha256Hex)
+    {
+        var actual = EncryptionHandshake.ComputeTranscriptHash(
+            HexToBytes(initEphemHex), HexToBytes(initIdHex),
+            HexToBytes(respEphemHex), HexToBytes(respIdHex),
+            System.Text.Encoding.UTF8.GetBytes(tenantValue),
+            inviteCapabilities: inviteCaps,
+            negotiatedCapability: negotiatedCap,
+            presenceCapsInitiator: presenceCapsA,
+            presenceCapsResponder: presenceCapsB);
+
+        Assert.Equal(expectedSha256Hex, Convert.ToHexString(actual).ToLowerInvariant());
+    }
+
+    private static byte[] HexToBytes(string hex)
+    {
+        if (hex.Length == 0) return Array.Empty<byte>();
+        var bytes = new byte[hex.Length / 2];
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+        }
+        return bytes;
     }
 
     [Fact]

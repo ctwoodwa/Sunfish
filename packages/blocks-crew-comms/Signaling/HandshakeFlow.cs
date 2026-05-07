@@ -132,11 +132,18 @@ internal static class HandshakeFlow
         }
 
         // Compute transcript hash; both peers compute identically.
+        // Per ADR 0076-A1+A2: the transcript binds offered (INVITE.capabilities)
+        // + negotiated (ACCEPT.capability) + each peer's broadcast presence caps,
+        // closing the relay-MITM capability-downgrade vector.
         var tenantBytes = EncryptionHandshake.TenantBytes(tenantId);
         var transcript = EncryptionHandshake.ComputeTranscriptHash(
             localHello.EphemeralPublicKey, localHello.IdentityPublicKey,
             remoteHello.EphemeralPublicKey, remoteHello.IdentityPublicKey,
-            tenantBytes, accept.Capability);
+            tenantBytes,
+            (byte)preferredCapabilities,
+            accept.Capability,
+            localHello.Presence.Caps,
+            remoteHello.Presence.Caps);
 
         // Send CONFIRM
         var confirmPayload = MessagePackSerializer.Serialize(
@@ -188,9 +195,24 @@ internal static class HandshakeFlow
     /// Sends ACCEPT + drives the CONFIRM exchange on the responder side. Used
     /// by <c>IChannelInvitation.AcceptAsync</c>.
     /// </summary>
+    /// <param name="frames">AEAD-enabled frame protocol bound to the duplex stream.</param>
+    /// <param name="negotiated">Capability negotiated by the responder via <see cref="NegotiateHighestCommon"/>.</param>
+    /// <param name="offeredCapabilities">
+    /// The <c>INVITE.capabilities</c> byte AS RECEIVED on the wire (NOT the
+    /// post-negotiation value). Per ADR 0076-A2 a relay-MITM tampering with
+    /// this byte surfaces as a CONFIRM transcript mismatch on the initiator
+    /// side, because the initiator's transcript is bound to the bytes it
+    /// sent and the responder's transcript is bound to the (post-tamper)
+    /// bytes it received.
+    /// </param>
+    /// <param name="initiatorHello">HELLO payload received from the remote initiator.</param>
+    /// <param name="responderHello">HELLO payload this responder sent.</param>
+    /// <param name="tenantId">Tenant under which the channel is opened.</param>
+    /// <param name="ct">Cancellation token for the ACCEPT/CONFIRM exchange.</param>
     public static async Task ResponderAcceptAsync(
         FrameProtocol frames,
         ChannelCapability negotiated,
+        byte offeredCapabilities,
         HelloPayload initiatorHello,
         HelloPayload responderHello,
         TenantId tenantId,
@@ -201,11 +223,19 @@ internal static class HandshakeFlow
             CrewCommsResolver.Options);
         await frames.WriteFrameAsync(MessageType.Accept, acceptPayload, ct).ConfigureAwait(false);
 
+        // Per ADR 0076-A1+A2: bind INVITE.capabilities + ACCEPT.capability +
+        // both presence-caps bytes into the transcript so a relay-MITM cannot
+        // downgrade either signal post-hoc without producing a CONFIRM
+        // mismatch on at least one peer.
         var tenantBytes = EncryptionHandshake.TenantBytes(tenantId);
         var transcript = EncryptionHandshake.ComputeTranscriptHash(
             initiatorHello.EphemeralPublicKey, initiatorHello.IdentityPublicKey,
             responderHello.EphemeralPublicKey, responderHello.IdentityPublicKey,
-            tenantBytes, (byte)negotiated);
+            tenantBytes,
+            offeredCapabilities,
+            (byte)negotiated,
+            initiatorHello.Presence.Caps,
+            responderHello.Presence.Caps);
 
         // Read initiator's CONFIRM first (initiator sends CONFIRM right after sending the ACCEPT we just sent).
         var (confirmType, confirmBytes) = await frames.ReadFrameAsync(ct).ConfigureAwait(false);

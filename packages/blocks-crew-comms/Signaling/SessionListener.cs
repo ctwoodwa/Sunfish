@@ -237,7 +237,8 @@ internal sealed class DeferredInvitation : IChannelInvitation
         try
         {
             await HandshakeFlow.ResponderAcceptAsync(
-                _frames, _negotiated, _initiatorHello, _responderHello, _tenantId, ct)
+                _frames, _negotiated, (byte)OfferedCapabilities,
+                _initiatorHello, _responderHello, _tenantId, ct)
                 .ConfigureAwait(false);
 
             var session = new NativeChannelSession(_frames, _handshake, FromPeer, _negotiated, _time);

@@ -173,12 +173,30 @@ public sealed class EncryptionHandshake : IDisposable
     /// <summary>
     /// Computes the SHA-256 transcript hash over the canonical handshake
     /// inputs. Both peers compute identically; mismatch indicates active
-    /// MITM tampering at the signaling layer. Per ADR 0076 §A1, the canonical
-    /// form is:
-    /// <c>SHA-256(ephemA[32] || idA[32] || ephemB[32] || idB[32] || uint32BE(len(tenantBytes)) || tenantBytes || negotiatedCap[1])</c>.
+    /// MITM tampering at the signaling layer. Per ADR 0076 §A2.3 / §A2.5 step 9
+    /// with the §A1 presence-caps extension, the canonical form is:
+    /// <c>SHA-256(ephemA[32] || idA[32] || ephemB[32] || idB[32]
+    /// || uint32BE(len(tenantBytes)) || tenantBytes
+    /// || inviteCap[1] || negotiatedCap[1] || presenceCapsA[1] || presenceCapsB[1])</c>.
+    /// <para>
     /// The <c>uint32BE</c> length-prefix on <c>tenantBytes</c> prevents a
     /// length-extension collision via the variable-length adjacency between
-    /// tenant-bytes and the negotiated-capability byte.
+    /// tenant-bytes and the trailing capability bytes. The four trailing
+    /// capability bytes bind both the offer (INVITE), the negotiated outcome
+    /// (ACCEPT), and each peer's broadcast presence capabilities into the
+    /// transcript — closing the relay-MITM capability-downgrade vector
+    /// addressed by ADR 0076 amendments A1 + A2.
+    /// </para>
+    /// <remarks>
+    /// Pre-A1+A2 implementations (W#45 P1–P4 substrate) used a 6-parameter
+    /// signature ending in <c>byte negotiatedCapability</c>; the three new
+    /// trailing parameters (<c>inviteCapabilities</c>, <c>presenceCapsInitiator</c>,
+    /// <c>presenceCapsResponder</c>) are the A1+A2 additions. Conformance
+    /// vectors V7 / V8 / V9 in <c>tools/icm/channel-test-vectors.json</c>
+    /// pin the canonical concatenation and SHA-256 outputs; see
+    /// <c>tools/icm/generate-channel-vectors.py</c> <c>confirm_transcript_input</c>
+    /// for the cross-language reference.
+    /// </remarks>
     /// </summary>
     public static byte[] ComputeTranscriptHash(
         ReadOnlySpan<byte> initiatorHelloEphemeral,
@@ -186,11 +204,14 @@ public sealed class EncryptionHandshake : IDisposable
         ReadOnlySpan<byte> responderHelloEphemeral,
         ReadOnlySpan<byte> responderHelloIdentity,
         ReadOnlySpan<byte> tenantIdBytes,
-        byte negotiatedCapability)
+        byte inviteCapabilities,
+        byte negotiatedCapability,
+        byte presenceCapsInitiator,
+        byte presenceCapsResponder)
     {
         var totalLen = initiatorHelloEphemeral.Length + initiatorHelloIdentity.Length
             + responderHelloEphemeral.Length + responderHelloIdentity.Length
-            + sizeof(uint) + tenantIdBytes.Length + 1;
+            + sizeof(uint) + tenantIdBytes.Length + 4;
         var buffer = totalLen <= 256 ? stackalloc byte[totalLen] : new byte[totalLen];
         var offset = 0;
         initiatorHelloEphemeral.CopyTo(buffer.Slice(offset, initiatorHelloEphemeral.Length));
@@ -206,7 +227,10 @@ public sealed class EncryptionHandshake : IDisposable
         offset += sizeof(uint);
         tenantIdBytes.CopyTo(buffer.Slice(offset, tenantIdBytes.Length));
         offset += tenantIdBytes.Length;
-        buffer[offset] = negotiatedCapability;
+        buffer[offset++] = inviteCapabilities;
+        buffer[offset++] = negotiatedCapability;
+        buffer[offset++] = presenceCapsInitiator;
+        buffer[offset] = presenceCapsResponder;
 
         var output = new byte[TranscriptHashByteLength];
         SHA256.HashData(buffer, output);
