@@ -59,6 +59,11 @@
     <ProjectReference Include="..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+    <!-- W#59 Phase 1 — exercise the AddSunfishTransport + AddSunfishCrewComms
+         DI ordering that MauiProgram.cs depends on. -->
+    <ProjectReference Include="..\..\..\packages\foundation-channels\Sunfish.Foundation.Channels.csproj" />
+    <ProjectReference Include="..\..\..\packages\foundation-transport\Sunfish.Foundation.Transport.csproj" />
+    <ProjectReference Include="..\..\..\packages\blocks-crew-comms\Sunfish.Blocks.CrewComms.csproj" />
   </ItemGroup>
 
 </Project>

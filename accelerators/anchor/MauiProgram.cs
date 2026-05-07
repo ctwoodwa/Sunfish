@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Blocks.CrewComms.DependencyInjection;
 using Sunfish.Foundation.Extensions;
+using Sunfish.Foundation.Transport.DependencyInjection;
 using Sunfish.Kernel.Crdt;
 using Sunfish.Kernel.Crdt.DependencyInjection;
 using Sunfish.Kernel.Runtime.DependencyInjection;
@@ -218,6 +219,27 @@ public static class MauiProgram
 			}
 		});
 		builder.Services.AddHostedService<AnchorSyncHostedService>();
+
+		// W#59 Phase 1 — register the foundation-transport substrate so
+		// NativeChannelProvider's ITransportSelector dependency resolves.
+		// MUST run before AddSunfishCrewComms (which TryAdd-noops if
+		// ITransportSelector is missing). LAN-mDNS demo uses Tier 1 only;
+		// Tier 3 Bridge relay registration is required by DefaultTransportSelector
+		// (always-tried fallback per ADR 0061) but is not exercised until
+		// W#28 cross-relay flows wire a real relay URL — for the LAN demo
+		// we register a placeholder URL that surfaces only on Tier-3 fall-
+		// through (i.e., when mDNS itself fails to find a peer).
+		var crewCommsRelayUrl = builder.Configuration["CrewComms:Relay:Url"]
+			?? builder.Configuration["Sync:Discovery:Bridge:Url"];
+		var crewCommsRelayUri = string.IsNullOrWhiteSpace(crewCommsRelayUrl)
+			? new Uri("wss://placeholder.invalid/crew-comms")
+			: new Uri(crewCommsRelayUrl);
+		builder.Services.AddBridgeRelay(
+			new Sunfish.Foundation.Transport.Relay.BridgeRelayOptions
+			{
+				RelayUrl = crewCommsRelayUri,
+			});
+		builder.Services.AddSunfishTransport();
 
 		// W#45 P5 — register the native crew-comms provider. Phase 1 ships
 		// with a hard-coded empty in-memory roster; production deployments
