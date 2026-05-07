@@ -89,10 +89,15 @@ Tracked in `xo-directive-2026-05-05T11-00Z-w45-p4-path-c-prime.md`:
   TEXT but does not emit DELIVERED on receipt.
 - **TYPING indicator** — Phase 1 acceptance criterion #5. No `SendTypingAsync`
   surface yet.
-- **Transcript-hash A1 binding** — `presenceCapsA + presenceCapsB` and A2's
-  `inviteCaps` byte are not yet folded into `ComputeTranscriptHash`. Both
-  peers compute identically with the current form, so functionally correct
-  but doc-text alignment pending.
+- ~~**Transcript-hash A1 binding** — `presenceCapsA + presenceCapsB` and A2's
+  `inviteCaps` byte are not yet folded into `ComputeTranscriptHash`.~~
+  **Closed in P4.5 PR 1.** `ComputeTranscriptHash` now takes 9 parameters
+  (`inviteCapabilities`, `negotiatedCapability`, `presenceCapsInitiator`,
+  `presenceCapsResponder`) per ADR 0076-A1+A2 canonical form; both callers
+  in `HandshakeFlow` (`InitiatorPostHelloAsync` + `ResponderAcceptAsync`)
+  pass the corresponding bytes from the wire payloads. Three known-answer
+  vectors from `tools/icm/channel-test-vectors.json` (V7/V8/V9) pin the
+  binding.
 
 ## Audio (Phase 3)
 
