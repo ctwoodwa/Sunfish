@@ -1,0 +1,96 @@
+@page "/chat"
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.CrewComms
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Foundation.Channels
+@using Sunfish.Kernel.Runtime.Teams
+@inject IActiveTeamAccessor ActiveTeam
+@inject IChannelProvider ChannelProvider
+@inject ICrewRoster CrewRoster
+@inject ICrewCommsInvitationBus InvitationBus
+@inject NavigationManager Nav
+
+<PageTitle>Sunfish Anchor — Chat</PageTitle>
+
+@*
+    W#59 Phase 5 — Anchor consumer page hosting the SunfishChat block
+    component. Closes the four-gap MVP demo cohort: P1 transport,
+    P2 roster, P3 listener, P4 component, P5 (this) consumer page.
+
+    Empty-state UX: until the operator selects an active team via the
+    /teams switcher, render an inline "join a team" panel with a
+    NavLink to /teams. Once a team is active, mount <SunfishChat>.
+*@
+
+<div class="anchor-chat-page">
+    @if (ActiveTeam.Active is null)
+    {
+        <section class="anchor-chat-empty"
+                 role="region"
+                 aria-label="No active team"
+                 data-test-id="empty-state">
+            <h1>Crew chat</h1>
+            <p>Join a team to start chatting with your crew.</p>
+            <button type="button"
+                    class="anchor-btn anchor-btn-primary"
+                    data-test-id="join-team-button"
+                    @onclick="@(() => Nav.NavigateTo("/teams"))">
+                Go to teams
+            </button>
+        </section>
+    }
+    else
+    {
+        <SunfishChat Provider="@ChannelProvider"
+                     Roster="@CrewRoster"
+                     InboundInvitations="@InvitationBus.InboundInvitations"
+                     PresenceUpdates="@InvitationBus.PresenceUpdates"
+                     ActiveSession="@_activeSession"
+                     Tenant="@CurrentTenant"
+                     LocalDisplayName="@LocalDisplayName"
+                     OnSessionOpened="@HandleSessionOpened"
+                     OnSessionClosed="@HandleSessionClosed" />
+    }
+</div>
+
+@code {
+    private IChannelSession? _activeSession;
+
+    private TenantId CurrentTenant =>
+        ActiveTeam.Active is { } team
+            ? new TenantId(team.TeamId.Value.ToString("D"))
+            : default;
+
+    private string LocalDisplayName =>
+        ActiveTeam.Active?.DisplayName ?? "You";
+
+    protected override void OnInitialized()
+    {
+        ActiveTeam.ActiveChanged += HandleActiveTeamChanged;
+    }
+
+    private void HandleActiveTeamChanged(object? sender, ActiveTeamChangedEventArgs e)
+    {
+        // Operator switched teams — drop any session bound to the previous
+        // team's tenant before the next render shows the new team's chat.
+        _activeSession = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private Task HandleSessionOpened(IChannelSession session)
+    {
+        _activeSession = session;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private Task HandleSessionClosed()
+    {
+        _activeSession = null;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ActiveTeam.ActiveChanged -= HandleActiveTeamChanged;
+    }
+}
