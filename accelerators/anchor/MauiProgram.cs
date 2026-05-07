@@ -241,13 +241,18 @@ public static class MauiProgram
 			});
 		builder.Services.AddSunfishTransport();
 
-		// W#45 P5 — register the native crew-comms provider. Phase 1 ships
-		// with a hard-coded empty in-memory roster; production deployments
-		// will swap to a persistent ICrewRoster (tenant directory; W#23/W#36
-		// pairing-token issuance) before crew-comms is exposed in the UI.
+		// W#45 P5 — register the native crew-comms provider.
+		// W#59 Phase 2 — replace the empty in-memory roster with a
+		// discovery-backed ICrewRoster (TeamMembershipCrewRoster) so the
+		// LAN-mDNS demo surfaces same-team peers without manual seed code.
+		// AddSingleton<ICrewRoster, TeamMembershipCrewRoster>() runs BEFORE
+		// AddSunfishCrewComms's TryAddSingleton, so the adapter wins
+		// resolution (the AddInMemory(empty) below is a no-op safeguard so
+		// the builder lambda still satisfies its required-callback shape).
 		// AddSunfishCrewComms uses TryAddSingleton<KeyPair> so callers may
 		// pre-register a persistent KeyPair (loaded from secure storage) to
 		// override the per-container fresh-keygen Phase-1 stub.
+		builder.Services.AddSingleton<Sunfish.Foundation.Channels.ICrewRoster, TeamMembershipCrewRoster>();
 		builder.Services.AddSunfishCrewComms(roster =>
 			roster.AddInMemory(System.Array.Empty<Sunfish.Foundation.Channels.CrewMember>()));
 

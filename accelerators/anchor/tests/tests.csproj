@@ -49,6 +49,9 @@
     <Compile Include="..\Services\Pairing\PairingToken.cs" Link="Anchor\Pairing\PairingToken.cs" />
     <Compile Include="..\Services\Pairing\IPairingService.cs" Link="Anchor\Pairing\IPairingService.cs" />
     <Compile Include="..\Services\Pairing\HmacPairingService.cs" Link="Anchor\Pairing\HmacPairingService.cs" />
+    <!-- W#59 Phase 2 — TeamMembershipCrewRoster is MAUI-free (depends only
+         on IPeerDiscovery + IActiveTeamAccessor + ICrewRoster). -->
+    <Compile Include="..\Services\TeamMembershipCrewRoster.cs" Link="Anchor\TeamMembershipCrewRoster.cs" />
   </ItemGroup>
 
   <ItemGroup>
