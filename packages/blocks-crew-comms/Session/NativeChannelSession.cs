@@ -31,6 +31,23 @@ public sealed class NativeChannelSession : IChannelSession
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Channel<string> _inboundText =
         Channel.CreateUnbounded<string>(new UnboundedChannelOptions { SingleReader = true });
+
+    // W#45 P4.5 — TYPING indicator stream. Bounded at 8 frames; drop
+    // oldest so a typing storm doesn't grow unbounded if the UI is not
+    // draining fast enough (pre-W#45-P4.5 substrate had no consumer at
+    // all so silent-drop matches the prior surface).
+    private readonly Channel<DateTimeOffset> _inboundTyping =
+        Channel.CreateBounded<DateTimeOffset>(new BoundedChannelOptions(8)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+            SingleWriter = true,
+            SingleReader = true,
+        });
+
+    // DELIVERED receipts are unbounded — one per delivered TEXT, so
+    // backpressure is naturally bounded by sent-message volume.
+    private readonly Channel<Guid> _inboundDelivered =
+        Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions { SingleReader = true });
     private readonly object _stateLock = new();
 
     private SessionState _state = SessionState.Idle;
@@ -150,6 +167,32 @@ public sealed class NativeChannelSession : IChannelSession
     }
 
     /// <inheritdoc />
+    public Task SendTypingAsync(CancellationToken ct)
+    {
+        EnsureActive();
+        // Empty payload — TYPING frames carry no body per ADR 0076 §wire.
+        return _frames.WriteFrameAsync(
+            MessageType.Typing, ReadOnlyMemory<byte>.Empty, ct);
+    }
+
+    /// <inheritdoc />
+    public Task SendDeliveredAsync(Guid messageId, CancellationToken ct)
+    {
+        EnsureActive();
+        var bytes = new byte[16];
+        RFC4122GuidFormatter.WriteBigEndian(bytes, messageId);
+        return _frames.WriteFrameAsync(MessageType.Delivered, bytes, ct);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<DateTimeOffset> ReceiveTypingAsync(CancellationToken ct)
+        => _inboundTyping.Reader.ReadAllAsync(ct);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<Guid> ReceiveDeliveredAsync(CancellationToken ct)
+        => _inboundDelivered.Reader.ReadAllAsync(ct);
+
+    /// <inheritdoc />
     public Task SendAudioFrameAsync(ReadOnlyMemory<byte> opusFrame, CancellationToken ct)
         => throw new NotSupportedException(
             "Audio frames require ChannelCapability.Audio (Phase 3 of ADR 0076); not negotiated for this session.");
@@ -256,10 +299,28 @@ public sealed class NativeChannelSession : IChannelSession
                         Terminate(ChannelTerminationReason.RemoteBye);
                         return;
                     case MessageType.Heartbeat:
-                    case MessageType.Typing:
-                    case MessageType.Delivered:
                     case MessageType.MuteState:
-                        // Transient frames; consumed for liveness, not surfaced to ReceiveTextAsync.
+                        // Transient frames; consumed for liveness, not surfaced
+                        // to ReceiveTextAsync / ReceiveTypingAsync /
+                        // ReceiveDeliveredAsync.
+                        break;
+                    case MessageType.Typing:
+                        // W#45 P4.5: surface as a wall-clock timestamp on the
+                        // bounded TYPING stream. Empty-payload frame; no
+                        // deserialization needed. TryWrite is intentional —
+                        // BoundedChannelFullMode.DropOldest handles overflow.
+                        _inboundTyping.Writer.TryWrite(_time.GetUtcNow());
+                        break;
+                    case MessageType.Delivered:
+                        // W#45 P4.5: 16-byte RFC 4122 BE message-id. Defensive:
+                        // malformed length silently dropped (the codec produces
+                        // exactly 16 bytes; a foreign frame is the only path to
+                        // here, and dropping is safer than throwing).
+                        if (payload.Length == 16)
+                        {
+                            var guid = RFC4122GuidFormatter.ReadBigEndian(payload);
+                            _inboundDelivered.Writer.TryWrite(guid);
+                        }
                         break;
                     default:
                         // Unknown / out-of-band frames silently dropped — Phase 3+ may handle audio/video here.
@@ -276,6 +337,8 @@ public sealed class NativeChannelSession : IChannelSession
         finally
         {
             _inboundText.Writer.TryComplete();
+            _inboundTyping.Writer.TryComplete();
+            _inboundDelivered.Writer.TryComplete();
         }
     }
 

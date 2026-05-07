@@ -78,4 +78,34 @@ public interface IChannelSession : IAsyncDisposable
     /// prior <c>CloseAsync</c>, a best-effort BYE is sent fire-and-forget.
     /// </summary>
     Task CloseAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Sends a typing indicator to the remote peer (frame
+    /// <c>0x07 TYPING</c>; ADR 0076 W#45 P4.5). Suppression of the
+    /// 3-second cooldown after the last keystroke is the caller's
+    /// responsibility — this method sends unconditionally on each call.
+    /// </summary>
+    Task SendTypingAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Sends a DELIVERED receipt for the given message. The receiver
+    /// MUST call this once per inbound TEXT frame it has surfaced to the
+    /// operator. Message-id is encoded as RFC 4122 big-endian UUID
+    /// (16 bytes) per ADR 0076 §Wire protocol frame <c>0x08</c>.
+    /// </summary>
+    Task SendDeliveredAsync(Guid messageId, CancellationToken ct);
+
+    /// <summary>
+    /// Streams timestamps for typing-indicator frames received from the
+    /// remote peer. <b>Single-consumer only</b> — enumerating from
+    /// multiple consumers concurrently is undefined behavior and
+    /// implementations MAY throw <see cref="InvalidOperationException"/>.
+    /// </summary>
+    IAsyncEnumerable<DateTimeOffset> ReceiveTypingAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Streams message-ids from DELIVERED-receipt frames received from
+    /// the remote peer. Single-consumer only.
+    /// </summary>
+    IAsyncEnumerable<Guid> ReceiveDeliveredAsync(CancellationToken ct);
 }
