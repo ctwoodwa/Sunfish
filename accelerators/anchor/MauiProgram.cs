@@ -256,6 +256,18 @@ public static class MauiProgram
 		builder.Services.AddSunfishCrewComms(roster =>
 			roster.AddInMemory(System.Array.Empty<Sunfish.Foundation.Channels.CrewMember>()));
 
+		// W#59 Phase 3 — invitation bus + listener hosted service. The bus
+		// is registered via two interfaces (read + writer surfaces) so UI
+		// components inject the read-only ICrewCommsInvitationBus while
+		// the listener hosted service injects the writer side; both share
+		// the same singleton instance.
+		builder.Services.AddSingleton<CrewCommsInvitationBus>();
+		builder.Services.AddSingleton<ICrewCommsInvitationBus>(
+			sp => sp.GetRequiredService<CrewCommsInvitationBus>());
+		builder.Services.AddSingleton<ICrewCommsInvitationBusWriter>(
+			sp => sp.GetRequiredService<CrewCommsInvitationBus>());
+		builder.Services.AddHostedService<CrewCommsListenerHostedService>();
+
 		// Anchor-specific session state + onboarding service.
 		builder.Services.AddSingleton<AnchorSessionService>();
 
