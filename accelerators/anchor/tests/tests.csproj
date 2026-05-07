@@ -52,6 +52,10 @@
     <!-- W#59 Phase 2 — TeamMembershipCrewRoster is MAUI-free (depends only
          on IPeerDiscovery + IActiveTeamAccessor + ICrewRoster). -->
     <Compile Include="..\Services\TeamMembershipCrewRoster.cs" Link="Anchor\TeamMembershipCrewRoster.cs" />
+    <!-- W#59 Phase 3 — listener hosted service + invitation bus are
+         MAUI-free (depend only on foundation-channels + kernel-runtime). -->
+    <Compile Include="..\Services\CrewCommsInvitationBus.cs" Link="Anchor\CrewCommsInvitationBus.cs" />
+    <Compile Include="..\Services\CrewCommsListenerHostedService.cs" Link="Anchor\CrewCommsListenerHostedService.cs" />
   </ItemGroup>
 
   <ItemGroup>
