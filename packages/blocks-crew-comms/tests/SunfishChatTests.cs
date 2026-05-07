@@ -330,6 +330,14 @@ public class SunfishChatTests : BunitContext
             return Task.CompletedTask;
         }
 
+        // W#45 P4.5 PR 2 — TYPING + DELIVERED on IChannelSession surface.
+        public Task SendTypingAsync(CancellationToken ct) => Task.CompletedTask;
+        public Task SendDeliveredAsync(Guid messageId, CancellationToken ct) => Task.CompletedTask;
+        public IAsyncEnumerable<DateTimeOffset> ReceiveTypingAsync(CancellationToken ct)
+            => EmptyAsync<DateTimeOffset>();
+        public IAsyncEnumerable<Guid> ReceiveDeliveredAsync(CancellationToken ct)
+            => EmptyAsync<Guid>();
+
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
         private static async IAsyncEnumerable<T> EmptyAsync<T>()
