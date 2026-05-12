@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-05-06T19:17:00.557Z",
+  "achievements": [
+    "W#42 Wayfinder substrate BUILT across 6 PRs (foundation-wayfinder + analyzers); unblocked W#43, W#46, W#53, W#57, W#58",
+    "W#33/W#34/W#35 follow-on ADR cohort COMPLETE — 5 ADRs authored (A6+A7 Accepted; A5+A8+0063+0064 Proposed); all queued workstreams have hand-offs",
+    "Naval-org ADR series authored (0069 authoring discipline, 0070 multi-session, 0071 portfolio, 0072 inbox protocol, 0073 hand-off contract, 0074 startup recovery, 0075 ExtensionFields, 0076 crew-comms, 0077 design system)",
+    "W#45 Crew Comms BUILT — Ed25519 handshake + glare resolution + native channel provider; P4.5 addendum queued for TYPING/DELIVERED follow-ups",
+    "W#1 WS-A (TenantId.System sentinel + TenantSelection) BUILT and merged via PR #688 + security follow-up PR #692; WS-B query migration ready-to-build",
+    "W#49 OOD Watch Rotation fully shipped (3 phases); W#51 Quarterdeck through Phase 2b merged; W#53 Helm/Identity Atlas P2 merged with only React adapter remaining",
+    "ADR portfolio infrastructure shipped — frontmatter schema, projection tool, semantic search via Ollama embeddings, naming-canon check.py with sub-100ms collision detection",
+    "ADR 0082-A1 + W#54 Sick Bay Phase 2 merged with Mission Envelope integration unblocked; W#55 Ship's Office Phase 1 substrate merged"
+  ],
+  "improvements": [
+    "Consolidate cross-tenant cache key patterns — W#46 P1b (cache invalidation), W#52 P2b (TacticalRuleEngine tracker), W#52 P2c (ThreatTriggerService caveat) all hit the same class of bug; consider a foundation-multitenancy helper for tenant-scoped concurrent dictionaries",
+    "Tighten PR auto-merge discipline — PRs #666 and #688 both auto-merged before council reviewers landed amendments; the existing `--draft` rule isn't being followed consistently. Consider a CODEOWNERS rule blocking auto-merge until specific subagent review labels are present",
+    "Worktree cleanup in `/tmp/sunfish-*` and `/tmp/wt-*` — 200+ worktrees accumulated this week; many are stale post-merge. Add a `git worktree prune` step to the loop fallback ladder",
+    "DefaultPermissionResolver has been extended 4 times (W#46/W#50/W#51/W#54 each added ShipActions); the additive-by-cohort pattern is creating long switch tables — consider extracting per-domain ShipAction registries before cohort-5 cycle",
+    "Test pattern proliferation — every cohort substrate ships its own `PhaseOneTests.cs` with similar enum round-trip + JSON canonicalization scaffolding; extract a `Sunfish.Testing.Substrate` package with shared fixtures"
+  ],
+  "next_tasks": [
+    "W#46 Shared Design System Phase 4 (UNBLOCKED by W#43 + W#42-P5 cache invalidation) — start the role-band CSS tokens + WCAG conformance harness rollout",
+    "W#48 Atlas Integration-Config Phase 2 (UNBLOCKED) — `blocks-integrations` package per the P2 addendum; DefaultIntegrationAtlasProvider with the cycle-safe IDecryptCapabilityProvider seam",
+    "W#53 Phase 2d React adapter — the only remaining piece to close H9 parity gate (Anchor MAUI complete; React adapter outstanding per `project_workstream_47_56_system_requirements_renderers.md`)",
+    "W#52 Tactical Phase 2c deferred advisories — cross-tenant context plumbing (#1), fire-forget audit (#2), unbounded tenant tracker dictionary (#3), rule-ref leakage (#9) per `xo-ruling-2026-05-06T20-30Z-w52-phase2b-2c-split.md`",
+    "W#54 Sick Bay Phase 2b — Mission Envelope integration per `sick-bay-stage06-addendum.md` (atmosphere mapping ruling already filed at xo-ruling-2026-05-06T20-00Z)",
+    "W#58 Identity Atlas Implementations (Anchor + Bridge) — ready-to-build, hand-off in PR #686; gated only on W#53 Phase 2d React adapter",
+    "W#23 iOS Phase 5 pairing flow then Phase 6 home-screen — Phase 5 hand-off at `property-ios-field-app-stage06-p5-pairing-handoff.md`; W#23.2 equipment-photo PR #646 sits behind P6",
+    "W#37 Tenant Security Policy Phase 1 — ADR 0068 Proposed; counsel block at §GC.1; verify status flip in ADR file before COB starts (per feedback_adr_acceptance_requires_status_flip.md)"
+  ],
+  "risks": [
+    "Cross-tenant isolation is the dominant council finding pattern — security council on PR #688 found 6 must-fix items, W#52 P2b/P2c each surfaced tenant-scoping gaps. Until consolidated, every new substrate carries this risk",
+    "ADR 0064 regulatory evaluation is ONR-owned and Status: Proposed — needs legal counsel engagement; pre-legal research prompt at `_shared/engineering/pre-legal-research-prompt.md` awaits CO sign-off. Blocks W#37/W#39 acceptance work",
+    "Pre-release dependency lock — Aspire/EFCore/Npgsql preview pins force exact-version coupling per `reference_efcore_npgsql_preview_lock.md`; .NET 11 preview + MAUI 10 preview cadence creates breakage risk every Tuesday Microsoft drops",
+    "Anchor MAUI Mac build prereqs — 3 host-environment landmines documented in `feedback_anchor_mac_build_prereqs.md` (Xcode license, xcode_select_link, Xamarin AppleSdkRoot case); demo-readiness blocked on G6 dynamic-forms ADR",
+    "Council process latency — W#1 P688 incident: 4th security agent returned late, PR auto-merged with 2 Blocking gaps. Need to enforce `--draft` flag on all council-pending PRs (feedback_pr_automerge_before_amendment_landed.md)",
+    "Backlog pressure — XO research backlog is ~9 ADRs deep (W#34 follow-on stubs); COB priority queue maintains 2-3 ready-to-build but is consistently drained within hours, putting research authoring on the critical path",
+    "Phase 2 commercial scope (6-tenant property business consolidation) has not been touched this week — W#23 iOS app is the only commercial-scope work in flight; G2 from Phase 1 progress hasn't started despite G1+G3 partial completion",
+    "Ledger render workflow drift — multiple PRs have force-pushed to fix ledger conflicts (e.g., PR #581 force-push); the per-workstream W*.md migration is shipped but mechanical conflicts persist when workstream files are edited concurrently"
+  ]
+}
