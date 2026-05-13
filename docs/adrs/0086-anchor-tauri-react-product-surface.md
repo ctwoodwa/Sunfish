@@ -1,7 +1,7 @@
 ---
 id: 86
 title: Anchor Tauri-React Product Surface
-status: Proposed
+status: Accepted
 date: 2026-05-12
 tier: accelerator
 pipeline_variant: sunfish-feature-change
