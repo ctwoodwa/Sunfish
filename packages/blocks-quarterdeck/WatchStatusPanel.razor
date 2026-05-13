@@ -1,0 +1,324 @@
+@* WatchStatusPanel — Quarterdeck OOD-role watch display + handover dialog (ADR 0080 §3 + §6, W#51 Phase 3a).
+   role="region" (NOT role="banner" — ARIA 1.2: banner is reserved for page-level header per site origin).
+   aria-live="polite" for watch state updates; handover dialog uses role="alertdialog" + aria-modal.
+   Focus management: Confirm button on dialog open (_dialogJustOpened flag prevents focus-steal on re-render);
+   Begin-Handover trigger on dialog close. Live regions always in DOM (ARIA22/SC 4.1.3).
+   Council amendments applied: A1-A5 (WCAG/a11y); S1-S3, M1-M2 (security/maintainability). *@
+
+@using Microsoft.Extensions.Logging
+
+<div class="qd-watch-status-panel" role="region" aria-label="Watch status"
+     tabindex="-1" @ref="_panelRef">
+
+    @* Live regions always in DOM — content injected into pre-existing regions (ARIA22/SC 4.1.3).
+       Both use aria-atomic="false" aria-relevant="additions" — AT announces each addition,
+       not full-region re-read (A1 amendment). *@
+    <div role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions"
+         class="qd-live-polite sf-sr-only">
+        @_politeAnnouncement
+    </div>
+    <div role="alert" aria-live="assertive" aria-atomic="false" aria-relevant="additions"
+         class="qd-live-assertive sf-sr-only">
+        @_assertiveAnnouncement
+    </div>
+
+    @if (_loading)
+    {
+        <p aria-busy="true">Loading watch status…</p>
+    }
+    else
+    {
+        <div class="qd-watch-header">
+            @* Role label uses <abbr> to expand abbreviation; icon is decorative (SC 2.5.3). *@
+            <span aria-hidden="true" class="qd-watch-icon">⚓</span>
+            <h2 class="qd-watch-role">
+                <abbr title="@RoleTitle(Role)">@RoleAbbreviation(Role)</abbr>
+            </h2>
+        </div>
+
+        @if (_currentWatch is null)
+        {
+            <p class="qd-watch-empty">No active watch.</p>
+        }
+        else
+        {
+            <dl class="qd-watch-details">
+                <dt>On watch</dt>
+                <dd>@Display(_currentWatch.OnWatchActor)</dd>
+
+                <dt>Watch started</dt>
+                <dd>
+                    <time datetime="@_currentWatch.StartedAt.ToString("o")">
+                        @_currentWatch.StartedAt.ToLocalTime().ToString("HH:mm")
+                    </time>
+                </dd>
+
+                @if (_currentWatch.StartedAt + _currentWatch.MaxWatchDuration <= DateTimeOffset.UtcNow)
+                {
+                    @* Expiration uses polite announcement via live region — persistent role="alert"
+                       on a <dd> would fire on every re-render of the parent branch. *@
+                    <dt>Status</dt>
+                    <dd class="qd-watch-expired">Watch expired</dd>
+                }
+            </dl>
+
+            @* Begin Handover trigger — ref used for focus-return after dialog close. *@
+            <button type="button" class="qd-watch-handover-trigger"
+                    @ref="_handoverTriggerRef"
+                    @onclick="OpenHandoverDialog">
+                Begin Handover
+            </button>
+        }
+    }
+
+    @* Handover confirmation alertdialog — rendered in DOM only when open (role="alertdialog"
+       per ARIA 1.2: used when the dialog is modal AND contains an alert message).
+       aria-modal prevents AT from browsing outside the dialog. *@
+    @if (_dialogOpen)
+    {
+        <div role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="@_dialogHeadingId"
+             aria-describedby="@_dialogDescId"
+             class="qd-handover-dialog"
+             tabindex="-1"
+             @ref="_dialogRef">
+
+            @* A5 amendment: meaningful static heading until actor ID is entered.
+               Echo only after shape-validation passes — prevents unvalidated input
+               flowing into the aria-labelledby region. *@
+            <h3 id="@_dialogHeadingId">
+                @(_incomingActorIdLooksValid
+                    ? $"Hand watch to {_incomingActorId.Trim()}"
+                    : "Begin watch handover")
+            </h3>
+
+            <p id="@_dialogDescId" class="qd-handover-desc">
+                Confirm handover of
+                <abbr title="@RoleTitle(Role)">@RoleAbbreviation(Role)</abbr>
+                from @(_currentWatch is null ? "current officer" : Display(_currentWatch.OnWatchActor)) to the named actor.
+                This action is recorded in the audit trail.
+            </p>
+
+            <div class="qd-handover-form">
+                <label for="@_actorInputId">Incoming actor ID</label>
+                @* S2 amendment: maxlength guards SR-DoS from pasted long strings (SC 1.3.5 advisory).
+                   S3 amendment: shape validated in ConfirmHandoverAsync before ActorId construction. *@
+                <input id="@_actorInputId"
+                       type="text"
+                       maxlength="128"
+                       @bind="_incomingActorId"
+                       @bind:event="oninput"
+                       placeholder="actor-id"
+                       autocomplete="off"
+                       aria-required="true" />
+
+                <label for="@_handoverKindId">Handover kind</label>
+                <select id="@_handoverKindId" @bind="_handoverKind">
+                    <option value="@OodHandoverKind.Voluntary">Voluntary shift-change</option>
+                    <option value="@OodHandoverKind.CommandRelieved">Command-ordered relief</option>
+                </select>
+
+                <label for="@_reasonInputId">Reason (optional)</label>
+                <input id="@_reasonInputId"
+                       type="text"
+                       maxlength="500"
+                       @bind="_handoverReason"
+                       @bind:event="oninput"
+                       placeholder="Free-form reason" />
+            </div>
+
+            @if (_handoverError is { } err)
+            {
+                <p role="alert" class="qd-handover-error">@err</p>
+            }
+
+            <div class="qd-handover-actions">
+                @* Confirm button has focus on dialog open (per §6 focus-management rule).
+                   A3 amendment: SR-only "in progress" appended when submitting (SC 4.1.3). *@
+                <button type="button"
+                        class="qd-btn qd-btn--primary"
+                        disabled="@(_incomingActorId.Trim().Length == 0 || _handoverInProgress)"
+                        @ref="_confirmButtonRef"
+                        @onclick="ConfirmHandoverAsync">
+                    @if (_handoverInProgress)
+                    {
+                        <span aria-hidden="true">…</span>
+                        <span class="sf-sr-only">, in progress</span>
+                    }
+                    Confirm Handover
+                </button>
+                @* Cancel: Cancel button closes without committing (§6). *@
+                <button type="button" class="qd-btn" @onclick="CancelHandoverDialog">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TenantId Tenant { get; set; }
+    [Parameter, EditorRequired] public ActorId Actor { get; set; }
+    [Parameter, EditorRequired] public OodRole Role { get; set; }
+
+    [Inject] private IOodWatchService WatchService { get; set; } = default!;
+    [Inject] private ILogger<WatchStatusPanel> Logger { get; set; } = default!;
+
+    private OodWatch? _currentWatch;
+    private bool _loading = true;
+    private bool _dialogOpen;
+    private bool _dialogJustOpened;  // A4: prevents focus-steal on every re-render
+    private bool _handoverInProgress;
+    private string _incomingActorId = string.Empty;
+    private OodHandoverKind _handoverKind = OodHandoverKind.Voluntary;
+    private string _handoverReason = string.Empty;
+    private string? _handoverError;
+    private string? _politeAnnouncement;
+    private string? _assertiveAnnouncement;
+
+    private ElementReference _panelRef;
+    private ElementReference _dialogRef;
+    private ElementReference _handoverTriggerRef;
+    private ElementReference _confirmButtonRef;
+
+    // A2 amendment: derive all IDs from one shared GUID — stable across SSR + interactive
+    // reconnect so aria-labelledby/aria-describedby linkage survives Blazor reconciliation.
+    private string _componentId = string.Empty;
+    private string _dialogHeadingId = string.Empty;
+    private string _dialogDescId    = string.Empty;
+    private string _actorInputId    = string.Empty;
+    private string _handoverKindId  = string.Empty;
+    private string _reasonInputId   = string.Empty;
+
+    // S3 amendment: base64url alphabet — ActorId = base64url(PrincipalId) per repo ruling.
+    // ActorId has no TryParse factory; shape validation here is the canonical defense.
+    // Length upper-bound 128 matches maxlength on the input; lower-bound 1 rejects empty.
+    private static readonly System.Text.RegularExpressions.Regex ActorIdPattern =
+        new(@"^[A-Za-z0-9_-]{1,128}$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    // Live shape check — gates heading echo into aria-labelledby before submit validation.
+    private bool _incomingActorIdLooksValid =>
+        _incomingActorId.Trim().Length > 0 && ActorIdPattern.IsMatch(_incomingActorId.Trim());
+
+    // Returns the safe base64url form only — MUST NOT include diagnostic or tenant data.
+    private static string Display(ActorId a) => a.Value;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _componentId     = Guid.NewGuid().ToString("N");
+        _dialogHeadingId = $"qd-handover-heading-{_componentId}";
+        _dialogDescId    = $"qd-handover-desc-{_componentId}";
+        _actorInputId    = $"qd-actor-input-{_componentId}";
+        _handoverKindId  = $"qd-handover-kind-{_componentId}";
+        _reasonInputId   = $"qd-reason-input-{_componentId}";
+
+        _currentWatch = await WatchService.GetActiveWatchAsync(Tenant, Role);
+        _loading = false;
+        _politeAnnouncement = _currentWatch is null
+            ? $"{RoleTitle(Role)}: no active watch."
+            : $"{RoleTitle(Role)}: {_currentWatch.OnWatchActor} on watch.";
+    }
+
+    private void OpenHandoverDialog()
+    {
+        _dialogOpen = true;
+        _dialogJustOpened = true;  // A4: arm one-shot focus transfer
+        _handoverError = null;
+        _incomingActorId = string.Empty;
+        _handoverReason = string.Empty;
+        _handoverKind = OodHandoverKind.Voluntary;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A4 amendment: only move focus once on dialog open, not on every re-render while open.
+        if (_dialogJustOpened && _confirmButtonRef.Id is not null)
+        {
+            _dialogJustOpened = false;
+            await TryFocusAsync(_confirmButtonRef);
+        }
+    }
+
+    private async Task ConfirmHandoverAsync()
+    {
+        if (_currentWatch is null) return;
+
+        var incomingId = _incomingActorId.Trim();
+        if (incomingId.Length == 0) return;
+
+        // S3 amendment: validate ActorId shape (base64url alphabet) before construction.
+        if (!ActorIdPattern.IsMatch(incomingId))
+        {
+            _handoverError = "Actor ID format is invalid. Use the actor's base64url identifier.";
+            return;
+        }
+
+        _handoverInProgress = true;
+        _handoverError = null;
+        _assertiveAnnouncement = null;  // reset so re-error on next attempt re-announces
+
+        // Defense-in-depth over maxlength client hint: server also validates, but truncate here.
+        var reason = _handoverReason.Trim();
+        if (reason.Length > 500) reason = reason[..500];
+
+        try
+        {
+            await WatchService.HandoverWatchAsync(
+                _currentWatch.Id,
+                new ActorId(incomingId),
+                Actor,
+                _handoverKind,
+                reason.Length > 0 ? reason : null);
+
+            _currentWatch = await WatchService.GetActiveWatchAsync(Tenant, Role);
+            _dialogOpen = false;
+
+            // Polite announcement on successful handover (§6 — planned, non-urgent).
+            _politeAnnouncement = $"Watch relieved. {RoleTitle(Role)} is now {incomingId}.";
+        }
+        catch (Exception ex)
+        {
+            // S1 amendment: surface a fixed user-message; log full exception for operators.
+            // Server-side sink only — do not surface structured properties to client.
+            Logger.LogError(ex, "Watch handover failed for role {Role} on tenant {Tenant}", Role, Tenant);
+            _handoverError = "Handover failed. Please try again or contact your watch supervisor.";
+            _assertiveAnnouncement = _handoverError;
+        }
+        finally
+        {
+            _handoverInProgress = false;
+        }
+
+        // Return focus to Begin Handover trigger after dialog closes (§6).
+        if (!_dialogOpen)
+            await TryFocusAsync(_handoverTriggerRef);
+    }
+
+    private async Task CancelHandoverDialog()
+    {
+        _dialogOpen = false;
+        // Focus returns to Begin Handover trigger on Cancel (§6).
+        await TryFocusAsync(_handoverTriggerRef);
+    }
+
+    // M1 amendment: single helper avoids three duplicate empty-catch blocks.
+    private static async Task TryFocusAsync(ElementReference elementRef)
+    {
+        try { await elementRef.FocusAsync(); } catch { /* JS interop unavailable in prerender */ }
+    }
+
+    private static string RoleTitle(OodRole role) => role switch
+    {
+        OodRole.OfficerOfTheDeck             => "Officer of the Deck",
+        OodRole.EngineeringOfficerOfTheWatch => "Engineering Officer of the Watch",
+        _                                    => role.ToString(),
+    };
+
+    private static string RoleAbbreviation(OodRole role) => role switch
+    {
+        OodRole.OfficerOfTheDeck             => "OOD",
+        OodRole.EngineeringOfficerOfTheWatch => "EOOW",
+        _                                    => role.ToString(),
+    };
+}

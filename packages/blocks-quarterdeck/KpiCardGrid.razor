@@ -1,0 +1,61 @@
+@* KpiCardGrid — Quarterdeck department KPI cards (ADR 0080 §2.3 rule 9, W#51 Phase 3a).
+   role="list" explicit: WebKit removes list semantics on list-style: none without it (SC 1.3.1).
+   Each card: <h3> + value + unit + status badge with text label (NOT color-only, SC 1.4.1).
+   Denied cards render with DepartmentStatus.Denied + denial-reason affordance (denied-not-hidden).
+   A9 amendment: unit rendered as plain <span> — <abbr title="X">X</abbr> with identical title/content
+   causes some SR to announce the same string twice (NVDA/Orca behavior).
+   A10 amendment: denied card skips qd-kpi-value block to avoid duplicate denial-text announcement. *@
+
+<ul class="qd-kpi-card-grid" role="list" aria-label="Department KPIs">
+    @foreach (var card in Cards)
+    {
+        var deniedCss = card.Status == DepartmentStatus.Denied ? " qd-kpi-card--denied" : "";
+        <li class="qd-kpi-card@(deniedCss)" role="listitem">
+            @* Status badge conveyed via text label AND CSS class — not color-only (SC 1.4.1). *@
+            <span class="qd-kpi-status qd-kpi-status--@StatusCssClass(card.Status)">
+                @StatusLabel(card.Status)
+            </span>
+            @* KPI label as <h3> per §2.3 heading hierarchy. *@
+            <h3 class="qd-kpi-label">@card.Label</h3>
+            @* A10 amendment: skip value block when denied to avoid duplicate announcement;
+               qd-kpi-denial-reason carries the SR-meaningful neutral value instead. *@
+            @if (card.Status != DepartmentStatus.Denied)
+            {
+                <p class="qd-kpi-value">
+                    @card.Value
+                    @if (card.Unit is { } unit)
+                    {
+                        @* A9 amendment: plain <span> for unit — <abbr title="X">X</abbr>
+                           with identical title/content causes double-read on some SR. *@
+                        <span class="qd-kpi-unit">@unit</span>
+                    }
+                </p>
+            }
+            @if (card.Status == DepartmentStatus.Denied)
+            {
+                @* Source MUST supply a SR-meaningful neutral (e.g., "Permission required") per
+                   ADR 0080 §2.3 rule 9 — NOT a punctuation glyph (em-dash etc. SR reads verbosely). *@
+                <p class="qd-kpi-denial-reason">@card.Value</p>
+            }
+            <p class="qd-kpi-source sf-sr-only">Source: @card.SourceName</p>
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<DepartmentKpi> Cards { get; set; } = [];
+
+    private static string StatusCssClass(DepartmentStatus status) => status switch
+    {
+        DepartmentStatus.Accessible => "accessible",
+        DepartmentStatus.Denied     => "denied",
+        _                           => "unknown",
+    };
+
+    private static string StatusLabel(DepartmentStatus status) => status switch
+    {
+        DepartmentStatus.Accessible => "Accessible",
+        DepartmentStatus.Denied     => "Denied",
+        _                           => "Unknown",
+    };
+}

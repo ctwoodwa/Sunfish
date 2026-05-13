@@ -1,0 +1,201 @@
+@* AlertTickerPanel — Quarterdeck alert ticker (ADR 0080 §4 + §6, W#51 Phase 3a).
+   Two sibling aria-live regions: assertive (Emergency/High) + polite (Normal/Informational).
+   BOTH: aria-atomic="false" aria-relevant="additions" — AT announces each new addition; does NOT
+   re-read the full region on every tick (aria-atomic="true" would cause full re-read — wrong).
+   Pause button: aria-pressed attribute-only pattern; NOT native disabled (keeps focusable).
+   DefaultPaused parameter: defaults true (server-side Blazor cannot read prefers-reduced-motion);
+   hosts that detect matchMedia should pass DefaultPaused="false" for users without reduced-motion.
+   Assertive region ALWAYS active even when paused (pause stops visual rotation only).
+   Council amendments applied: A6-A8 (WCAG/a11y). *@
+
+@implements IAsyncDisposable
+@using System.Runtime.InteropServices
+
+<div class="qd-alert-ticker" role="region" aria-label="Alert ticker">
+
+    @* Two sibling live regions always in DOM (ARIA22/SC 4.1.3).
+       aria-atomic="false" aria-relevant="additions": AT announces each new alert message
+       as it is added — does not re-read historical entries. Both regions remain mounted even
+       when ticker is paused (pause only stops visual rotation; SR still receives additions). *@
+    <div role="alert"
+         aria-live="assertive"
+         aria-atomic="false"
+         aria-relevant="additions"
+         class="qd-ticker-assertive sf-sr-only">
+        @_assertiveMessage
+    </div>
+    <div role="status"
+         aria-live="polite"
+         aria-atomic="false"
+         aria-relevant="additions"
+         class="qd-ticker-polite sf-sr-only">
+        @_politeMessage
+    </div>
+
+    @if (Alerts.Count == 0)
+    {
+        <p class="qd-ticker-empty">No active alerts.</p>
+    }
+    else
+    {
+        @* Ticker controls: pause/resume button with aria-pressed (NOT native disabled
+           so the button remains focusable and discoverable by SR per §6).
+           A6 amendment: count badge is aria-hidden — dedicated polite live region handles SR. *@
+        <div class="qd-ticker-controls">
+            <button type="button"
+                    class="qd-ticker-pause-btn"
+                    aria-pressed="@(_paused ? "true" : "false")"
+                    @onclick="TogglePause">
+                @(_paused ? "Resume" : "Pause") ticker
+            </button>
+            <span class="qd-ticker-count" aria-hidden="true">
+                @Alerts.Count alert@(Alerts.Count != 1 ? "s" : "")
+            </span>
+        </div>
+
+        @* Visible ticker area — shows the current active alert. Screen readers receive
+           content via the dedicated live regions above; visual content is aria-hidden. *@
+        <div class="qd-ticker-visible" aria-hidden="true">
+            @if (_currentAlertIndex < Alerts.Count)
+            {
+                var alert = Alerts[_currentAlertIndex];
+                <div class="qd-ticker-alert qd-ticker-alert--@SeverityCssClass(alert.Severity)">
+                    <span class="qd-ticker-severity">@alert.Severity</span>
+                    <span class="qd-ticker-title">@alert.Title</span>
+                    @if (alert.Summary is { } summary)
+                    {
+                        <span class="qd-ticker-summary">@summary</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Pre-fetched alert list from the parent <see cref="QuarterdeckSnapshot"/>.
+    /// Sorted ascending by <see cref="AlertSeverity"/> (Emergency first), then
+    /// newest-first within each severity bucket per ADR 0080 §2.3.
+    /// </summary>
+    [Parameter, EditorRequired] public IReadOnlyList<QuarterdeckAlert> Alerts { get; set; } = [];
+
+    /// <summary>
+    /// A8 amendment: hosts that detect prefers-reduced-motion=reduce via matchMedia should
+    /// pass <c>true</c>; hosts that confirm reduced-motion is NOT set may pass <c>false</c>
+    /// to auto-start the ticker. Server-side Blazor cannot read matchMedia at render time;
+    /// the safe default is <c>true</c> (paused until user resumes).
+    /// </summary>
+    [Parameter] public bool DefaultPaused { get; set; } = true;
+
+    // ADR 0080 §4: configurable cadence; default 5s matches original spec.
+    // Clamped to ≥500 ms in EffectiveTick to prevent render-storm DoS via misconfigured parent.
+    [Parameter] public TimeSpan TickInterval { get; set; } = TimeSpan.FromSeconds(5);
+
+    private static readonly TimeSpan MinTick = TimeSpan.FromMilliseconds(500);
+    private TimeSpan EffectiveTick => TickInterval < MinTick ? MinTick : TickInterval;
+
+    private bool _paused;
+    private bool _disposed;
+    private int _currentAlertIndex;
+    private string? _assertiveMessage;
+    private string? _politeMessage;
+    private System.Threading.Timer? _tickTimer;
+    private AlertSeverity? _lastAnnouncedSeverity;
+
+    protected override void OnInitialized()
+    {
+        _paused = DefaultPaused;
+        if (!_paused)
+            StartTicker();
+    }
+
+    protected override void OnParametersSet()
+    {
+        AnnounceUrgentAlerts();
+        if (_currentAlertIndex >= Alerts.Count)
+            _currentAlertIndex = 0;
+    }
+
+    private void TogglePause()
+    {
+        _paused = !_paused;
+        if (_paused)
+        {
+            StopTicker();
+            // A7 amendment: announce paused state + current visible alert to SR.
+            if (_currentAlertIndex < Alerts.Count)
+            {
+                var alert = Alerts[_currentAlertIndex];
+                _politeMessage = $"Ticker paused. Showing {alert.Severity}: {alert.Title}";
+            }
+            else
+            {
+                _politeMessage = "Ticker paused.";
+            }
+        }
+        else
+        {
+            _politeMessage = "Ticker resumed.";
+            StartTicker();
+        }
+    }
+
+    private void StartTicker()
+    {
+        _tickTimer?.Dispose();
+        _tickTimer = new System.Threading.Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                // Guard against post-Dispose callbacks and empty-list race on the thread-pool.
+                if (_disposed || Alerts.Count == 0) return;
+
+                _currentAlertIndex = (_currentAlertIndex + 1) % Math.Max(Alerts.Count, 1);
+                var alert = Alerts[_currentAlertIndex];
+
+                // Route to appropriate politeness per AlertSeverity → LiveRegionPoliteness
+                // mapping (ADR 0080 §6, AlertSeverity docstring).
+                if (alert.Severity is AlertSeverity.Normal or AlertSeverity.Informational)
+                    _politeMessage = $"{alert.Severity}: {alert.Title}";
+                else
+                    _assertiveMessage = $"{alert.Severity}: {alert.Title}";
+
+                StateHasChanged();
+            });
+        }, null, EffectiveTick, EffectiveTick);
+    }
+
+    private void StopTicker() => _tickTimer?.Dispose();
+
+    private void AnnounceUrgentAlerts()
+    {
+        var urgent = Alerts.FirstOrDefault(a =>
+            a.Severity is AlertSeverity.Emergency or AlertSeverity.High
+            && !a.IsAcknowledged);
+
+        if (urgent is null) return;
+
+        if (_lastAnnouncedSeverity.HasValue && urgent.Severity >= _lastAnnouncedSeverity.Value)
+            return;
+
+        _assertiveMessage = $"{urgent.Severity}: {urgent.Title}";
+        _lastAnnouncedSeverity = urgent.Severity;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_tickTimer is { } t)
+            await t.DisposeAsync();
+    }
+
+    private static string SeverityCssClass(AlertSeverity severity) => severity switch
+    {
+        AlertSeverity.Emergency     => "emergency",
+        AlertSeverity.High          => "high",
+        AlertSeverity.Normal        => "normal",
+        AlertSeverity.Informational => "informational",
+        _                           => "normal",
+    };
+}
