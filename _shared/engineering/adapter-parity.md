@@ -13,14 +13,16 @@ Status key: ✅ implemented · 🚧 in progress · ❌ not implemented · — no
 | Adapter | Package | Status |
 |---|---|---|
 | Blazor | `packages/ui-adapters-blazor` | Active |
-| React | `packages/ui-adapters-react` | **Not yet created** (P6 deliverable) |
+| React | `packages/ui-adapters-react` | Active (Wave 3.5 scaffold; 4 components shipped: `SunfishButton`, `SunfishDataGrid`, `SunfishDialog`, `SystemRequirements`) |
 
-All current Blazor-only components are registered as bootstrap-phase exceptions below. When the React adapter lands, each row gets a concrete target version.
+All current Blazor-only components are registered as bootstrap-phase exceptions below.
 
 ## Component parity
 
 | Component / Contract | UI-core contract | Blazor | React | Notes |
 |---|---|---|---|---|
+| SunfishButton | `ICssProvider.Button*` | ✅ | ✅ | Parity. 3 CSS providers (Bootstrap/Fluent/Material). |
+| SunfishDialog | `ICssProvider.Dialog*` | ✅ | ✅ | Parity. |
 | SunfishDataGrid | `IDataGridContract` (pending) | 🚧 (G37 in flight) | ❌ | Bootstrap-phase exception |
 | SunfishGridColumn | n/a (component only) | 🚧 | ❌ | Bootstrap-phase exception |
 | SunfishForm | `IFormContract` (pending) | ✅ | ❌ | Bootstrap-phase exception |
@@ -29,6 +31,7 @@ All current Blazor-only components are registered as bootstrap-phase exceptions 
 | Theme service | `IThemeService` | ✅ | ❌ | Bootstrap-phase exception |
 | Icon providers | `IIconProvider` | ✅ (Tabler, Legacy) | ❌ | Bootstrap-phase exception |
 | CSS providers | `ICssProvider` (pending) | ✅ (FluentUI, Bootstrap, Material) | ❌ | Providers are Blazor-specific by design; React will use its own styling stack |
+| `ISystemRequirementsRenderer` | `Sunfish.Foundation.MissionSpace.ISystemRequirementsRenderer` | ✅ consumer-tier (Anchor) — `accelerators/anchor/Components/Pages/SystemRequirements.razor` | ✅ `packages/ui-adapters-react/` — `SystemRequirements` component (W#56) | **substrate-parity**: both adapters consume the same `ISystemRequirementsRenderer` contract; per-adapter UX divergence intentional per ADR 0014 platform-conventional layout exemption. Blazor is consumer-tier (Anchor accelerator), not a `packages/ui-adapters-blazor/` component — this is NOT a parity gap. |
 
 (Refine per component as ui-core contracts get named explicitly.)
 
