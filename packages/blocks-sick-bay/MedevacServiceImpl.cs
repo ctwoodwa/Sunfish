@@ -19,35 +19,39 @@ namespace Sunfish.Blocks.SickBay;
 /// <para>
 /// <b>State machine (per §2):</b>
 /// <c>Idle → Requested → PendingAuthorization → Authorized → InProgress
-/// → Complete</c>. <c>Cancel</c> resets non-terminal states to
-/// <c>Idle</c>; terminal states (<c>Idle</c>, <c>Complete</c>) throw on
-/// cancel.
+/// → Complete</c>. <c>Cancel</c> resets non-terminal, non-Idle states to
+/// <c>Idle</c>; <c>Idle</c> and <c>Complete</c> throw on cancel.
+/// <c>Complete</c> is the terminal state per cycle — there is no transition
+/// out without a new instance of <see cref="MedevacServiceImpl"/> (process
+/// restart). Future workstream will add an explicit <c>ArchiveAsync</c>
+/// reset if multi-cycle-per-process is needed.
 /// </para>
 /// <para>
 /// <b>Four-eyes invariant (§Trust):</b>
 /// <see cref="AuthorizeAsync"/> emits
 /// <see cref="AuditEventType.SickBayMedevacSelfApprovalRejected"/>
 /// THEN throws <see cref="InvalidOperationException"/> when the
-/// authorizing principal equals the requesting principal. The dual
-/// emission lets the Sick Bay timeline surface the rejection event
-/// alongside the exception.
+/// authorizing principal equals the requesting principal. Both happen
+/// inside the per-tenant critical section so the rejection audit is
+/// non-repudiable.
 /// </para>
 /// <para>
 /// <b>Audit-before-operation invariant (ADR 0082 §6):</b>
-/// every transition emits its audit event BEFORE mutating state.
+/// every transition emits its audit event BEFORE mutating state. Both
+/// steps are inside the per-tenant critical section so no concurrent
+/// caller can observe an interleaved partial state.
+/// </para>
+/// <para>
+/// <b>Concurrency model:</b> a per-tenant <see cref="SemaphoreSlim"/>
+/// serializes all mutating operations for a given <see cref="TenantId"/>.
+/// This preserves the audit-before-operation invariant under concurrent
+/// callers: the sequence (read → guard → emit → write) is atomic per
+/// tenant. In-process only; no distributed coordination.
 /// </para>
 /// <para>
 /// <b>IChannelProvider (ADR 0076) hook:</b> notifications are deferred
 /// to a follow-up workstream (ADR 0082 Open Q1 — cross-tenant Bridge
-/// wire protocol). The <c>IMedevacEscalationStrategy</c> hook point is
-/// reserved here as a no-op (interface not yet defined); the medevac
-/// flow remains intra-tenant only in Phase 3b.
-/// </para>
-/// <para>
-/// <b>Thread-safety:</b> per-tenant state is stored in a concurrent
-/// dictionary. Within a single tenant, concurrent
-/// transitions are serialized by the state-machine check; no distributed
-/// coordination is provided in Phase 3b (in-process only).
+/// wire protocol). The medevac flow remains intra-tenant in Phase 3b.
 /// </para>
 /// </remarks>
 public sealed class MedevacServiceImpl : IMedevacService
@@ -55,6 +59,10 @@ public sealed class MedevacServiceImpl : IMedevacService
     private sealed record MedevacRecord(MedevacState State, PrincipalId? RequestedBy);
 
     private readonly ConcurrentDictionary<TenantId, MedevacRecord> _state = new();
+
+    // Per-tenant semaphore — serializes (read, check, audit-emit, write) per TenantId.
+    private readonly ConcurrentDictionary<TenantId, SemaphoreSlim> _locks = new();
+
     private readonly IAuditTrail _audit;
     private readonly IOperationSigner _signer;
     private readonly TimeProvider _time;
@@ -74,7 +82,7 @@ public sealed class MedevacServiceImpl : IMedevacService
     /// <inheritdoc />
     public Task<MedevacState> GetStateAsync(TenantId tenant, CancellationToken ct = default)
     {
-        var record = _state.GetValueOrDefault(tenant) ?? new MedevacRecord(MedevacState.Idle, null);
+        var record = GetRecord(tenant);
         return Task.FromResult(record.State);
     }
 
@@ -87,20 +95,29 @@ public sealed class MedevacServiceImpl : IMedevacService
     {
         ArgumentNullException.ThrowIfNull(reason);
 
-        var current = GetRecord(tenant);
-        if (current.State != MedevacState.Idle)
-            ThrowInvalidTransition(current.State, MedevacState.Requested);
+        var sem = GetSemaphore(tenant);
+        await sem.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var current = GetRecord(tenant);
+            if (current.State != MedevacState.Idle)
+                ThrowInvalidTransition(current.State, MedevacState.Requested);
 
-        // Audit-before-operation: emit BEFORE state change.
-        await EmitAuditAsync(AuditEventType.SickBayMedevacInitiated, tenant,
-            new Dictionary<string, object?>
-            {
-                ["requested_by"] = requestedBy.ToBase64Url(),
-                ["reason"] = reason,
-            }, ct).ConfigureAwait(false);
+            // Audit-before-operation inside critical section (ADR 0082 §6).
+            await EmitAuditAsync(AuditEventType.SickBayMedevacInitiated, tenant,
+                new Dictionary<string, object?>
+                {
+                    ["requested_by"] = requestedBy.ToBase64Url(),
+                    ["reason"] = reason,
+                }, ct).ConfigureAwait(false);
 
-        // Transition: Idle → Requested → PendingAuthorization (internal routing).
-        _state[tenant] = new MedevacRecord(MedevacState.PendingAuthorization, requestedBy);
+            // Transition: Idle → PendingAuthorization (internal routing per §2).
+            _state[tenant] = new MedevacRecord(MedevacState.PendingAuthorization, requestedBy);
+        }
+        finally
+        {
+            sem.Release();
+        }
     }
 
     /// <inheritdoc />
@@ -109,34 +126,43 @@ public sealed class MedevacServiceImpl : IMedevacService
         PrincipalId authorizingPrincipal,
         CancellationToken ct = default)
     {
-        var current = GetRecord(tenant);
-        if (current.State != MedevacState.PendingAuthorization)
-            ThrowInvalidTransition(current.State, MedevacState.Authorized);
-
-        // Four-eyes invariant: reject self-approval before state change.
-        if (current.RequestedBy == authorizingPrincipal)
+        var sem = GetSemaphore(tenant);
+        await sem.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            await EmitAuditAsync(AuditEventType.SickBayMedevacSelfApprovalRejected, tenant,
+            var current = GetRecord(tenant);
+            if (current.State != MedevacState.PendingAuthorization)
+                ThrowInvalidTransition(current.State, MedevacState.Authorized);
+
+            // Four-eyes invariant inside critical section — emit THEN throw.
+            if (current.RequestedBy == authorizingPrincipal)
+            {
+                await EmitAuditAsync(AuditEventType.SickBayMedevacSelfApprovalRejected, tenant,
+                    new Dictionary<string, object?>
+                    {
+                        ["authorizing_principal"] = authorizingPrincipal.ToBase64Url(),
+                        ["requested_by"] = current.RequestedBy?.ToBase64Url(),
+                    }, ct).ConfigureAwait(false);
+
+                throw new InvalidOperationException(
+                    "Self-approval rejected per four-eyes invariant.");
+            }
+
+            // Audit-before-operation.
+            await EmitAuditAsync(AuditEventType.SickBayMedevacAuthorized, tenant,
                 new Dictionary<string, object?>
                 {
                     ["authorizing_principal"] = authorizingPrincipal.ToBase64Url(),
                     ["requested_by"] = current.RequestedBy?.ToBase64Url(),
                 }, ct).ConfigureAwait(false);
 
-            throw new InvalidOperationException(
-                "Self-approval rejected per four-eyes invariant.");
+            // Transition: PendingAuthorization → InProgress (internal dispatch per §2).
+            _state[tenant] = new MedevacRecord(MedevacState.InProgress, current.RequestedBy);
         }
-
-        // Audit-before-operation.
-        await EmitAuditAsync(AuditEventType.SickBayMedevacAuthorized, tenant,
-            new Dictionary<string, object?>
-            {
-                ["authorizing_principal"] = authorizingPrincipal.ToBase64Url(),
-                ["requested_by"] = current.RequestedBy?.ToBase64Url(),
-            }, ct).ConfigureAwait(false);
-
-        // Transition: PendingAuthorization → Authorized → InProgress (internal dispatch).
-        _state[tenant] = new MedevacRecord(MedevacState.InProgress, current.RequestedBy);
+        finally
+        {
+            sem.Release();
+        }
     }
 
     /// <inheritdoc />
@@ -145,38 +171,63 @@ public sealed class MedevacServiceImpl : IMedevacService
         PrincipalId cancellingPrincipal,
         CancellationToken ct = default)
     {
-        var current = GetRecord(tenant);
-        if (current.State is MedevacState.Idle or MedevacState.Complete)
-            ThrowInvalidTransition(current.State, MedevacState.Idle);
+        // NOTE: reason parameter deferred to contract amendment — IMedevacService §Cancel
+        // does not carry reason in Phase 3b. Security council RFA: add reason to interface.
+        var sem = GetSemaphore(tenant);
+        await sem.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var current = GetRecord(tenant);
+            if (current.State is MedevacState.Idle or MedevacState.Complete)
+                ThrowInvalidTransition(current.State, MedevacState.Idle);
 
-        await EmitAuditAsync(AuditEventType.SickBayMedevacCancelled, tenant,
-            new Dictionary<string, object?>
-            {
-                ["cancelling_principal"] = cancellingPrincipal.ToBase64Url(),
-                ["from_state"] = current.State.ToString(),
-            }, ct).ConfigureAwait(false);
+            await EmitAuditAsync(AuditEventType.SickBayMedevacCancelled, tenant,
+                new Dictionary<string, object?>
+                {
+                    ["cancelling_principal"] = cancellingPrincipal.ToBase64Url(),
+                    ["from_state"] = current.State.ToString(),
+                }, ct).ConfigureAwait(false);
 
-        _state[tenant] = new MedevacRecord(MedevacState.Idle, null);
+            _state[tenant] = new MedevacRecord(MedevacState.Idle, null);
+        }
+        finally
+        {
+            sem.Release();
+        }
     }
 
     /// <inheritdoc />
     public async Task CompleteAsync(TenantId tenant, CancellationToken ct = default)
     {
-        var current = GetRecord(tenant);
-        if (current.State != MedevacState.InProgress)
-            ThrowInvalidTransition(current.State, MedevacState.Complete);
+        var sem = GetSemaphore(tenant);
+        await sem.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var current = GetRecord(tenant);
+            if (current.State != MedevacState.InProgress)
+                ThrowInvalidTransition(current.State, MedevacState.Complete);
 
-        await EmitAuditAsync(AuditEventType.SickBayMedevacCompleted, tenant,
-            new Dictionary<string, object?>
-            {
-                ["requested_by"] = current.RequestedBy?.ToBase64Url(),
-            }, ct).ConfigureAwait(false);
+            await EmitAuditAsync(AuditEventType.SickBayMedevacCompleted, tenant,
+                new Dictionary<string, object?>
+                {
+                    ["requested_by"] = current.RequestedBy?.ToBase64Url(),
+                }, ct).ConfigureAwait(false);
 
-        _state[tenant] = new MedevacRecord(MedevacState.Complete, current.RequestedBy);
+            // Clear RequestedBy on completion — audit trail is the source of truth;
+            // in-memory PII retention past terminal state serves no operational purpose.
+            _state[tenant] = new MedevacRecord(MedevacState.Complete, null);
+        }
+        finally
+        {
+            sem.Release();
+        }
     }
 
     private MedevacRecord GetRecord(TenantId tenant) =>
         _state.GetValueOrDefault(tenant) ?? new MedevacRecord(MedevacState.Idle, null);
+
+    private SemaphoreSlim GetSemaphore(TenantId tenant) =>
+        _locks.GetOrAdd(tenant, _ => new SemaphoreSlim(1, 1));
 
     private static void ThrowInvalidTransition(MedevacState from, MedevacState to) =>
         throw new InvalidOperationException(
