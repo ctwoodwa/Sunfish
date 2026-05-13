@@ -1,12 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.ShipsOffice</PackageId>
     <RootNamespace>Sunfish.Blocks.ShipsOffice</RootNamespace>
-    <Description>Block-tier substrate for the Ship's Office aggregation surface (ADR 0083): ShipsOfficeDataProvider real cross-package projection (Phase 2b) + ShipsOfficeCommandService §5 audit-ordering invariant (Phase 2c: permission FIRST → audit pre-op → execute) + NoopContentEditorSurface + DI extension. Per W#55 Phase 2c. Critical invariant: NO IFieldDecryptor reference anywhere (W9 TIN field excluded from the browse view by design).</Description>
-    <PackageTags>sunfish;blocks;ships-office;adr-0083</PackageTags>
+    <Description>Block-tier substrate for the Ship's Office aggregation surface (ADR 0083): Phase 2 data + command + diff services + Phase 3 Blazor UI (ShipsOfficeBlock + 4 sub-components). Critical invariant: NO IFieldDecryptor reference anywhere (W9 TIN field excluded from the browse view by design).</Description>
+    <PackageTags>sunfish;blocks;ships-office;adr-0083;blazor</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\blocks-leases\Sunfish.Blocks.Leases.csproj" />
     <ProjectReference Include="..\blocks-maintenance\Sunfish.Blocks.Maintenance.csproj" />
@@ -17,6 +20,7 @@
     <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
     <ProjectReference Include="..\foundation-ships-office\Sunfish.Foundation.ShipsOffice.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
   </ItemGroup>
   <ItemGroup>

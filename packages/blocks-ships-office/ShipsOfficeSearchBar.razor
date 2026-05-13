@@ -1,0 +1,135 @@
+@* ShipsOfficeSearchBar — ARIA APG 1.2 combobox pattern per ADR 0083 §8 + §3.
+   role="combobox" + aria-expanded + aria-activedescendant on the <input> (APG 1.2: focused element carries ARIA).
+   Result count announced via aria-live="polite" region per SC 4.1.3. *@
+
+<div class="ships-office-search" role="search">
+    <label for="ships-office-search-input">Search documents</label>
+    <div class="combobox-wrapper">
+
+        <input id="ships-office-search-input"
+               type="search"
+               role="combobox"
+               autocomplete="off"
+               autocorrect="off"
+               spellcheck="false"
+               placeholder="Search by title…"
+               value="@_query"
+               @oninput="HandleInputAsync"
+               @onkeydown="HandleKeyDown"
+               aria-label="Search Ship's Office documents"
+               aria-expanded="@(_showSuggestions && _suggestions.Count > 0 ? "true" : "false")"
+               aria-haspopup="listbox"
+               aria-controls="ships-office-suggestions"
+               aria-owns="ships-office-suggestions"
+               aria-activedescendant="@(_activeSuggestion >= 0 ? $"suggestion-{_activeSuggestion}" : null)" />
+
+        @if (_showSuggestions && _suggestions.Count > 0)
+        {
+            <ul id="ships-office-suggestions"
+                role="listbox"
+                aria-label="Search suggestions"
+                class="suggestion-list">
+                @for (int i = 0; i < _suggestions.Count; i++)
+                {
+                    var index = i;
+                    var label = _suggestions[i];
+                    <li id="suggestion-@index"
+                        role="option"
+                        aria-selected="@(index == _activeSuggestion ? "true" : "false")"
+                        class="@(index == _activeSuggestion ? "suggestion-active" : null)"
+                        @onclick="@(() => CommitSuggestion(label))">
+                        @label
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div aria-live="polite" aria-atomic="true" class="search-result-count visually-hidden">
+        @_resultCountAnnouncement
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public EventCallback<string> OnSearch { get; set; }
+
+    [Inject] private ISearchAsYouType<ShipsOfficeDocumentView>? SearchService { get; set; }
+
+    private string _query = string.Empty;
+    private List<string> _suggestions = [];
+    private bool _showSuggestions;
+    private int _activeSuggestion = -1;
+    private string? _resultCountAnnouncement;
+    private CancellationTokenSource? _cts;
+
+    private async Task HandleInputAsync(ChangeEventArgs e)
+    {
+        _query = e.Value?.ToString() ?? string.Empty;
+        _activeSuggestion = -1;
+
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+
+        if (string.IsNullOrWhiteSpace(_query))
+        {
+            _showSuggestions = false;
+            _suggestions = [];
+            _resultCountAnnouncement = null;
+            await OnSearch.InvokeAsync(string.Empty);
+            return;
+        }
+
+        await OnSearch.InvokeAsync(_query);
+
+        if (SearchService is not null)
+        {
+            try
+            {
+                var results = await SearchService.SearchAsync(_query, _cts.Token);
+                _suggestions = results.Select(r => r.Title).Take(8).ToList();
+                _showSuggestions = _suggestions.Count > 0;
+                _resultCountAnnouncement = _suggestions.Count switch
+                {
+                    0 => "No suggestions",
+                    1 => "1 suggestion",
+                    _ => $"{_suggestions.Count} suggestions",
+                };
+            }
+            catch (OperationCanceledException) { }
+        }
+    }
+
+    private Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (_suggestions.Count > 0)
+                    _activeSuggestion = Math.Min(_activeSuggestion + 1, _suggestions.Count - 1);
+                break;
+            case "ArrowUp":
+                if (_activeSuggestion > 0)
+                    _activeSuggestion--;
+                break;
+            case "Enter":
+                if (_activeSuggestion >= 0 && _activeSuggestion < _suggestions.Count)
+                    return CommitSuggestion(_suggestions[_activeSuggestion]);
+                break;
+            case "Escape":
+                _showSuggestions = false;
+                _activeSuggestion = -1;
+                break;
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task CommitSuggestion(string label)
+    {
+        _query = label;
+        _showSuggestions = false;
+        _activeSuggestion = -1;
+        _resultCountAnnouncement = null;
+        return OnSearch.InvokeAsync(label);
+    }
+}

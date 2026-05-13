@@ -1,0 +1,69 @@
+@* DocumentDiffPanel — diff table per ADR 0083 §8 + ADR 0077 §6.4.
+   <figcaption id="diff-caption"> + table aria-describedby satisfy SC 2.4.6 without duplicate caption.
+   Added/removed rows use text prefix labels "Added:" / "Removed:" adjacent to values (SC 1.3.3).
+   Color + text dual-encoding for row status (SC 1.4.1). *@
+
+<figure class="ships-office-diff-panel">
+    <figcaption id="diff-caption">@Preview.Summary</figcaption>
+
+    @if (Preview.Entries.Count == 0)
+    {
+        <p>No changes to display.</p>
+    }
+    else
+    {
+        <table aria-describedby="diff-caption" class="diff-table">
+            <thead>
+                <tr>
+                    <th scope="col">Field</th>
+                    <th scope="col">Before</th>
+                    <th scope="col">After</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Preview.Entries)
+                {
+                    var rowClass = DiffRowClass(entry);
+                    var rowLabel = DiffRowLabel(entry);
+                    <tr class="@rowClass" aria-label="@rowLabel">
+                        <td>@entry.Field</td>
+                        <td>
+                            @if (entry.OldValue is not null && entry.NewValue is null)
+                            {
+                                <span class="visually-hidden">Removed: </span>
+                            }
+                            @entry.OldValue?.ToString()
+                        </td>
+                        <td>
+                            @if (entry.OldValue is null && entry.NewValue is not null)
+                            {
+                                <span class="visually-hidden">Added: </span>
+                            }
+                            @entry.NewValue?.ToString()
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</figure>
+
+@code {
+    [Parameter, EditorRequired] public IDiffPreview Preview { get; set; } = default!;
+
+    private static string DiffRowClass(DiffEntry entry) =>
+        (entry.OldValue, entry.NewValue) switch
+        {
+            (null, not null) => "diff-added",
+            (not null, null) => "diff-removed",
+            _                => "diff-changed",
+        };
+
+    private static string DiffRowLabel(DiffEntry entry) =>
+        (entry.OldValue, entry.NewValue) switch
+        {
+            (null, not null) => $"Added: {entry.Field}",
+            (not null, null) => $"Removed: {entry.Field}",
+            _                => $"Changed: {entry.Field}",
+        };
+}

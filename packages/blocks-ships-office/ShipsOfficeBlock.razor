@@ -1,0 +1,190 @@
+@* ShipsOfficeBlock — root composition block for the Ship's Office aggregation surface.
+   Checks ViewShipsOffice permission BEFORE rendering content or calling the data provider.
+   Per ADR 0083 §2 caller-contract. *@
+
+<div class="ships-office-block" role="region" aria-label="Ship's Office">
+
+    @if (_permissionDenied)
+    {
+        <p role="alert">You do not have permission to view the Ship's Office.</p>
+    }
+    else if (_snapshot is null)
+    {
+        <p aria-live="polite" aria-busy="true">Loading Ship's Office documents…</p>
+    }
+    else
+    {
+        <div class="ships-office-search-bar">
+            <ShipsOfficeSearchBar OnSearch="HandleSearch" />
+        </div>
+
+        <div class="ships-office-kind-filter" role="group" aria-label="Filter by document kind">
+            @foreach (var kind in Enum.GetValues<ShipsOfficeDocumentKind>())
+            {
+                var k = kind;
+                <label>
+                    <input type="checkbox"
+                           checked="@_kindFilter.Contains(k)"
+                           @onchange="@(e => ToggleKindFilter(k, (bool)e.Value!))" />
+                    @KindLabel(k)
+                </label>
+            }
+        </div>
+
+        var filtered = FilteredDocuments().ToList();
+        <ul class="ships-office-document-list" aria-label="Documents"
+            aria-live="polite" aria-atomic="false">
+            @foreach (var doc in filtered)
+            {
+                var d = doc;
+                <li>
+                    <DocumentListItem Document="@d"
+                                      OnSelect="@(() => SelectDocument(d))" />
+                </li>
+            }
+            @if (filtered.Count == 0)
+            {
+                <li><p>No documents match the current filter.</p></li>
+            }
+        </ul>
+
+        @if (_selectedDocument is not null)
+        {
+            <DocumentDetailDrawer Document="@_selectedDocument"
+                                  CanPublish="@_canPublish"
+                                  CanArchive="@_canArchive"
+                                  OnPublish="PublishDocumentAsync"
+                                  OnArchive="ArchiveDocumentAsync"
+                                  OnClose="CloseDrawer" />
+        }
+
+        @if (_operationMessage is not null)
+        {
+            <div aria-live="@_operationLive"
+                 role="@(_operationLive == "assertive" ? "alert" : null)">
+                @_operationMessage
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TenantId Tenant { get; set; }
+    [Parameter, EditorRequired] public ActorId Actor { get; set; }
+
+    [Inject] private IShipsOfficeDataProvider DataProvider { get; set; } = default!;
+    [Inject] private IShipsOfficeCommandService CommandService { get; set; } = default!;
+    [Inject] private IPermissionResolver PermissionResolver { get; set; } = default!;
+    [Inject] private IActorPrincipalResolver ActorPrincipalResolver { get; set; } = default!;
+
+    private ShipsOfficeSnapshot? _snapshot;
+    private bool _permissionDenied;
+    private ShipsOfficeDocumentView? _selectedDocument;
+    private bool _canPublish;
+    private bool _canArchive;
+    private HashSet<ShipsOfficeDocumentKind> _kindFilter = [];
+    private string? _searchQuery;
+    private string? _operationMessage;
+    private string _operationLive = "polite";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _permissionDenied = false;
+        var principal = await ActorPrincipalResolver.ResolveAsync(Tenant, Actor);
+        if (principal is null)
+        {
+            _permissionDenied = true;
+            return;
+        }
+
+        var viewDecision = await PermissionResolver.ResolveAsync(
+            Tenant, principal, ShipLocation.ShipsOffice, DeckDepth.MainDeck,
+            ShipAction.ViewShipsOffice, resource: null);
+
+        if (viewDecision is PermissionDecision.Denied)
+        {
+            _permissionDenied = true;
+            return;
+        }
+
+        _snapshot = await DataProvider.GetSnapshotAsync(Tenant);
+
+        var publishDecision = await PermissionResolver.ResolveAsync(
+            Tenant, principal, ShipLocation.ShipsOffice, DeckDepth.MainDeck,
+            ShipAction.PublishShipsOfficeDocument, resource: null);
+        _canPublish = publishDecision is PermissionDecision.Granted;
+
+        var archiveDecision = await PermissionResolver.ResolveAsync(
+            Tenant, principal, ShipLocation.ShipsOffice, DeckDepth.MainDeck,
+            ShipAction.ArchiveShipsOfficeDocument, resource: null);
+        _canArchive = archiveDecision is PermissionDecision.Granted;
+    }
+
+    private void HandleSearch(string query) => _searchQuery = query;
+
+    private void ToggleKindFilter(ShipsOfficeDocumentKind kind, bool included)
+    {
+        if (included) _kindFilter.Add(kind);
+        else _kindFilter.Remove(kind);
+    }
+
+    private IEnumerable<ShipsOfficeDocumentView> FilteredDocuments()
+    {
+        if (_snapshot is null) return [];
+        var docs = _snapshot.Documents.AsEnumerable();
+        if (_kindFilter.Count > 0)
+            docs = docs.Where(d => _kindFilter.Contains(d.Kind));
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+            docs = docs.Where(d =>
+                d.Title.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+        return docs;
+    }
+
+    private void SelectDocument(ShipsOfficeDocumentView doc) => _selectedDocument = doc;
+    private void CloseDrawer() => _selectedDocument = null;
+
+    private async Task PublishDocumentAsync()
+    {
+        if (_selectedDocument is null) return;
+        var title = _selectedDocument.Title;
+        var id = _selectedDocument.Id;
+        _selectedDocument = null;
+
+        var outcome = await CommandService.PublishAsync(Tenant, id);
+        _snapshot = await DataProvider.GetSnapshotAsync(Tenant);
+
+        if (outcome == PublishOutcome.Published)
+        {
+            _operationLive = "polite";
+            _operationMessage = $"“{title}” published successfully.";
+        }
+        else
+        {
+            _operationLive = "assertive";
+            _operationMessage = "Publish rejected: permission denied.";
+        }
+    }
+
+    private async Task ArchiveDocumentAsync()
+    {
+        if (_selectedDocument is null) return;
+        var title = _selectedDocument.Title;
+        var id = _selectedDocument.Id;
+        _selectedDocument = null;
+
+        await CommandService.ArchiveAsync(Tenant, id);
+        _snapshot = await DataProvider.GetSnapshotAsync(Tenant);
+
+        _operationLive = "polite";
+        _operationMessage = $"“{title}” archived.";
+    }
+
+    private static string KindLabel(ShipsOfficeDocumentKind kind) => kind switch
+    {
+        ShipsOfficeDocumentKind.BundleManifest    => "Bundle Manifest",
+        ShipsOfficeDocumentKind.LeaseDocument     => "Lease Document",
+        ShipsOfficeDocumentKind.VendorW9          => "Vendor W9",
+        ShipsOfficeDocumentKind.SignatureEnvelope => "Signature Envelope",
+        _                                         => kind.ToString(),
+    };
+}

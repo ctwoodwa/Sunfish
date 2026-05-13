@@ -1,0 +1,80 @@
+@* DocumentListItem — per-row presentation of ShipsOfficeDocumentView.
+   Kind badge and status badge use icon + text dual-encoding (SC 1.4.1).
+   Native <button> element handles Enter + Space without preventDefault (SC 2.1.1). *@
+
+<button type="button"
+        class="ships-office-list-item"
+        aria-label="@($"{Document.Title} — {Document.Kind} — {Document.Status}")"
+        @onclick="HandleClick">
+
+    <div class="ships-office-item-kind-badge" aria-hidden="true">
+        <span class="kind-icon @KindIconClass(Document.Kind)"></span>
+        <span class="kind-text">@KindLabel(Document.Kind)</span>
+    </div>
+    <span class="visually-hidden">Kind: @KindLabel(Document.Kind)</span>
+
+    <div class="ships-office-item-title">
+        @Document.Title
+        @if (Document.VersionLabel is not null)
+        {
+            <span class="version-label" aria-label="Version @Document.VersionLabel">
+                @Document.VersionLabel
+            </span>
+        }
+    </div>
+
+    <div class="ships-office-item-status-badge" aria-hidden="true">
+        <span class="status-dot @StatusColorClass(Document.Status)"></span>
+        <span class="status-text">@StatusLabel(Document.Status)</span>
+    </div>
+    <span class="visually-hidden">Status: @StatusLabel(Document.Status)</span>
+
+    <div class="ships-office-item-meta">
+        <time datetime="@Document.UpdatedAt.ToString("O")">
+            @Document.UpdatedAt.ToString("MMM d, yyyy")
+        </time>
+    </div>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public ShipsOfficeDocumentView Document { get; set; } = default!;
+    [Parameter, EditorRequired] public EventCallback OnSelect { get; set; }
+
+    private Task HandleClick() => OnSelect.InvokeAsync();
+
+    private static string KindLabel(ShipsOfficeDocumentKind kind) => kind switch
+    {
+        ShipsOfficeDocumentKind.BundleManifest    => "Bundle Manifest",
+        ShipsOfficeDocumentKind.LeaseDocument     => "Lease Document",
+        ShipsOfficeDocumentKind.VendorW9          => "Vendor W9",
+        ShipsOfficeDocumentKind.SignatureEnvelope => "Signature Envelope",
+        _                                         => kind.ToString(),
+    };
+
+    private static string KindIconClass(ShipsOfficeDocumentKind kind) => kind switch
+    {
+        ShipsOfficeDocumentKind.BundleManifest    => "icon-bundle",
+        ShipsOfficeDocumentKind.LeaseDocument     => "icon-lease",
+        ShipsOfficeDocumentKind.VendorW9          => "icon-w9",
+        ShipsOfficeDocumentKind.SignatureEnvelope => "icon-signature",
+        _                                         => "icon-document",
+    };
+
+    private static string StatusLabel(DocumentStatus status) => status switch
+    {
+        DocumentStatus.Draft          => "Draft",
+        DocumentStatus.Published      => "Published",
+        DocumentStatus.Archived       => "Archived",
+        DocumentStatus.PendingSignature => "Pending Signature",
+        _                             => status.ToString(),
+    };
+
+    private static string StatusColorClass(DocumentStatus status) => status switch
+    {
+        DocumentStatus.Draft          => "status-draft",
+        DocumentStatus.Published      => "status-published",
+        DocumentStatus.Archived       => "status-archived",
+        DocumentStatus.PendingSignature => "status-pending",
+        _                             => "status-unknown",
+    };
+}

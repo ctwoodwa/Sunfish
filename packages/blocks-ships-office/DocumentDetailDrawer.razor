@@ -1,0 +1,103 @@
+@* DocumentDetailDrawer — slide-in panel for document metadata and actions.
+   Publish and Archive buttons are gated by role.
+   Read-only content view in Phase 3; Phase 5 adds edit mode via IContentEditorSurface. *@
+
+<div class="ships-office-drawer"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="drawer-heading"
+     @onkeydown="HandleKeyDown">
+
+    <div class="drawer-header">
+        <h2 id="drawer-heading">@Document.Title</h2>
+        <button type="button"
+                class="drawer-close"
+                aria-label="Close Ship's Office document details"
+                @ref="_closeButton"
+                @onclick="OnClose">
+            &#x2715;
+        </button>
+    </div>
+
+    <dl class="drawer-metadata">
+        <dt>Kind</dt>
+        <dd>@KindLabel(Document.Kind)</dd>
+
+        <dt>Status</dt>
+        <dd>@StatusLabel(Document.Status)</dd>
+
+        <dt>Last Modified</dt>
+        <dd>
+            <time datetime="@Document.UpdatedAt.ToString("O")">
+                @Document.UpdatedAt.ToString("MMM d, yyyy HH:mm")
+            </time>
+        </dd>
+
+        @if (Document.VersionLabel is not null)
+        {
+            <dt>Version</dt>
+            <dd>@Document.VersionLabel</dd>
+        }
+    </dl>
+
+    <div class="drawer-actions" role="group" aria-label="Document actions">
+        @if (CanPublish && Document.Status == DocumentStatus.Draft)
+        {
+            <button type="button"
+                    class="btn-publish"
+                    @onclick="OnPublish">
+                Publish
+            </button>
+        }
+        @if (CanArchive && Document.Status == DocumentStatus.Published)
+        {
+            <button type="button"
+                    class="btn-archive"
+                    @onclick="OnArchive">
+                Archive
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ShipsOfficeDocumentView Document { get; set; } = default!;
+    [Parameter] public bool CanPublish { get; set; }
+    [Parameter] public bool CanArchive { get; set; }
+    [Parameter] public EventCallback OnPublish { get; set; }
+    [Parameter] public EventCallback OnArchive { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnClose { get; set; }
+
+    private ElementReference _closeButton;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _closeButton.FocusAsync();
+    }
+
+    private Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            return OnClose.InvokeAsync();
+        return Task.CompletedTask;
+    }
+
+    private static string KindLabel(ShipsOfficeDocumentKind kind) => kind switch
+    {
+        ShipsOfficeDocumentKind.BundleManifest    => "Bundle Manifest",
+        ShipsOfficeDocumentKind.LeaseDocument     => "Lease Document",
+        ShipsOfficeDocumentKind.VendorW9          => "Vendor W9",
+        ShipsOfficeDocumentKind.SignatureEnvelope => "Signature Envelope",
+        _                                         => kind.ToString(),
+    };
+
+    private static string StatusLabel(DocumentStatus status) => status switch
+    {
+        DocumentStatus.Draft          => "Draft",
+        DocumentStatus.Published      => "Published",
+        DocumentStatus.Archived       => "Archived",
+        DocumentStatus.PendingSignature => "Pending Signature",
+        _                             => status.ToString(),
+    };
+}
