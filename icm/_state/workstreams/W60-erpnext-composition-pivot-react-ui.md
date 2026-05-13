@@ -4,7 +4,7 @@ number: 60
 slug: erpnext-composition-pivot-react-ui
 title: "**ERPNext Composition Pivot — React UI + local-first sync layer** (5-phase; `sunfish-feature-change` pipeline) — CO UPF plan approved 2026-05-11; ERPNext (GPLv3, self-hosted) as property/accounting engine; Sunfish as local-first sync + offline + React UI + tenant comms layer over it"
 status: "building"
-status_cell: "`building` — **P2 BUILT 2026-05-13** (PRs #731+#732+#751+#752+#757+#758; `apps/anchor-react/` + `@sunfish/ui-react`); **ADR 0086 MERGED + Accepted 2026-05-13** (PR #737); **P3 ready-to-build** — hand-off: `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md` (PR #812 DRAFT — awaiting CO Surface Pro acceptance); **P4 hand-off authored 2026-05-13** — `icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md` (Stronghold + Accountant Bridge + CPA + Tenant portal + Bank CSV; gated on P3 PASS)"
+status_cell: "`building` — **P2 BUILT 2026-05-13** (PRs #731+#732+#751+#752+#757+#758; `apps/anchor-react/` + `@sunfish/ui-react`); **ADR 0086 MERGED + Accepted 2026-05-13** (PR #737); **P3 building 2026-05-13** — PR #812 (Tauri v2 shell) + PR #836 (SQLite cache) DRAFT; PR 3 (Loro CRDT write-queue) pending; **P4 hand-off authored** — `icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md` (gated on P3 PASS)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md`; P3: `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md`; P4: `icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md`; UPF: `~/.claude/plans/noble-crunching-hopper.md`"
