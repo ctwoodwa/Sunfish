@@ -23,6 +23,7 @@ using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.Providers.Bootstrap.Extensions;
 using Microsoft.Maui.Storage;
+using Sunfish.Blocks.ShipsOffice;
 
 namespace Sunfish.Anchor;
 
@@ -300,6 +301,9 @@ public static class MauiProgram
 		// W#47 Phase 4 — consolidated via AddAnchorSystemRequirementsRenderer extension
 		// (AnchorMauiServiceCollectionExtensions). Registers observer + renderer + surface.
 		builder.Services.AddAnchorSystemRequirementsRenderer();
+
+		// W#55 Phase 4 — Ship's Office aggregation surface (ADR 0083).
+		builder.Services.AddSunfishShipsOfficeDefaults();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

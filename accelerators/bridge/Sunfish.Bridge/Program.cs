@@ -31,6 +31,7 @@ using Sunfish.Blocks.PublicListings.DependencyInjection;
 using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Bridge.Features.Identity;
+using Sunfish.Blocks.ShipsOffice;
 using Sunfish.UICore.Wayfinder;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
@@ -283,6 +284,17 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // W#58 Phase 2 — Identity Atlas projection surface + circuit context capture.
     builder.Services.AddScoped<IBridgeRequestContext, BridgeRequestContext>();
     builder.Services.AddScoped<IIdentityAtlasSurface, BridgeIdentityAtlasSurface>();
+
+    // W#55 Phase 4 — Ship's Office aggregation surface (ADR 0083).
+    // RequireSecondActorPublish=true is the regulated-default for the multi-tenant
+    // admin Bridge posture; Anchor uses false (default) for single-operator use.
+    // NOTE: Bridge React UI is deferred (no blocks-ships-office React adapter yet).
+    builder.Services.AddSunfishShipsOfficeDefaults();
+    builder.Services.Configure<Sunfish.Foundation.ShipsOffice.ShipsOfficeOptions>(opts =>
+    {
+        opts.SnapshotPageSize = 500;
+        opts.RequireSecondActorPublish = true;
+    });
 
     // W#56 Phase 1 — SystemRequirements resolver + force-install surface + server-level envelope.
     builder.Services.AddBridgeSystemRequirements();
