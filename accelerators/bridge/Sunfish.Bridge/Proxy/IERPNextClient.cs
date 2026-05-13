@@ -22,4 +22,15 @@ public interface IERPNextClient
         object payload,
         string company,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// GET /api/resource/{doctype} with explicit field selection.
+    /// Needed for accounting endpoints where ERPNext's default minimal field set is insufficient.
+    /// </summary>
+    Task<JsonElement> GetListWithFieldsAsync(
+        string doctype,
+        string company,
+        IReadOnlyList<string> fields,
+        int limit = 100,
+        CancellationToken ct = default);
 }
