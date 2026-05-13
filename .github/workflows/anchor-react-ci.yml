@@ -1,6 +1,11 @@
 name: anchor-react CI
 
 on:
+  push:
+    paths:
+      - 'apps/anchor-react/**'
+      - 'packages/ui-react/**'
+      - '.github/workflows/anchor-react-ci.yml'
   pull_request:
     paths:
       - 'apps/anchor-react/**'
