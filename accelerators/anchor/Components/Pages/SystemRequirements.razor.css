@@ -1,0 +1,93 @@
+.sysreq-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 3rem;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.sysreq-page h1 {
+    font-size: 1.625rem;
+    margin: 0 0 1.25rem;
+    letter-spacing: -0.01em;
+}
+
+.sysreq-verdict {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    margin-bottom: 1.25rem;
+}
+
+.sysreq-verdict--pass    { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.sysreq-verdict--warn    { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.sysreq-verdict--block   { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+.sysreq-verdict--loading { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
+
+.sysreq-dim-list {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sysreq-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e5e5;
+}
+
+.sysreq-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity 0.15s;
+}
+
+.sysreq-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sysreq-btn--primary {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
+
+.sysreq-btn--primary:hover:not(:disabled) { background: #1d4ed8; }
+
+/* B1 council fix: #d97706 on #fff was ~3.4:1 (fails 4.5:1 AA). Darkened
+   resting to #b45309 (~4.7:1) and hover to #92400e (~6.3:1). */
+.sysreq-btn--warn {
+    background: #b45309;
+    color: #fff;
+    border-color: #b45309;
+}
+
+.sysreq-btn--warn:hover:not(:disabled) { background: #92400e; }
+
+.sysreq-btn--danger {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+}
+
+.sysreq-btn--danger:hover:not(:disabled) { background: #b91c1c; }
+
+.sysreq-muted {
+    color: #666;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+}

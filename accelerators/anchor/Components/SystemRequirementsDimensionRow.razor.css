@@ -1,0 +1,90 @@
+.sysreq-dim-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 6px;
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+}
+
+.sysreq-dim-icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    font-size: 0.9375rem;
+    text-align: center;
+    margin-top: 0.125rem;
+}
+
+.sysreq-dim-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.sysreq-dim-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sysreq-dim-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.sysreq-dim-policy {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.125rem 0.4rem;
+    border-radius: 3px;
+}
+
+.sysreq-dim-policy--required    { background: #fee2e2; color: #991b1b; }
+.sysreq-dim-policy--recommended { background: #fef3c7; color: #92400e; }
+.sysreq-dim-policy--informational { background: #e0f2fe; color: #075985; }
+/* B2 council fix: #6b7280 on #f3f4f6 was ~4.31:1 (fails 4.5:1 AA at 11px).
+   Darkened to #4b5563 (~7.0:1). */
+.sysreq-dim-policy--unevaluated { background: #f3f4f6; color: #4b5563; }
+
+.sysreq-dim-detail {
+    margin: 0.375rem 0 0;
+    font-size: 0.8125rem;
+    color: #555;
+    line-height: 1.5;
+}
+
+.sysreq-dim-recovery {
+    margin-top: 0.5rem;
+    padding: 0.375rem 0.625rem;
+    background: #f0fdf4;
+    border-left: 3px solid #16a34a;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.8125rem;
+}
+
+.sysreq-recovery-header {
+    display: block;
+    font-weight: 600;
+    color: #15803d;
+    margin-bottom: 0.125rem;
+}
+
+.sysreq-recovery-text {
+    color: #166534;
+}
+
+/* Verdict-state row variants */
+.sysreq-dim-row--pass        { border-color: #bbf7d0; }
+.sysreq-dim-row--pass .sysreq-dim-icon    { color: #16a34a; }
+
+.sysreq-dim-row--warn        { border-color: #fde68a; }
+.sysreq-dim-row--warn .sysreq-dim-icon    { color: #d97706; }
+
+.sysreq-dim-row--block       { border-color: #fca5a5; }
+.sysreq-dim-row--block .sysreq-dim-icon   { color: #dc2626; }
+
+.sysreq-dim-row--unevaluated { border-color: #e5e5e5; }
+.sysreq-dim-row--unevaluated .sysreq-dim-icon { color: #9ca3af; }

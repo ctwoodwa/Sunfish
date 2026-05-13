@@ -153,6 +153,9 @@
         <ProjectReference Include="..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
         <ProjectReference Include="..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
         <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj" />
+        <!-- W#47 Phase 1 — Anchor MAUI ISystemRequirementsRenderer (PreInstallFullPage) -->
+        <ProjectReference Include="..\..\packages\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
+        <ProjectReference Include="..\..\packages\foundation-catalog\Sunfish.Foundation.Catalog.csproj" />
     </ItemGroup>
 
 </Project>
