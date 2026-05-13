@@ -130,6 +130,12 @@ app.UseWebSockets();
 
 app.UseAntiforgery();
 app.UseAuthorization();
+// W#60 Phase 2 — CORS for React dev server (localhost:5173).
+// In production React is served from the same origin; this no-ops there.
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("ReactDevCors");
+}
 
 app.MapDefaultEndpoints();
 app.MapHealthChecks("/health");
@@ -149,6 +155,23 @@ app.MapListingsEndpoints();
 // GET /api/system-requirements/{bundleId}?platform={platformKey} → SystemRequirementsResult JSON.
 // POST /api/system-requirements/{bundleId}/force-install → 204 No Content.
 app.MapSystemRequirementsEndpoints();
+
+// W#60 Phase 2 — ERPNext proxy (GET /api/v1/erpnext/properties, more in later phases).
+app.MapERPNextProxy();
+
+// W#60 Phase 2 — caller-identity endpoint consumed by the React SPA.
+// Phase 1 returns a dev stub; Phase 2 wires real OIDC claims via UserService.
+app.MapGet("/api/v1/whoami", (HttpContext ctx) =>
+{
+    var name = ctx.User.Identity?.Name ?? "dev-user";
+    return Results.Ok(new
+    {
+        user = name,
+        role = "owner",
+        defaultCompany = app.Configuration["ERPNext:DefaultCompany"] ?? "",
+        availableCompanies = new[] { app.Configuration["ERPNext:DefaultCompany"] ?? "" },
+    });
+}).WithName("WhoAmI");
 
 // W#23 Phase 4.5 — iOS field-capture endpoints (POST /api/v1/field/event +
 // POST /api/v1/field/blob/{sha256}). Per the audit-infra unblock addendum,
@@ -311,9 +334,22 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
         builder.Services.AddHostedService<BridgeSeeder>();
     }
 
-    // CORS + antiforgery scaffold (no policies yet).
-    builder.Services.AddCors();
+    // CORS — allow React dev server (localhost:5173) to call Bridge API endpoints.
+    // Policy is dev-only; production serves React from the same origin as Bridge.
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("ReactDevCors", policy =>
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials());
+    });
     builder.Services.AddAuthorization();
+
+    // W#60 Phase 2 — ERPNext proxy layer.
+    builder.Services.Configure<ERPNextOptions>(
+        builder.Configuration.GetSection(ERPNextOptions.SectionName));
+    builder.Services.AddERPNextClient();
 
     // Sunfish component services with provider switching (FluentUI, Bootstrap, Material)
     builder.Services.AddSunfish()
