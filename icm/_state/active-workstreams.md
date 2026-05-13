@@ -260,7 +260,7 @@ Phase 3a WatchBanner.
 
 **Phase 4 follow-up** (TODO comments): in-memory `IOodWatchRepository` impl (Phase 3 deferred);
 `StandingOrder` watch-transfer issuance via `IStandingOrderIssuer` (W#42 P2-gated). |
-| 50 | **Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `building` (Phase 1 #626 + Phase 2a #696 + Phase 2b #790 + Phase 3a #797 + **Phase 3b #800 MERGED 2026-05-13** — DamageControlPanel + QaWorkshopPanel write surfaces; **Phase 4 next** — Anchor + Bridge wiring + apps/docs + ledger close; hand-off: engine-room-observability-stage06-handoff.md §Phase 4) | sunfish-PM | `docs/adrs/0079-engine-room-observability.md` (PR #572 merged) + `icm/_state/handoffs/engine-room-observability-stage06-handoff.md` + `packages/foundation-engine-room/` (P1 merged) | **Phase 1 merged 2026-05-06 via PR #626.** New `Sunfish.Foundation.EngineRoom`
+| 50 | **Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `built` + **CO Approved 2026-05-13** (all 4 phases shipped: P1 #626 + P2a #696 + P2b #790 + P3a #797 + P3b #800 + P4 Anchor wiring + docs + ledger close; pipeline closed) | sunfish-PM | `docs/adrs/0079-engine-room-observability.md` (PR #572 merged) + `icm/_state/handoffs/engine-room-observability-stage06-handoff.md` + `packages/foundation-engine-room/` (P1 merged) | **Phase 1 merged 2026-05-06 via PR #626.** New `Sunfish.Foundation.EngineRoom`
 package shipped: 12 data-model types (SyncDaemon* / CrdtGrowth* /
 Subsystem* / EngineRoomHealthSummary with `For()` helper / Quarantine /
 Release / CompactionResult / EngineRoomUnauthorizedException) + 2
