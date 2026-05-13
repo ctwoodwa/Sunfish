@@ -4,7 +4,7 @@ number: 54
 slug: sick-bay-aggregation-surface
 title: "**Sick Bay Aggregation Surface + IDC Role** (ADR 0082; W#35 Ship Architecture follow-on #6; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1 merged PR #628; Phase 2 merged PR #695; ADR 0082 Accepted PR #672; **ADR 0082 A1 + hand-off addendum shipped 2026-05-06 — Phase 2b UNBLOCKED** for Mission Envelope integration + AtmosphereHealth.Unknown sentinel + NoopKeyRotation host-opt-in flag; H2 CLEARED (KeyFingerprint W#53 P1b ✓); H3 gate: ADR 0068 Accepted required for KeyRotationTrigger type-swap; H4 IFieldDecryptor reflection check pinned by PR #695; Phase 2b → 3a → 3b → 4 → 5 pending)"
+status_cell: "`building` (Phase 1 #628 + Phase 2 #695 + **Phase 2b PR building** — IMissionEnvelopeProvider injection + observer-driven SubscribeSnapshotAsync + AtmosphereHealth classify fix (ADR 0082-A1.2.2: 2 criticals→Orange, 3+→Red) + NoopKeyRotationScheduler opt-in via SickBayOptions.RegisterNoopKeyRotationScheduler + 37 tests; standard council pre-merge; Phase 3a → 3b → 4 → 5 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/sick-bay-stage06-handoff.md` + `docs/adrs/0082-sick-bay-aggregation-surface.md` (PR #589 merged) + `packages/foundation-sick-bay/` (P1 merged) + `icm/00_intake/output/2026-05-01_sick-bay-aggregation-intake.md`"
