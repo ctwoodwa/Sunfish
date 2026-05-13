@@ -61,6 +61,9 @@
     <Compile Include="..\Services\AnchorIdentityAtlasSurface.cs" Link="Anchor\AnchorIdentityAtlasSurface.cs" />
     <!-- W#47 Phase 1 — platform-key + dimension-loc-key helpers are MAUI-free. -->
     <Compile Include="..\Services\SystemRequirementsViewHelpers.cs" Link="Anchor\SystemRequirementsViewHelpers.cs" />
+    <!-- W#47 Phase 2 — renderer + surface interface are MAUI-free; surface concrete class is not. -->
+    <Compile Include="..\Services\IAnchorSystemRequirementsSurface.cs" Link="Anchor\IAnchorSystemRequirementsSurface.cs" />
+    <Compile Include="..\Services\AnchorMauiSystemRequirementsRenderer.cs" Link="Anchor\AnchorMauiSystemRequirementsRenderer.cs" />
   </ItemGroup>
 
   <ItemGroup>
