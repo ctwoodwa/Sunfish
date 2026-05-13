@@ -274,4 +274,105 @@ public class DefaultEngineRoomCommandServiceTests
         Assert.Equal(DocId, result.DocumentId);
         await store.Received(1).QuarantineAsync(DocId, TenantA, ActorA, Reason, Arg.Any<CancellationToken>());
     }
+
+    /// <summary>
+    /// B2 (Blocking) — §Trust ordering on denial path: pre-op audit MUST be
+    /// emitted BEFORE actor resolution, permission check, and denial audit.
+    /// Pins the invariant against refactors that could swap denial-audit before
+    /// pre-op.
+    /// </summary>
+    [Fact]
+    public async Task QuarantineDocument_AuthDenied_PreOpOrderedBeforeDenialAudit()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        var principal = new Individual(PrincipalId.FromBytes(new byte[32]));
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(principal));
+        var permResolver = AlwaysDeny();
+        var svc = Build(actorResolver: actorResolver, permissionResolver: permResolver, auditTrail: audit);
+
+        await Assert.ThrowsAsync<EngineRoomUnauthorizedException>(
+            () => svc.QuarantineDocumentAsync(DocId, TenantA, ActorA, Reason).AsTask());
+
+        Received.InOrder(() =>
+        {
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineRequested)),
+                Arg.Any<CancellationToken>());
+            actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+            permResolver.ResolveAsync(
+                Arg.Any<TenantId>(), Arg.Any<Principal>(),
+                Arg.Any<ShipLocation>(), Arg.Any<DeckDepth>(),
+                Arg.Any<ShipAction>(), Arg.Any<Resource?>(),
+                Arg.Any<CancellationToken>());
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DamageControlAuthorizationDenied)),
+                Arg.Any<CancellationToken>());
+        });
+    }
+
+    /// <summary>
+    /// B3 (Blocking) — actorResolver returning null is fail-closed:
+    /// denial audit emitted, EngineRoomUnauthorizedException thrown,
+    /// store NOT called, no post-op audit.
+    /// </summary>
+    [Fact]
+    public async Task QuarantineDocument_NullPrincipal_FailClosed_EmitsDenialAndThrows()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(null));
+        var store = SuccessfulStore();
+        var svc = Build(store: store, actorResolver: actorResolver, auditTrail: audit);
+
+        await Assert.ThrowsAsync<EngineRoomUnauthorizedException>(
+            () => svc.QuarantineDocumentAsync(DocId, TenantA, ActorA, Reason).AsTask());
+
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineRequested)),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DamageControlAuthorizationDenied)),
+            Arg.Any<CancellationToken>());
+        await store.DidNotReceive().QuarantineAsync(Arg.Any<string>(), Arg.Any<TenantId>(),
+            Arg.Any<ActorId>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>R4 — ReleaseQuarantineAsync happy path: store called + both audit events emitted.</summary>
+    [Fact]
+    public async Task ReleaseQuarantine_AuthorizedActor_ReturnsStoreResult_AndEmitsBothAuditEvents()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var svc = Build(auditTrail: audit);
+
+        var result = await svc.ReleaseQuarantineAsync(DocId, TenantA, ActorA, Reason);
+
+        Assert.Equal(DocId, result.DocumentId);
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineReleaseRequested)),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineReleased)),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>R4 — CompactDocumentAsync happy path: store called + both audit events emitted.</summary>
+    [Fact]
+    public async Task CompactDocument_AuthorizedActor_ReturnsStoreResult_AndEmitsBothAuditEvents()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var svc = Build(auditTrail: audit);
+
+        var result = await svc.CompactDocumentAsync(DocId, TenantA, ActorA);
+
+        Assert.Equal(DocId, result.DocumentId);
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.ManualCompactionInitiated)),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.ManualCompactionCompleted)),
+            Arg.Any<CancellationToken>());
+    }
 }

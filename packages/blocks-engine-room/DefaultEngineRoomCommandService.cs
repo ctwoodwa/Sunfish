@@ -218,9 +218,10 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
     }
 
     /// <summary>
-    /// EOOW advisory check: if no EOOW watch is active, emits a degradation
-    /// audit warning but does NOT block the command. Per hand-off §Trust
-    /// line 156 and ADR 0079.
+    /// EOOW advisory check: if no EOOW watch is active, emits
+    /// <see cref="AuditEventType.EngineRoomHealthDegraded"/> into the audit
+    /// trail (§Trust forensic record) and does NOT block the command. Per
+    /// hand-off §Trust line 156 and ADR 0079.
     /// </summary>
     private async ValueTask CheckEoowAsync(TenantId tenantId, CancellationToken ct)
     {
@@ -235,6 +236,16 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
                 _logger.LogWarning(
                     "No active EOOW watch for tenant {TenantId}; Damage Control command proceeding without EOOW oversight.",
                     tenantId);
+                // §Trust: EOOW absence must be on the forensic audit trail, not just logs.
+                await EmitAsync(
+                    AuditEventType.EngineRoomHealthDegraded,
+                    tenantId,
+                    new AuditPayload(new Dictionary<string, object?>
+                    {
+                        ["reason"] = "no_active_eoow_watch",
+                    }),
+                    _time.GetUtcNow(),
+                    ct).ConfigureAwait(false);
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -263,9 +274,11 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
             .ResolveAsync(tenantId, requestedBy, ct)
             .ConfigureAwait(false);
 
+        var documentId = resource?.Id ?? string.Empty;
+
         if (principal is null)
         {
-            await EmitDenialAsync(tenantId, requestedBy, action, occurredAt, ct)
+            await EmitDenialAsync(tenantId, requestedBy, action, documentId, occurredAt, ct)
                 .ConfigureAwait(false);
             throw new EngineRoomUnauthorizedException(
                 $"Actor {requestedBy.Value} could not be resolved to a principal for tenant {tenantId}.");
@@ -282,7 +295,7 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
 
         if (decision is not PermissionDecision.Granted)
         {
-            await EmitDenialAsync(tenantId, requestedBy, action, occurredAt, ct)
+            await EmitDenialAsync(tenantId, requestedBy, action, documentId, occurredAt, ct)
                 .ConfigureAwait(false);
             throw new EngineRoomUnauthorizedException(
                 $"Actor {requestedBy.Value} is not authorized to perform {action} for tenant {tenantId}.");
@@ -293,6 +306,7 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
         TenantId tenantId,
         ActorId requestedBy,
         ShipAction action,
+        string documentId,
         DateTimeOffset occurredAt,
         CancellationToken ct)
     {
@@ -301,6 +315,7 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
             tenantId,
             new AuditPayload(new Dictionary<string, object?>
             {
+                ["document_id"] = documentId,
                 ["actor"] = requestedBy.Value,
                 ["action"] = action.Name,
             }),
@@ -345,8 +360,8 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
         catch (Exception ex) when (ex is not AuditSignatureException && ex is not OperationCanceledException)
         {
             _logger.LogError(ex,
-                "Engine Room command audit append failed ({EventType}) for document {DocumentId}; continuing best-effort.",
-                eventType, payload);
+                "Engine Room audit append failed for event {EventType} on tenant {TenantId}; continuing best-effort.",
+                eventType, tenantId);
         }
     }
 }

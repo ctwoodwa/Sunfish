@@ -44,7 +44,9 @@ public static class EngineRoomServiceCollectionExtensions
         where TImpl : class, IDocumentQuarantineStore
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.TryAddSingleton<IDocumentQuarantineStore, TImpl>();
+        // Scoped lifetime: store implementations typically hold a DbContext or
+        // per-request state; Singleton would capture a Scoped dep (captive dep bug).
+        services.TryAddScoped<IDocumentQuarantineStore, TImpl>();
         return services;
     }
 }
