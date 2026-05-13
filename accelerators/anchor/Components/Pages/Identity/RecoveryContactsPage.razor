@@ -1,0 +1,112 @@
+@page "/identity/recovery"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Wayfinder
+@inject IIdentityAtlasSurface AtlasSurface
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Recovery Contacts</PageTitle>
+
+<main role="main" class="anchor-identity-page" aria-labelledby="page-heading">
+    <h1 id="page-heading">Recovery Contacts</h1>
+
+    @if (!Session.IsOnboarded || ActiveTeam.Active is null)
+    {
+        <p class="anchor-muted">Join a team to manage your recovery contacts.</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p aria-live="polite" aria-busy="true" class="anchor-muted">Loading…</p>
+    }
+    else
+    {
+        <section aria-labelledby="contacts-section-heading">
+            <h2 id="contacts-section-heading">
+                Contacts (@_viewModel.Contacts.Count / @_viewModel.MaxContacts)
+            </h2>
+
+            @if (_viewModel.Contacts.Count == 0)
+            {
+                <p class="anchor-muted">No recovery contacts enrolled yet.</p>
+            }
+            else
+            {
+                <ul class="anchor-contacts-list" aria-label="Recovery contacts">
+                    @foreach (var contact in _viewModel.Contacts)
+                    {
+                        <li class="anchor-contact-item">
+                            <div class="anchor-contact-header">
+                                <span class="anchor-contact-name">@contact.DisplayName</span>
+                                <span class="anchor-contact-status @GetStatusClass(contact.VerificationStatus)"
+                                      aria-live="polite"
+                                      aria-label="Verification status: @GetStatusLabel(contact.VerificationStatus)">
+                                    @GetStatusLabel(contact.VerificationStatus)
+                                </span>
+                            </div>
+                            <div class="anchor-contact-meta anchor-muted">
+                                Enrolled <time datetime="@contact.EnrolledAt.ToString("o")">@contact.EnrolledAt.ToLocalTime().ToString("d")</time>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+
+            <p class="anchor-muted anchor-identity-note">
+                Recovery contacts are enrolled and removed via Standing Orders through the Helm.
+                <!-- SC 3.3.7: enrollment does not re-ask data supplied in a prior step. -->
+                <!-- SC 3.3.8/3.3.9: verification uses device-push confirmation, not cognitive recall. -->
+            </p>
+        </section>
+    }
+</main>
+
+@code {
+    private RecoveryContactsViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded || ActiveTeam.Active is not { } team)
+            return;
+
+        var tenant = new TenantId(team.TeamId.Value.ToString("D"));
+        var actor = new ActorId(Session.NodeId ?? "");
+        _viewModel = await AtlasSurface.GetRecoveryContactsAsync(tenant, actor);
+    }
+
+    private static string GetStatusLabel(Sunfish.Foundation.UI.SyncState state) => state switch
+    {
+        Sunfish.Foundation.UI.SyncState.Healthy    => "Verified",
+        Sunfish.Foundation.UI.SyncState.Stale      => "Pending",
+        Sunfish.Foundation.UI.SyncState.Quarantine => "Revoked",
+        Sunfish.Foundation.UI.SyncState.Offline    => "Offline",
+        _                                          => state.ToString(),
+    };
+
+    private static string GetStatusClass(Sunfish.Foundation.UI.SyncState state) => state switch
+    {
+        Sunfish.Foundation.UI.SyncState.Healthy    => "anchor-status-healthy",
+        Sunfish.Foundation.UI.SyncState.Stale      => "anchor-status-stale",
+        Sunfish.Foundation.UI.SyncState.Quarantine => "anchor-status-quarantine",
+        _                                          => "anchor-status-offline",
+    };
+}
+
+<style>
+    .anchor-identity-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-identity-page h1 { font-size: 1.625rem; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+    .anchor-identity-page h2 { font-size: 1.0625rem; margin: 0 0 0.75rem; }
+    .anchor-contacts-list { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .anchor-contact-item { padding: 0.875rem 1rem; border: 1px solid #e5e5e5; border-radius: 6px; background: #fafafa; }
+    .anchor-contact-header { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .anchor-contact-name { font-weight: 600; font-size: 0.9375rem; }
+    .anchor-contact-meta { font-size: 0.8125rem; margin-top: 0.25rem; }
+    .anchor-contact-status { font-size: 0.75rem; font-weight: 600; padding: 0.2em 0.6em; border-radius: 4px; }
+    .anchor-status-healthy { background: #d1fae5; color: #065f46; }
+    .anchor-status-stale { background: #fef3c7; color: #92400e; }
+    .anchor-status-quarantine { background: #fee2e2; color: #991b1b; }
+    .anchor-status-offline { background: #f3f4f6; color: #6b7280; }
+    .anchor-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
+    .anchor-identity-note { margin-top: 1rem; }
+</style>

@@ -51,6 +51,17 @@
     padding-bottom: 0.5rem;
 }
 
+.nav-section-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+    pointer-events: none;
+}
+
     .nav-item:first-of-type {
         padding-top: 1rem;
     }

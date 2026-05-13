@@ -1,0 +1,88 @@
+@page "/identity/keys"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Wayfinder
+@inject IIdentityAtlasSurface AtlasSurface
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Key Management</PageTitle>
+
+<main role="main" class="anchor-identity-page" aria-labelledby="page-heading">
+    <h1 id="page-heading">Key Management</h1>
+
+    @if (!Session.IsOnboarded || ActiveTeam.Active is null)
+    {
+        <p class="anchor-muted">Join a team to view your key management details.</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p aria-live="polite" aria-busy="true" class="anchor-muted">Loading…</p>
+    }
+    else
+    {
+        <section aria-labelledby="current-key-heading">
+            <h2 id="current-key-heading">Current signing key</h2>
+            <dl class="anchor-identity-dl">
+                <dt>Fingerprint</dt>
+                <dd><code class="anchor-fingerprint">@(_viewModel.CurrentFingerprint == default ? "—" : _viewModel.CurrentFingerprint.ToString())</code></dd>
+                <dt>Historical keys</dt>
+                <dd>@_viewModel.HistoricalKeyCount</dd>
+                <dt>Rotation status</dt>
+                <dd>
+                    @if (_viewModel.RotationInProgress)
+                    {
+                        <span aria-live="polite" role="status">Rotation in progress</span>
+                        @if (_viewModel.RotationWindowExpiry is { } expiry)
+                        {
+                            <span> — expires <time datetime="@expiry.ToString("o")">@expiry.ToLocalTime().ToString("g")</time></span>
+                        }
+                    }
+                    else
+                    {
+                        <span>No rotation in progress</span>
+                    }
+                </dd>
+            </dl>
+        </section>
+
+        <section aria-labelledby="key-history-link-heading">
+            <h2 id="key-history-link-heading">Key history</h2>
+            <p class="anchor-muted">
+                <a href="/identity/keys/history">View full key history</a>
+                — @_viewModel.HistoricalKeyCount historical @(_viewModel.HistoricalKeyCount == 1 ? "key" : "keys") on record.
+            </p>
+        </section>
+
+        <p class="anchor-muted anchor-identity-note">
+            Key rotation is issued as a Standing Order through the Helm.
+        </p>
+    }
+</main>
+
+@code {
+    private KeyRotationViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded || ActiveTeam.Active is not { } team)
+            return;
+
+        var tenant = new TenantId(team.TeamId.Value.ToString("D"));
+        var actor = new ActorId(Session.NodeId ?? "");
+        _viewModel = await AtlasSurface.GetKeyRotationAsync(tenant, actor);
+    }
+}
+
+<style>
+    .anchor-identity-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-identity-page h1 { font-size: 1.625rem; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+    .anchor-identity-page h2 { font-size: 1.0625rem; margin: 0 0 0.75rem; }
+    .anchor-identity-dl { display: grid; grid-template-columns: 10rem 1fr; column-gap: 1rem; row-gap: 0.5rem; margin: 0 0 1rem; font-size: 0.9375rem; }
+    .anchor-identity-dl dt { color: #666; font-weight: 600; }
+    .anchor-identity-dl dd { margin: 0; overflow-wrap: anywhere; }
+    .anchor-fingerprint { font-family: Consolas, Menlo, monospace; font-size: 0.8125rem; word-break: break-all; }
+    .anchor-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
+    .anchor-identity-note { margin-top: 1rem; }
+</style>

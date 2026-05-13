@@ -1,0 +1,68 @@
+@page "/identity/profile"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Wayfinder
+@inject IIdentityAtlasSurface AtlasSurface
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Identity Profile</PageTitle>
+
+<main role="main" class="anchor-identity-page" aria-labelledby="page-heading">
+    <h1 id="page-heading">Identity Profile</h1>
+
+    @if (!Session.IsOnboarded || ActiveTeam.Active is null)
+    {
+        <p class="anchor-muted">Join a team to view your identity profile.</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p aria-live="polite" aria-busy="true" class="anchor-muted">Loading…</p>
+    }
+    else
+    {
+        <section aria-labelledby="profile-section-heading">
+            <h2 id="profile-section-heading">Profile details</h2>
+            <dl class="anchor-identity-dl">
+                <dt>Display name</dt>
+                <dd>@(string.IsNullOrEmpty(_viewModel.DisplayName) ? "—" : _viewModel.DisplayName)</dd>
+                <dt>Contact email</dt>
+                <dd>@(string.IsNullOrEmpty(_viewModel.ContactEmail) ? "—" : _viewModel.ContactEmail)</dd>
+                @if (_viewModel.PhoneNumber is not null)
+                {
+                    <dt>Phone number</dt>
+                    <dd>@_viewModel.PhoneNumber</dd>
+                }
+            </dl>
+            <p class="anchor-muted anchor-identity-note">
+                Profile edits are issued as Standing Orders through the Helm.
+            </p>
+        </section>
+    }
+</main>
+
+@code {
+    private IdentityProfileEditViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded || ActiveTeam.Active is not { } team)
+            return;
+
+        var tenant = new TenantId(team.TeamId.Value.ToString("D"));
+        var actor = new ActorId(Session.NodeId ?? "");
+        _viewModel = await AtlasSurface.GetProfileEditAsync(tenant, actor);
+    }
+}
+
+<style>
+    .anchor-identity-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-identity-page h1 { font-size: 1.625rem; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+    .anchor-identity-page h2 { font-size: 1.0625rem; margin: 0 0 0.75rem; }
+    .anchor-identity-dl { display: grid; grid-template-columns: 10rem 1fr; column-gap: 1rem; row-gap: 0.5rem; margin: 0 0 1rem; font-size: 0.9375rem; }
+    .anchor-identity-dl dt { color: #666; font-weight: 600; }
+    .anchor-identity-dl dd { margin: 0; overflow-wrap: anywhere; }
+    .anchor-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
+    .anchor-identity-note { margin-top: 1rem; }
+</style>
