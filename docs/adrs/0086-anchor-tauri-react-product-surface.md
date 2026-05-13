@@ -32,7 +32,8 @@ supersedes: []
 superseded_by: null
 deprecated_in_favor_of: null
 
-amendments: []
+amendments:
+  - A1   # 2026-05-13 Council review: CP/AP boundary, ERPNext license note, max-defer clock, rename-on-α-flip
 ---
 
 # ADR 0086 — Anchor Tauri-React Product Surface
@@ -92,7 +93,7 @@ The two are isolated by code, dependencies, and consumer story. Neither stack im
 
 - Property management screens: Properties, Leases, Rent Collection, Accounting, Crew Comms, Maintenance
 - Offline read from local SQLite cache mirroring a subset of ERPNext doctypes
-- Offline write queue for AP-class records (notes, photos, comments); refuse offline for CP-class records (financial transactions touching the GL)
+- Offline write queue for AP-class records (notes, photos, comments, free-text fields per paper §2.2). Refused offline (returns user-visible `OfflineRefused` with a `requiresQuorum` reason code) for CP-class records, defined as: GL-affecting financial transactions; resource reservations (lease renewals, scheduled slots); signed attestations (inspections, signatures); audit log writes. The authoritative CP/AP classification per record-type is owned by the sync engine's classification table, deliverable in W#60 Phase 3 Stage 02 architecture.
 - Role-aware UI (owner / accountant / cpa / tenant) via `<RoleGate>` from `@sunfish/ui-react`
 - Multi-company switcher via `<CompanySwitcher>` from `@sunfish/ui-react`
 
@@ -112,7 +113,7 @@ The two are isolated by code, dependencies, and consumer story. Neither stack im
 - **Local-first promise made concrete.** Loro + SQLite + Tauri's Rust backend gives durable offline behavior that MAUI Anchor never had (its Blazor WebView talks to a back-end host; offline-by-default is harder).
 - **Smaller bundle, faster startup.** Tauri v2 typically ships ~10 MB shells vs Electron's ~100 MB; the React production bundle for the 6 property-management screens is well under the 50 MB installer budget set in the Phase 3 intake.
 - **Cross-platform without Microsoft's MAUI tax.** MAUI ARM Windows support has been historically rough; Tauri v2 ARM Windows stabilized in 2025-Q4 and is now production-grade.
-- **F/OSS license clean** across the stack (Tauri Apache-2.0/MIT, Loro MIT, React MIT, Tailwind MIT, shadcn MIT). Sunfish-authored code stays MIT (per Phase 5 intake D4 recommendation).
+- **F/OSS license clean** across the stack (Tauri Apache-2.0/MIT, Loro MIT, React MIT, Tailwind MIT, shadcn MIT). Sunfish-authored code stays MIT (per Phase 5 intake D4 recommendation). ERPNext (GPLv3, self-hosted) is consumed via its REST API; per FSF guidance, GPLv3-server REST consumption from an MIT client does not trigger copyleft on the client — no ERPNext code is statically or dynamically linked into the Tauri Anchor binary. If ERPNext's license ever migrates to AGPLv3 or a similar network-copyleft variant, this ADR is revisit-triggered.
 - **The Inverted Stack book** gets a coherent local-first product narrative: "Tauri + React + Loro over ERPNext."
 
 ### Negative
@@ -148,10 +149,11 @@ The two are isolated by code, dependencies, and consumer story. Neither stack im
 
 ### File and project layout
 
-- `apps/anchor-tauri/` — the Tauri app root
+- `apps/anchor-tauri/` — the Tauri app root (γ-period path; see rename note below)
   - `src-tauri/` — Rust crate (Tauri commands, SQLite via `tauri-plugin-sql`, sync engine)
   - `src/` — React app (mirrors `apps/anchor-react/` from W#60 Phase 2)
   - `Cargo.toml`, `tauri.conf.json`, `package.json`
+  - **Rename-on-α-flip:** if/when the Phase 3 PASS re-evaluation triggers the α decision (retire MAUI Anchor), `apps/anchor-tauri/` SHOULD be renamed to `apps/anchor/` in the same workstream. The `anchor-tauri/` path is intentionally temporary — it avoids collision with `accelerators/anchor/` (MAUI) during the γ period. The marketing name "Anchor" always refers to this product surface; `anchor-tauri` in the path is an implementation detail, not the name.
 - `apps/anchor-react/` — pre-Tauri standalone React app (W#60 Phase 2). Phase 3 absorbs its `src/` tree under `apps/anchor-tauri/src/`; `apps/anchor-react/` is retired (replaced by the Tauri-wrapped version) once Phase 3 ships.
 - `packages/ui-react/` (`@sunfish/ui-react`) — extracted reusable components (SyncStateBadge, OfflineIndicator, FreshnessBadge, PropertyCard, RoleGate, CompanySwitcher). Consumed by both `apps/anchor-react/` (Phase 2) and `apps/anchor-tauri/` (Phase 3). MAUI Anchor does NOT consume this package.
 - `accelerators/anchor/` (existing MAUI) — unchanged. ADR 0048's scope (per its addendum) is the platform-showcase / Crew Comms surface. Does not migrate to React.
@@ -177,6 +179,8 @@ After W#60 Phase 3 PASS, Sunfish opens a re-evaluation workstream (anticipated W
 
 If all five pass: recommend flipping to **α** (retire MAUI Anchor; consolidate to Tauri Anchor) in a follow-on workstream. If any fail: stay at γ; address the failure; re-evaluate after fix.
 
+6. **Max-defer clock** — the re-evaluation workstream MUST be opened within 30 days of W#60 Phase 3 PASS being declared, OR within 180 days of this ADR's acceptance — whichever comes first. If neither trigger has fired by the 180-day mark, XO MUST raise a `cob-question-*` to CO escalating the indefinite-γ risk.
+
 ### Coexistence guardrails
 
 While both Anchors exist (γ posture):
@@ -199,3 +203,19 @@ If the post-Phase-3 re-evaluation flips to α (retire MAUI Anchor), ADR 0048 wil
 - "Anchor Tauri" — when the distinction matters in docs but "Anchor" alone would be ambiguous.
 
 PAO sign-off on the naming convention as part of the W#60 Phase 5 book-alignment deliverable.
+
+---
+
+## Amendment A1 — Council review corrections (2026-05-13)
+
+Council review conducted 2026-05-13 (Opus 4.7 / xhigh). Verdict: ACCEPT WITH AMENDMENTS. Four blocking gaps closed inline:
+
+1. **CP/AP boundary tightened** (§Product scope bullet) — explicit record-type list: GL-affecting financial transactions; resource reservations; signed attestations; audit log writes. Classification table deliverable in Phase 3 Stage 02 architecture.
+
+2. **ERPNext GPLv3 API license note added** (§Consequences/Positive) — API-only consumption does not trigger copyleft; revisit-triggered if ERPNext migrates to AGPLv3 or network-copyleft.
+
+3. **Max-defer clock added** (§Phase 3 PASS re-evaluation criteria, item 6) — re-evaluation workstream MUST open within 30 days of Phase 3 PASS OR 180 days of ADR acceptance, whichever first; else XO escalates to CO.
+
+4. **Rename-on-α-flip note added** (§File and project layout) — `apps/anchor-tauri/` is the γ-period path; SHOULD rename to `apps/anchor/` when α flip occurs. Framework name in path is intentionally temporary.
+
+Full council review memo: `icm/07_review/output/council-review-adr-0086-tauri-react-surface-2026-05-13.md`
