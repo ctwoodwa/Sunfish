@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -40,6 +42,24 @@ public readonly record struct KeyFingerprint(string Value)
 
     /// <inheritdoc />
     public override string ToString() => Value;
+
+    /// <summary>
+    /// Computes the canonical <see cref="KeyFingerprint"/> from a raw
+    /// public-key byte array. Per ADR 0066 §5: SHA-256 hash of the key
+    /// bytes, formatted as 95-char hex-with-colons.
+    /// </summary>
+    public static KeyFingerprint FromPublicKey(byte[] publicKey)
+    {
+        ArgumentNullException.ThrowIfNull(publicKey);
+        var hash = SHA256.HashData(publicKey);
+        var sb = new StringBuilder(CanonicalLength);
+        for (int i = 0; i < hash.Length; i++)
+        {
+            if (i > 0) sb.Append(':');
+            sb.Append(hash[i].ToString("X2"));
+        }
+        return new KeyFingerprint(sb.ToString());
+    }
 
     /// <summary>
     /// Parse a canonical 95-character hex-with-colons fingerprint.
