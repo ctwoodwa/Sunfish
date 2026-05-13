@@ -4,7 +4,7 @@ number: 23
 slug: ios-field-capture-app-substrate-v1
 title: "iOS Field-Capture App substrate v1 (cluster cross-cutting)"
 status: "building"
-status_cell: "`building` — P0–P5 shipped; **P6 MERGED 2026-05-13** (PR #783: home screen + queue-status UX + settings); W#23.2 equipment-photo hand-off pre-authored"
+status_cell: "`building` — P0–P6 shipped; **W#23.2 P2+P3 MERGED 2026-05-13** (PR #785: AssetCaptureView+Payload; PR #789: Bridge AssetEventHandler + FieldEventEnvelope + tests); security follow-up: W#28 P5b pairing-token JWT required before production-safe (council M3)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "https://github.com/ctwoodwa/Sunfish/pull/478 (P0 install identity) + https://github.com/ctwoodwa/Sunfish/pull/498 (P1 SwiftUI scaffold) + https://github.com/ctwoodwa/Sunfish/pull/511 (P2 GRDB persistence; SQLCipher deferred) + https://github.com/ctwoodwa/Sunfish/pull/516 (P3 event envelope substrate; post-A9 wire shape) + https://github.com/ctwoodwa/Sunfish/pull/517 (P3.5 JsonCanonical Swift mirror) + https://github.com/ctwoodwa/Sunfish/pull/533 (P4+P4.5 atomic — Bridge field-event/blob endpoints + iOS URLSession sync substrate) + https://github.com/ctwoodwa/Sunfish/pull/620 (P5 pairing-flow hand-off) | W#23.2 hand-off: icm/_state/handoffs/property-ios-field-app-stage06-p6-equipment-photo-handoff.md"
