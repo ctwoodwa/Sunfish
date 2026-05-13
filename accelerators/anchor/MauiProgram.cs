@@ -23,8 +23,11 @@ using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.Providers.Bootstrap.Extensions;
 using Microsoft.Maui.Storage;
+using Sunfish.Blocks.EngineRoom;
 using Sunfish.Blocks.ShipsOffice;
+using Sunfish.Foundation.Ship.Common;
 using Sunfish.Foundation.ShipsOffice;
+using Sunfish.Foundation.Wayfinder;
 
 namespace Sunfish.Anchor;
 
@@ -314,6 +317,36 @@ public static class MauiProgram
 			opts.FallbackPollingInterval = TimeSpan.FromSeconds(60);
 			opts.RequireSecondActorPublish = false;
 		});
+
+		// W#50 Phase 4 — Engine Room observability surface (ADR 0079).
+		//
+		// AddSunfishEngineRoomDefaults registers DefaultEngineRoomDataProvider +
+		// DefaultEngineRoomCommandService. The command service requires
+		// IDocumentQuarantineStore + IAuditTrail + IOperationSigner; those land
+		// when the Quarterdeck Blazor UI (W#51 Phase 4) ships full ship-level
+		// permission + audit wiring. Until then DamageControlPanel is excluded
+		// from EngineRoomPage.razor so DefaultEngineRoomCommandService is never
+		// resolved at runtime.
+		//
+		// Ship-level permission seams (single-operator Anchor posture):
+		//   IPermissionResolver → AnchorGrantAllPermissionResolver (grant-all stub;
+		//     Bridge uses DefaultPermissionResolver with real role assignments).
+		//   IActorPrincipalResolver → InMemoryActorPrincipalResolver with the
+		//     install's root Ed25519 public key registered as the operator principal.
+		//   IOodWatchService → AnchorNoOpOodWatchService (null EOOW; w51 p4 wires
+		//     DefaultOodWatchService once the Quarterdeck surface ships).
+		//
+		// TryAdd semantics throughout: W#51 Phase 4 may Replace with production
+		// implementations without touching this block.
+		builder.Services.AddSunfishEngineRoomDefaults();
+		builder.Services.TryAddSingleton<IPermissionResolver, AnchorGrantAllPermissionResolver>();
+		var actorResolver = new InMemoryActorPrincipalResolver();
+		actorResolver.Register(
+			new Sunfish.Foundation.Assets.Common.ActorId(rootIdentity.NodeId),
+			new Sunfish.Foundation.Capabilities.Individual(
+				Sunfish.Foundation.Crypto.PrincipalId.FromBytes(rootPublicKey)));
+		builder.Services.TryAddSingleton<IActorPrincipalResolver>(actorResolver);
+		builder.Services.TryAddSingleton<IOodWatchService, AnchorNoOpOodWatchService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

@@ -25,6 +25,9 @@ for the semver rules that govern what qualifies as patch / minor / major.
 - 3 new `AuditEventType` constants for OOD: `OodWatchStarted`, `OodWatchRelieved`, `OodWatchExpired`.
 - `OodHandoverKind` enum — `Voluntary` (severity `"Normal"`) vs `CommandRelieved` (severity `"High"`) discriminator on `IOodWatchService.HandoverWatchAsync`; surfaces in the `OodWatchRelieved` audit payload as `handoverKind`. Per W#49 P2 amendment R3.
 - `StandingOrder.IssuedDuringWatchId` — optional 11th positional `OodWatchId?` field correlating Standing Order issuances with the OOD watch active at issuance time. Per ADR 0078 §1.
+- Engine Room observability surface in `Sunfish.Foundation.EngineRoom` + `Sunfish.Blocks.EngineRoom` — `IEngineRoomDataProvider` (health summary, CRDT growth metrics, 30-second heartbeat subscription), `IEngineRoomCommandService` (quarantine / release / compact with §Trust audit-emission ordering), `DefaultEngineRoomDataProvider` + `DefaultEngineRoomCommandService` reference implementations, `IDocumentQuarantineStore` persistence seam, `EngineRoomOptions`, `ISyncDaemonHealthSource` / `ICrdtDocumentRegistry` optional seams, 6 OTel instruments (`EngineRoomMetrics`), 8 `AuditEventType` constants. Per ADR 0079, W#50.
+- Five WCAG-conformant Blazor panels in `Sunfish.Blocks.EngineRoom`: `EngineRoomHealthBanner` (subsystem tile list + EOOW badge), `MainPropulsionPanel` (accessible grid + trace log), `ElectricalPanel` (CRDT growth gauge + sr-only table), `DamageControlPanel` (quarantine/compact command surface with `role="alertdialog"` + deliberation-pause + focus management), `QaWorkshopPanel` (stub; full implementation requires separate intake). Per ADR 0079 §Phase 3a/3b, W#50.
+- `EngineRoomPage` in Anchor Blazor — read-only observability panels (HealthBanner + MainPropulsion + Electrical + QA Workshop) wired under `/engine-room` route; nav link added to NavMenu. Per ADR 0079 §Phase 4, W#50.
 
 ### Changed
 

@@ -1,0 +1,44 @@
+@page "/engine-room"
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.EngineRoom
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Engine Room</PageTitle>
+
+@*
+    W#50 Phase 4 — Anchor consumer page hosting the Engine Room
+    observability block components per ADR 0079 §Phase 4.
+
+    Read-only surface (HealthBanner + MainPropulsion + Electrical + QA
+    Workshop) is fully wired via the Anchor grant-all permission stub.
+
+    DamageControlPanel is deferred: it requires IDocumentQuarantineStore +
+    IAuditTrail + IOperationSigner, which will land when the Quarterdeck
+    Blazor UI ships (W#51 Phase 4). At that point the full
+    DefaultPermissionResolver + real ship-role assignment source will
+    replace AnchorGrantAllPermissionResolver.
+*@
+
+@if (!Session.IsOnboarded || ActiveTeam.Active is null)
+{
+    <p class="anchor-muted">Complete onboarding to access the Engine Room.</p>
+}
+else
+{
+    <EngineRoomHealthBanner Tenant="@CurrentTenant" Actor="@CurrentActor" />
+    <MainPropulsionPanel Tenant="@CurrentTenant" Actor="@CurrentActor" />
+    <ElectricalPanel Tenant="@CurrentTenant" Actor="@CurrentActor" />
+    <QaWorkshopPanel Tenant="@CurrentTenant" Actor="@CurrentActor" />
+}
+
+@code {
+    private TenantId CurrentTenant =>
+        ActiveTeam.Active is { } team
+            ? new TenantId(team.TeamId.Value.ToString("D"))
+            : default;
+
+    private ActorId CurrentActor => new ActorId(Session.NodeId ?? "");
+}
