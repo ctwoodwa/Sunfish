@@ -59,10 +59,14 @@
     <Compile Include="..\Services\CrewCommsListenerHostedService.cs" Link="Anchor\CrewCommsListenerHostedService.cs" />
     <!-- W#58 Phase 1a — Identity Atlas surface is MAUI-free. -->
     <Compile Include="..\Services\AnchorIdentityAtlasSurface.cs" Link="Anchor\AnchorIdentityAtlasSurface.cs" />
+    <!-- W#47 Phase 1 — platform-key + dimension-loc-key helpers are MAUI-free. -->
+    <Compile Include="..\Services\SystemRequirementsViewHelpers.cs" Link="Anchor\SystemRequirementsViewHelpers.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
+    <!-- W#47 Phase 1 — needed for DimensionChangeKind + DimensionEvaluation in SystemRequirementsTests. -->
+    <ProjectReference Include="..\..\..\packages\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
     <ProjectReference Include="..\..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
     <ProjectReference Include="..\..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />

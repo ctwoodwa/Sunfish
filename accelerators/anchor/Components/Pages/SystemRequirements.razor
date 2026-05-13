@@ -1,0 +1,145 @@
+@page "/system-requirements/{BundleId}"
+@using Microsoft.Extensions.Localization
+@using Microsoft.Maui.Devices
+@using Sunfish.Anchor.Localization
+@using Sunfish.Foundation.Catalog.Bundles
+@using Sunfish.Foundation.MissionSpace
+@inject IBundleCatalog Catalog
+@inject IMissionEnvelopeProvider EnvelopeProvider
+@inject IMinimumSpecResolver Resolver
+@inject IInstallForceEnableSurface ForceEnableSurface
+@inject AnchorSessionService Session
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Nav
+
+<PageTitle>Sunfish Anchor — @L["sysreq.title.preinstall"]</PageTitle>
+
+<main role="main" class="sysreq-page" aria-labelledby="sysreq-heading">
+    <h1 id="sysreq-heading">@L["sysreq.title.preinstall"]</h1>
+
+    @if (_bundleNotFound)
+    {
+        <p class="sysreq-muted" role="alert">Bundle "@BundleId" was not found in the catalog.</p>
+    }
+    else if (_result is null)
+    {
+        <p aria-live="polite" aria-busy="true" class="sysreq-muted">Checking requirements…</p>
+    }
+    else
+    {
+        <div class="sysreq-verdict sysreq-verdict--@_verdictCss"
+             role="status" aria-live="polite" aria-atomic="true">
+            @_verdictText
+        </div>
+
+        <ul class="sysreq-dim-list" role="list" aria-label="Dimension evaluations">
+            @foreach (var dim in _result.Dimensions)
+            {
+                <SystemRequirementsDimensionRow Eval="dim" />
+            }
+        </ul>
+
+        <div class="sysreq-footer">
+            @if (_result.Overall == OverallVerdict.Block)
+            {
+                <button class="sysreq-btn sysreq-btn--danger"
+                        disabled="@_forceInProgress"
+                        @onclick="OnForceInstallAsync">
+                    @L["sysreq.action.force_install"]
+                </button>
+            }
+            else if (_result.Overall == OverallVerdict.WarnOnly)
+            {
+                <button class="sysreq-btn sysreq-btn--warn" @onclick="OnInstallAnyway">
+                    @L["sysreq.action.install_anyway"]
+                </button>
+            }
+            else
+            {
+                <button class="sysreq-btn sysreq-btn--primary" @onclick="OnContinue">
+                    @L["sysreq.action.continue"]
+                </button>
+            }
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter] public string BundleId { get; set; } = string.Empty;
+
+    private SystemRequirementsResult? _result;
+    private MissionEnvelope? _envelope;
+    private bool _bundleNotFound;
+    private bool _forceInProgress;
+    private string _verdictText = string.Empty;
+    private string _verdictCss = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Catalog.TryGet(BundleId, out var manifest) || manifest is null)
+        {
+            _bundleNotFound = true;
+            return;
+        }
+
+        // Convert the catalog MinimumSpec (deprecated Catalog.Bundles.MinimumSpec,
+        // scheduled removal 2026-08-01) to the canonical MissionSpace.MinimumSpec.
+        // The catalog stub only carries Policy — dimension fields default to null
+        // (no-constraint) which the resolver treats as universally passing.
+        // Fully qualified to resolve the ambiguity between the two MinimumSpec types.
+        var spec = manifest.Requirements is { } catalogSpec
+            ? new Sunfish.Foundation.MissionSpace.MinimumSpec
+            {
+                Policy = Enum.Parse<Sunfish.Foundation.MissionSpace.SpecPolicy>(catalogSpec.Policy.ToString())
+            }
+            : new Sunfish.Foundation.MissionSpace.MinimumSpec
+            {
+                Policy = Sunfish.Foundation.MissionSpace.SpecPolicy.Recommended
+            };
+
+        _envelope = await EnvelopeProvider.GetCurrentAsync();
+        var platformKey = SystemRequirementsViewHelpers.GetPlatformKey(DeviceInfo.Current.Platform.ToString());
+        _result = await Resolver.EvaluateAsync(spec, _envelope, platformKey);
+
+        // Compute localized verdict text using static key literals so the
+        // SUNFISH_I18N_002 loc-unused analyzer can detect the call sites.
+        (_verdictText, _verdictCss) = _result.Overall switch
+        {
+            OverallVerdict.Pass     => (L["sysreq.verdict.pass"],  "pass"),
+            OverallVerdict.WarnOnly => (L["sysreq.verdict.warn"],  "warn"),
+            _                       => (L["sysreq.verdict.block"], "block"),
+        };
+    }
+
+    private async Task OnForceInstallAsync()
+    {
+        if (_result is null || _envelope is null)
+            return;
+
+        _forceInProgress = true;
+        try
+        {
+            var blockedDims = _result.Dimensions
+                .Where(d => d.Outcome == DimensionPassFail.Fail && d.Policy == DimensionPolicyKind.Required)
+                .Select(d => d.Dimension)
+                .ToList();
+
+            await ForceEnableSurface.RequestAsync(new InstallForceRequest
+            {
+                OperatorPrincipalId = Session.NodeId ?? string.Empty,
+                Reason = "Operator force-install from system requirements page",
+                OverrideTargets = blockedDims,
+                EnvelopeHash = _envelope.EnvelopeHash,
+                Platform = SystemRequirementsViewHelpers.GetPlatformKey(DeviceInfo.Current.Platform.ToString()),
+            });
+        }
+        finally
+        {
+            _forceInProgress = false;
+        }
+    }
+
+    private void OnInstallAnyway() { }
+
+    private void OnContinue() { }
+}

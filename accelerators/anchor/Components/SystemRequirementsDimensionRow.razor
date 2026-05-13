@@ -1,0 +1,75 @@
+@using Microsoft.Extensions.Localization
+@using Sunfish.Anchor.Localization
+@using Sunfish.Foundation.MissionSpace
+@inject IStringLocalizer<SharedResource> L
+
+<li class="sysreq-dim-row @_rowCss" role="listitem">
+    <span class="sysreq-dim-icon" aria-hidden="true">@_iconGlyph</span>
+    <span class="sr-only">@_iconAriaLabel</span>
+    <div class="sysreq-dim-body">
+        <div class="sysreq-dim-header">
+            <span class="sysreq-dim-name">@_dimensionName</span>
+            <span class="sysreq-dim-policy sysreq-dim-policy--@_policyMod">@_policyLabel</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Eval.Detail))
+        {
+            <p class="sysreq-dim-detail">@Eval.Detail</p>
+        }
+        @if (Eval.OperatorRecoveryAction is { } recovery)
+        {
+            <div class="sysreq-dim-recovery">
+                <span class="sysreq-recovery-header">@L["sysreq.recovery.try_this"]</span>
+                <span class="sysreq-recovery-text">@recovery.ActionKey</span>
+            </div>
+        }
+    </div>
+</li>
+
+@code {
+    [Parameter, EditorRequired] public required DimensionEvaluation Eval { get; set; }
+
+    private string _rowCss = string.Empty;
+    private string _iconGlyph = string.Empty;
+    private string _iconAriaLabel = string.Empty;
+    private string _dimensionName = string.Empty;
+    private string _policyLabel = string.Empty;
+    private string _policyMod = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        // Status icon + row variant — static key literals for SUNFISH_I18N_002 detection.
+        (_iconGlyph, _iconAriaLabel, _rowCss) = Eval.Outcome switch
+        {
+            DimensionPassFail.Unevaluated => ("—", L["sysreq.status.unevaluated"], "sysreq-dim-row--unevaluated"),
+            DimensionPassFail.Pass        => ("✓", L["sysreq.status.pass"],        "sysreq-dim-row--pass"),
+            _ when Eval.Policy == DimensionPolicyKind.Required
+                                          => ("✗", L["sysreq.status.block"],       "sysreq-dim-row--block"),
+            _                             => ("⚠", L["sysreq.status.warn"],        "sysreq-dim-row--warn"),
+        };
+
+        // Dimension display name — static key literals.
+        _dimensionName = Eval.Dimension switch
+        {
+            DimensionChangeKind.Hardware      => L["sysreq.dimension.Hardware.name"],
+            DimensionChangeKind.User          => L["sysreq.dimension.User.name"],
+            DimensionChangeKind.Regulatory    => L["sysreq.dimension.Regulatory.name"],
+            DimensionChangeKind.Runtime       => L["sysreq.dimension.Runtime.name"],
+            DimensionChangeKind.FormFactor    => L["sysreq.dimension.FormFactor.name"],
+            DimensionChangeKind.Edition       => L["sysreq.dimension.Edition.name"],
+            DimensionChangeKind.Network       => L["sysreq.dimension.Network.name"],
+            DimensionChangeKind.TrustAnchor   => L["sysreq.dimension.Trust.name"],
+            DimensionChangeKind.SyncState     => L["sysreq.dimension.SyncState.name"],
+            DimensionChangeKind.VersionVector => L["sysreq.dimension.VersionVector.name"],
+            _                                 => Eval.Dimension.ToString(),
+        };
+
+        // Policy badge — static key literals.
+        (_policyLabel, _policyMod) = Eval.Policy switch
+        {
+            DimensionPolicyKind.Required      => (L["sysreq.policy.Required"],      "required"),
+            DimensionPolicyKind.Recommended   => (L["sysreq.policy.Recommended"],   "recommended"),
+            DimensionPolicyKind.Informational => (L["sysreq.policy.Informational"], "informational"),
+            _                                 => (L["sysreq.policy.Unevaluated"],   "unevaluated"),
+        };
+    }
+}

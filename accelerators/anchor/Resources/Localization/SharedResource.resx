@@ -72,4 +72,110 @@
     <value>This team is no longer available on this device. Re-join via QR code if needed.</value>
     <comment>Body text on team-not-found. Suggests the recovery path (re-join via QR). Anchor v2 supports multiple teams per ADR 0032; teams can be removed via the switcher.</comment>
   </data>
+
+  <!-- W#47 Phase 1 — System Requirements (ADR 0063-A1.1 PreInstallFullPage renderer) -->
+  <data name="sysreq.title.preinstall" xml:space="preserve">
+    <value>System Requirements</value>
+    <comment>H1 heading on the PreInstallFullPage system requirements check. Short noun phrase; shown before the user installs a bundle.</comment>
+  </data>
+  <data name="sysreq.verdict.pass" xml:space="preserve">
+    <value>Your system meets all requirements</value>
+    <comment>Banner text when OverallVerdict is Pass. Full sentence; reassuring tone. Shown with a green visual indicator.</comment>
+  </data>
+  <data name="sysreq.verdict.warn" xml:space="preserve">
+    <value>Your system meets minimum requirements with warnings</value>
+    <comment>Banner text when OverallVerdict is WarnOnly. Full sentence; one or more Recommended dimensions failed but no Required dimension failed. Shown with an amber visual indicator.</comment>
+  </data>
+  <data name="sysreq.verdict.block" xml:space="preserve">
+    <value>Your system does not meet the minimum requirements</value>
+    <comment>Banner text when OverallVerdict is Block. Full sentence; at least one Required dimension failed. Shown with a red visual indicator.</comment>
+  </data>
+  <data name="sysreq.dimension.Hardware.name" xml:space="preserve">
+    <value>Hardware</value>
+    <comment>Display name for the Hardware dimension evaluation row (DimensionChangeKind.Hardware per ADR 0062). Short noun; visible as a row label in the requirements table.</comment>
+  </data>
+  <data name="sysreq.dimension.User.name" xml:space="preserve">
+    <value>User Capabilities</value>
+    <comment>Display name for the User dimension (DimensionChangeKind.User per ADR 0062). Covers user-role and account-tier checks.</comment>
+  </data>
+  <data name="sysreq.dimension.Regulatory.name" xml:space="preserve">
+    <value>Regulatory</value>
+    <comment>Display name for the Regulatory dimension (DimensionChangeKind.Regulatory per ADR 0062). Covers jurisdiction and compliance checks.</comment>
+  </data>
+  <data name="sysreq.dimension.Runtime.name" xml:space="preserve">
+    <value>Runtime</value>
+    <comment>Display name for the Runtime dimension (DimensionChangeKind.Runtime per ADR 0062). Covers .NET/OS version checks.</comment>
+  </data>
+  <data name="sysreq.dimension.FormFactor.name" xml:space="preserve">
+    <value>Form Factor</value>
+    <comment>Display name for the FormFactor dimension (DimensionChangeKind.FormFactor per ADR 0062). Covers desktop/mobile/tablet distinctions.</comment>
+  </data>
+  <data name="sysreq.dimension.Edition.name" xml:space="preserve">
+    <value>Edition</value>
+    <comment>Display name for the Edition dimension (DimensionChangeKind.Edition per ADR 0062). Covers Sunfish edition/tier checks (e.g., Community vs Professional).</comment>
+  </data>
+  <data name="sysreq.dimension.Network.name" xml:space="preserve">
+    <value>Network</value>
+    <comment>Display name for the Network dimension (DimensionChangeKind.Network per ADR 0062). Covers connectivity and peer-reachability checks.</comment>
+  </data>
+  <data name="sysreq.dimension.Trust.name" xml:space="preserve">
+    <value>Trust Anchor</value>
+    <comment>Display name for the TrustAnchor dimension (DimensionChangeKind.TrustAnchor per ADR 0062). Key uses "Trust" (user-facing shorthand); covers key-attestation and identity-root checks.</comment>
+  </data>
+  <data name="sysreq.dimension.SyncState.name" xml:space="preserve">
+    <value>Sync State</value>
+    <comment>Display name for the SyncState dimension (DimensionChangeKind.SyncState per ADR 0062). Covers local-first sync health checks.</comment>
+  </data>
+  <data name="sysreq.dimension.VersionVector.name" xml:space="preserve">
+    <value>Version Vector</value>
+    <comment>Display name for the VersionVector dimension (DimensionChangeKind.VersionVector per ADR 0062). Covers CRDT version-compatibility checks.</comment>
+  </data>
+  <data name="sysreq.policy.Required" xml:space="preserve">
+    <value>Required</value>
+    <comment>Policy badge label for DimensionPolicyKind.Required. A Required+Fail dimension blocks install. Short adjective; shown as a badge next to the dimension name.</comment>
+  </data>
+  <data name="sysreq.policy.Recommended" xml:space="preserve">
+    <value>Recommended</value>
+    <comment>Policy badge label for DimensionPolicyKind.Recommended. A Recommended+Fail dimension produces a WarnOnly verdict. Short adjective.</comment>
+  </data>
+  <data name="sysreq.policy.Informational" xml:space="preserve">
+    <value>Informational</value>
+    <comment>Policy badge label for DimensionPolicyKind.Informational. An Informational dimension never blocks or warns at the verdict level. Short adjective.</comment>
+  </data>
+  <data name="sysreq.policy.Unevaluated" xml:space="preserve">
+    <value>Not checked</value>
+    <comment>Policy badge label for DimensionPolicyKind.Unevaluated. Shown when a dimension was skipped or could not be assessed. User-facing; "Not checked" is friendlier than the internal enum name.</comment>
+  </data>
+  <data name="sysreq.status.pass" xml:space="preserve">
+    <value>Passes</value>
+    <comment>Accessible aria-label for a dimension row whose outcome is Pass. Used as the status icon's accessible name when the icon (✓) is decorative. SC 1.1.1.</comment>
+  </data>
+  <data name="sysreq.status.warn" xml:space="preserve">
+    <value>Warning</value>
+    <comment>Accessible aria-label for a dimension row whose outcome is Fail and policy is Recommended. SC 1.1.1.</comment>
+  </data>
+  <data name="sysreq.status.block" xml:space="preserve">
+    <value>Fails — required</value>
+    <comment>Accessible aria-label for a dimension row whose outcome is Fail and policy is Required. SC 1.1.1. "Fails — required" conveys both failure and criticality.</comment>
+  </data>
+  <data name="sysreq.status.unevaluated" xml:space="preserve">
+    <value>Not evaluated</value>
+    <comment>Accessible aria-label for a dimension row whose outcome is Unevaluated. SC 1.1.1.</comment>
+  </data>
+  <data name="sysreq.action.force_install" xml:space="preserve">
+    <value>Force install (operator override)</value>
+    <comment>Button label for operator-level force-install when verdict is Block. Per ADR 0063-A1.11. The parenthetical "(operator override)" signals elevated authority. Only shown when the overall verdict is Block.</comment>
+  </data>
+  <data name="sysreq.action.install_anyway" xml:space="preserve">
+    <value>Install anyway</value>
+    <comment>Button label when verdict is WarnOnly. User acknowledges warnings and proceeds. Not shown when verdict is Block — use force_install for that.</comment>
+  </data>
+  <data name="sysreq.action.continue" xml:space="preserve">
+    <value>Continue</value>
+    <comment>Primary CTA button label when verdict is Pass. Short imperative; leads to the next install step.</comment>
+  </data>
+  <data name="sysreq.recovery.try_this" xml:space="preserve">
+    <value>Try this:</value>
+    <comment>Header label above an OperatorRecoveryAction block. Short imperative with colon; introduces the suggested recovery step for a failing dimension.</comment>
+  </data>
 </root>
