@@ -121,12 +121,54 @@ Three render modes verified on Win (WinUI / WebView2 UIA bridge) + MacCatalyst (
 | `SystemRequirementsInlinePanelA11yTests` | `tests/A11y/SystemRequirementsInlinePanelA11yTests.cs` | fail-badge aria-label; no assertive live region; fallback detail strings |
 | `SystemRequirementsRegressionBannerA11yTests` | `tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs` | role="alert"; no redundant aria-live="assertive"; polite additions-only list |
 
+---
+
+## Per-adapter conformance: Bridge React (`@sunfish/ui-adapters-react`)
+
+**Baseline established for `PreInstallFullPage` / `PostInstallInlineExplanation` / `PostInstallRegressionBanner` modes via Storybook + axe-core CI gate** (W#56 P4; 7 stories; no `Serious` or `Critical` axe violations).
+
+This section is a **baseline record**, not a conformance claim. The substrate-tier responsibilities above are met by design; the per-adapter responsibilities below document coverage for the React implementation.
+
+### Council amendments applied (WCAG/a11y + 4-perspective councils, W#56 P2–P3)
+
+| Finding | SC | Amendment |
+|---|---|---|
+| B1: `<section role="main">` → `<main aria-labelledby>` | 4.1.2 Name/Role/Value | `PreInstallFullPage` uses semantic `<main>` element |
+| B2: no `role="status"` on VerdictBanner | 4.1.3 Status Messages | VerdictBanner uses `aria-describedby` from page `<main>` |
+| B3: status icons are decorative | 1.1.1 Non-text Content | Icons are `aria-hidden="true"`; status conveyed via visually-hidden `<span>` |
+| B-ARCH-1: unique IDs via `useId()` | 4.1.1 Parsing | `useId()` prevents duplicate `id` violations on multi-instance render |
+| F1: `role="alert"` is sufficient | 4.1.3 Status Messages | Regression banner uses only `role="alert"` (implies `aria-live="assertive"` per ARIA 1.2 §5.2); explicit `aria-live` removed to prevent NVDA/JAWS double-announcement |
+| F2: SR-readable regression labels | 4.1.3 Status Messages | List items include `{dimensionName} — Regressed` |
+| F3: dismiss label conveys action | 2.4.6 Headings and Labels | Button uses `"Dismiss"` (not `"Continue"` which implied install would proceed) |
+| W3: recovery group label | 1.3.1 Info and Relationships | Recovery action wrapped in `role="group" aria-label="Try this"` |
+
+### Success criteria coverage for this adapter
+
+| SC | Title | Status | Notes |
+|---|---|---|---|
+| 1.1.1 | Non-text Content | ✓ | Status icons `aria-hidden`; visually-hidden text SR-readable |
+| 1.3.1 | Info and Relationships | ✓ | `<main>` + `<ul role="list">` + `role="group"` on recovery block |
+| 1.3.2 | Meaningful Sequence | ✓ | DOM order matches visual reading order |
+| 2.1.1 | Keyboard | ✓ | `<details>`/`<summary>` natively keyboard-accessible; `<button>` elements |
+| 2.4.6 | Headings and Labels | ✓ | Page heading + dimension names + action button labels |
+| 2.5.8 | Target Size (Minimum) — AA (2.2) | Partial | Not explicitly sized; relies on UA defaults — verify in Stage 08 audit |
+| 4.1.1 | Parsing | ✓ | `useId()` guarantees unique IDs; no duplicate `id` attributes |
+| 4.1.2 | Name, Role, Value | ✓ | Semantic HTML5 elements + explicit ARIA where needed |
+| 4.1.3 | Status Messages | ✓ | `role="alert"` on regression banner; visually-hidden status text in dimension rows |
+
+### Stories
+
+See [`SystemRequirements.stories.tsx`](../../../packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.stories.tsx) for the 7 Storybook stories exercised by the axe-core CI gate.
+
+---
+
 ## Revision tracking
 
 | Version | Date | Note |
 |---|---|---|
 | baseline | 2026-05-04 | Initial substrate-tier baseline shipped with W#42 P4 (this PR). |
 | anchor-maui-p4 | 2026-05-13 | Per-adapter conformance section: Anchor MAUI 3-mode baseline + council amendments C1–C5 + B4–B9 + a11y harness test index (W#47 P4). |
+| w56-react | 2026-05-13 | Per-adapter conformance baseline for Bridge React (`@sunfish/ui-adapters-react`) — W#56 P4. |
 
 Future revisions track changes to the substrate API or to the WCAG / EN 301 549 specification version. The current document targets WCAG 2.2 (W3C Recommendation 2023-10-05) + EN 301 549 v3.2.1 (2021-03).
 

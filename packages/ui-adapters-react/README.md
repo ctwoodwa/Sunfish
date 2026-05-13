@@ -57,6 +57,18 @@ export default function App() {
 | `npm run storybook` | Launch Storybook at <http://localhost:6006>. |
 | `npm run build-storybook` | Build static Storybook to `storybook-static/`. |
 
+## Components
+
+| Component | Description | Stories |
+|---|---|---|
+| `SunfishButton` | Framework-agnostic button; 3 CSS providers | `SunfishButton.stories.tsx` |
+| `SunfishDataGrid` | Sortable, paginated data grid | `SunfishDataGrid.stories.tsx` |
+| `SunfishDialog` | Modal dialog with confirm/cancel slots | `SunfishDialog.stories.tsx` |
+| `SystemRequirements` | System requirements renderer — 3 modes (`PreInstallFullPage`, `PostInstallInlineExplanation`, `PostInstallRegressionBanner`) | `SystemRequirements.stories.tsx` |
+| `SystemRequirementsInlinePanel` | Collapsible per-dimension panel (`<details>`/`<summary>`) | `SystemRequirements.stories.tsx` |
+| `SystemRequirementsRegressionBanner` | Regression alert banner (Required+Pass→Fail detection) | `SystemRequirements.stories.tsx` |
+| `useSystemRequirements` | Data-fetch hook wrapping `GET /api/system-requirements/{bundleId}` | — |
+
 ## Scope of the scaffold
 
 This Wave 3.5 package implements **only** the Button / DataGrid / Dialog
