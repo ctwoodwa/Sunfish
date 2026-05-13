@@ -1,0 +1,73 @@
+@page "/identity/teams"
+@using Sunfish.UICore.Wayfinder
+@using Sunfish.Bridge.Client.Services
+@inject IIdentityAtlasSurface AtlasSurface
+@inject IBridgeRequestContext RequestContext
+
+<PageTitle>Team Memberships · Sunfish PM</PageTitle>
+
+<main role="main" aria-labelledby="page-heading">
+    <h1 id="page-heading">Team Memberships</h1>
+
+    @if (!RequestContext.IsResolved)
+    {
+        <p role="status" aria-live="polite">Loading identity context…</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p role="status" aria-live="polite">Loading team memberships…</p>
+    }
+    else if (_viewModel.Teams.Count == 0)
+    {
+        <p>No team memberships found.</p>
+    }
+    else
+    {
+        var teamWord = _viewModel.Teams.Count == 1 ? "team" : "teams";
+        <section aria-labelledby="teams-section-heading">
+            <h2 id="teams-section-heading">
+                Your teams
+                <span class="sf-badge" aria-label="@_viewModel.Teams.Count @teamWord">
+                    @_viewModel.Teams.Count
+                </span>
+            </h2>
+
+            <ul aria-label="Team memberships list">
+                @foreach (var membership in _viewModel.Teams)
+                {
+                    var isActive = _viewModel.ActiveTeamId.HasValue
+                        && _viewModel.ActiveTeamId.Value == membership.TeamId;
+                    var liCss = isActive ? "sf-team-entry sf-team-entry--active" : "sf-team-entry";
+                    var nameLabel = isActive ? membership.DisplayName + " (active)" : membership.DisplayName;
+                    var fpText = membership.SubkeyFingerprint.ToString();
+                    var fpShort = fpText.Length > 8 ? fpText[..8] + "…" : fpText;
+                    <li @key="membership.TeamId" class="@liCss">
+                        <span class="sf-team-name" aria-label="@nameLabel">
+                            @membership.DisplayName
+                            @if (isActive)
+                            {
+                                <span class="sf-badge sf-badge--active" aria-hidden="true">Active</span>
+                            }
+                        </span>
+                        <span class="sf-team-role">@membership.RoleDisplayName</span>
+                        <span class="sf-team-fingerprint" aria-label="Subkey fingerprint: @fpText">
+                            @fpShort
+                        </span>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</main>
+
+@code {
+    private ActiveTeamOverviewViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!RequestContext.IsResolved) return;
+        _viewModel = await AtlasSurface.GetActiveTeamOverviewAsync(
+            RequestContext.TenantId,
+            RequestContext.ActorId);
+    }
+}

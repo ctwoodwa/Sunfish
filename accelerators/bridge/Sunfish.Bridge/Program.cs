@@ -30,6 +30,8 @@ using Sunfish.Blocks.BusinessCases.DependencyInjection;
 using Sunfish.Blocks.PublicListings.DependencyInjection;
 using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
+using Sunfish.Bridge.Features.Identity;
+using Sunfish.UICore.Wayfinder;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -278,6 +280,10 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // (ADR 0015 module-entity registration, ADR 0007 bundles, ADR 0009 features).
     builder.Services.AddSunfishBundleCatalog();
     builder.Services.AddSunfishFeatureManagement();
+    // W#58 Phase 2 — Identity Atlas projection surface + circuit context capture.
+    builder.Services.AddScoped<IBridgeRequestContext, BridgeRequestContext>();
+    builder.Services.AddScoped<IIdentityAtlasSurface, BridgeIdentityAtlasSurface>();
+
     // W#56 Phase 1 — SystemRequirements resolver + force-install surface + server-level envelope.
     builder.Services.AddBridgeSystemRequirements();
     if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Demo"))
