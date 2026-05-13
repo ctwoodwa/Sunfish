@@ -40,3 +40,33 @@ export {
 } from './components/SunfishDataGrid';
 export { SunfishDialog, type SunfishDialogProps } from './components/SunfishDialog';
 export { HelmRenderer, type HelmRendererProps } from './components/HelmRenderer';
+export {
+  SystemRequirements,
+  type SystemRequirementsProps,
+  SystemRequirementsDimensionRow,
+  type SystemRequirementsDimensionRowProps,
+  SystemRequirementsInlinePanel,
+  type SystemRequirementsInlinePanelProps,
+  SystemRequirementsRegressionBanner,
+  type SystemRequirementsRegressionBannerProps,
+} from './components/SystemRequirements';
+export { useSystemRequirements } from './hooks/useSystemRequirements';
+export type { UseSystemRequirementsResult, UseSystemRequirementsOptions } from './hooks/useSystemRequirements';
+
+// SystemRequirements contract types and values (Phase 1 serialization contract)
+export type {
+  SystemRequirementsResult,
+  DimensionEvaluation,
+  OperatorRecoveryAction,
+  InstallForceRequest,
+  InstallForceRecord,
+} from './contracts/SystemRequirements';
+export {
+  OverallVerdict,
+  DimensionChangeKind,
+  DimensionPolicyKind,
+  DimensionPassFail,
+  SystemRequirementsRenderMode,
+  SpecPolicy,
+  parseSystemRequirementsResult,
+} from './contracts/SystemRequirements';
