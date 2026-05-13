@@ -7,7 +7,7 @@ namespace Sunfish.Foundation.Assets.Audit;
 public sealed record AuditQuery(
     EntityId? Entity = null,
     ActorId? Actor = null,
-    TenantSelection? Tenant = null,   // null == AllAccessible (no tenant filter)
+    TenantSelection? Tenant = null,   // null = system-scope (sentinels visible). Use TenantSelection.All for admin-scope (sentinels excluded).
     DateTimeOffset? FromInclusive = null,
     DateTimeOffset? ToExclusive = null,
     Op? Op = null,

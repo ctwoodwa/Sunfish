@@ -366,7 +366,9 @@ public sealed class PostgresEntityStore : IEntityStore
             var values = tenants.Select(t => t.Value).ToArray();
             q = q.Where(e => values.Contains(e.Tenant));
         }
-        // AllAccessible and null → no tenant filter
+        else if (query.Tenant is TenantSelection.AllAccessible)
+            q = q.Where(e => !e.Tenant.StartsWith("__"));
+        // null → no tenant filter (system-scope; sentinels visible)
 
         if (!query.IncludeDeleted)
         {

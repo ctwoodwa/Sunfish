@@ -117,7 +117,9 @@ public sealed class PostgresAuditLog : IAuditLog
             var values = tenants.Select(t => t.Value).ToArray();
             q = q.Where(a => values.Contains(a.Tenant));
         }
-        // AllAccessible and null → no tenant filter; full scope
+        else if (query.Tenant is TenantSelection.AllAccessible)
+            q = q.Where(a => !a.Tenant.StartsWith("__"));
+        // null → no tenant filter (system-scope; sentinels visible)
         if (query.Op is { } op)
             q = q.Where(a => a.Op == (int)op);
         if (query.FromInclusive is { } from)

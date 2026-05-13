@@ -89,6 +89,24 @@ public sealed class TenantSelectionQueryTests
         Assert.Equal(2, count);
     }
 
+    [Fact]
+    public async Task AuditQuery_AllAccessible_ExcludesSystemSentinelRows()
+    {
+        var storage = new InMemoryAssetStorage();
+        var log = new InMemoryAuditLog(storage);
+        using var payload = Body();
+
+        await log.AppendAsync(new AuditAppend(Entity, null, Op.Mint, Actor, TenantA, At, payload));
+        await log.AppendAsync(new AuditAppend(Entity, null, Op.Mint, Actor, TenantId.System, At, payload));
+
+        var query = new AuditQuery(Tenant: TenantSelection.All);
+        int count = 0;
+        await foreach (var _ in log.QueryAsync(query))
+            count++;
+
+        Assert.Equal(1, count);
+    }
+
     // ===== TenantSelection.Matches =====
 
     [Fact]
