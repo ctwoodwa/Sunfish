@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="System.Formats.Cbor" />
@@ -56,9 +57,12 @@
          MAUI-free (depend only on foundation-channels + kernel-runtime). -->
     <Compile Include="..\Services\CrewCommsInvitationBus.cs" Link="Anchor\CrewCommsInvitationBus.cs" />
     <Compile Include="..\Services\CrewCommsListenerHostedService.cs" Link="Anchor\CrewCommsListenerHostedService.cs" />
+    <!-- W#58 Phase 1a — Identity Atlas surface is MAUI-free. -->
+    <Compile Include="..\Services\AnchorIdentityAtlasSurface.cs" Link="Anchor\AnchorIdentityAtlasSurface.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
     <ProjectReference Include="..\..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
     <ProjectReference Include="..\..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />

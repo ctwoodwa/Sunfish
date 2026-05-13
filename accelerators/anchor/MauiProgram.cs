@@ -5,7 +5,9 @@ using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Blocks.CrewComms.DependencyInjection;
 using Sunfish.Foundation.Extensions;
+using Sunfish.Foundation.IdentityAtlas;
 using Sunfish.Foundation.Transport.DependencyInjection;
+using Sunfish.UICore.Wayfinder;
 using Sunfish.Kernel.Crdt;
 using Sunfish.Kernel.Crdt.DependencyInjection;
 using Sunfish.Kernel.Runtime.DependencyInjection;
@@ -288,6 +290,12 @@ public static class MauiProgram
 				storeActivator: sp.GetRequiredService<ITeamStoreActivator>(),
 				subkeyDerivation: subkeyDerivation,
 				rootIdentity: rootIdentity));
+
+		// W#58 Phase 1a — Identity Atlas surface + stub backing-service defaults.
+		// NullKeyStore / NullTrusteeRegistry / NullTeamRegistry are TryAdd so a
+		// future wallet/keystore workstream can Replace with real implementations.
+		builder.Services.AddSunfishIdentityAtlasDefaults();
+		builder.Services.AddSingleton<IIdentityAtlasSurface, AnchorIdentityAtlasSurface>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

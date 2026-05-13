@@ -108,4 +108,40 @@ public class KeyFingerprintTests
         Assert.Equal(a, b);
         Assert.True(a == b);
     }
+
+    [Fact]
+    public void FromPublicKey_Deterministic()
+    {
+        var key = new byte[32];
+        var fp1 = KeyFingerprint.FromPublicKey(key);
+        var fp2 = KeyFingerprint.FromPublicKey(key);
+        Assert.Equal(fp1, fp2);
+    }
+
+    [Fact]
+    public void FromPublicKey_ProducesCanonicalFormat()
+    {
+        var key = new byte[32];
+        var fp = KeyFingerprint.FromPublicKey(key);
+        Assert.True(KeyFingerprint.IsValid(fp.Value));
+        Assert.Equal(KeyFingerprint.CanonicalLength, fp.Value.Length);
+    }
+
+    [Fact]
+    public void FromPublicKey_DifferentInputsDifferentFingerprints()
+    {
+        var key1 = new byte[32];
+        var key2 = new byte[32];
+        key2[0] = 1;
+        Assert.NotEqual(KeyFingerprint.FromPublicKey(key1), KeyFingerprint.FromPublicKey(key2));
+    }
+
+    [Fact]
+    public void FromPublicKey_RoundTripsViaParse()
+    {
+        var key = new byte[32];
+        var fp = KeyFingerprint.FromPublicKey(key);
+        var reparsed = KeyFingerprint.Parse(fp.Value);
+        Assert.Equal(fp, reparsed);
+    }
 }

@@ -90,6 +90,10 @@
     <Project Path="packages/foundation-multitenancy/Sunfish.Foundation.MultiTenancy.csproj" />
     <Project Path="packages/foundation-multitenancy/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/identity-atlas/">
+    <Project Path="packages/foundation-identity-atlas/Sunfish.Foundation.IdentityAtlas.csproj" />
+    <Project Path="packages/foundation-identity-atlas/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/foundation/feature-management/">
     <Project Path="packages/foundation-featuremanagement/Sunfish.Foundation.FeatureManagement.csproj" />
     <Project Path="packages/foundation-featuremanagement/tests/tests.csproj" />

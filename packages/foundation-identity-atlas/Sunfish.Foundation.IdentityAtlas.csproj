@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.IdentityAtlas</PackageId>
+    <RootNamespace>Sunfish.Foundation.IdentityAtlas</RootNamespace>
+    <Description>Foundation-tier backing-service contracts for the Identity Atlas surface (ADR 0066 §Phase 3): IKeyStore, ITrusteeRegistry, ITeamRegistry interfaces + Null* stubs. Real implementations ship in a future wallet/keystore workstream.</Description>
+    <PackageTags>sunfish;foundation;identity-atlas;adr-0066</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation -->
+    <Compile Remove="tests/**/*.cs" />
+    <InternalsVisibleTo Include="tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+</Project>
