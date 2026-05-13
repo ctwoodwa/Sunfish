@@ -297,16 +297,9 @@ public static class MauiProgram
 		builder.Services.AddSunfishIdentityAtlasDefaults();
 		builder.Services.AddSingleton<IIdentityAtlasSurface, AnchorIdentityAtlasSurface>();
 
-		// W#47 Phase 3 — regression observer subscribes at construction; renderer
-		// is wired with the observer so PostInstallRegressionBanner mode publishes
-		// to the observer's channel (shell-level SystemRequirementsRegressionBanner
-		// component reads from that channel in MainLayout).
-		builder.Services.AddSingleton<SystemRequirementsRegressionObserver>();
-		builder.Services.AddSingleton<AnchorMauiSystemRequirementsRenderer>(sp =>
-			new AnchorMauiSystemRequirementsRenderer(
-				sp.GetRequiredService<SystemRequirementsRegressionObserver>()));
-		builder.Services.AddSingleton<Sunfish.Foundation.MissionSpace.ISystemRequirementsRenderer>(sp =>
-			sp.GetRequiredService<AnchorMauiSystemRequirementsRenderer>());
+		// W#47 Phase 4 — consolidated via AddAnchorSystemRequirementsRenderer extension
+		// (AnchorMauiServiceCollectionExtensions). Registers observer + renderer + surface.
+		builder.Services.AddAnchorSystemRequirementsRenderer();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
