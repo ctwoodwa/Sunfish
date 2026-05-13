@@ -1,0 +1,12 @@
+@* QaWorkshopPanel — Engine Room QA Workshop observability stub (ADR 0079 §2, W#50 Phase 3b).
+   Full implementation requires a separate intake (ADR 0079 open question #3):
+   test-runner contract + council-review integration. *@
+
+<div class="er-qa-workshop-panel" role="region" aria-label="QA Workshop">
+    <p>QA Workshop: not yet implemented.</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TenantId Tenant { get; set; }
+    [Parameter, EditorRequired] public ActorId Actor { get; set; }
+}

@@ -1,0 +1,470 @@
+@* DamageControlPanel — Engine Room Damage Control command surface (ADR 0079 §2, W#50 Phase 3b).
+   Accessible alertdialog (role="alertdialog" + aria-modal + deliberation-pause per §6 contract).
+   Live regions always in DOM (ARIA22/SC 4.1.3). Permission gate: ShipAction.ViewDamageControl.
+   Focus management: Cancel button on dialog open; panel region on close (tabindex="-1").
+   Council amendments applied: F01-F08 (WCAG), S01-S02 (security). *@
+
+@using Microsoft.Extensions.Logging
+@implements IDisposable
+
+<div class="er-damage-control-panel" role="region" aria-label="Damage Control"
+     tabindex="-1" @ref="@_panelRef">
+
+    @* Live regions always in DOM — hoisted above all conditional branches (ARIA22/SC 4.1.3).
+       All SR announcements route through these pre-mounted regions (F07, F08). *@
+    <div role="alert" aria-live="assertive" aria-atomic="true"
+         class="er-live-assertive sf-sr-only">
+        @_assertiveAnnouncement
+    </div>
+    <div role="status" aria-live="polite" aria-atomic="false"
+         class="er-live-polite sf-sr-only">
+        @_politeAnnouncement
+    </div>
+
+    @if (_permissionDenied)
+    {
+        @* F08: No role="alert" — assertive live region above handles SR announcement. *@
+        <p>You do not have permission to view the Damage Control panel.</p>
+    }
+    else if (_documents is null)
+    {
+        @* F07: No role="status" — polite live region above handles SR announcement. *@
+        <p aria-busy="true">Loading Damage Control status…</p>
+    }
+    else
+    {
+        @* Subsystem status header — icon is decorative; adjacent text conveys severity (SC 1.4.1). *@
+        <div class="er-subsystem-status-header">
+            <span class="er-subsystem-icon" aria-hidden="true">
+                @SubsystemStatusIcon(_subsystemStatus)
+            </span>
+            <span class="er-subsystem-name">Damage Control</span>
+            <span class="er-subsystem-status @SubsystemStatusCssClass(_subsystemStatus)">
+                @SubsystemStatusLabel(_subsystemStatus)
+            </span>
+        </div>
+
+        @* CRDT document triage table — per-document quarantine, release, and compaction triggers. *@
+        <section class="er-dc-documents" aria-labelledby="@_tableHeadingId">
+            <h3 id="@_tableHeadingId">CRDT document triage</h3>
+
+            @if (_documents.Count == 0)
+            {
+                <p>No documents requiring Damage Control.</p>
+            }
+            else
+            {
+                <table class="er-dc-table">
+                    <caption class="sf-sr-only">
+                        CRDT documents available for Damage Control actions (@_documents.Count)
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Document ID</th>
+                            <th scope="col">Size</th>
+                            <th scope="col">Tombstones</th>
+                            <th scope="col">Compact eligible</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in _documents)
+                        {
+                            var localDoc = doc;
+                            <tr>
+                                @* F01: th scope="row" so AT announces DocumentId as row identity
+                                   when navigating Size/Tombstones/Actions cells.
+                                   F02: sr-only span exposes full ID; title is mouse-only fallback. *@
+                                <th scope="row" class="er-dc-docid">
+                                    <code aria-hidden="true">@TruncateDocId(localDoc.DocumentId)</code>
+                                    <span class="sf-sr-only">@localDoc.DocumentId</span>
+                                </th>
+                                <td>@FormatBytes(localDoc.TotalByteEstimate)</td>
+                                <td>@localDoc.TombstoneCount.ToString("N0")</td>
+                                <td>
+                                    @if (localDoc.CompactionEligible)
+                                    {
+                                        @* Icon is decorative; text communicates eligibility. *@
+                                        <span class="er-compaction-icon" aria-hidden="true">!</span>
+                                    }
+                                    @(localDoc.CompactionEligible ? "Yes" : "No")
+                                </td>
+                                <td class="er-dc-actions">
+                                    <button type="button"
+                                            class="er-dc-action-btn er-dc-action-btn--quarantine"
+                                            aria-label="@($"Quarantine document {localDoc.DocumentId}")"
+                                            @onclick="() => OpenDialogAsync(DcAction.Quarantine, localDoc.DocumentId)">
+                                        Quarantine
+                                    </button>
+                                    <button type="button"
+                                            class="er-dc-action-btn er-dc-action-btn--release"
+                                            aria-label="@($"Release quarantine on document {localDoc.DocumentId}")"
+                                            @onclick="() => OpenDialogAsync(DcAction.Release, localDoc.DocumentId)">
+                                        Release
+                                    </button>
+                                    @* F03: disabled alone; aria-disabled removed (redundant with native disabled). *@
+                                    <button type="button"
+                                            class="er-dc-action-btn er-dc-action-btn--compact"
+                                            disabled="@(!localDoc.CompactionEligible)"
+                                            aria-label="@($"Compact document {localDoc.DocumentId}")"
+                                            @onclick="() => OpenDialogAsync(DcAction.Compact, localDoc.DocumentId)">
+                                        Compact
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </section>
+    }
+
+    @* Alertdialog — conditionally rendered; focus managed in OnAfterRenderAsync.
+       role="alertdialog" (not "dialog") because Damage Control operations are destructive
+       and warrant immediate SR announcement per ADR 0079 §6.
+       F04: stopPropagation prevents keydown escaping the modal overlay. *@
+    @if (_dialogOpen)
+    {
+        <div class="er-dc-dialog-overlay"
+             role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="@_dialogHeadingId"
+             aria-describedby="@_dialogDescId"
+             @onkeydown="HandleDialogKeyDown"
+             @onkeydown:stopPropagation="true">
+            <div class="er-dc-dialog">
+                @* F06: Inner polite live region for deliberation-pause "Confirm available."
+                   announcement. Pre-mounted (empty) when dialog opens; content set after 2 s.
+                   Placed inside the alertdialog subtree so aria-modal does not suppress it. *@
+                <div role="status" aria-live="polite" aria-atomic="true"
+                     class="er-dc-dialog-status sf-sr-only">
+                    @_dialogPoliteAnnouncement
+                </div>
+                <h2 id="@_dialogHeadingId" class="er-dc-dialog-heading">
+                    @DialogTitle(_pendingAction)
+                </h2>
+                <p id="@_dialogDescId" class="er-dc-dialog-desc">
+                    @ConsequenceSummary(_pendingAction, _pendingDocumentId)
+                </p>
+                <div class="er-dc-dialog-actions">
+                    @* Cancel gets initial focus (NOT Confirm) per §6 FAIL gate. *@
+                    <button type="button"
+                            class="er-dc-dialog-cancel"
+                            @ref="@_cancelButtonRef"
+                            @onclick="CloseDialogAsync">
+                        Cancel
+                    </button>
+                    @* Confirm disabled on open; enabled after 2 s deliberation pause (SC 3.3.7).
+                       F03: disabled alone; aria-disabled removed (redundant with native disabled). *@
+                    <button type="button"
+                            class="er-dc-dialog-confirm er-dc-dialog-confirm--destructive"
+                            disabled="@(!_confirmEnabled)"
+                            @onclick="ConfirmActionAsync">
+                        @ActionLabel(_pendingAction)
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private enum DcAction { None, Quarantine, Release, Compact }
+
+    [Parameter, EditorRequired] public TenantId Tenant { get; set; }
+    [Parameter, EditorRequired] public ActorId Actor { get; set; }
+
+    [Inject] private IEngineRoomDataProvider DataProvider { get; set; } = default!;
+    [Inject] private IEngineRoomCommandService CommandService { get; set; } = default!;
+    [Inject] private IPermissionResolver PermissionResolver { get; set; } = default!;
+    [Inject] private IActorPrincipalResolver ActorPrincipalResolver { get; set; } = default!;
+    // S01: logger for sanitized exception detail kept out of the live region.
+    [Inject] private ILogger<DamageControlPanel> Logger { get; set; } = default!;
+
+    private List<CrdtGrowthMetrics>? _documents;
+    private SubsystemStatus _subsystemStatus = SubsystemStatus.Unknown;
+    private bool _permissionDenied;
+    private string? _assertiveAnnouncement;
+    private string? _politeAnnouncement;
+    private CancellationTokenSource _cts = new();
+
+    // Dialog state
+    private DcAction _pendingAction = DcAction.None;
+    private string? _pendingDocumentId;
+    private bool _dialogOpen;
+    private bool _confirmEnabled;
+    private string? _dialogPoliteAnnouncement;   // F06: inner dialog live region
+    private CancellationTokenSource? _deliberationCts;
+    private ElementReference _cancelButtonRef;
+    private ElementReference _panelRef;
+    private bool _shouldFocusCancel;
+    private bool _shouldFocusPanel;
+
+    // S02: UI-session ID included in audit-trail reason strings for forensic correlation.
+    private readonly Guid _uiSessionId = Guid.NewGuid();
+
+    private readonly string _tableHeadingId  = $"er-dc-table-{Guid.NewGuid():N}";
+    private readonly string _dialogHeadingId = $"er-dc-dlg-heading-{Guid.NewGuid():N}";
+    private readonly string _dialogDescId    = $"er-dc-dlg-desc-{Guid.NewGuid():N}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
+
+        _permissionDenied = false;
+        _documents = null;
+        _assertiveAnnouncement = null;
+        // F07: set polite announcement before any await so SR is notified of the loading state.
+        _politeAnnouncement = "Loading Damage Control status…";
+
+        var principal = await ActorPrincipalResolver.ResolveAsync(Tenant, Actor);
+        if (principal is null)
+        {
+            _permissionDenied = true;
+            // F08: route denial through pre-mounted assertive region.
+            _assertiveAnnouncement = "You do not have permission to view the Damage Control panel.";
+            _politeAnnouncement = null;
+            return;
+        }
+
+        var decision = await PermissionResolver.ResolveAsync(
+            Tenant, principal, ShipLocation.EngineRoom, DeckDepth.MainDeck,
+            ShipAction.ViewDamageControl, resource: null);
+
+        if (decision is PermissionDecision.Denied)
+        {
+            _permissionDenied = true;
+            // F08: route denial through pre-mounted assertive region.
+            _assertiveAnnouncement = "You do not have permission to view the Damage Control panel.";
+            _politeAnnouncement = null;
+            return;
+        }
+
+        await RefreshAsync(_cts.Token);
+    }
+
+    private async Task RefreshAsync(CancellationToken ct)
+    {
+        var summary = await DataProvider.GetHealthSummaryAsync(Tenant, ct);
+        var subsystem = summary.For(EngineRoomSubsystem.DamageControl);
+        _subsystemStatus = subsystem?.Status ?? SubsystemStatus.Unknown;
+
+        var docs = new List<CrdtGrowthMetrics>();
+        await foreach (var m in DataProvider.GetCrdtGrowthMetricsAsync(Tenant, ct))
+            docs.Add(m);
+        _documents = docs;
+        _politeAnnouncement = null; // clear loading announcement once data is ready
+    }
+
+    private Task OpenDialogAsync(DcAction action, string documentId)
+    {
+        _pendingAction         = action;
+        _pendingDocumentId     = documentId;
+        _confirmEnabled        = false;
+        _dialogOpen            = true;
+        _dialogPoliteAnnouncement = null;  // F06: start empty; set after deliberation delay
+        _assertiveAnnouncement = null;
+        _politeAnnouncement    = null;
+        _shouldFocusCancel     = true;
+
+        _deliberationCts?.Cancel();
+        _deliberationCts?.Dispose();
+        _deliberationCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+        _ = EnableConfirmAfterDelayAsync(_deliberationCts.Token);
+
+        return Task.CompletedTask;
+    }
+
+    private async Task EnableConfirmAfterDelayAsync(CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(2000, ct);
+            _confirmEnabled = true;
+            // F06: write to inner dialog region so aria-modal does not suppress the announcement.
+            _dialogPoliteAnnouncement = "Confirm available.";
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private Task CloseDialogAsync()
+    {
+        _deliberationCts?.Cancel();
+        _deliberationCts?.Dispose();
+        _deliberationCts = null;
+
+        _dialogOpen               = false;
+        _confirmEnabled           = false;
+        _pendingAction            = DcAction.None;
+        _pendingDocumentId        = null;
+        _dialogPoliteAnnouncement = null;
+        _shouldFocusPanel         = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmActionAsync()
+    {
+        if (!_confirmEnabled || _pendingDocumentId is null) return;
+
+        var docId  = _pendingDocumentId;
+        var action = _pendingAction;
+        await CloseDialogAsync();
+
+        _assertiveAnnouncement = null;
+        _politeAnnouncement    = null;
+
+        // S02: include UI-session correlation ID in reason so audit trail can group
+        // all Damage Control operations from one panel session without relying on clock skew.
+        var reason = action == DcAction.Quarantine
+            ? $"Manual quarantine via Damage Control panel; ui-session={_uiSessionId:N}"
+            : $"Manual release via Damage Control panel; ui-session={_uiSessionId:N}";
+
+        try
+        {
+            switch (action)
+            {
+                case DcAction.Quarantine:
+                    await CommandService.QuarantineDocumentAsync(
+                        docId, Tenant, Actor, reason, _cts.Token);
+                    _politeAnnouncement =
+                        $"Document '{TruncateDocId(docId)}' has been quarantined.";
+                    break;
+
+                case DcAction.Release:
+                    await CommandService.ReleaseQuarantineAsync(
+                        docId, Tenant, Actor, reason, _cts.Token);
+                    _politeAnnouncement =
+                        $"Quarantine on '{TruncateDocId(docId)}' has been released.";
+                    break;
+
+                case DcAction.Compact:
+                    await CommandService.CompactDocumentAsync(
+                        docId, Tenant, Actor, _cts.Token);
+                    _politeAnnouncement =
+                        $"Document '{TruncateDocId(docId)}' has been compacted.";
+                    break;
+            }
+
+            await RefreshAsync(_cts.Token);
+        }
+        catch (EngineRoomUnauthorizedException)
+        {
+            _assertiveAnnouncement =
+                "Action denied: you do not have permission to perform this Damage Control operation.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            // S01: log raw exception detail; surface only a generic message to the live region
+            // to avoid info-disclosure of internal document paths or infrastructure details.
+            Logger.LogWarning(ex,
+                "Damage Control action {Action} on {DocId} (session {Session}) failed",
+                action, docId, _uiSessionId);
+            _assertiveAnnouncement = "Action failed. See the Engine Room log for details.";
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void HandleDialogKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            _ = CloseDialogAsync();  // F04: stopPropagation on outer div handles event containment
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shouldFocusCancel)
+        {
+            _shouldFocusCancel = false;
+            try { await _cancelButtonRef.FocusAsync(); } catch { /* element may be gone */ }
+        }
+        if (_shouldFocusPanel)
+        {
+            _shouldFocusPanel = false;
+            try { await _panelRef.FocusAsync(); } catch { /* element may be gone */ }
+        }
+    }
+
+    public void Dispose()
+    {
+        _deliberationCts?.Cancel();
+        _deliberationCts?.Dispose();
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+
+    private static string TruncateDocId(string docId) =>
+        docId.Length <= 24 ? docId : docId[..21] + "…";
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        < 1024L                  => $"{bytes} B",
+        < 1024L * 1024L          => $"{bytes / 1024.0:F1} KB",
+        < 1024L * 1024L * 1024L  => $"{bytes / (1024.0 * 1024):F1} MB",
+        _                        => $"{bytes / (1024.0 * 1024 * 1024):F2} GB",
+    };
+
+    private static string DialogTitle(DcAction action) => action switch
+    {
+        DcAction.Quarantine => "Confirm quarantine",
+        DcAction.Release    => "Confirm release",
+        DcAction.Compact    => "Confirm compaction",
+        _                   => "Confirm action",
+    };
+
+    private static string ActionLabel(DcAction action) => action switch
+    {
+        DcAction.Quarantine => "Quarantine document",
+        DcAction.Release    => "Release quarantine",
+        DcAction.Compact    => "Compact document",
+        _                   => "Confirm",
+    };
+
+    private static string ConsequenceSummary(DcAction action, string? documentId)
+    {
+        var id = documentId ?? "unknown document";
+        return action switch
+        {
+            DcAction.Quarantine =>
+                $"Quarantining '{id}' will prevent it from being synced to peers. " +
+                $"The document will remain in the local store but be excluded from the gossip protocol until released. " +
+                $"This action is reversible.",
+            DcAction.Release =>
+                $"Releasing the quarantine on '{id}' will restore it to the sync gossip pool. " +
+                $"Peers will receive the document on the next sync cycle. " +
+                $"This action is reversible.",
+            DcAction.Compact =>
+                $"Compacting '{id}' will permanently reduce its CRDT state. " +
+                $"Tombstone entries will be removed and cannot be recovered. " +
+                $"This action is irreversible.",
+            _ => $"Confirm the action on '{id}'.",
+        };
+    }
+
+    private static string SubsystemStatusLabel(SubsystemStatus status) => status switch
+    {
+        SubsystemStatus.Operational => "Operational",
+        SubsystemStatus.Warning     => "Warning",
+        SubsystemStatus.Critical    => "Critical",
+        _                           => "Unknown",
+    };
+
+    private static string SubsystemStatusIcon(SubsystemStatus status) => status switch
+    {
+        SubsystemStatus.Operational => "✓",
+        SubsystemStatus.Warning     => "!",
+        SubsystemStatus.Critical    => "✗",
+        _                           => "?",
+    };
+
+    private static string SubsystemStatusCssClass(SubsystemStatus status) => status switch
+    {
+        SubsystemStatus.Operational => "er-status--operational",
+        SubsystemStatus.Warning     => "er-status--warning",
+        SubsystemStatus.Critical    => "er-status--critical",
+        _                           => "er-status--unknown",
+    };
+}
