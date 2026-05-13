@@ -85,7 +85,8 @@ struct AssetCaptureView: View {
 #if os(iOS)
     @MainActor
     private func enqueue(image: UIImage) async {
-        guard let jpegData = image.jpegData(compressionQuality: 0.85) else {
+        // Council AMENDMENT-3: strip EXIF/GPS before storing.
+        guard let jpegData = strippedJpegData(from: image, quality: 0.85) else {
             errorMessage = "Could not compress photo. Please try again."
             return
         }
@@ -93,7 +94,8 @@ struct AssetCaptureView: View {
             let blobRef = try blobStore.put(jpegData)
             let payloadData = try JsonCanonical.serialize(
                 AssetCapturePayload(equipmentId: equipment.id))
-            let seq = UInt64(Date().timeIntervalSince1970 * 1_000_000)
+            // Council AMENDMENT-1: monotonic seq via actor-backed generator.
+            let seq = await AssetCaptureView.seqGenerator.next()
             let envelope = EventEnvelope(
                 deviceLocalSeq: seq,
                 capturedAt: Date(),
@@ -110,13 +112,51 @@ struct AssetCaptureView: View {
             errorMessage = error.localizedDescription
         }
     }
+
+    /// AMENDMENT-3: re-encode JPEG through CGImageDestination stripping
+    /// EXIF, GPS, and TIFF metadata to prevent silent location leakage.
+    private func strippedJpegData(from image: UIImage, quality: CGFloat) -> Data? {
+        guard let cgImage = image.cgImage else { return nil }
+        let data = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(
+            data, "public.jpeg" as CFString, 1, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageDestinationLossyCompressionQuality: quality,
+            kCGImagePropertyExifDictionary: [:] as [String: Any],
+            kCGImagePropertyGPSDictionary:  [:] as [String: Any],
+            kCGImagePropertyTIFFDictionary: [:] as [String: Any],
+        ]
+        CGImageDestinationAddImage(dest, cgImage, options as CFDictionary)
+        guard CGImageDestinationFinalize(dest) else { return nil }
+        return data as Data
+    }
 #endif
+
+    /// AMENDMENT-1: process-scoped monotonic sequence-number generator.
+    /// max(candidate, last+1) ensures strict monotonicity even through
+    /// NTP clock-step-back. GRDB-backed persistence (for cross-launch
+    /// safety) is P2 scope.
+    private static let seqGenerator = DeviceLocalSeqGenerator()
+}
+
+// MARK: - DeviceLocalSeqGenerator (AMENDMENT-1)
+
+private actor DeviceLocalSeqGenerator {
+    private var lastIssued: UInt64 = 0
+
+    func next() -> UInt64 {
+        let candidate = UInt64(Date().timeIntervalSince1970 * 1_000_000)
+        let next = max(candidate, lastIssued &+ 1)
+        lastIssued = next
+        return next
+    }
 }
 
 // MARK: - CameraPickerView (iOS only)
 
 #if os(iOS)
 import UIKit
+import ImageIO
 
 /// Wraps `UIImagePickerController` in a SwiftUI-compatible sheet.
 private struct CameraPickerView: UIViewControllerRepresentable {
@@ -128,16 +168,22 @@ private struct CameraPickerView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
+#if targetEnvironment(simulator)
+        // Simulator has no camera; allow photo library for smoke testing.
         picker.sourceType = UIImagePickerController.isSourceTypeAvailable(.camera)
-            ? .camera
-            : .photoLibrary   // simulator fallback — no camera available
+            ? .camera : .photoLibrary
+#else
+        // Device builds: camera only — no library fallback (AMENDMENT council INFO-6).
+        picker.sourceType = .camera
+#endif
         picker.delegate = context.coordinator
         return picker
     }
 
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 
-    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    final class Coordinator: NSObject,
+        UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onImagePicked: (UIImage) -> Void
 
         init(onImagePicked: @escaping (UIImage) -> Void) {
