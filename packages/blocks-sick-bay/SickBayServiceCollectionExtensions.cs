@@ -7,7 +7,7 @@ namespace Sunfish.Blocks.SickBay;
 
 /// <summary>
 /// DI registration for the block-tier Sick Bay reference
-/// implementations per W#54 Phase 2 + Phase 2b. Per cohort
+/// implementations per W#54 Phase 2, Phase 2b, and Phase 3b. Per cohort
 /// <c>AddSunfishXDefaults()</c> convention (W#48 P1.5 precedent):
 /// <c>foundation-sick-bay</c> registers contracts + options binding;
 /// <c>blocks-sick-bay</c> registers default implementations on top.
@@ -16,7 +16,7 @@ public static class SickBayServiceCollectionExtensions
 {
     /// <summary>
     /// Registers reference implementations for the Sick Bay
-    /// aggregation surface (ADR 0082 / W#54 Phase 2 + Phase 2b):
+    /// aggregation surface (ADR 0082 / W#54 Phase 2 + Phase 2b + Phase 3b):
     /// <list type="bullet">
     /// <item><description><see cref="ISickBayDataProvider"/> →
     /// <see cref="SickBayDataProvider"/> (k=3-anonymized pharmacy +
@@ -32,6 +32,13 @@ public static class SickBayServiceCollectionExtensions
     /// <see cref="NoopKeyRotationScheduler"/> — registered ONLY when
     /// <see cref="SickBayOptions.RegisterNoopKeyRotationScheduler"/>
     /// is <c>true</c> (opt-in per ADR 0082-A1.4 §Trust posture).
+    /// </description></item>
+    /// <item><description><see cref="ISickBayCommandService"/> →
+    /// <see cref="SickBayCommandService"/> (audit + scheduler).
+    /// </description></item>
+    /// <item><description><see cref="IMedevacService"/> →
+    /// <see cref="MedevacServiceImpl"/> (six-state machine; four-eyes
+    /// invariant; audit-before-operation per ADR 0082 §2).
     /// </description></item>
     /// </list>
     /// </summary>
@@ -70,6 +77,10 @@ public static class SickBayServiceCollectionExtensions
         {
             services.TryAddSingleton<IKeyRotationScheduler, NoopKeyRotationScheduler>();
         }
+
+        // Phase 3b: command service + medevac state machine.
+        services.TryAddSingleton<ISickBayCommandService, SickBayCommandService>();
+        services.TryAddSingleton<IMedevacService, MedevacServiceImpl>();
 
         return services;
     }
