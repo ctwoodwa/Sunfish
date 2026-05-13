@@ -26,4 +26,25 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Sunfish.Foundation.DesignTokens.Tests" />
   </ItemGroup>
+
+  <!-- Phase 2b: regenerate CSS + Markdown from tokens.json before every build.
+       The tool also gates on WCAG 1.4.3/1.4.11 contrast and emits CVD ΔE2000 warnings.
+       Set SUNFISH_SKIP_TOKEN_CODEGEN=1 to bypass during inner-loop editing. -->
+  <Target Name="RunDesignTokensCodegen" BeforeTargets="BeforeBuild"
+          Condition="'$(SUNFISH_SKIP_TOKEN_CODEGEN)' != '1'"
+          Inputs="$(MSBuildThisFileDirectory)tokens.json"
+          Outputs="$(MSBuildThisFileDirectory)..\ui-core\src\tokens.css;$(MSBuildThisFileDirectory)..\..\apps\docs\design-system\tokens.md;$(MSBuildThisFileDirectory)..\..\apps\docs\design-system\role-band-cvd.md">
+    <PropertyGroup>
+      <_CodegenTool>$(MSBuildThisFileDirectory)..\..\tooling\design-tokens-codegen\DesignTokensCodegenTool.csproj</_CodegenTool>
+      <_TokensJson>$(MSBuildThisFileDirectory)tokens.json</_TokensJson>
+      <_OutCss>$(MSBuildThisFileDirectory)..\ui-core\src\tokens.css</_OutCss>
+      <_OutTokensMd>$(MSBuildThisFileDirectory)..\..\apps\docs\design-system\tokens.md</_OutTokensMd>
+      <_OutCvdMd>$(MSBuildThisFileDirectory)..\..\apps\docs\design-system\role-band-cvd.md</_OutCvdMd>
+    </PropertyGroup>
+    <!-- Note: first build in a fresh checkout requires running
+         `dotnet build tooling/design-tokens-codegen/` before this package,
+         or use SUNFISH_SKIP_TOKEN_CODEGEN=1 then run the tool manually. -->
+    <Exec Command="dotnet run --project &quot;$(_CodegenTool)&quot; --no-launch-profile -- --tokens &quot;$(_TokensJson)&quot; --out-css &quot;$(_OutCss)&quot; --out-tokens-md &quot;$(_OutTokensMd)&quot; --out-cvd-md &quot;$(_OutCvdMd)&quot; --verify-contrast --ci"
+          WorkingDirectory="$(MSBuildThisFileDirectory)" />
+  </Target>
 </Project>

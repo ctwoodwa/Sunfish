@@ -19,6 +19,10 @@
     <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
     <Project Path="packages/foundation/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/design-tokens/">
+    <Project Path="packages/foundation-design-tokens/Sunfish.Foundation.DesignTokens.csproj" />
+    <Project Path="packages/foundation-design-tokens/tests/Sunfish.Foundation.DesignTokens.Tests.csproj" />
+  </Folder>
   <Folder Name="/foundation/assets-postgres/">
     <Project Path="packages/foundation-assets-postgres/Sunfish.Foundation.Assets.Postgres.csproj" />
     <Project Path="packages/foundation-assets-postgres/tests/tests.csproj" />
@@ -326,5 +330,7 @@
   </Folder>
   <Folder Name="/tooling/">
     <Project Path="tooling/Sunfish.Tooling.LocQuality/Sunfish.Tooling.LocQuality.csproj" />
+    <Project Path="tooling/Sunfish.Tooling.ColorAudit/Sunfish.Tooling.ColorAudit.csproj" />
+    <Project Path="tooling/design-tokens-codegen/DesignTokensCodegenTool.csproj" />
   </Folder>
 </Solution>
