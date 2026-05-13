@@ -1,6 +1,21 @@
 @page "/ships-office"
+@using Sunfish.Anchor.Services
 @using Sunfish.Blocks.ShipsOffice
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
 
-<PageTitle>Ship's Office</PageTitle>
+<PageTitle>Sunfish Anchor — Ship's Office</PageTitle>
 
-<ShipsOfficeBlock />
+@* B1 council fix: gate on IsOnboarded before rendering any block content.
+   Consistent with Anchor's session-based auth pattern (see HistoricalKeysPage,
+   RecoveryContactsPage). ShipsOfficeBlock also gates on ShipAction.ViewShipsOffice
+   internally; this outer guard prevents the page title / layout from rendering
+   for unauthenticated / pre-onboarding sessions. *@
+@if (!Session.IsOnboarded)
+{
+    <p class="anchor-muted">Complete onboarding to access Ship's Office.</p>
+}
+else
+{
+    <ShipsOfficeBlock />
+}

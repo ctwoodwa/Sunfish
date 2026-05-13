@@ -32,6 +32,7 @@ using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Bridge.Features.Identity;
 using Sunfish.Blocks.ShipsOffice;
+using Sunfish.Foundation.ShipsOffice;
 using Sunfish.UICore.Wayfinder;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
@@ -288,9 +289,13 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // W#55 Phase 4 — Ship's Office aggregation surface (ADR 0083).
     // RequireSecondActorPublish=true is the regulated-default for the multi-tenant
     // admin Bridge posture; Anchor uses false (default) for single-operator use.
-    // NOTE: Bridge React UI is deferred (no blocks-ships-office React adapter yet).
+    // A2 council note: Bridge React UI is deferred (no React Ship's Office component yet).
+    // blocks-ships-office is a Razor class library; Bridge's Blazor router only scans
+    // assemblies explicitly added via AddRazorPages()/MapRazorComponents() — it does
+    // NOT discover ShipsOfficePage.razor from Sunfish.Blocks.ShipsOffice or Sunfish.Anchor
+    // (neither is referenced as a Blazor assembly target here). Service registration is safe.
     builder.Services.AddSunfishShipsOfficeDefaults();
-    builder.Services.Configure<Sunfish.Foundation.ShipsOffice.ShipsOfficeOptions>(opts =>
+    builder.Services.Configure<ShipsOfficeOptions>(opts =>
     {
         opts.SnapshotPageSize = 500;
         opts.RequireSecondActorPublish = true;
