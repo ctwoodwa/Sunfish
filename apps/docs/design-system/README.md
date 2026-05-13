@@ -45,4 +45,4 @@ The Shared Design System follows the Sunfish framework-agnostic principle:
 2. **Implement in adapters** — Blazor and React adapters implement the contracts independently
 3. **Compose in blocks** — W#35 cohort blocks (`blocks-quarterdeck`, `blocks-engine-room`, etc.) consume the contracts via DI
 
-See the [architecture principles](_shared/product/architecture-principles.md) for the layering invariants.
+See the [architecture principles](../../../_shared/product/architecture-principles.md) for the layering invariants.
