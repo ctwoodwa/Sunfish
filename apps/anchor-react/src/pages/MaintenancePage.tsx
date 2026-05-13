@@ -7,7 +7,7 @@ import {
   type MaintenanceTicket,
   type CreateMaintenanceInput,
 } from '@/api/erpnext'
-import { RoleGate } from '@/components/RoleGate'
+import { AuthAuthRoleGate } from '@/components/AuthAuthRoleGate'
 
 const PRIORITY_COLORS: Record<string, string> = {
   Critical: 'bg-red-100 text-red-700',
@@ -44,7 +44,7 @@ function TicketRow({ ticket, onStatusChange }: { ticket: MaintenanceTicket; onSt
         {ticket.cost != null ? `$${ticket.cost.toFixed(2)}` : '—'}
       </td>
       <td className="py-3 px-4">
-        <RoleGate allow={['owner', 'manager']}>
+        <AuthRoleGate allow={['owner', 'manager']}>
           <select
             className="text-xs rounded border border-gray-200 py-1 px-2 text-gray-700"
             value={ticket.status}
@@ -55,7 +55,7 @@ function TicketRow({ ticket, onStatusChange }: { ticket: MaintenanceTicket; onSt
             <option>Resolved</option>
             <option>Closed</option>
           </select>
-        </RoleGate>
+        </AuthRoleGate>
       </td>
     </tr>
   )
@@ -154,9 +154,9 @@ export function MaintenancePage() {
         </p>
       </div>
 
-      <RoleGate allow={['owner', 'manager']}>
+      <AuthRoleGate allow={['owner', 'manager']}>
         <CreateTicketForm onSuccess={() => void qc.invalidateQueries({ queryKey: ['maintenance'] })} />
-      </RoleGate>
+      </AuthRoleGate>
 
       {isLoading && <p className="text-sm text-gray-500">Loading maintenance tickets…</p>}
       {isError && (

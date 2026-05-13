@@ -9,13 +9,13 @@ export function OfflineIndicator({ className = '', message = 'You are offline. C
   const [offline, setOffline] = useState(!navigator.onLine)
 
   useEffect(() => {
-    const online = () => setOffline(false)
-    const offline = () => setOffline(true)
-    window.addEventListener('online', online)
-    window.addEventListener('offline', offline)
+    const handleOnline = () => setOffline(false)
+    const handleOffline = () => setOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
     return () => {
-      window.removeEventListener('online', online)
-      window.removeEventListener('offline', offline)
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
   }, [])
 

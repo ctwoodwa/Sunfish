@@ -111,6 +111,88 @@ public sealed class ERPNextProxyTests
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult>(result);
     }
 
+    // ── Maintenance (Phase 5) ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetMaintenance_ReturnsOk_WithTicketData()
+    {
+        var payload = JsonDocument.Parse("""{"data":[{"name":"MAINT-0001","subject":"Leak","status":"Open"}]}""").RootElement.Clone();
+        var client = new FakeERPNextClient(payload);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "Royal Key Management LLC" });
+
+        var result = await ERPNextProxy.HandleGetMaintenanceAsync(client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<JsonElement>>(result);
+        Assert.Equal("Maintenance Ticket", client.LastDoctype);
+        Assert.Equal("Royal Key Management LLC", client.LastCompany);
+    }
+
+    [Fact]
+    public async Task GetMaintenance_Returns503_WhenDefaultCompanyNotConfigured()
+    {
+        var client = new FakeERPNextClient(default);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "" });
+
+        var result = await ERPNextProxy.HandleGetMaintenanceAsync(client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult>(result);
+    }
+
+    [Fact]
+    public async Task PostMaintenance_ReturnsOk_WithCreatedTicket()
+    {
+        var payload = JsonDocument.Parse("""{"data":{"name":"MAINT-0002"}}""").RootElement.Clone();
+        var client = new FakeERPNextClient(payload);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "Royal Key Management LLC" });
+        var body = new ERPNextProxy.CreateMaintenanceRequest("Broken window", "PROP-0001", "High", null, null);
+
+        var result = await ERPNextProxy.HandlePostMaintenanceAsync(body, client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<JsonElement>>(result);
+        Assert.Equal("Maintenance Ticket", client.LastPostEndpoint);
+        Assert.Equal("Royal Key Management LLC", client.LastCompany);
+    }
+
+    [Fact]
+    public async Task PostMaintenance_Returns503_WhenDefaultCompanyNotConfigured()
+    {
+        var client = new FakeERPNextClient(default);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "" });
+        var body = new ERPNextProxy.CreateMaintenanceRequest("Broken window", "PROP-0001", "High", null, null);
+
+        var result = await ERPNextProxy.HandlePostMaintenanceAsync(body, client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult>(result);
+    }
+
+    [Fact]
+    public async Task PatchMaintenance_ReturnsOk_WithUpdatedTicket()
+    {
+        var payload = JsonDocument.Parse("""{"data":{"name":"MAINT-0001","status":"In Progress"}}""").RootElement.Clone();
+        var client = new FakeERPNextClient(payload);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "Royal Key Management LLC" });
+        var body = new ERPNextProxy.UpdateMaintenanceRequest("In Progress", null, null, null);
+
+        var result = await ERPNextProxy.HandlePatchMaintenanceAsync("MAINT-0001", body, client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<JsonElement>>(result);
+        Assert.Equal("Maintenance Ticket", client.LastPutDoctype);
+        Assert.Equal("MAINT-0001", client.LastPutName);
+        Assert.Equal("Royal Key Management LLC", client.LastCompany);
+    }
+
+    [Fact]
+    public async Task PatchMaintenance_Returns503_WhenDefaultCompanyNotConfigured()
+    {
+        var client = new FakeERPNextClient(default);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "" });
+        var body = new ERPNextProxy.UpdateMaintenanceRequest("Resolved", null, null, null);
+
+        var result = await ERPNextProxy.HandlePatchMaintenanceAsync("MAINT-0001", body, client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult>(result);
+    }
+
     private sealed class FakeERPNextClient : IERPNextClient
     {
         private readonly JsonElement _result;

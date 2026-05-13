@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 export interface FreshnessBadgeProps {
   updatedAt: Date | string | number
   staleAfterMs?: number
@@ -14,6 +16,11 @@ function formatRelative(ms: number): string {
 }
 
 export function FreshnessBadge({ updatedAt, staleAfterMs = 5 * 60 * 1000, className = '' }: FreshnessBadgeProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) return null
+
   const ts = new Date(updatedAt).getTime()
   const age = Date.now() - ts
   const stale = age > staleAfterMs

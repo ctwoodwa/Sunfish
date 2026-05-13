@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@sunfish/ui-react': fileURLToPath(new URL('../../packages/ui-react/src', import.meta.url)),
     },
   },
   server: {
