@@ -1,0 +1,15 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ERPNext": {
+    "BaseUrl": "http://erp.localhost:8080",
+    "SiteName": "erp.localhost",
+    "ApiKey": "REPLACE_ME",
+    "ApiSecret": "REPLACE_ME",
+    "DefaultCompany": "Royal Key Management LLC"
+  }
+}
