@@ -4,7 +4,7 @@ number: 58
 slug: identity-atlas-implementations-anchor-bridge
 title: "**Identity Atlas Implementations** (ADR 0066 §Phase 3; W#53 Phase 3-deferred; `sunfish-feature-change` pipeline) — Anchor + Bridge `IIdentityAtlasSurface` concrete implementations + five WCAG-conformant identity pages"
 status: "building"
-status_cell: "`building` — **Phase 1a PR #763 MERGED + Phase 1b PR #764 MERGED + Phase 2 PR #767 MERGED 2026-05-13** (5 Anchor Blazor pages + BridgeIdentityAtlasSurface + 5 Bridge Blazor pages; councils PASS-WITH-AMENDMENTS; WCAG PASS); **Phase 3 (Bridge React adapter parity) ready-to-build** — H1 gate cleared (W#53 P2c-react #744 merged); hand-off: `icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md` §Phase 3; Phase 4 diff-preview + docs + ledger close pending"
+status_cell: "`building` — **Phase 1a PR #763 MERGED + Phase 1b PR #764 MERGED + Phase 2 PR #767 MERGED + Phase 3 PR #795 MERGED 2026-05-13** (5 Anchor Blazor pages + BridgeIdentityAtlasSurface + 5 Bridge Blazor pages + 5 Bridge JSON endpoints + 5 React page components + IdentityTypes.ts; councils PASS-WITH-AMENDMENTS; WCAG PASS M1–M9 applied); **Phase 4 (diff-preview wiring + docs + ledger close) next** — gate: Phase 3 complete ✓"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` §Phase 3 + `packages/ui-core/Wayfinder/Identity/` (contracts on origin/main)"
