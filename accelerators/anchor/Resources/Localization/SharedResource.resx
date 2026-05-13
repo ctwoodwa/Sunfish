@@ -210,4 +210,13 @@
     <value>This requirement is met.</value>
     <comment>Fallback detail text when DimensionEvaluation.Detail is null and Outcome is Pass.</comment>
   </data>
+  <!-- W#47 Phase 3 — regression banner keys -->
+  <data name="sysreq.regression.banner_title" xml:space="preserve">
+    <value>System requirement regression detected</value>
+    <comment>Heading in the PostInstallRegressionBanner assertive region; announces the regression event.</comment>
+  </data>
+  <data name="sysreq.regression.list_label" xml:space="preserve">
+    <value>Regressed requirements</value>
+    <comment>aria-label for the polite additions-only list of regressing Required dimensions (C4 amendment).</comment>
+  </data>
 </root>

@@ -5,11 +5,13 @@ namespace Sunfish.Anchor.Services;
 
 /// <summary>
 /// Anchor MAUI concrete <see cref="Sunfish.Foundation.MissionSpace.ISystemRequirementsSurface"/>
-/// per ADR 0063-A1.1 + W#47 Phase 2.
+/// per ADR 0063-A1.1 + W#47 Phase 2+3.
 /// Carries the <see cref="NavigationManager"/> reference for
 /// <see cref="Sunfish.Foundation.MissionSpace.SystemRequirementsRenderMode.PreInstallFullPage"/>
-/// dispatch and a <see cref="InlineFragment"/> slot for
-/// <see cref="Sunfish.Foundation.MissionSpace.SystemRequirementsRenderMode.PostInstallInlineExplanation"/>.
+/// dispatch, an <see cref="InlineFragment"/> slot for
+/// <see cref="Sunfish.Foundation.MissionSpace.SystemRequirementsRenderMode.PostInstallInlineExplanation"/>,
+/// and a <see cref="RegressionBannerFragment"/> slot for the manual-trigger
+/// <see cref="Sunfish.Foundation.MissionSpace.SystemRequirementsRenderMode.PostInstallRegressionBanner"/> path.
 /// </summary>
 /// <remarks>
 /// This class uses <see cref="DeviceInfo.Current"/> which is only available under
@@ -46,6 +48,9 @@ public sealed class AnchorMauiSystemRequirementsSurface : IAnchorSystemRequireme
 
     /// <inheritdoc/>
     public RenderFragment? InlineFragment { get; set; }
+
+    /// <inheritdoc/>
+    public RenderFragment? RegressionBannerFragment { get; set; }
 
     /// <inheritdoc/>
     public NavigationManager NavigationManager { get; }
