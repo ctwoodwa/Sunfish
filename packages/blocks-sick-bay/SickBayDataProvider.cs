@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Sunfish.Foundation.Assets.Common;
@@ -17,8 +18,8 @@ namespace Sunfish.Blocks.SickBay;
 /// the host-registered <see cref="SickBayOptions.RegisteredFieldPurposes"/>
 /// into <see cref="PharmacyInventoryEntry"/> rows, and projects the
 /// 10-dimension <see cref="MissionEnvelope"/> from
-/// <see cref="IMissionEnvelopeProvider"/> into the Atmosphere tab per the
-/// XO ruling 2026-05-06T20-00Z.
+/// <see cref="IMissionEnvelopeProvider"/> into the Atmosphere tab per
+/// ADR 0082-A1.2.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -40,13 +41,14 @@ namespace Sunfish.Blocks.SickBay;
 /// typed dimension probes contributes to
 /// <see cref="AtmosphereReadout.WarningProbeCount"/> (Stale/PartiallyDegraded)
 /// and <see cref="AtmosphereReadout.CriticalProbeCount"/> (Failed/Unreachable)
-/// counts. Overall health is Green/Yellow/Orange/Red per ADR 0082 §2.
+/// counts. Overall health is Green/Yellow/Orange/Red per ADR 0082-A1.2.2.
 /// </para>
 /// <para>
-/// <b>SubscribeSnapshotAsync posture:</b> emits one snapshot on subscribe
-/// and re-polls on <see cref="SickBayOptions.FallbackPollingInterval"/>
-/// (default 60s). Push-driven invalidation via IMissionEnvelopeObserver
-/// is deferred to a future phase.
+/// <b>SubscribeSnapshotAsync posture:</b> when a provider is registered,
+/// emits one snapshot on subscribe, then push-drives subsequent snapshots via
+/// <see cref="IMissionEnvelopeObserver"/> with a
+/// <see cref="SickBayOptions.FallbackPollingInterval"/> backstop. When no
+/// provider is registered, falls back to polling-only.
 /// </para>
 /// </remarks>
 internal sealed class SickBayDataProvider : ISickBayDataProvider
@@ -80,13 +82,70 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
         TenantId tenant,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        yield return await BuildSnapshotAsync(ct).ConfigureAwait(false);
-
-        var interval = _options.Value.FallbackPollingInterval;
-        if (interval <= TimeSpan.Zero)
+        if (_envelopeProvider is null)
         {
+            yield return await BuildSnapshotAsync(ct).ConfigureAwait(false);
+            await foreach (var snap in PollFallbackAsync(ct).ConfigureAwait(false))
+            {
+                yield return snap;
+            }
             yield break;
         }
+
+        // Observer-driven: bounded channel (capacity 1, DropOldest) coalesces
+        // concurrent envelope-change events during multi-dimension probe runs.
+        // SingleWriter=true: one EnvelopeChangeObserver per subscription.
+        var channel = Channel.CreateBounded<bool>(new BoundedChannelOptions(1)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+            SingleWriter = true,
+            SingleReader = true,
+        });
+        var observer = new EnvelopeChangeObserver(channel.Writer);
+
+        // Subscribe BEFORE building the initial snapshot so no envelope change
+        // fires in the window between snapshot completion and observer registration
+        // (W#54 P2b council Blocking B2).
+        _envelopeProvider.Subscribe(observer);
+        try
+        {
+            // Drain any signal that arrived during subscription setup so the
+            // consumer receives a clean baseline before entering the change loop.
+            while (channel.Reader.TryRead(out _)) { }
+
+            yield return await BuildSnapshotAsync(ct).ConfigureAwait(false);
+
+            while (!ct.IsCancellationRequested)
+            {
+                // A new CTS per iteration so each FallbackPollingInterval timer
+                // fires independently and doesn't compound across loop iterations.
+                using var timedOut = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                timedOut.CancelAfter(_options.Value.FallbackPollingInterval);
+                try
+                {
+                    // Wait for an observer signal OR the fallback polling interval.
+                    await channel.Reader.ReadAsync(timedOut.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                {
+                    // Fallback timer fired — not the consumer's own cancellation.
+                }
+
+                if (ct.IsCancellationRequested) yield break;
+                yield return await BuildSnapshotAsync(ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _envelopeProvider.Unsubscribe(observer);
+        }
+    }
+
+    private async IAsyncEnumerable<SickBaySnapshot> PollFallbackAsync(
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        var interval = _options.Value.FallbackPollingInterval;
+        if (interval <= TimeSpan.Zero) yield break;
 
         while (!ct.IsCancellationRequested)
         {
@@ -117,16 +176,8 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
     private IReadOnlyList<PharmacyInventoryEntry> BuildPharmacy(DateTimeOffset capturedAt)
     {
         var purposes = _options.Value.RegisteredFieldPurposes;
-        if (purposes.Count == 0)
-        {
-            return [];
-        }
+        if (purposes.Count == 0) return [];
 
-        // Phase 2 deterministic projection: each registered purpose
-        // becomes a row with a Suppressed record count (no real
-        // pharmacy backend wired yet) and a Current rotation status.
-        // Phase 3b wires in the W#32 / ADR 0046-A2 rotation pipeline,
-        // which will source real LastRotatedAt + RecordCount values.
         return purposes
             .Select(kvp => new PharmacyInventoryEntry(
                 FieldPurpose: kvp.Key,
@@ -142,16 +193,9 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
         DateTimeOffset capturedAt,
         CancellationToken ct)
     {
-        // ADR 0082-A1: null provider → Unknown sentinel (not Green). UI must
-        // render a neutral pending state until the provider is registered.
         if (_envelopeProvider is null)
         {
-            return new AtmosphereReadout(
-                OverallHealth: AtmosphereHealth.Unknown,
-                WarningProbeCount: 0,
-                CriticalProbeCount: 0,
-                ForceEnableActive: false, // Phase 3: wire IInstallForceEnableSurface.HasActiveInstallOverrideAsync
-                CapturedAt: capturedAt);
+            return BuildAtmosphereUnknown(capturedAt);
         }
 
         MissionEnvelope envelope;
@@ -161,27 +205,35 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Provider fault: return Unknown rather than surfacing a misleading health value.
-            return new AtmosphereReadout(
-                OverallHealth: AtmosphereHealth.Unknown,
-                WarningProbeCount: 0,
-                CriticalProbeCount: 0,
-                ForceEnableActive: false, // Phase 3: wire IInstallForceEnableSurface.HasActiveInstallOverrideAsync
-                CapturedAt: capturedAt);
+            return BuildAtmosphereUnknown(capturedAt);
         }
 
+        return BuildAtmosphereFromEnvelope(envelope, capturedAt);
+    }
+
+    private static AtmosphereReadout BuildAtmosphereUnknown(DateTimeOffset capturedAt) =>
+        new AtmosphereReadout(
+            OverallHealth: AtmosphereHealth.Unknown,
+            WarningProbeCount: 0,
+            CriticalProbeCount: 0,
+            ForceEnableActive: false,
+            CapturedAt: capturedAt);
+
+    internal static AtmosphereReadout BuildAtmosphereFromEnvelope(
+        MissionEnvelope envelope, DateTimeOffset capturedAt)
+    {
         var (warnings, criticals) = CountProbes(envelope);
         return new AtmosphereReadout(
             OverallHealth: Classify(warnings, criticals),
             WarningProbeCount: warnings,
             CriticalProbeCount: criticals,
-            ForceEnableActive: false, // Phase 3: wire IInstallForceEnableSurface.HasActiveInstallOverrideAsync
+            ForceEnableActive: false,
             CapturedAt: capturedAt);
     }
 
     /// <summary>
     /// Counts warning + critical probe statuses across all 10 MissionEnvelope
-    /// dimensions per XO ruling 2026-05-06T20-00Z-w54-phase2b.
+    /// dimensions per ADR 0082-A1.2.1.
     /// Warning = Stale | PartiallyDegraded; Critical = Failed | Unreachable.
     /// </summary>
     private static (int warnings, int criticals) CountProbes(MissionEnvelope e)
@@ -204,13 +256,36 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
         return (w, c);
     }
 
-    // Arm order is load-bearing: (_, 0) consumes all zero-critical cases before (_, 1).
-    // Do NOT reorder without re-verifying the Orange/Red boundary.
+    /// <summary>
+    /// Derives overall <see cref="AtmosphereHealth"/> per ADR 0082-A1.2.2.
+    /// 3+ criticals → Red; 1–2 criticals → Orange; 1+ warnings (no criticals) → Yellow.
+    /// </summary>
     private static AtmosphereHealth Classify(int w, int c) => (w, c) switch
     {
-        (0, 0) => AtmosphereHealth.Green,
-        (_, 0) => AtmosphereHealth.Yellow,
-        (_, 1) => AtmosphereHealth.Orange,
-        _      => AtmosphereHealth.Red,
+        (_, >= 3) => AtmosphereHealth.Red,
+        (_, >= 1) => AtmosphereHealth.Orange,
+        (>= 1, 0) => AtmosphereHealth.Yellow,
+        _         => AtmosphereHealth.Green,
     };
+
+    /// <summary>
+    /// Per-subscription <see cref="IMissionEnvelopeObserver"/> that forwards
+    /// change signals into a bounded channel. Created per
+    /// <see cref="SubscribeSnapshotAsync"/> invocation; subscribed/unsubscribed
+    /// within that call's try/finally.
+    /// </summary>
+    private sealed class EnvelopeChangeObserver : IMissionEnvelopeObserver
+    {
+        private readonly ChannelWriter<bool> _writer;
+
+        public EnvelopeChangeObserver(ChannelWriter<bool> writer) => _writer = writer;
+
+        public ValueTask OnChangedAsync(EnvelopeChange change, CancellationToken ct = default)
+        {
+            // TryWrite drops the signal when the channel is full (DropOldest semantics
+            // coalesce rapid concurrent changes into one re-evaluation per consumer tick).
+            _writer.TryWrite(true);
+            return ValueTask.CompletedTask;
+        }
+    }
 }

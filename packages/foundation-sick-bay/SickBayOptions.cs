@@ -25,6 +25,16 @@ public sealed class SickBayOptions
     public TimeSpan FallbackPollingInterval { get; set; } = TimeSpan.FromSeconds(60);
 
     /// <summary>
+    /// When <c>true</c>, <c>AddSunfishSickBayDefaults()</c> registers
+    /// <c>NoopKeyRotationScheduler</c> as <see cref="IKeyRotationScheduler"/>.
+    /// Default <c>false</c> — per ADR 0082-A1.4 §Trust posture: hosts MUST NOT
+    /// register the Noop scheduler in any environment that surfaces a user-visible
+    /// "rotation triggered" affordance. Set to <c>true</c> only in contexts where
+    /// the key-rotation UI surface is known to be absent or non-functional.
+    /// </summary>
+    public bool RegisterNoopKeyRotationScheduler { get; set; } = false;
+
+    /// <summary>
     /// Register a field-purpose key + display name. Idempotent on
     /// <paramref name="purpose"/>; re-registering overwrites the prior
     /// display name.
