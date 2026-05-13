@@ -39,7 +39,7 @@ public class EmergencyStandingOrderDialogTests : BunitContext
         // Dialog MUST use role="alertdialog" (not "dialog" — signals urgency for
         // security-critical destructive confirmation per SC 3.3.4).
         // aria-modal="true" communicates containment to virtual-buffer screen readers.
-        // aria-labelledby → <h2> title; aria-describedby → consequence paragraph.
+        // aria-labelledby → <h2> title; aria-describedby → consequence div.
         RegisterServices();
         var cut = Render<EmergencyStandingOrderDialog>(p => p
             .Add(c => c.IsOpen, true)
@@ -56,10 +56,10 @@ public class EmergencyStandingOrderDialogTests : BunitContext
     public void Dialog_initial_focus_is_cancel_not_confirm()
     {
         // SunfishA11yAssertions — initial focus MUST be the Cancel button (§7.6 safe default).
-        // Confirm is intentionally aria-disabled at open so it cannot receive intent-first focus.
+        // Confirm is aria-disabled + native disabled at open so it cannot receive intent-first focus.
         // DOM focus via ElementReference.FocusAsync is not verifiable in bUnit (JS interop stub);
         // this test verifies the structural preconditions: Cancel is present + focusable;
-        // Confirm has aria-disabled="true" (non-focusable-by-intent pattern).
+        // Confirm has aria-disabled="true" and native disabled (non-focusable pattern).
         RegisterServices();
         var cut = Render<EmergencyStandingOrderDialog>(p => p
             .Add(c => c.IsOpen, true)
@@ -70,6 +70,8 @@ public class EmergencyStandingOrderDialogTests : BunitContext
 
         // Confirm MUST be aria-disabled at open (prevents premature activation).
         Assert.Equal("true", confirm.GetAttribute("aria-disabled"));
+        // Confirm MUST also be natively disabled (enforces deliberation gate at browser level).
+        Assert.NotNull(confirm.GetAttribute("disabled"));
         // Cancel MUST NOT be aria-disabled (is the safe default focus target).
         Assert.True(cancel.GetAttribute("aria-disabled") is null or "false");
         // Cancel MUST have id="eso-cancel-btn" for FocusAsync reference.
@@ -81,8 +83,9 @@ public class EmergencyStandingOrderDialogTests : BunitContext
     {
         // SunfishA11yAssertions.DeliberationPauseAnnouncesEnablement (initial state):
         // Confirm MUST be aria-disabled immediately on open. The 2000ms deliberation
-        // timer has not yet elapsed. aria-disabled (NOT native disabled) keeps the
-        // button in tab order per SC 2.1.1 while preventing premature activation.
+        // timer has not yet elapsed.
+        // Security council amendment: native disabled is ALSO required to enforce the
+        // deliberation gate at browser level (prevents keyboard bypass per SC 3.3.4).
         RegisterServices();
         var cut = Render<EmergencyStandingOrderDialog>(p => p
             .Add(c => c.IsOpen, true)
@@ -90,7 +93,8 @@ public class EmergencyStandingOrderDialogTests : BunitContext
 
         var confirm = cut.Find("[data-test-id='eso-confirm-btn']");
         Assert.Equal("true", confirm.GetAttribute("aria-disabled"));
-        Assert.Null(confirm.GetAttribute("disabled"));
+        // Native disabled enforces deliberation gate (security council amendment).
+        Assert.NotNull(confirm.GetAttribute("disabled"));
     }
 
     [Fact]
@@ -112,6 +116,8 @@ public class EmergencyStandingOrderDialogTests : BunitContext
 
         var confirm = cut.Find("[data-test-id='eso-confirm-btn']");
         Assert.Equal("false", confirm.GetAttribute("aria-disabled"));
+        // Native disabled MUST also be cleared at t=2000ms.
+        Assert.Null(confirm.GetAttribute("disabled"));
 
         var deliberation = cut.Find("[data-test-id='eso-deliberation-announce']");
         Assert.Contains("Confirm available", deliberation.TextContent);
@@ -145,10 +151,7 @@ public class EmergencyStandingOrderDialogTests : BunitContext
         // SunfishA11yAssertions (Security — consequence text preview):
         // Consequence text MUST be post-substitution. Raw template tokens (e.g., "{{zone}}")
         // MUST NOT appear in the consequence paragraph. The caller is responsible for
-        // substitution; the dialog only renders what it receives.
-        // Test verifies: a fully-substituted string displays verbatim;
-        // a string with tokens (unfired substitution) would be a caller bug — this test
-        // documents the expected contract, not the enforcement (enforcement is caller-side).
+        // substitution; if tokens are present, the component enters fail-close mode.
         RegisterServices();
         const string substituted = "Initiate evacuation of Zone Alpha immediately. All personnel to muster stations.";
         var cut = Render<EmergencyStandingOrderDialog>(p => p
@@ -160,5 +163,30 @@ public class EmergencyStandingOrderDialogTests : BunitContext
         // Template token patterns MUST NOT appear.
         Assert.DoesNotContain("{{", consequence.TextContent);
         Assert.DoesNotContain("}}", consequence.TextContent);
+    }
+
+    [Fact]
+    public void Dialog_fail_close_on_template_tokens_in_consequence_text()
+    {
+        // Security council (Blocking): template token validation at component boundary.
+        // If consequence text contains unresolved tokens (e.g., "{{zone}}"), Confirm
+        // MUST be permanently disabled for that open cycle (fail-close pattern).
+        // The error is surfaced in the consequence area; the dialog can still be cancelled.
+        RegisterServices();
+        const string unsubstituted = "Initiate evacuation of {{zone}} immediately.";
+        var cut = Render<EmergencyStandingOrderDialog>(p => p
+            .Add(c => c.IsOpen, true)
+            .Add(c => c.ConsequenceText, unsubstituted));
+
+        var confirm = cut.Find("[data-test-id='eso-confirm-btn']");
+        // Confirm MUST remain disabled (aria-disabled + native disabled).
+        Assert.Equal("true", confirm.GetAttribute("aria-disabled"));
+        Assert.NotNull(confirm.GetAttribute("disabled"));
+
+        // Error indicator MUST be present in consequence area.
+        var consequence = cut.Find("[data-test-id='eso-consequence']");
+        Assert.NotEmpty(consequence.TextContent.Trim());
+        // Raw token text MUST NOT be the primary content (error message shown instead).
+        Assert.Contains("unresolved template tokens", consequence.TextContent);
     }
 }
