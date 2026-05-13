@@ -9,7 +9,6 @@ using Sunfish.Foundation.IdentityAtlas;
 using Sunfish.Foundation.UI;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.UICore.Wayfinder;
-using AtlasTeamId = Sunfish.Foundation.IdentityAtlas.TeamId;
 
 namespace Sunfish.Anchor.Tests;
 
@@ -124,7 +123,7 @@ public class AnchorIdentityAtlasSurfaceTests
         var fp = KeyFingerprint.FromPublicKey(publicKey);
         var memberships = new List<TeamMembership>
         {
-            new(new AtlasTeamId(teamGuid), "Alpha Team", "Member", fp),
+            new(teamGuid, "Alpha Team", "Member", fp),
         };
         _teamRegistry.GetMembershipsAsync(_actor).Returns(memberships);
 

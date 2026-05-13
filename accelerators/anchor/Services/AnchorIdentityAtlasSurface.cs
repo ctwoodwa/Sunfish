@@ -10,6 +10,7 @@ using Sunfish.Foundation.UI;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.UICore.Wayfinder;
 
+
 namespace Sunfish.Anchor.Services;
 
 /// <summary>
@@ -108,7 +109,7 @@ public sealed class AnchorIdentityAtlasSurface : IIdentityAtlasSurface
         var activeTeamId = _activeTeam.Active?.TeamId.Value; // Guid? per cycle-break decision
         var entries = memberships
             .Select(m => new TeamMembershipEntry(
-                m.TeamId.Value,
+                m.TeamId,
                 m.DisplayName,
                 m.RoleDisplayName,
                 m.SubkeyFingerprint))
@@ -116,6 +117,13 @@ public sealed class AnchorIdentityAtlasSurface : IIdentityAtlasSurface
         return new ActiveTeamOverviewViewModel(actor, entries, activeTeamId);
     }
 
+    // Maps TrusteeVerificationState → SyncState per ADR 0066 OQ-1 council ruling:
+    // UX vocabulary uses "Recovery Contact" while the backing store uses "Trustee";
+    // SyncState is the VM-layer discriminator because RecoveryContact.VerificationStatus
+    // is typed SyncState in ViewModels.cs.
+    // Pending→Stale (enrollment in-flight, not yet verified)
+    // Verified→Healthy (green check, fully attested)
+    // Revoked→Quarantine (worst-state bucket; user-initiated revocation, not necessarily hostile)
     private static SyncState MapVerificationState(TrusteeVerificationState state) =>
         state switch
         {
