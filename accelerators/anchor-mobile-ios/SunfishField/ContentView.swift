@@ -6,6 +6,10 @@ import SwiftUI
 /// in the simulator without a real Anchor pairing.
 struct ContentView: View {
     @State private var isPaired = true   // Phase 5 replaces with persistent pairing state.
+    // swiftlint:disable:next force_try
+    private static let stubBlobStore = try! BlobStore(
+        rootDirectory: FileManager.default.temporaryDirectory
+            .appendingPathComponent("sunfish-blobs"))
 
     var body: some View {
         if isPaired {
@@ -14,7 +18,8 @@ struct ContentView: View {
                 syncEngine: SyncEngine(
                     queueService: StubEventQueueService(),
                     bridgeBaseURL: URL(string: "https://bridge.local")!,
-                    urlSession: .shared))
+                    urlSession: .shared),
+                blobStore: Self.stubBlobStore)
         } else {
             // Phase 5 replaces with PairingFlowView.
             Text("Sunfish Field — tap to pair")
