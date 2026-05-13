@@ -3,7 +3,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.Tactical</PackageId>
     <RootNamespace>Sunfish.Blocks.Tactical</RootNamespace>
-    <Description>Block-tier Blazor UI for the Tactical Anomaly Detection surface (ADR 0081): SonarRoomPanel (InformationalSonar alerts + signal-rate gauge + registered-rules list) and LookoutPanel (assertive live region + pause control + aria-disabled acknowledge per §7.3). Phase 3a per W#52 hand-off.</Description>
+    <Description>Block-tier Blazor UI for the Tactical Anomaly Detection surface (ADR 0081): SonarRoomPanel, LookoutPanel, FireControlPanel, EmergencyStandingOrderDialog + LookoutQuarterdeckAlertSource. Phases 3a/3b/4 per W#52 hand-off.</Description>
     <PackageTags>sunfish;blocks;tactical;adr-0081</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -15,6 +15,7 @@
   <ItemGroup>
     <!-- NOTE: MUST NOT directly reference foundation-wayfinder or foundation-engine-room -->
     <ProjectReference Include="..\foundation-tactical\Sunfish.Foundation.Tactical.csproj" />
+    <ProjectReference Include="..\foundation-quarterdeck\Sunfish.Foundation.Quarterdeck.csproj" />
     <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
     <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />

@@ -1,0 +1,130 @@
+@*
+    W#52 Phase 3b — FireControlPanel per ADR 0081 §7.3.
+
+    Accessibility (WCAG 2.2 AA):
+      - Landmark: <section role="region" aria-labelledby="fire-control-heading" id="fire-control" tabindex="-1">
+        id="fire-control" is a skip-link target.
+      - Active incidents: <ol aria-label="Active incidents"> with <li> per IncidentRecord.
+      - Runbook steps: <ol aria-label="Runbook steps"> with <li aria-labelledby="stepNum stepTitle">
+        — step number and title spans contribute the accessible name; aria-label is NOT used
+        (that would suppress visible text content per WCAG SC 4.1.2).
+      - Incident state transitions announced via <div aria-live="polite" aria-atomic="true">
+        sibling to the incidents list (SunfishA11yAssertions.IncidentStateTransitionAnnounced).
+      - Emergency Order trigger button uses aria-disabled pattern per §7.5 when CanIssueOrders=false.
+*@
+
+<section class="fire-control-panel"
+         role="region"
+         aria-labelledby="fire-control-heading"
+         id="fire-control"
+         tabindex="-1"
+         data-test-id="fire-control-panel">
+
+    <h2 id="fire-control-heading">Fire Control</h2>
+
+    @* SunfishA11yAssertions.IncidentStateTransitionAnnounced:
+       Polite region announces incident status changes (not new incidents — those
+       are a separate concern). Per-item, not the whole list (aria-atomic="false" would
+       split on multiple simultaneous transitions; one polite update per parameter set). *@
+    <div class="fire-control-announce sr-only"
+         aria-live="polite"
+         aria-atomic="true"
+         data-test-id="fire-control-announce">@_incidentAnnouncement</div>
+
+    @if (_activeIncidents.Count > 0)
+    {
+        <ol aria-label="Active incidents" data-test-id="fire-control-incidents">
+            @foreach (var incident in _activeIncidents)
+            {
+                <li class="incident-item" data-incident-id="@incident.IncidentId">
+                    <span class="incident-title">@incident.Title</span>
+                    <span class="incident-status">@incident.Status</span>
+
+                    @if (incident.RunbookStepIds.Count > 0)
+                    {
+                        <ol aria-label="Runbook steps"
+                            data-test-id="@($"runbook-steps-{incident.IncidentId}")">
+                            @for (var i = 0; i < incident.RunbookStepIds.Count; i++)
+                            {
+                                var stepNum = i + 1;
+                                var stepId = incident.RunbookStepIds[i];
+                                var numId = $"step-num-{incident.IncidentId}-{stepNum}";
+                                var titleId = $"step-title-{incident.IncidentId}-{stepNum}";
+                                <li aria-labelledby="@numId @titleId"
+                                    data-test-id="@($"runbook-step-{incident.IncidentId}-{stepNum}")">
+                                    <span id="@numId" class="step-number">@stepNum</span>
+                                    <span id="@titleId" class="step-title">@stepId</span>
+                                </li>
+                            }
+                        </ol>
+                    }
+
+                    @{
+                        var isOrderDisabled = !CanIssueOrders;
+                    }
+                    <button type="button"
+                            class="eso-trigger-btn @(isOrderDisabled ? "eso-trigger-btn--disabled" : "")"
+                            aria-disabled="@(isOrderDisabled ? "true" : "false")"
+                            @onclick="() => HandleIssueOrder(incident.IncidentId, isOrderDisabled)"
+                            data-test-id="@($"eso-trigger-{incident.IncidentId}")">
+                        Issue Emergency Order
+                    </button>
+                </li>
+            }
+        </ol>
+    }
+    else
+    {
+        <p class="fire-control-no-incidents" data-test-id="fire-control-no-incidents">
+            No active incidents.
+        </p>
+    }
+
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<IncidentRecord>? ActiveIncidents { get; set; }
+    [Parameter] public bool CanIssueOrders { get; set; }
+    [Parameter] public EventCallback<string> OnIssueEmergencyOrder { get; set; }
+
+    private readonly List<IncidentRecord> _activeIncidents = new();
+    private readonly Dictionary<string, IncidentRecord> _incidentMap =
+        new(StringComparer.Ordinal);
+    private string _incidentAnnouncement = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        var incoming = ActiveIncidents ?? Array.Empty<IncidentRecord>();
+
+        // Detect status transitions — route to polite channel.
+        foreach (var incident in incoming)
+        {
+            if (!_incidentMap.TryGetValue(incident.IncidentId, out var prev)) continue;
+            if (prev.Status != incident.Status)
+                _incidentAnnouncement = $"Incident \"{incident.Title}\" is now {incident.Status}.";
+        }
+
+        // Update visible list (in-place for existing; append new).
+        for (var i = 0; i < _activeIncidents.Count; i++)
+        {
+            var updated = incoming.FirstOrDefault(a => a.IncidentId == _activeIncidents[i].IncidentId);
+            if (updated is not null) _activeIncidents[i] = updated;
+        }
+        foreach (var incident in incoming)
+        {
+            if (_incidentMap.ContainsKey(incident.IncidentId)) continue;
+            _activeIncidents.Add(incident);
+            _incidentMap[incident.IncidentId] = incident;
+        }
+
+        // Rebuild map snapshot.
+        _incidentMap.Clear();
+        foreach (var incident in _activeIncidents) _incidentMap[incident.IncidentId] = incident;
+    }
+
+    private async Task HandleIssueOrder(string incidentId, bool isDisabled)
+    {
+        if (isDisabled) return;
+        await OnIssueEmergencyOrder.InvokeAsync(incidentId);
+    }
+}

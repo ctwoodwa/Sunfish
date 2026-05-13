@@ -1,0 +1,215 @@
+@*
+    W#52 Phase 3b — EmergencyStandingOrderDialog per ADR 0081 §7.6.
+
+    Accessibility (WCAG 2.2 AA):
+      - role="alertdialog" (NOT generic dialog — security-critical destructive confirmation
+        per WCAG SC 3.3.4; alertdialog signals urgency to screen readers).
+      - aria-modal="true" — communicates containment to virtual-buffer screen readers.
+      - aria-labelledby="eso-dialog-title" → <h2> provides the accessible name.
+      - aria-describedby="eso-dialog-consequence" → consequence div (NOT <p> — must allow
+        <details> child per HTML validity; <p> cannot contain block-level descendants).
+      - Escape key → HandleCancel (SC 2.1.1 standard modal keyboard pattern).
+      - Initial focus → Cancel button (safe default per §7.6; injected via ElementReference.FocusAsync
+        in OnAfterRenderAsync after IFocusTrap.EnterAsync, gated on _justOpened flag to avoid
+        re-firing on subsequent re-renders).
+        SunfishA11yAssertions.AlertDialogHasRoleModalLabelDescribedBy REQUIRED.
+      - Confirm: aria-disabled="true" + disabled at open; both removed exactly at t=2000ms.
+        aria-disabled for SR announcement; native disabled to enforce deliberation gate at
+        browser level (prevents keyboard bypass per security-engineering council ruling).
+        "Confirm available" injected into polite deliberation region at t=2000ms.
+        SunfishA11yAssertions.DeliberationPauseAnnouncesEnablement REQUIRED.
+      - SC 3.3.4: 2000ms deliberation pause; aria-disabled + native disabled both cleared at t=2000ms.
+      - Outcome: "Standing Order issued" or "Cancelled" announced politely on close.
+        SunfishA11yAssertions.DialogOutcomeAnnouncedOnClose REQUIRED.
+      - Consequence text: post-substitution preview only (NOT raw template tokens).
+        Template token validation at component boundary: if {{...}} tokens detected, Confirm
+        is permanently disabled for that open cycle (fail-close security pattern).
+        Truncated to 280 chars; remainder in <details> per SC 3.3.2.
+      - On close: IFocusTrap.ExitAsync() restores prior focus per SC 2.4.3.
+*@
+@inject IFocusTrap FocusTrap
+@implements IDisposable
+
+@if (IsOpen)
+{
+    <div role="alertdialog"
+         aria-modal="true"
+         aria-labelledby="eso-dialog-title"
+         aria-describedby="eso-dialog-consequence"
+         tabindex="-1"
+         @ref="_dialogRef"
+         @onkeydown="HandleKeyDown"
+         data-test-id="eso-dialog">
+
+        <h2 id="eso-dialog-title">Issue Emergency Standing Order</h2>
+
+        @* Consequence preview — post-substitution ONLY; raw template tokens MUST NOT appear.
+           <div> not <p> — <details> cannot be a child of <p> per HTML validity. *@
+        <div id="eso-dialog-consequence" data-test-id="eso-consequence">
+            @if (_hasTokenError)
+            {
+                <span class="eso-token-error" role="alert">
+                    Consequence text contains unresolved template tokens. Order cannot be issued.
+                </span>
+            }
+            else if (ConsequenceText.Length <= 280)
+            {
+                @ConsequenceText
+            }
+            else
+            {
+                @ConsequenceText[..280]
+                <details>
+                    <summary>Show full text</summary>
+                    @ConsequenceText[280..]
+                </details>
+            }
+        </div>
+
+        @* Confirm: aria-disabled + native disabled during deliberation; both cleared at t=2000ms.
+           Native disabled enforces the deliberation gate at browser level (security council).
+           aria-disabled announces intent to screen readers at all times. *@
+        <button type="button"
+                id="eso-confirm-btn"
+                aria-disabled="@(_confirmEnabled && !_hasTokenError ? "false" : "true")"
+                disabled="@(!_confirmEnabled || _hasTokenError)"
+                @onclick="HandleConfirm"
+                data-test-id="eso-confirm-btn">
+            Confirm
+        </button>
+
+        @* Cancel receives initial focus on open (safe default, §7.6) *@
+        <button type="button"
+                id="eso-cancel-btn"
+                @ref="_cancelBtnRef"
+                @onclick="HandleCancel"
+                data-test-id="eso-cancel-btn">
+            Cancel
+        </button>
+
+        @* SC 3.3.4 deliberation-pause announcement — "Confirm available" at t=2000ms *@
+        <div aria-live="polite"
+             aria-atomic="true"
+             class="sr-only"
+             id="eso-deliberation-announce"
+             data-test-id="eso-deliberation-announce">@_deliberationAnnouncement</div>
+
+        @* Outcome announcement on dialog close *@
+        <div aria-live="polite"
+             aria-atomic="true"
+             class="sr-only"
+             data-test-id="eso-outcome-announce">@_outcomeAnnouncement</div>
+
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string ConsequenceText { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private bool _previousIsOpen;
+    private bool _confirmEnabled;
+    private bool _timerStarted;
+    private bool _justOpened;
+    private bool _hasTokenError;
+    private string _deliberationAnnouncement = string.Empty;
+    private string _outcomeAnnouncement = string.Empty;
+    private ElementReference _cancelBtnRef;
+    private ElementReference _dialogRef;
+    private CancellationTokenSource _cts = new();
+
+    // Matches any unresolved template token, e.g. {{zone}} or {{ zone name }}.
+    private static readonly System.Text.RegularExpressions.Regex TokenPattern =
+        new(@"\{\{[^}]+\}\}", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    protected override void OnParametersSet()
+    {
+        if (!IsOpen && _previousIsOpen)
+        {
+            // Dialog closed externally — reset all state, cancel and replace CTS.
+            _previousIsOpen = false;
+            _timerStarted = false;
+            _confirmEnabled = false;
+            _justOpened = false;
+            _hasTokenError = false;
+            _deliberationAnnouncement = string.Empty;
+            _outcomeAnnouncement = string.Empty;
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts = new CancellationTokenSource();
+        }
+        else if (IsOpen && !_previousIsOpen)
+        {
+            // Dialog just opened — validate consequence text and reset to initial state.
+            _previousIsOpen = true;
+            _timerStarted = false;
+            _confirmEnabled = false;
+            _justOpened = true;
+            _deliberationAnnouncement = string.Empty;
+            _outcomeAnnouncement = string.Empty;
+            // Fail-close: if raw template tokens are present, disable Confirm permanently
+            // for this open cycle (security-engineering council: trust boundary enforcement).
+            _hasTokenError = TokenPattern.IsMatch(ConsequenceText);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // _justOpened gates focus + timer to the first render after open, not re-renders.
+        if (IsOpen && _justOpened && !_timerStarted)
+        {
+            _justOpened = false;
+            _timerStarted = true;
+            await FocusTrap.EnterAsync();
+            await _cancelBtnRef.FocusAsync();
+            if (!_hasTokenError)
+                _ = StartDeliberationTimer();
+        }
+    }
+
+    private async Task StartDeliberationTimer()
+    {
+        try
+        {
+            await Task.Delay(2000, _cts.Token);
+            // Post-delay guard: dialog may have closed during the wait.
+            if (_cts.IsCancellationRequested || !IsOpen) return;
+            _confirmEnabled = true;
+            _deliberationAnnouncement = "Confirm available";
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task HandleConfirm()
+    {
+        // Suppress activation when aria-disabled (SC §7.5 pattern) or token error.
+        if (!_confirmEnabled || _hasTokenError) return;
+        _outcomeAnnouncement = "Standing Order issued";
+        await InvokeAsync(StateHasChanged);
+        await OnConfirm.InvokeAsync();
+        await FocusTrap.ExitAsync();
+    }
+
+    private async Task HandleCancel()
+    {
+        _outcomeAnnouncement = "Cancelled";
+        await InvokeAsync(StateHasChanged);
+        await OnCancel.InvokeAsync();
+        await FocusTrap.ExitAsync();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            await HandleCancel();
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}
