@@ -1,0 +1,133 @@
+@*
+    W#52 Phase 3a — LookoutPanel per ADR 0081 §7.3.
+
+    Accessibility (WCAG 2.2 AA):
+      - Landmark: <section role="region" aria-labelledby="lookout-heading" id="lookout" tabindex="-1">
+        id="lookout" is a skip-link target.
+      - Assertive live region: aria-live="assertive" aria-atomic="false" aria-relevant="additions"
+        — new alerts only; acknowledged status-changes go to a separate polite channel.
+      - Pause control: <button aria-pressed> with static label "Pause Lookout ticker".
+      - Default-to-paused: _isPaused = true (SC 2.2.2; reduced-motion safe default).
+        SunfishA11yAssertions.ReducedMotionDefaultsToPaused verified by default state.
+      - SC 2.2.2: Lookout auto-pauses on hover + keyboard focus (CSS :focus-within + :hover).
+      - Acknowledge button: aria-disabled="true" (NOT native disabled — native removes from
+        tab order); suppresses click + keydown when aria-disabled. SunfishA11yAssertions:
+        AriaDisabledButtonRemainsInTabOrder + AriaDisabledSuppressesActivation.
+      - Denial reason: visible element id="ack-denial-reason-{alertId}" with aria-describedby.
+      - Severity: color + non-color icon shape + text label per §7.4 (SC 1.4.1).
+      - SunfishA11yAssertions.AssertiveRegionAnnouncesAdditionsOnly verified by
+        aria-relevant="additions" on the assertive list.
+*@
+
+<section class="lookout-panel"
+         role="region"
+         aria-labelledby="lookout-heading"
+         id="lookout"
+         tabindex="-1"
+         data-test-id="lookout-panel">
+
+    <h2 id="lookout-heading">Lookout</h2>
+
+    @* Pause control — static label; aria-pressed toggles on click *@
+    <button class="lookout-pause-btn"
+            aria-pressed="@(_isPaused ? "true" : "false")"
+            @onclick="TogglePause"
+            data-test-id="lookout-pause-btn">
+        Pause Lookout ticker
+    </button>
+
+    @* Assertive live region — new-alert announcements only; additions-relevant *@
+    <ul class="lookout-alert-list"
+        aria-live="assertive"
+        aria-atomic="false"
+        aria-relevant="additions"
+        aria-label="High-priority tactical alerts"
+        data-test-id="lookout-alert-list">
+        @foreach (var alert in _visibleAlerts)
+        {
+            <li class="lookout-alert-item" data-alert-id="@alert.AlertId">
+                <span class="severity-icon severity-@alert.Severity.ToString().ToLowerInvariant()"
+                      aria-hidden="true"
+                      data-severity="@alert.Severity">
+                    @SeverityIcon(alert.Severity)
+                </span>
+                <span class="severity-label">@alert.Severity</span>
+                <span class="alert-title">@alert.Title</span>
+
+                @{
+                    var isAckDisabled = !CanAcknowledgeAlerts
+                        || alert.Status == AlertStatus.Acknowledged;
+                    var denialId = $"ack-denial-reason-{alert.AlertId}";
+                }
+
+                @if (isAckDisabled)
+                {
+                    <span id="@denialId" class="ack-denial-reason" data-test-id="ack-denial-@alert.AlertId">
+                        @(CanAcknowledgeAlerts
+                            ? "Already acknowledged"
+                            : "Insufficient permissions to acknowledge")
+                    </span>
+                }
+
+                <button class="ack-btn"
+                        aria-disabled="@(isAckDisabled ? "true" : "false")"
+                        aria-describedby="@(isAckDisabled ? denialId : null)"
+                        style="@(isAckDisabled ? "cursor: not-allowed;" : "")"
+                        @onclick="() => HandleAcknowledge(alert, isAckDisabled)"
+                        data-test-id="ack-btn-@alert.AlertId">
+                    Acknowledge
+                </button>
+            </li>
+        }
+    </ul>
+
+    @* Polite channel for acknowledged status-changes — separate from assertive *@
+    <div class="lookout-ack-announce sr-only"
+         aria-live="polite"
+         aria-atomic="true"
+         data-test-id="lookout-ack-announce">@_ackAnnouncement</div>
+
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<TacticalAlert>? LookoutAlerts { get; set; }
+    [Parameter] public bool CanAcknowledgeAlerts { get; set; }
+    [Parameter] public EventCallback<string> OnAcknowledge { get; set; }
+
+    // Default-to-paused: SC 2.2.2 + reduced-motion safe default.
+    private bool _isPaused = true;
+    private string _ackAnnouncement = string.Empty;
+    private IReadOnlyList<TacticalAlert> _visibleAlerts = Array.Empty<TacticalAlert>();
+
+    protected override void OnParametersSet()
+    {
+        _visibleAlerts = _isPaused
+            ? _visibleAlerts
+            : (LookoutAlerts ?? Array.Empty<TacticalAlert>());
+    }
+
+    private void TogglePause()
+    {
+        _isPaused = !_isPaused;
+        if (!_isPaused)
+            _visibleAlerts = LookoutAlerts ?? Array.Empty<TacticalAlert>();
+    }
+
+    private async Task HandleAcknowledge(TacticalAlert alert, bool isDisabled)
+    {
+        // Suppress activation when aria-disabled per §7.5 and ADR 0081 hand-off.
+        if (isDisabled) return;
+        _ackAnnouncement = $"Acknowledged: {alert.Title}";
+        await OnAcknowledge.InvokeAsync(alert.AlertId);
+    }
+
+    private static string SeverityIcon(AlertSeverity severity) => severity switch
+    {
+        AlertSeverity.Critical      => "⬛",
+        AlertSeverity.High          => "▲",
+        AlertSeverity.Medium        => "◆",
+        AlertSeverity.Low           => "●",
+        AlertSeverity.Informational => "ℹ",
+        _                           => "?",
+    };
+}

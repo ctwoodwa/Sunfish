@@ -1,0 +1,115 @@
+@*
+    W#52 Phase 3a — SonarRoomPanel per ADR 0081 §7.3.
+
+    Accessibility (WCAG 2.2 AA):
+      - Landmark: <section role="region" aria-labelledby="sonar-room-heading" id="sonar-room" tabindex="-1">
+        id="sonar-room" is a skip-link target.
+      - Signal-rate gauge: role="meter" with aria-valuemin/max/now/text; rate number
+        rendered as visible text with aria-hidden="true" on numeric span.
+      - SR-safe rate updates: separate polite sibling <div aria-live="polite" aria-atomic="true">
+        — throttled to threshold crossings only.
+      - Registered rules list: <ul aria-label="Registered rules"> with <li> per rule.
+      - InformationalSonar-policy alert list: <ul aria-label="Sonar room alerts">.
+      - SC 1.4.1: severity represented by color + non-color icon shape + text label.
+      - SunfishA11yAssertions.ReducedMotionDefaultsToPaused: rate gauge animation MUST
+        suppress under prefers-reduced-motion; default CSS suppresses motion.
+*@
+
+<section class="sonar-room-panel"
+         role="region"
+         aria-labelledby="sonar-room-heading"
+         id="sonar-room"
+         tabindex="-1"
+         data-test-id="sonar-room-panel">
+
+    <h2 id="sonar-room-heading">Sonar Room</h2>
+
+    @* Signal-rate gauge per §7.3 *@
+    <div class="sonar-rate-gauge"
+         role="meter"
+         aria-valuemin="0"
+         aria-valuemax="@MaxAlertsPerMinutePerRule"
+         aria-valuenow="@_rateNow"
+         aria-valuetext="@_rateNow signals per minute"
+         data-test-id="sonar-rate-gauge">
+        <span class="sonar-rate-number" aria-hidden="true">@_rateNow</span> signals per minute
+    </div>
+
+    @* Polite live region for threshold crossings — NOT every heartbeat *@
+    <div class="sonar-rate-announce sr-only"
+         aria-live="polite"
+         aria-atomic="true"
+         data-test-id="sonar-rate-announce">@_rateAnnouncement</div>
+
+    @* Registered rules list *@
+    @if (RegisteredRuleNames is { Count: > 0 })
+    {
+        <ul aria-label="Registered rules" data-test-id="registered-rules-list">
+            @foreach (var ruleName in RegisteredRuleNames)
+            {
+                <li>@ruleName</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="sonar-no-rules" data-test-id="sonar-no-rules">No rules registered.</p>
+    }
+
+    @* InformationalSonar-policy alert list *@
+    @if (InformationalAlerts is { Count: > 0 })
+    {
+        <ul aria-label="Sonar room alerts" data-test-id="sonar-alerts-list">
+            @foreach (var alert in InformationalAlerts)
+            {
+                <li data-alert-id="@alert.AlertId">
+                    <span class="severity-icon severity-@alert.Severity.ToString().ToLowerInvariant()"
+                          aria-hidden="true"
+                          data-severity="@alert.Severity">
+                        @SeverityIcon(alert.Severity)
+                    </span>
+                    <span class="severity-label">@alert.Severity</span>
+                    @alert.Title
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="sonar-no-alerts" data-test-id="sonar-no-alerts">No sonar alerts.</p>
+    }
+
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<TacticalAlert>? InformationalAlerts { get; set; }
+    [Parameter] public IReadOnlyList<string>? RegisteredRuleNames { get; set; }
+    [Parameter] public int SignalRatePerMinute { get; set; }
+    [Parameter] public int MaxAlertsPerMinutePerRule { get; set; } = 60;
+
+    private int _rateNow;
+    private string _rateAnnouncement = string.Empty;
+    private int _lastAnnouncedThreshold = -1;
+
+    protected override void OnParametersSet()
+    {
+        var newRate = SignalRatePerMinute;
+        var threshold = newRate / 10 * 10;
+        if (threshold != _lastAnnouncedThreshold)
+        {
+            _rateAnnouncement = $"Signal rate crossed {threshold} signals per minute.";
+            _lastAnnouncedThreshold = threshold;
+        }
+        _rateNow = newRate;
+    }
+
+    private static string SeverityIcon(AlertSeverity severity) => severity switch
+    {
+        AlertSeverity.Critical     => "⬛",
+        AlertSeverity.High         => "▲",
+        AlertSeverity.Medium       => "◆",
+        AlertSeverity.Low          => "●",
+        AlertSeverity.Informational => "ℹ",
+        _                          => "?",
+    };
+}

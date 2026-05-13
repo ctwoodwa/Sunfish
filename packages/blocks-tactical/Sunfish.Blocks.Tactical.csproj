@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.Tactical</PackageId>
+    <RootNamespace>Sunfish.Blocks.Tactical</RootNamespace>
+    <Description>Block-tier Blazor UI for the Tactical Anomaly Detection surface (ADR 0081): SonarRoomPanel (InformationalSonar alerts + signal-rate gauge + registered-rules list) and LookoutPanel (assertive live region + pause control + aria-disabled acknowledge per §7.3). Phase 3a per W#52 hand-off.</Description>
+    <PackageTags>sunfish;blocks;tactical;adr-0081</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- NOTE: MUST NOT directly reference foundation-wayfinder or foundation-engine-room -->
+    <ProjectReference Include="..\foundation-tactical\Sunfish.Foundation.Tactical.csproj" />
+    <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.Tactical.Tests" />
+  </ItemGroup>
+</Project>
