@@ -23,8 +23,15 @@ function getAnnounceRegion() {
 /**
  * Queues a screen-reader announcement.
  * @param {string} message     Localized text to announce.
+ *                             TRUST BOUNDARY: callers must not pass untrusted/unbounded
+ *                             content here. textContent is used (no innerHTML parse), but
+ *                             very long strings can cause screen-reader DoS.
  * @param {string} politeness  'polite' | 'assertive' | 'critical'
- *                             'critical' maps to assertive (highest browser priority).
+ *                             'critical' maps to 'assertive' (highest browser priority).
+ *                             The Critical→Assertive collapse is intentional on the web;
+ *                             MAUI uses AutomationNotificationProcessing.ImportantAll for
+ *                             Critical (see MauiLiveAnnouncer.cs). This asymmetry is
+ *                             documented in ADR 0077 §6.
  */
 export function announce(message, politeness) {
     const region = getAnnounceRegion();
@@ -36,8 +43,14 @@ export function announce(message, politeness) {
 }
 
 // ── Focus Trap ───────────────────────────────────────────────────────────────
+//
+// WCAG SC 2.1.2 (No Keyboard Trap) compliance:
+// Multiple simultaneous traps are supported (e.g., modal inside a drawer) via a
+// stack: only the TOPMOST (most-recently-entered) trap handles keyboard events.
+// Releasing the inner trap restores the outer one automatically.
 
 const _traps = new Map();
+const _trapStack = []; // ordered by entry time; last element = active (innermost) trap
 
 const FOCUSABLE_SELECTOR =
     'a[href],button:not([disabled]),' +
@@ -63,6 +76,10 @@ function focusFirst(container) {
 }
 
 function handleTrapKeyDown(containerId, e) {
+    // Only the active (topmost) trap handles keyboard events.
+    // This prevents outer traps from intercepting Tab/Escape when an inner trap is active.
+    if (_trapStack.length === 0 || _trapStack[_trapStack.length - 1] !== containerId) return;
+
     const trap = _traps.get(containerId);
     if (!trap) return;
 
@@ -96,11 +113,13 @@ function handleTrapKeyDown(containerId, e) {
  * Traps focus within the element identified by containerId.
  * The element must exist in the DOM (i.e., the component has rendered).
  * Escape releases the trap per WCAG SC 2.1.2.
+ * If another trap is already active, this trap is pushed onto the stack;
+ * the prior trap resumes when this one is released.
  *
  * @param {string} containerId  id attribute OR data-focustrap-id of the container element.
  */
 export function trapFocus(containerId) {
-    if (_traps.has(containerId)) return; // already active — per IFocusTrap re-entry contract: ignore
+    if (_traps.has(containerId)) return; // already active — re-entry no-op per IFocusTrap contract
 
     const container =
         document.getElementById(containerId) ??
@@ -112,11 +131,13 @@ export function trapFocus(containerId) {
     const onKeyDown = (e) => handleTrapKeyDown(containerId, e);
     document.addEventListener('keydown', onKeyDown, true);
     _traps.set(containerId, { container, prior, onKeyDown });
+    _trapStack.push(containerId);
     focusFirst(container);
 }
 
 /**
  * Releases the focus trap and restores prior focus per WCAG SC 2.4.3.
+ * If a prior trap was suspended by this one, it becomes active again.
  * @param {string} containerId
  */
 export function releaseFocus(containerId) {
@@ -124,6 +145,8 @@ export function releaseFocus(containerId) {
     if (!trap) return;
     document.removeEventListener('keydown', trap.onKeyDown, true);
     _traps.delete(containerId);
+    const idx = _trapStack.indexOf(containerId);
+    if (idx !== -1) _trapStack.splice(idx, 1);
     if (trap.prior && document.contains(trap.prior)) {
         try { trap.prior.focus({ preventScroll: true }); } catch { /* ignore */ }
     }
@@ -133,7 +156,7 @@ export function releaseFocus(containerId) {
  * Disposes all active traps (called by C# DisposeAsync).
  */
 export function dispose() {
-    for (const id of Array.from(_traps.keys())) {
+    for (const id of Array.from(_trapStack).reverse()) {
         releaseFocus(id);
     }
 }

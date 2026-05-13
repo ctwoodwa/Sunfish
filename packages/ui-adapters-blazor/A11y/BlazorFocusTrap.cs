@@ -19,7 +19,9 @@ public sealed class BlazorFocusTrap : IFocusTrap, IAsyncDisposable
         "./_content/Sunfish.UIAdapters.Blazor/js/sunfish-a11y.js";
 
     private readonly IJSRuntime _js;
-    private IJSObjectReference? _module;
+    // Task<T> field set on first load; subsequent callers await the same task.
+    // Safe in Blazor's single-threaded execution model (one circuit per instance).
+    private Task<IJSObjectReference>? _moduleTask;
     private string? _activeContainerId;
 
     public BlazorFocusTrap(IJSRuntime js) => _js = js;
@@ -51,11 +53,10 @@ public sealed class BlazorFocusTrap : IFocusTrap, IAsyncDisposable
         await module.InvokeVoidAsync("releaseFocus", ct, id).ConfigureAwait(false);
     }
 
-    private async ValueTask<IJSObjectReference> EnsureModuleAsync()
+    private ValueTask<IJSObjectReference> EnsureModuleAsync()
     {
-        _module ??= await _js.InvokeAsync<IJSObjectReference>("import", ModuleUri)
-                              .ConfigureAwait(false);
-        return _module;
+        _moduleTask ??= _js.InvokeAsync<IJSObjectReference>("import", ModuleUri).AsTask();
+        return new ValueTask<IJSObjectReference>(_moduleTask);
     }
 
     public async ValueTask DisposeAsync()
@@ -66,10 +67,15 @@ public sealed class BlazorFocusTrap : IFocusTrap, IAsyncDisposable
             catch (JSDisconnectedException) { /* circuit gone */ }
         }
 
-        if (_module is not null)
+        if (_moduleTask is not null)
         {
-            try { await _module.DisposeAsync().ConfigureAwait(false); }
+            try
+            {
+                var module = await _moduleTask.ConfigureAwait(false);
+                await module.DisposeAsync().ConfigureAwait(false);
+            }
             catch (JSDisconnectedException) { /* circuit already gone */ }
+            catch (JSException)             { /* module never loaded */  }
         }
     }
 }

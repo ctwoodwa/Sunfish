@@ -79,11 +79,12 @@ export function FocusTrap({ active, onEscape, children }: FocusTrapProps): React
     document.addEventListener('keydown', handleKeyDown, true);
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
-      // Restore prior focus when the trap deactivates.
-      if (priorFocusRef.current && document.contains(priorFocusRef.current)) {
-        priorFocusRef.current.focus({ preventScroll: true });
-      }
+      // Capture and clear before restore to prevent double-cleanup in StrictMode.
+      const prior = priorFocusRef.current;
       priorFocusRef.current = null;
+      if (prior !== null && document.contains(prior)) {
+        prior.focus({ preventScroll: true });
+      }
     };
   }, [active, handleKeyDown]);
 

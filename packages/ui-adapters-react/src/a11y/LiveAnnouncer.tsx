@@ -30,6 +30,10 @@ function getOrCreateRegion(): HTMLElement {
 /**
  * Singleton announce function. Mirrors `ILiveAnnouncer.Announce` contract.
  * Side-effect-free: does not throw; call from anywhere.
+ *
+ * TRUST BOUNDARY: `message` is set via `textContent` (no HTML parse — XSS-safe),
+ * but callers must not pass untrusted or unbounded content. Very long strings can
+ * cause screen-reader DoS. Validate at the application boundary before calling.
  */
 export function announce(message: string, politeness: LiveRegionPoliteness): void {
   const region = getOrCreateRegion();

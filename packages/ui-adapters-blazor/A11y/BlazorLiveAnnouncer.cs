@@ -15,7 +15,9 @@ public sealed class BlazorLiveAnnouncer : ILiveAnnouncer, IAsyncDisposable
         "./_content/Sunfish.UIAdapters.Blazor/js/sunfish-a11y.js";
 
     private readonly IJSRuntime _js;
-    private IJSObjectReference? _module;
+    // Task<T> field set on first load; subsequent callers await the same task.
+    // Safe in Blazor's single-threaded execution model (one circuit per instance).
+    private Task<IJSObjectReference>? _moduleTask;
 
     public BlazorLiveAnnouncer(IJSRuntime js) => _js = js;
 
@@ -24,6 +26,11 @@ public sealed class BlazorLiveAnnouncer : ILiveAnnouncer, IAsyncDisposable
     /// Fire-and-forget per the side-effect-free contract on
     /// <see cref="ILiveAnnouncer"/>. JS errors are swallowed; the
     /// renderer must not throw on announcement failure.
+    ///
+    /// TRUST BOUNDARY: <paramref name="message"/> is passed to the browser via
+    /// JS <c>textContent</c> (no HTML parse — XSS-safe), but callers must not
+    /// pass untrusted content without length bounds. Unbounded strings can cause
+    /// screen-reader DoS. Validate at the application boundary before calling.
     /// </remarks>
     public void Announce(string message, LiveRegionPoliteness politeness)
         => _ = AnnounceInternalAsync(message, politeness);
@@ -48,19 +55,23 @@ public sealed class BlazorLiveAnnouncer : ILiveAnnouncer, IAsyncDisposable
         catch (TaskCanceledException)   { /* navigation or disposal */ }
     }
 
-    private async ValueTask<IJSObjectReference> EnsureModuleAsync()
+    private ValueTask<IJSObjectReference> EnsureModuleAsync()
     {
-        _module ??= await _js.InvokeAsync<IJSObjectReference>("import", ModuleUri)
-                              .ConfigureAwait(false);
-        return _module;
+        _moduleTask ??= _js.InvokeAsync<IJSObjectReference>("import", ModuleUri).AsTask();
+        return new ValueTask<IJSObjectReference>(_moduleTask);
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_module is not null)
+        if (_moduleTask is not null)
         {
-            try { await _module.DisposeAsync().ConfigureAwait(false); }
+            try
+            {
+                var module = await _moduleTask.ConfigureAwait(false);
+                await module.DisposeAsync().ConfigureAwait(false);
+            }
             catch (JSDisconnectedException) { /* circuit already gone */ }
+            catch (JSException)             { /* module never loaded */  }
         }
     }
 }
