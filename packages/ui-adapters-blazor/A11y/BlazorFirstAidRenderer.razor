@@ -1,0 +1,19 @@
+@namespace Sunfish.UIAdapters.Blazor.A11y
+@* BlazorFirstAidRenderer — First-Aid baseline wrapper per ADR 0077 §4.
+   Renders WCAG-required help text, aria-describedby wiring, and optional
+   next-action hint. Wraps any child content in a <div> with the a11y
+   attributes applied. *@
+
+<div class="sf-first-aid"
+     aria-describedby="@_helpId">
+
+    @* Visually hidden help text — announced via aria-describedby per WCAG SC 3.3.2. *@
+    <span id="@_helpId" class="sf-sr-only">@HelpTextResolved</span>
+
+    @if (!string.IsNullOrWhiteSpace(NextActionHintResolved))
+    {
+        <span class="sf-sr-only sf-first-aid__hint">@NextActionHintResolved</span>
+    }
+
+    @ChildContent
+</div>

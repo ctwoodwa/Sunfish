@@ -1,0 +1,41 @@
+name: Conformance Coverage Gate
+
+on:
+  push:
+    paths:
+      - 'packages/ui-core/Conformance/**'
+      - 'packages/ui-adapters-blazor/A11y/**'
+      - 'packages/ui-adapters-react/src/a11y/**'
+      - 'packages/ui-adapters-blazor/tests/**'
+  pull_request:
+    paths:
+      - 'packages/ui-core/Conformance/**'
+      - 'packages/ui-adapters-blazor/A11y/**'
+      - 'packages/ui-adapters-react/src/a11y/**'
+      - 'packages/ui-adapters-blazor/tests/**'
+
+jobs:
+  conformance-gate:
+    name: Conformance Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run conformance coverage tests
+        run: |
+          dotnet test packages/ui-adapters-blazor/tests/tests.csproj \
+            -c Release \
+            --filter "Category=ConformanceCoverage|FullyQualifiedName~Phase4" \
+            --logger "console;verbosity=normal"
+
+      - name: Assert IConformanceRegistry implementations exist
+        run: |
+          grep -r "IConformanceRegistry" packages/ui-adapters-blazor/A11y/ \
+            || (echo "ERROR: No IConformanceRegistry implementation in Blazor adapter" && exit 1)
+          grep -r "IConformanceRegistry" packages/ui-adapters-react/src/a11y/ \
+            || (echo "ERROR: No IConformanceRegistry implementation in React adapter" && exit 1)

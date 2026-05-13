@@ -58,6 +58,24 @@ public sealed class SunfishA11yContract
     /// <summary>WCAG 2.2 success criteria the component intends to satisfy (e.g. ["1.3.1", "2.1.1"]).</summary>
     [JsonPropertyName("wcag22Conformant")]
     public IReadOnlyList<string> Wcag22Conformant { get; init; } = new List<string>();
+
+    /// <summary>
+    /// True when the component declares <c>IFirstAidContract</c> compliance per ADR 0077 §4.
+    /// W#46 Phase 4 gate: a component registered to a <c>ShipLocation</c> that does NOT
+    /// declare First-Aid baseline fails the axe/bUnit a11y gate enforced by
+    /// <see cref="SunfishA11yAssertions.AssertFirstAidContractAsync"/>.
+    /// </summary>
+    [JsonPropertyName("declaresFirstAidContract")]
+    public bool DeclaresFirstAidContract { get; init; }
+
+    /// <summary>
+    /// The <c>ShipLocation</c> (canonical lowercase wire-form) this component is
+    /// registered to. Required alongside <see cref="DeclaresFirstAidContract"/> — a
+    /// component registered to a location but missing First-Aid declaration fails CI.
+    /// Null when the component is not location-bound (e.g. a primitive icon).
+    /// </summary>
+    [JsonPropertyName("shipLocation")]
+    public string? ShipLocation { get; init; }
 }
 
 /// <summary>One keyboard binding: <c>{ keys: ["Enter"], action: "activate" }</c>.</summary>

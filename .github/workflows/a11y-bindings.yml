@@ -1,0 +1,72 @@
+name: A11y Primitive Bindings
+
+on:
+  push:
+    paths:
+      - 'packages/ui-core/Primitives/**'
+      - 'packages/ui-adapters-blazor/A11y/**'
+      - 'packages/ui-adapters-blazor/Maui/**'
+      - 'packages/ui-adapters-react/src/a11y/**'
+  pull_request:
+    paths:
+      - 'packages/ui-core/Primitives/**'
+      - 'packages/ui-adapters-blazor/A11y/**'
+      - 'packages/ui-adapters-blazor/Maui/**'
+      - 'packages/ui-adapters-react/src/a11y/**'
+
+jobs:
+  a11y-bindings:
+    name: A11y Binding Completeness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj
+
+      - name: Build (verifies ILiveAnnouncer + IFocusTrap bindings compile)
+        run: |
+          dotnet build packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj \
+            -c Release --no-restore
+
+      - name: Assert Blazor ILiveAnnouncer binding exists
+        run: |
+          grep -r "ILiveAnnouncer" packages/ui-adapters-blazor/A11y/ \
+            || (echo "ERROR: BlazorLiveAnnouncer not found in Blazor adapter" && exit 1)
+
+      - name: Assert Blazor IFocusTrap binding exists
+        run: |
+          grep -r "IFocusTrap" packages/ui-adapters-blazor/A11y/ \
+            || (echo "ERROR: BlazorFocusTrap not found in Blazor adapter" && exit 1)
+
+      - name: Assert MAUI Win binding stubs exist
+        run: |
+          grep -r "WINDOWS" packages/ui-adapters-blazor/Maui/ \
+            || (echo "ERROR: No Windows (#if WINDOWS) MAUI binding stubs found" && exit 1)
+
+      - name: Assert MAUI Mac binding stubs exist
+        run: |
+          grep -r "MACCATALYST" packages/ui-adapters-blazor/Maui/ \
+            || (echo "ERROR: No MacCatalyst (#if MACCATALYST) MAUI binding stubs found" && exit 1)
+
+      - name: Assert React ILiveAnnouncer equivalent exists
+        run: |
+          test -f packages/ui-adapters-react/src/a11y/LiveAnnouncer.tsx \
+            || (echo "ERROR: React LiveAnnouncer not found" && exit 1)
+
+      - name: Assert React IFocusTrap equivalent exists
+        run: |
+          test -f packages/ui-adapters-react/src/a11y/FocusTrap.tsx \
+            || (echo "ERROR: React FocusTrap not found" && exit 1)
+
+      - name: Run a11y binding tests
+        run: |
+          dotnet test packages/ui-adapters-blazor/tests/tests.csproj \
+            -c Release \
+            --filter "Category=A11yBindings|FullyQualifiedName~Phase4" \
+            --logger "console;verbosity=normal"

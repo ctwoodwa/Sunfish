@@ -6,6 +6,12 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- NU1510: .NET 11 SDK package-pruning advisory ("PackageReference will not be pruned").
+         Several kernel packages carry redundant direct references already provided transitively;
+         NuGet 6.12+ surfaces NU1510 for each. Suppress globally rather than per-package to
+         keep TreatWarningsAsErrors effective for all other warnings. Cleanup of the redundant
+         references is tracked separately. -->
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
     <Authors>Sunfish Contributors</Authors>
     <Company>Sunfish</Company>
     <RepositoryUrl>https://github.com/your-org/sunfish</RepositoryUrl>

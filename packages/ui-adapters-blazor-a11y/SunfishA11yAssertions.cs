@@ -207,6 +207,34 @@ public static class SunfishA11yAssertions
         {
             await AssertDirectionalIconsMirroredAsync(page, contract.DirectionalIcons);
         }
+
+        // W#46 Phase 4 gate: ShipLocation-registered components MUST declare IFirstAidContract.
+        if (!string.IsNullOrWhiteSpace(contract.ShipLocation))
+        {
+            await AssertFirstAidContractAsync(contract);
+        }
+    }
+
+    /// <summary>
+    /// Assert that a component registered to a <c>ShipLocation</c> declares
+    /// <c>IFirstAidContract</c> compliance per ADR 0077 §4 + W#46 Phase 4.
+    /// Throws <see cref="A11yAssertionException"/> when the contract field
+    /// <c>declaresFirstAidContract</c> is false and <c>shipLocation</c> is non-null.
+    /// </summary>
+    public static Task AssertFirstAidContractAsync(SunfishA11yContract contract)
+    {
+        if (contract is null) throw new ArgumentNullException(nameof(contract));
+
+        if (!string.IsNullOrWhiteSpace(contract.ShipLocation) && !contract.DeclaresFirstAidContract)
+        {
+            throw new A11yAssertionException(
+                $"Component registered to ShipLocation '{contract.ShipLocation}' does not declare " +
+                "IFirstAidContract compliance (declaresFirstAidContract=false). " +
+                "Every location-bound surface must implement the First-Aid baseline per ADR 0077 §4. " +
+                "Set declaresFirstAidContract=true in the component's a11y contract story parameters.");
+        }
+
+        return Task.CompletedTask;
     }
 }
 
