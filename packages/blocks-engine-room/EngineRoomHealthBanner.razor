@@ -1,0 +1,174 @@
+@* EngineRoomHealthBanner — Engine Room observability surface (ADR 0079 §2, W#50 Phase 3a).
+   Displays aggregate subsystem health + EOOW badge. Two sibling aria-live regions per §6:
+   assertive for degradation transitions, polite for heartbeat updates. Permission gate:
+   ShipAction.ViewEngineRoom must be verified before the provider is called. *@
+
+<div class="er-health-banner" role="region" aria-label="Engine Room health">
+
+    @if (_permissionDenied)
+    {
+        <p role="alert">You do not have permission to view the Engine Room.</p>
+    }
+    else if (_summary is null)
+    {
+        <p role="status" aria-busy="true">Loading Engine Room status…</p>
+    }
+    else
+    {
+        @* Assertive live region: announces degradation or critical transitions immediately.
+           Per §6: assertive ONLY for status degradation — not for heartbeat updates. *@
+        <div role="alert" aria-live="assertive" aria-atomic="true"
+             class="er-live-assertive sf-sr-only">
+            @_assertiveAnnouncement
+        </div>
+
+        @* Polite live region: announces routine heartbeat updates without interrupting. *@
+        <div role="status" aria-live="polite" aria-atomic="false"
+             class="er-live-polite sf-sr-only">
+            @_politeAnnouncement
+        </div>
+
+        @* EOOW badge *@
+        <div class="er-eoow-badge" aria-label="@EoowBadgeLabel">
+            @if (_eoowWatch is null)
+            {
+                <span class="er-eoow-none" aria-hidden="true">⚓</span>
+                <span>No EOOW on watch</span>
+            }
+            else
+            {
+                <span class="er-eoow-active" aria-hidden="true">🛳</span>
+                <span>EOOW: @_eoowWatch.OnWatchActor</span>
+            }
+        </div>
+
+        @* Subsystem status tiles *@
+        <ul class="er-subsystem-list" aria-label="Subsystem statuses">
+            @foreach (var entry in _summary.SubsystemHealthList)
+            {
+                var statusCss = StatusCssClass(entry.Status);
+                var statusLabel = StatusLabel(entry.Status);
+                <li class="er-subsystem-tile @statusCss">
+                    @* Severity conveyed via text label AND icon aria-label; NOT color alone (WCAG SC 1.4.1) *@
+                    <span class="er-subsystem-icon"
+                          aria-label="@statusLabel status" aria-hidden="false">
+                        @StatusIcon(entry.Status)
+                    </span>
+                    <span class="er-subsystem-name">@SubsystemLabel(entry.Subsystem)</span>
+                    <span class="er-subsystem-status">@statusLabel</span>
+                    @if (entry.Message is { } msg)
+                    {
+                        <span class="er-subsystem-message">@msg</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TenantId Tenant { get; set; }
+    [Parameter, EditorRequired] public ActorId Actor { get; set; }
+
+    [Inject] private IEngineRoomDataProvider DataProvider { get; set; } = default!;
+    [Inject] private IOodWatchService WatchService { get; set; } = default!;
+    [Inject] private IPermissionResolver PermissionResolver { get; set; } = default!;
+    [Inject] private IActorPrincipalResolver ActorPrincipalResolver { get; set; } = default!;
+
+    private EngineRoomHealthSummary? _summary;
+    private OodWatch? _eoowWatch;
+    private bool _permissionDenied;
+    private string? _assertiveAnnouncement;
+    private string? _politeAnnouncement;
+    private SubsystemStatus? _previousWorstStatus;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _permissionDenied = false;
+        _summary = null;
+
+        var principal = await ActorPrincipalResolver.ResolveAsync(Tenant, Actor);
+        if (principal is null)
+        {
+            _permissionDenied = true;
+            return;
+        }
+
+        var decision = await PermissionResolver.ResolveAsync(
+            Tenant, principal, ShipLocation.EngineRoom, DeckDepth.MainDeck,
+            ShipAction.ViewEngineRoom, resource: null);
+
+        if (decision is PermissionDecision.Denied)
+        {
+            _permissionDenied = true;
+            return;
+        }
+
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        var summary = await DataProvider.GetHealthSummaryAsync(Tenant);
+        var eoow = await WatchService.GetActiveWatchAsync(
+            Tenant, OodRole.EngineeringOfficerOfTheWatch);
+
+        var worstNow = WorstStatus(summary);
+        if (_previousWorstStatus.HasValue && worstNow > _previousWorstStatus.Value)
+        {
+            _assertiveAnnouncement = $"Engine Room status degraded: {StatusLabel(worstNow)}.";
+        }
+        else
+        {
+            _politeAnnouncement = $"Engine Room health updated: {StatusLabel(worstNow)}.";
+        }
+
+        _previousWorstStatus = worstNow;
+        _summary = summary;
+        _eoowWatch = eoow;
+    }
+
+    private string EoowBadgeLabel =>
+        _eoowWatch is null
+            ? "Engineering Officer of the Watch: none on watch"
+            : $"Engineering Officer of the Watch: {_eoowWatch.OnWatchActor}";
+
+    private static SubsystemStatus WorstStatus(EngineRoomHealthSummary summary) =>
+        summary.SubsystemHealthList.Count == 0
+            ? SubsystemStatus.Unknown
+            : summary.SubsystemHealthList.Max(h => h.Status);
+
+    private static string StatusCssClass(SubsystemStatus status) => status switch
+    {
+        SubsystemStatus.Operational => "er-status--operational",
+        SubsystemStatus.Warning     => "er-status--warning",
+        SubsystemStatus.Critical    => "er-status--critical",
+        _                           => "er-status--unknown",
+    };
+
+    private static string StatusLabel(SubsystemStatus status) => status switch
+    {
+        SubsystemStatus.Operational => "Operational",
+        SubsystemStatus.Warning     => "Warning",
+        SubsystemStatus.Critical    => "Critical",
+        _                           => "Unknown",
+    };
+
+    private static string StatusIcon(SubsystemStatus status) => status switch
+    {
+        SubsystemStatus.Operational => "✓",
+        SubsystemStatus.Warning     => "!",
+        SubsystemStatus.Critical    => "✗",
+        _                           => "?",
+    };
+
+    private static string SubsystemLabel(EngineRoomSubsystem subsystem) => subsystem switch
+    {
+        EngineRoomSubsystem.MainPropulsion => "Main Propulsion",
+        EngineRoomSubsystem.Electrical     => "Electrical",
+        EngineRoomSubsystem.DamageControl  => "Damage Control",
+        EngineRoomSubsystem.QaWorkshop     => "QA Workshop",
+        _                                   => subsystem.ToString(),
+    };
+}
