@@ -5,6 +5,18 @@ export * from './contracts/FillMode';
 export * from './contracts/RoundedMode';
 export type { ICssProvider } from './contracts/ICssProvider';
 export type { IIconProvider } from './contracts/IIconProvider';
+export {
+  HelmSlot,
+  HelmActionInvocationKind,
+} from './contracts/HelmTypes';
+export type {
+  HelmWidgetMetadata,
+  HelmWidgetAction,
+  HelmWidgetViewState,
+  HelmRenderContext,
+  HelmWidget,
+  HelmWidgetRegistry,
+} from './contracts/HelmTypes';
 
 // Provider context
 export {
@@ -27,3 +39,4 @@ export {
   type Column,
 } from './components/SunfishDataGrid';
 export { SunfishDialog, type SunfishDialogProps } from './components/SunfishDialog';
+export { HelmRenderer, type HelmRendererProps } from './components/HelmRenderer';
