@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
@@ -6,9 +6,12 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AssemblyName>Sunfish.Blocks.SickBay.Tests</AssemblyName>
     <RootNamespace>Sunfish.Blocks.SickBay.Tests</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bunit" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
@@ -18,10 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sunfish.Blocks.SickBay.csproj" />
-    <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
-    <ProjectReference Include="..\..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
-    <ProjectReference Include="..\..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
-    <ProjectReference Include="..\..\foundation-sick-bay\Sunfish.Foundation.SickBay.csproj" />
   </ItemGroup>
 
 </Project>

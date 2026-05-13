@@ -1,0 +1,99 @@
+@*
+    W#54 Phase 3a — PharmacyTabContent per ADR 0082 §8.
+
+    RotationHealth badge: triple-encoded per SC 1.4.1 (color + icon + text label).
+    PharmacyRecordCount: renders "< 3" when suppressed with aria-label
+    "record count suppressed below threshold" per ADR 0082 §8.
+*@
+
+@if (Inventory is null || Inventory.Count == 0)
+{
+    <p data-test-id="pharmacy-empty">No pharmacy entries registered.</p>
+}
+else
+{
+    <table class="pharmacy-table" data-test-id="pharmacy-table">
+        <caption>Pharmacy inventory</caption>
+        <thead>
+            <tr>
+                <th scope="col">Field purpose</th>
+                <th scope="col">Records</th>
+                <th scope="col">Rotation status</th>
+                <th scope="col">Last rotated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in Inventory)
+            {
+                <tr data-test-id="pharmacy-row" data-field-purpose="@entry.FieldPurpose">
+                    <td>@entry.FriendlyName</td>
+                    <td>
+                        @if (entry.RecordCount.IsSuppressed)
+                        {
+                            <span aria-label="record count suppressed below threshold"
+                                  data-test-id="record-count-suppressed">&lt; 3</span>
+                        }
+                        else
+                        {
+                            <span data-test-id="record-count">@entry.RecordCount.Value</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="rotation-badge rotation-badge--@RotationCss(entry)"
+                              role="img"
+                              aria-label="@RotationAriaLabel(entry)"
+                              data-test-id="rotation-badge"
+                              data-rotation-status="@entry.RotationStatus">
+                            @RotationIcon(entry) @RotationLabel(entry)
+                        </span>
+                    </td>
+                    <td>@entry.LastRotatedAt.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<PharmacyInventoryEntry>? Inventory { get; set; }
+
+    private static string RotationCss(PharmacyInventoryEntry entry) =>
+        entry.RotationStatus switch
+        {
+            RotationHealth.Current       => "current",
+            RotationHealth.RotationDue   => "due",
+            RotationHealth.RotationOverdue => "overdue",
+            RotationHealth.Compromised   => "compromised",
+            _                            => "unknown",
+        };
+
+    private static string RotationIcon(PharmacyInventoryEntry entry) =>
+        entry.RotationStatus switch
+        {
+            RotationHealth.Current       => "✓",
+            RotationHealth.RotationDue   => "⚠",
+            RotationHealth.RotationOverdue => "⏰",
+            RotationHealth.Compromised   => "⛔",
+            _                            => "?",
+        };
+
+    private static string RotationLabel(PharmacyInventoryEntry entry) =>
+        entry.RotationStatus switch
+        {
+            RotationHealth.Current       => "Current",
+            RotationHealth.RotationDue   => "Due",
+            RotationHealth.RotationOverdue => "Overdue",
+            RotationHealth.Compromised   => "Compromised",
+            _                            => "Unknown",
+        };
+
+    private static string RotationAriaLabel(PharmacyInventoryEntry entry) =>
+        entry.RotationStatus switch
+        {
+            RotationHealth.Current       => "Rotation current",
+            RotationHealth.RotationDue   => "Rotation due",
+            RotationHealth.RotationOverdue => "Rotation overdue",
+            RotationHealth.Compromised   => "Compromised — immediate rotation required",
+            _                            => "Rotation status unknown",
+        };
+}

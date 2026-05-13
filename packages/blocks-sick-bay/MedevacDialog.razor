@@ -1,0 +1,159 @@
+@*
+    W#54 Phase 3a — MedevacDialog per ADR 0082 §8 + ADR 0081 §7.6.
+
+    Accessibility:
+      - role="alertdialog" + aria-modal="true" per SC 4.1.2
+      - aria-labelledby="medevac-dialog-title" per SC 1.3.1
+      - aria-describedby="medevac-dialog-consequence" per SC 4.1.2
+      - IFocusTrap.EnterAsync on open; ExitAsync on close (injected; null-safe)
+      - Inline Tab-trap fallback via @onkeydown (matches SunfishPopup pattern)
+      - Initial focus → Cancel button per ADR 0081 §7.6 dialog pattern
+      - Outcome announced via polite live region (Authorized/Cancelled/Complete)
+      - Unsolicited system cancel → assertive live region
+      - SC 2.1.1: Escape key closes dialog; Tab cycles within
+*@
+
+@if (IsOpen)
+{
+    <div class="medevac-dialog-backdrop"
+         @onclick="HandleBackdropClick"
+         data-test-id="medevac-backdrop">
+
+        <div role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="medevac-dialog-title"
+             aria-describedby="medevac-dialog-consequence"
+             class="medevac-dialog"
+             tabindex="-1"
+             @onkeydown="HandleKeyDown"
+             data-test-id="medevac-dialog">
+
+            <h2 id="medevac-dialog-title">Medical Evacuation Request</h2>
+
+            <p id="medevac-dialog-consequence" data-test-id="medevac-consequence">
+                Authorizing a medevac will escalate to an emergency response.
+                This action is logged and cannot be undone.
+            </p>
+
+            <p class="medevac-state-display" data-test-id="medevac-state">
+                Current state: <strong>@CurrentState</strong>
+            </p>
+
+            <div class="medevac-dialog-actions">
+                <button type="button"
+                        class="medevac-btn-cancel"
+                        data-test-id="medevac-cancel"
+                        @ref="_cancelButtonRef"
+                        @onclick="HandleCancel">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="medevac-btn-authorize"
+                        data-test-id="medevac-authorize"
+                        @ref="_authorizeButtonRef"
+                        @onclick="HandleAuthorize">
+                    Authorize Medevac
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div aria-live="polite"
+         aria-atomic="true"
+         class="medevac-outcome-live"
+         data-test-id="medevac-live-polite">
+        @_politeAnnouncement
+    </div>
+
+    <div aria-live="assertive"
+         aria-atomic="true"
+         class="medevac-alert-live"
+         data-test-id="medevac-live-assertive">
+        @_assertiveAnnouncement
+    </div>
+}
+
+@code {
+    [Inject] private IFocusTrap? FocusTrap { get; set; }
+
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public MedevacState CurrentState { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnAuthorize { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ElementReference _cancelButtonRef;
+    private ElementReference _authorizeButtonRef;
+    private string _politeAnnouncement = string.Empty;
+    private string _assertiveAnnouncement = string.Empty;
+    private bool _wasOpen;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Enter focus trap and focus Cancel button on every false→true transition,
+        // not just firstRender — handles toggle re-open on same component instance.
+        if (IsOpen && !_wasOpen)
+        {
+            _wasOpen = true;
+            if (FocusTrap is not null)
+                await FocusTrap.EnterAsync();
+            // ADR 0081 §7.6: initial focus → Cancel (safe default for destructive dialog).
+            await _cancelButtonRef.FocusAsync();
+        }
+        else if (!IsOpen && _wasOpen)
+        {
+            _wasOpen = false;
+        }
+    }
+
+    private async Task HandleCancel()
+    {
+        _politeAnnouncement = "Medevac request cancelled.";
+        await CloseAsync();
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleAuthorize()
+    {
+        _politeAnnouncement = "Medevac authorized.";
+        await CloseAsync();
+        await OnAuthorize.InvokeAsync();
+    }
+
+    // Intentional no-op: alertdialog MUST NOT dismiss on backdrop click per APG.
+    private void HandleBackdropClick() { }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            _politeAnnouncement = "Medevac dialog closed.";
+            await CloseAsync();
+            await OnClose.InvokeAsync();
+            return;
+        }
+
+        // Inline Tab-trap: cycle focus between Cancel and Authorize when
+        // IFocusTrap is not registered in DI (SC 2.1.2 + SC 2.4.3).
+        if (e.Key == "Tab" && FocusTrap is null)
+        {
+            if (e.ShiftKey)
+                await _cancelButtonRef.FocusAsync();
+            else
+                await _authorizeButtonRef.FocusAsync();
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        if (FocusTrap is not null)
+            await FocusTrap.ExitAsync();
+    }
+
+    public void AnnounceSystemCancel(string reason)
+    {
+        _assertiveAnnouncement = $"Medevac request cancelled by system: {reason}";
+        StateHasChanged();
+    }
+}

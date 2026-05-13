@@ -1,0 +1,105 @@
+@*
+    W#54 Phase 3a — SickBayBlock root Blazor component per ADR 0082 §8.
+    Renders Pharmacy / Lab / Atmosphere tabs; Pharmacy tab hidden when
+    CanViewPharmacy=false (SC 2.4.3 deterministic focus order on tab change).
+
+    Accessibility:
+      - Outer landmark: <section role="region" aria-label="Sick Bay">
+      - Tab list: role="tablist"; each tab: role="tab" aria-selected aria-controls
+      - Tab panels: role="tabpanel" aria-labelledby
+      - Focus order: Pharmacy → Lab → Atmosphere (left-to-right); Pharmacy
+        omitted when hidden; no DOM reordering to avoid SC 1.3.2 violation.
+*@
+
+@if (Snapshot is not null)
+{
+    <section class="sick-bay-block" role="region" aria-label="Sick Bay" data-test-id="sick-bay-block">
+
+        <div role="tablist" aria-label="Sick Bay tabs" class="sick-bay-tabs">
+            @if (CanViewPharmacy)
+            {
+                <button role="tab"
+                        id="tab-pharmacy"
+                        aria-selected="@(_activeTab == Tab.Pharmacy ? "true" : "false")"
+                        aria-controls="panel-pharmacy"
+                        tabindex="@(_activeTab == Tab.Pharmacy ? "0" : "-1")"
+                        class="sick-bay-tab@(_activeTab == Tab.Pharmacy ? " active" : "")"
+                        data-test-id="tab-pharmacy"
+                        @onclick="() => ActivateTab(Tab.Pharmacy)">
+                    Pharmacy
+                </button>
+            }
+            <button role="tab"
+                    id="tab-lab"
+                    aria-selected="@(_activeTab == Tab.Lab ? "true" : "false")"
+                    aria-controls="panel-lab"
+                    tabindex="@(_activeTab == Tab.Lab ? "0" : "-1")"
+                    class="sick-bay-tab@(_activeTab == Tab.Lab ? " active" : "")"
+                    data-test-id="tab-lab"
+                    @onclick="() => ActivateTab(Tab.Lab)">
+                Lab
+            </button>
+            <button role="tab"
+                    id="tab-atmosphere"
+                    aria-selected="@(_activeTab == Tab.Atmosphere ? "true" : "false")"
+                    aria-controls="panel-atmosphere"
+                    tabindex="@(_activeTab == Tab.Atmosphere ? "0" : "-1")"
+                    class="sick-bay-tab@(_activeTab == Tab.Atmosphere ? " active" : "")"
+                    data-test-id="tab-atmosphere"
+                    @onclick="() => ActivateTab(Tab.Atmosphere)">
+                Atmosphere
+            </button>
+        </div>
+
+        @if (CanViewPharmacy)
+        {
+            <div role="tabpanel"
+                 id="panel-pharmacy"
+                 aria-labelledby="tab-pharmacy"
+                 hidden="@(_activeTab != Tab.Pharmacy)"
+                 data-test-id="panel-pharmacy">
+                <PharmacyTabContent Inventory="@Snapshot.Pharmacy" />
+            </div>
+        }
+
+        <div role="tabpanel"
+             id="panel-lab"
+             aria-labelledby="tab-lab"
+             hidden="@(_activeTab != Tab.Lab)"
+             data-test-id="panel-lab">
+            <LabTabContent Results="@Snapshot.Lab" />
+        </div>
+
+        <div role="tabpanel"
+             id="panel-atmosphere"
+             aria-labelledby="tab-atmosphere"
+             hidden="@(_activeTab != Tab.Atmosphere)"
+             data-test-id="panel-atmosphere">
+            <AtmosphereTabContent Readout="@Snapshot.Atmosphere" />
+        </div>
+
+    </section>
+}
+else
+{
+    <div class="sick-bay-loading" role="status" aria-live="polite" data-test-id="sick-bay-loading">
+        Loading Sick Bay data…
+    </div>
+}
+
+@code {
+    private enum Tab { Pharmacy, Lab, Atmosphere }
+
+    [Parameter] public SickBaySnapshot? Snapshot { get; set; }
+    [Parameter] public bool CanViewPharmacy { get; set; } = true;
+
+    private Tab _activeTab = Tab.Lab;
+
+    protected override void OnParametersSet()
+    {
+        if (_activeTab == Tab.Pharmacy && !CanViewPharmacy)
+            _activeTab = Tab.Lab;
+    }
+
+    private void ActivateTab(Tab tab) => _activeTab = tab;
+}

@@ -1,0 +1,94 @@
+@*
+    W#54 Phase 3a — AtmosphereTabContent per ADR 0082 §8.
+
+    Live regions per SC 4.1.3:
+      - Polite aria-live for routine status updates (health-gauge-status div).
+      - Assertive aria-live ONLY on Red escalation (health-gauge-alert div).
+    The assertive region is empty unless OverallHealth is Red.
+*@
+
+@if (Readout is null)
+{
+    <div role="status" aria-live="polite" data-test-id="atmosphere-loading">
+        Loading atmosphere data…
+    </div>
+}
+else
+{
+    <div class="atmosphere-gauge" data-test-id="atmosphere-gauge">
+
+        <div class="atmosphere-health atmosphere-health--@HealthCss(Readout.OverallHealth)"
+             data-test-id="atmosphere-health"
+             data-health="@Readout.OverallHealth">
+            <span class="atmosphere-health-icon" role="img" aria-label="@HealthAriaLabel(Readout.OverallHealth)">
+                @HealthIcon(Readout.OverallHealth)
+            </span>
+            <span class="atmosphere-health-label">@Readout.OverallHealth</span>
+        </div>
+
+        <dl class="atmosphere-counts" data-test-id="atmosphere-counts">
+            <dt>Warning probes</dt>
+            <dd>@Readout.WarningProbeCount</dd>
+            <dt>Critical probes</dt>
+            <dd>@Readout.CriticalProbeCount</dd>
+        </dl>
+
+        @if (Readout.ForceEnableActive)
+        {
+            <div class="atmosphere-force-enable" role="note" data-test-id="force-enable-notice">
+                Operator force-enable override is active.
+            </div>
+        }
+
+        <div aria-live="polite"
+             aria-atomic="true"
+             class="atmosphere-status-live"
+             data-test-id="atmosphere-live-polite">
+            @PoliteAnnouncement(Readout)
+        </div>
+
+        <div aria-live="assertive"
+             aria-atomic="true"
+             class="atmosphere-alert-live"
+             data-test-id="atmosphere-live-assertive">
+            @AssertiveAnnouncement(Readout)
+        </div>
+
+    </div>
+}
+
+@code {
+    [Parameter] public AtmosphereReadout? Readout { get; set; }
+
+    private static string HealthCss(AtmosphereHealth h) =>
+        h.ToString().ToLowerInvariant();
+
+    private static string HealthIcon(AtmosphereHealth h) =>
+        h switch
+        {
+            AtmosphereHealth.Green   => "✓",
+            AtmosphereHealth.Yellow  => "⚠",
+            AtmosphereHealth.Orange  => "⚠⚠",
+            AtmosphereHealth.Red     => "⛔",
+            _                        => "…",
+        };
+
+    private static string HealthAriaLabel(AtmosphereHealth h) =>
+        h switch
+        {
+            AtmosphereHealth.Green   => "All probes healthy",
+            AtmosphereHealth.Yellow  => "Warning: one or more probes degraded",
+            AtmosphereHealth.Orange  => "Warning: multiple probe degradations",
+            AtmosphereHealth.Red     => "Critical: immediate intervention required",
+            AtmosphereHealth.Unknown => "Atmosphere status unknown",
+            _                        => "Atmosphere status unknown",
+        };
+
+    private static string PoliteAnnouncement(AtmosphereReadout r) =>
+        $"Atmosphere: {r.OverallHealth}. {r.WarningProbeCount} warning, {r.CriticalProbeCount} critical.";
+
+    private static string AssertiveAnnouncement(AtmosphereReadout r) =>
+        r.OverallHealth == AtmosphereHealth.Red
+            ? "Alert: atmosphere critical — immediate intervention required."
+            : string.Empty;
+}
