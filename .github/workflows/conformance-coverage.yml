@@ -26,16 +26,11 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Restore
-        run: dotnet restore packages/ui-adapters-blazor/tests/tests.csproj -p:NoWarn=NU1510
-
-      - name: Build
-        run: dotnet build packages/ui-adapters-blazor/tests/tests.csproj -c Release --no-restore
-
       - name: Run conformance coverage tests
         run: |
           dotnet test packages/ui-adapters-blazor/tests/tests.csproj \
-            -c Release --no-build \
+            -c Release \
+            -p:MSBuildWarningsAsMessages=NU1510 \
             --filter "Category=ConformanceCoverage|FullyQualifiedName~Phase4" \
             --logger "console;verbosity=normal"
 

@@ -27,12 +27,14 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj -p:NoWarn=NU1510
+        run: |
+          dotnet restore packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj \
+            -p:MSBuildWarningsAsMessages=NU1510
 
       - name: Build (verifies ILiveAnnouncer + IFocusTrap bindings compile)
         run: |
           dotnet build packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj \
-            -c Release --no-restore
+            -c Release --no-restore -p:MSBuildWarningsAsMessages=NU1510
 
       - name: Assert Blazor ILiveAnnouncer binding exists
         run: |
@@ -66,8 +68,8 @@ jobs:
 
       - name: Run a11y binding tests
         run: |
-          dotnet restore packages/ui-adapters-blazor/tests/tests.csproj -p:NoWarn=NU1510
           dotnet test packages/ui-adapters-blazor/tests/tests.csproj \
             -c Release \
+            -p:MSBuildWarningsAsMessages=NU1510 \
             --filter "Category=A11yBindings|FullyQualifiedName~Phase4" \
             --logger "console;verbosity=normal"
