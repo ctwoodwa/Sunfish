@@ -98,6 +98,26 @@ public sealed class ERPNextHttpClient : IERPNextClient
         return doc.RootElement.Clone();
     }
 
+    public async Task<JsonElement> GetListWithFieldsAsync(
+        string doctype,
+        string company,
+        IReadOnlyList<string> fields,
+        int limit = 100,
+        CancellationToken ct = default)
+    {
+        var companyFilter = $"[[\"company\",\"=\",\"{EscapeJson(company)}\"]]";
+        var fieldsJson = JsonSerializer.Serialize(fields);
+        var url = $"/api/resource/{Uri.EscapeDataString(doctype)}" +
+                  $"?filters={Uri.EscapeDataString(companyFilter)}" +
+                  $"&fields={Uri.EscapeDataString(fieldsJson)}" +
+                  $"&limit_page_length={limit}";
+
+        using var req = BuildRequest(HttpMethod.Get, url);
+        using var resp = await _http.SendAsync(req, ct).ConfigureAwait(false);
+        resp.EnsureSuccessStatusCode();
+        return await ParseJsonAsync(resp, ct).ConfigureAwait(false);
+    }
+
     private static string EscapeJson(string value)
         => value.Replace("\\", "\\\\", StringComparison.Ordinal)
                 .Replace("\"", "\\\"", StringComparison.Ordinal);

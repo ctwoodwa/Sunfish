@@ -84,3 +84,33 @@ export async function recordPayment(payload: RecordPaymentInput): Promise<Paymen
   })
   return result.data
 }
+
+// ── Phase 4: Accounting ──────────────────────────────────────────────────────
+
+export interface AccountingSummary {
+  period: string
+  income: number
+  expenses: number
+  net: number
+}
+
+export interface OutstandingInvoice {
+  name: string
+  customer: string
+  outstanding_amount: number
+  due_date: string
+  status: string
+}
+
+interface OutstandingListResponse {
+  data: OutstandingInvoice[]
+}
+
+export async function getAccountingSummary(): Promise<AccountingSummary> {
+  return apiFetch<AccountingSummary>('/api/v1/erpnext/accounting/summary')
+}
+
+export async function getAccountingOutstanding(): Promise<OutstandingInvoice[]> {
+  const result = await apiFetch<OutstandingListResponse>('/api/v1/erpnext/accounting/outstanding')
+  return result.data.filter((inv) => inv.outstanding_amount > 0)
+}

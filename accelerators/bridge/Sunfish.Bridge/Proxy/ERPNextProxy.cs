@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -25,6 +26,12 @@ public static class ERPNextProxy
         group.MapGet("/payments",           HandleGetPaymentsAsync).WithName("GetERPNextPayments");
         group.MapGet("/payments/{name}",    HandleGetPaymentAsync).WithName("GetERPNextPayment");
         group.MapPost("/payments",          HandlePostPaymentAsync).WithName("PostERPNextPayment");
+
+        // Phase 4 — accounting summary + outstanding balances.
+        // Note (HALT condition): ERPNext P&L Statement report requires admin privileges;
+        // we use GL Entry queries instead (narrower, accessible to API key users).
+        group.MapGet("/accounting/summary",     HandleGetAccountingSummaryAsync).WithName("GetERPNextAccountingSummary");
+        group.MapGet("/accounting/outstanding", HandleGetAccountingOutstandingAsync).WithName("GetERPNextAccountingOutstanding");
 
         return app;
     }
@@ -107,6 +114,65 @@ public static class ERPNextProxy
             return MissingCompanyResult();
 
         var result = await client.PostAsync("Payment", body, company, ct).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    internal static async Task<IResult> HandleGetAccountingSummaryAsync(
+        IERPNextClient client,
+        IOptions<ERPNextOptions> options,
+        CancellationToken ct)
+    {
+        var company = options.Value.DefaultCompany;
+        if (string.IsNullOrWhiteSpace(company))
+            return MissingCompanyResult();
+
+        // Query GL Entry for income (credits) and expense (debits) by account_type.
+        // Limit 500 — adequate for CO's portfolio size in Phase 2 demo.
+        var glResult = await client.GetListWithFieldsAsync(
+            "GL Entry", company,
+            ["account_type", "debit", "credit", "posting_date", "account"],
+            limit: 500, ct: ct).ConfigureAwait(false);
+
+        decimal totalIncome = 0m, totalExpenses = 0m;
+        if (glResult.TryGetProperty("data", out var rows) && rows.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var row in rows.EnumerateArray())
+            {
+                var accountType = row.TryGetProperty("account_type", out var at) ? at.GetString() : null;
+                var credit = row.TryGetProperty("credit", out var cr) ? cr.GetDecimal() : 0m;
+                var debit  = row.TryGetProperty("debit",  out var dr) ? dr.GetDecimal() : 0m;
+                if (accountType is "Income" or "Other Income")
+                    totalIncome += credit - debit;
+                else if (accountType is "Expense" or "Cost of Goods Sold")
+                    totalExpenses += debit - credit;
+            }
+        }
+
+        var period = $"{DateTime.UtcNow.Year}";
+        return Results.Ok(new
+        {
+            period,
+            income   = Math.Round(totalIncome, 2),
+            expenses = Math.Round(totalExpenses, 2),
+            net      = Math.Round(totalIncome - totalExpenses, 2),
+        });
+    }
+
+    internal static async Task<IResult> HandleGetAccountingOutstandingAsync(
+        IERPNextClient client,
+        IOptions<ERPNextOptions> options,
+        CancellationToken ct)
+    {
+        var company = options.Value.DefaultCompany;
+        if (string.IsNullOrWhiteSpace(company))
+            return MissingCompanyResult();
+
+        // Outstanding Sales Invoices (tenant receivables).
+        var result = await client.GetListWithFieldsAsync(
+            "Sales Invoice", company,
+            ["customer", "outstanding_amount", "due_date", "name", "status"],
+            limit: 100, ct: ct).ConfigureAwait(false);
+
         return Results.Ok(result);
     }
 

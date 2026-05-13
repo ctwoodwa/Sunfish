@@ -147,5 +147,15 @@ public sealed class ERPNextProxyTests
             LastCompany = company;
             return Task.FromResult(_result);
         }
+
+        public Task<JsonElement> GetListWithFieldsAsync(
+            string doctype, string company,
+            IReadOnlyList<string> fields,
+            int limit = 100, CancellationToken ct = default)
+        {
+            LastDoctype = doctype;
+            LastCompany = company;
+            return Task.FromResult(_result);
+        }
     }
 }

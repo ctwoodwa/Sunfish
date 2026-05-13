@@ -6,6 +6,8 @@ import { PropertiesPage } from '@/pages/PropertiesPage'
 import { LeasesPage } from '@/pages/LeasesPage'
 import { LeaseDetailPage } from '@/pages/LeaseDetailPage'
 import { RentCollectionPage } from '@/pages/RentCollectionPage'
+import { AccountingPage } from '@/pages/AccountingPage'
+import { CrewCommsPage } from '@/pages/CrewCommsPage'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -98,6 +100,22 @@ function AppLayout() {
             >
               Rent
             </NavLink>
+            <NavLink
+              to="/accounting"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Accounting
+            </NavLink>
+            <NavLink
+              to="/comms"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Comms
+            </NavLink>
           </nav>
           <CompanySwitcher />
         </div>
@@ -109,6 +127,8 @@ function AppLayout() {
           <Route path="/leases" element={<LeasesPage />} />
           <Route path="/leases/:name" element={<LeaseDetailPage />} />
           <Route path="/rent" element={<RentCollectionPage />} />
+          <Route path="/accounting" element={<AccountingPage />} />
+          <Route path="/comms" element={<CrewCommsPage />} />
         </Routes>
       </main>
     </div>
