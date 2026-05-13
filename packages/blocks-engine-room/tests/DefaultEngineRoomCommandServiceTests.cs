@@ -375,4 +375,149 @@ public class DefaultEngineRoomCommandServiceTests
             Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.ManualCompactionCompleted)),
             Arg.Any<CancellationToken>());
     }
+
+    // ── Council amendment: parity tests for Release + Compact denial and null-principal paths ──
+
+    /// <summary>
+    /// F7 — null-principal fail-closed parity for Release path.
+    /// </summary>
+    [Fact]
+    public async Task ReleaseQuarantine_NullPrincipal_FailClosed_EmitsDenialAndThrows()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(null));
+        var store = SuccessfulStore();
+        var svc = Build(store: store, actorResolver: actorResolver, auditTrail: audit);
+
+        await Assert.ThrowsAsync<EngineRoomUnauthorizedException>(
+            () => svc.ReleaseQuarantineAsync(DocId, TenantA, ActorA, Reason).AsTask());
+
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineReleaseRequested)),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DamageControlAuthorizationDenied)),
+            Arg.Any<CancellationToken>());
+        await store.DidNotReceive().ReleaseAsync(Arg.Any<string>(), Arg.Any<TenantId>(),
+            Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// F7 — null-principal fail-closed parity for Compact path.
+    /// </summary>
+    [Fact]
+    public async Task CompactDocument_NullPrincipal_FailClosed_EmitsDenialAndThrows()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(null));
+        var store = SuccessfulStore();
+        var svc = Build(store: store, actorResolver: actorResolver, auditTrail: audit);
+
+        await Assert.ThrowsAsync<EngineRoomUnauthorizedException>(
+            () => svc.CompactDocumentAsync(DocId, TenantA, ActorA).AsTask());
+
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.ManualCompactionInitiated)),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DamageControlAuthorizationDenied)),
+            Arg.Any<CancellationToken>());
+        await store.DidNotReceive().CompactAsync(Arg.Any<string>(), Arg.Any<TenantId>(),
+            Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// F8 — §Trust ordering parity: pre-op BEFORE denial audit on Release path.
+    /// </summary>
+    [Fact]
+    public async Task ReleaseQuarantine_AuthDenied_PreOpOrderedBeforeDenialAudit()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        var principal = new Individual(PrincipalId.FromBytes(new byte[32]));
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(principal));
+        var permResolver = AlwaysDeny();
+        var svc = Build(actorResolver: actorResolver, permissionResolver: permResolver, auditTrail: audit);
+
+        await Assert.ThrowsAsync<EngineRoomUnauthorizedException>(
+            () => svc.ReleaseQuarantineAsync(DocId, TenantA, ActorA, Reason).AsTask());
+
+        Received.InOrder(() =>
+        {
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineReleaseRequested)),
+                Arg.Any<CancellationToken>());
+            actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+            permResolver.ResolveAsync(
+                Arg.Any<TenantId>(), Arg.Any<Principal>(),
+                Arg.Any<ShipLocation>(), Arg.Any<DeckDepth>(),
+                Arg.Any<ShipAction>(), Arg.Any<Resource?>(),
+                Arg.Any<CancellationToken>());
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DamageControlAuthorizationDenied)),
+                Arg.Any<CancellationToken>());
+        });
+    }
+
+    /// <summary>
+    /// F8 — §Trust ordering parity: pre-op BEFORE denial audit on Compact path.
+    /// </summary>
+    [Fact]
+    public async Task CompactDocument_AuthDenied_PreOpOrderedBeforeDenialAudit()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        var actorResolver = Substitute.For<IActorPrincipalResolver>();
+        var principal = new Individual(PrincipalId.FromBytes(new byte[32]));
+        actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult<Principal?>(principal));
+        var permResolver = AlwaysDeny();
+        var svc = Build(actorResolver: actorResolver, permissionResolver: permResolver, auditTrail: audit);
+
+        await Assert.ThrowsAsync<EngineRoomUnauthorizedException>(
+            () => svc.CompactDocumentAsync(DocId, TenantA, ActorA).AsTask());
+
+        Received.InOrder(() =>
+        {
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.ManualCompactionInitiated)),
+                Arg.Any<CancellationToken>());
+            actorResolver.ResolveAsync(Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+            permResolver.ResolveAsync(
+                Arg.Any<TenantId>(), Arg.Any<Principal>(),
+                Arg.Any<ShipLocation>(), Arg.Any<DeckDepth>(),
+                Arg.Any<ShipAction>(), Arg.Any<Resource?>(),
+                Arg.Any<CancellationToken>());
+            audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DamageControlAuthorizationDenied)),
+                Arg.Any<CancellationToken>());
+        });
+    }
+
+    /// <summary>
+    /// F1/F9 (Blocking) — pre-op audit storage failure aborts the operation before any
+    /// store interaction. The §Trust invariant is: no forensic gap means no mutation.
+    /// </summary>
+    [Fact]
+    public async Task QuarantineDocument_PreOpAuditStorageFails_DoesNotPersistAndPropagates()
+    {
+        var audit = Substitute.For<IAuditTrail>();
+        audit.AppendAsync(
+                Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.DocumentQuarantineRequested)),
+                Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("audit storage unavailable"));
+        var store = SuccessfulStore();
+        var svc = Build(store: store, auditTrail: audit);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => svc.QuarantineDocumentAsync(DocId, TenantA, ActorA, Reason).AsTask());
+
+        await store.DidNotReceive().QuarantineAsync(
+            Arg.Any<string>(), Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
 }

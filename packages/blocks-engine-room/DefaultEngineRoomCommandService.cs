@@ -94,7 +94,8 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
         var occurredAt = _time.GetUtcNow();
 
         // Step 1 (FIRST): pre-op audit per §Trust ordering invariant.
-        await EmitAsync(
+        // Fail-stop: if audit storage fails the operation aborts; a forensic gap on pre-op is not acceptable.
+        await EmitPreOpAsync(
             AuditEventType.DocumentQuarantineRequested,
             tenantId,
             BuildPayload(documentId, requestedBy, reason: reason),
@@ -139,8 +140,8 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
 
         var occurredAt = _time.GetUtcNow();
 
-        // Step 1: pre-op audit.
-        await EmitAsync(
+        // Step 1: pre-op audit (fail-stop — see QuarantineDocumentAsync comment).
+        await EmitPreOpAsync(
             AuditEventType.DocumentQuarantineReleaseRequested,
             tenantId,
             BuildPayload(documentId, requestedBy, reason: reason),
@@ -183,8 +184,8 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
 
         var occurredAt = _time.GetUtcNow();
 
-        // Step 1: pre-op audit.
-        await EmitAsync(
+        // Step 1: pre-op audit (fail-stop — see QuarantineDocumentAsync comment).
+        await EmitPreOpAsync(
             AuditEventType.ManualCompactionInitiated,
             tenantId,
             BuildPayload(documentId, requestedBy, reason: null),
@@ -254,6 +255,16 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
             _logger.LogWarning(ex,
                 "EOOW watch check threw for tenant {TenantId}; Damage Control command proceeding.",
                 tenantId);
+            // §Trust: the failure itself must be on the forensic trail, not just logs.
+            await EmitAsync(
+                AuditEventType.EngineRoomHealthDegraded,
+                tenantId,
+                new AuditPayload(new Dictionary<string, object?>
+                {
+                    ["reason"] = "eoow_check_threw",
+                }),
+                _time.GetUtcNow(),
+                ct).ConfigureAwait(false);
         }
     }
 
@@ -321,6 +332,31 @@ public sealed class DefaultEngineRoomCommandService : IEngineRoomCommandService
             }),
             occurredAt,
             ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Fail-stop audit emit for pre-op events. Unlike <see cref="EmitAsync"/>,
+    /// any storage failure propagates to the caller — aborting the operation
+    /// before any side-effects occur is the correct §Trust behaviour when the
+    /// forensic record of intent cannot be written.
+    /// </summary>
+    private async ValueTask EmitPreOpAsync(
+        AuditEventType eventType,
+        TenantId tenantId,
+        AuditPayload payload,
+        DateTimeOffset occurredAt,
+        CancellationToken ct)
+    {
+        var nonce = Guid.NewGuid();
+        var signed = await _signer.SignAsync(payload, occurredAt, nonce, ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: tenantId,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: Array.Empty<AttestingSignature>());
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
     }
 
     private static AuditPayload BuildPayload(string documentId, ActorId requestedBy, string? reason)
