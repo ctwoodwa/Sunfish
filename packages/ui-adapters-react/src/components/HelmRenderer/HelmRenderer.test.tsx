@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { HelmRenderer } from './HelmRenderer';
 import {
   HelmSlot,
@@ -43,7 +43,7 @@ function makeRegistry(widgets: HelmWidget[]): HelmWidgetRegistry {
   };
 }
 
-// A full set of fixtures mirroring the 6 canonical widgets
+/** Full set of 6 canonical widgets per ADR 0066 §1.4. */
 function makeCanonicalRegistry(): HelmWidgetRegistry {
   const identityGlance = makeWidget(
     'identity-glance',
@@ -92,21 +92,30 @@ function makeCanonicalRegistry(): HelmWidgetRegistry {
 // ===== Tests =====
 
 describe('HelmRenderer', () => {
-  describe('null guard (parity with Blazor OnParametersSetAsync null-guard)', () => {
-    it('renders nothing when registry is undefined', () => {
-      const { container } = render(
-        <HelmRenderer registry={undefined} context={makeContext()} />,
-      );
-      expect(container.firstChild).toBeNull();
+  describe('null guard — nav always renders (parity with Blazor)', () => {
+    it('renders <nav> landmark even when registry is undefined', () => {
+      // Blazor always renders <nav class="sunfish-helm"> — inner @if guards slot content.
+      render(<HelmRenderer registry={undefined} context={makeContext()} />);
+      expect(screen.getByRole('navigation', { name: 'Helm' })).toBeInTheDocument();
     });
 
-    it('renders nothing when context is undefined', async () => {
+    it('renders <nav> landmark even when context is undefined', () => {
       const widget = makeWidget('x', HelmSlot.GlanceBand, 1, makeViewState('X'));
-      const registry = makeRegistry([widget]);
-      const { container } = render(
-        <HelmRenderer registry={registry} context={undefined} />,
-      );
-      expect(container.firstChild).toBeNull();
+      render(<HelmRenderer registry={makeRegistry([widget])} context={undefined} />);
+      expect(screen.getByRole('navigation', { name: 'Helm' })).toBeInTheDocument();
+    });
+
+    it('nav is present while view-states are computing (before useEffect resolves)', () => {
+      let resolve!: (v: HelmWidgetViewState) => void;
+      const pendingWidget: HelmWidget = {
+        metadata: { widgetId: 'slow', slot: HelmSlot.GlanceBand, orderHint: 1, accessibleName: 'slow widget' },
+        compute: vi.fn().mockReturnValue(new Promise<HelmWidgetViewState>((r) => { resolve = r; })),
+      };
+      render(<HelmRenderer registry={makeRegistry([pendingWidget])} context={makeContext()} />);
+      // nav must be present immediately — content renders after resolve
+      expect(screen.getByRole('navigation', { name: 'Helm' })).toBeInTheDocument();
+      // Clean up pending promise
+      act(() => { resolve(makeViewState('done')); });
     });
   });
 
@@ -117,14 +126,11 @@ describe('HelmRenderer', () => {
       await waitFor(() => expect(screen.getByRole('navigation', { name: 'Helm' })).toBeInTheDocument());
     });
 
-    it('renders <nav> with custom helmAriaLabel', async () => {
-      const registry = makeCanonicalRegistry();
+    it('renders <nav> with custom helmAriaLabel', () => {
       render(
-        <HelmRenderer registry={registry} context={makeContext()} helmAriaLabel="Main Helm" />,
+        <HelmRenderer registry={undefined} context={makeContext()} helmAriaLabel="Main Helm" />,
       );
-      await waitFor(() =>
-        expect(screen.getByRole('navigation', { name: 'Main Helm' })).toBeInTheDocument(),
-      );
+      expect(screen.getByRole('navigation', { name: 'Main Helm' })).toBeInTheDocument();
     });
   });
 
@@ -133,7 +139,6 @@ describe('HelmRenderer', () => {
       const registry = makeCanonicalRegistry();
       render(<HelmRenderer registry={registry} context={makeContext()} />);
 
-      // 6 canonical widgets — wait for identity-glance to confirm render
       await waitFor(() =>
         expect(screen.getByRole('region', { name: 'identity-glance widget' })).toBeInTheDocument(),
       );
@@ -217,6 +222,20 @@ describe('HelmRenderer', () => {
       expect(screen.getByRole('group', { name: 'Quick Actions' })).toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Feed' })).toBeInTheDocument();
     });
+
+    it('empty registry renders slot groups with no widget sections', async () => {
+      // Parity: Blazor renders empty slot divs when GetSlot returns empty; no widget @foreach items.
+      const registry = makeRegistry([]);
+      render(<HelmRenderer registry={registry} context={makeContext()} />);
+      await waitFor(() =>
+        // nav must be present; slot groups present; no widget sections
+        expect(screen.getByRole('navigation', { name: 'Helm' })).toBeInTheDocument(),
+      );
+      // Slot groups exist
+      expect(screen.getAllByRole('group').length).toBeGreaterThanOrEqual(3);
+      // No widget sections (role=region from <section>)
+      expect(screen.queryAllByRole('region')).toHaveLength(0);
+    });
   });
 
   describe('action buttons — wire contract (parity with HelmRenderer.razor)', () => {
@@ -268,53 +287,43 @@ describe('HelmRenderer', () => {
   describe('widget content rendering', () => {
     it('renders primaryLabel text', async () => {
       const widget = makeWidget('w1', HelmSlot.GlanceBand, 1, makeViewState('Primary text'));
-      const registry = makeRegistry([widget]);
-      render(<HelmRenderer registry={registry} context={makeContext()} />);
+      render(<HelmRenderer registry={makeRegistry([widget])} context={makeContext()} />);
       await waitFor(() => expect(screen.getByText('Primary text')).toBeInTheDocument());
     });
 
     it('renders secondaryLabel when present', async () => {
       const widget = makeWidget('w1', HelmSlot.GlanceBand, 1, makeViewState('Primary', 'Secondary'));
-      const registry = makeRegistry([widget]);
-      render(<HelmRenderer registry={registry} context={makeContext()} />);
+      render(<HelmRenderer registry={makeRegistry([widget])} context={makeContext()} />);
       await waitFor(() => expect(screen.getByText('Secondary')).toBeInTheDocument());
     });
 
     it('omits secondaryLabel element when absent', async () => {
       const widget = makeWidget('w1', HelmSlot.GlanceBand, 1, makeViewState('Primary'));
-      const registry = makeRegistry([widget]);
-      const { container } = render(<HelmRenderer registry={registry} context={makeContext()} />);
+      const { container } = render(<HelmRenderer registry={makeRegistry([widget])} context={makeContext()} />);
       await waitFor(() => expect(screen.getByText('Primary')).toBeInTheDocument());
-      const secondary = container.querySelector('.sunfish-helm-widget-secondary');
-      expect(secondary).toBeNull();
+      expect(container.querySelector('.sunfish-helm-widget-secondary')).toBeNull();
     });
 
     it('omits actions group when actions is empty', async () => {
       const widget = makeWidget('w1', HelmSlot.GlanceBand, 1, makeViewState('Primary', undefined, []));
-      const registry = makeRegistry([widget]);
-      const { container } = render(<HelmRenderer registry={registry} context={makeContext()} />);
+      const { container } = render(<HelmRenderer registry={makeRegistry([widget])} context={makeContext()} />);
       await waitFor(() => expect(screen.getByText('Primary')).toBeInTheDocument());
-      const actionsGroup = container.querySelector('.sunfish-helm-widget-actions');
-      expect(actionsGroup).toBeNull();
+      expect(container.querySelector('.sunfish-helm-widget-actions')).toBeNull();
     });
   });
 
   describe('data-widget-id attribute (parity with Blazor data-widget-id)', () => {
     it('widget section carries data-widget-id', async () => {
       const widget = makeWidget('my-widget', HelmSlot.GlanceBand, 1, makeViewState('Label'));
-      const registry = makeRegistry([widget]);
-      const { container } = render(<HelmRenderer registry={registry} context={makeContext()} />);
+      const { container } = render(<HelmRenderer registry={makeRegistry([widget])} context={makeContext()} />);
       await waitFor(() => expect(screen.getByText('Label')).toBeInTheDocument());
-      const section = container.querySelector('[data-widget-id="my-widget"]');
-      expect(section).not.toBeNull();
+      expect(container.querySelector('[data-widget-id="my-widget"]')).not.toBeNull();
     });
   });
 
   describe('CSS class parity (parity with HelmRenderer.razor class names)', () => {
-    it('outer nav has className "sunfish-helm"', async () => {
-      const widget = makeWidget('w', HelmSlot.GlanceBand, 1, makeViewState('L'));
-      render(<HelmRenderer registry={makeRegistry([widget])} context={makeContext()} />);
-      await waitFor(() => expect(screen.getByText('L')).toBeInTheDocument());
+    it('outer nav has className "sunfish-helm"', () => {
+      render(<HelmRenderer registry={undefined} context={makeContext()} />);
       const nav = screen.getByRole('navigation');
       expect(nav.className).toContain('sunfish-helm');
     });
@@ -351,8 +360,7 @@ describe('HelmRenderer', () => {
     it('calls compute on all widgets in the registry', async () => {
       const w1 = makeWidget('w1', HelmSlot.GlanceBand, 1, makeViewState('L1'));
       const w2 = makeWidget('w2', HelmSlot.ActionStack, 1, makeViewState('L2'));
-      const registry = makeRegistry([w1, w2]);
-      render(<HelmRenderer registry={registry} context={makeContext()} />);
+      render(<HelmRenderer registry={makeRegistry([w1, w2])} context={makeContext()} />);
       await waitFor(() => expect(screen.getByText('L1')).toBeInTheDocument());
       expect(w1.compute).toHaveBeenCalledTimes(1);
       expect(w2.compute).toHaveBeenCalledTimes(1);
@@ -361,10 +369,100 @@ describe('HelmRenderer', () => {
     it('passes the HelmRenderContext to each widget compute call', async () => {
       const ctx = makeContext();
       const widget = makeWidget('w', HelmSlot.GlanceBand, 1, makeViewState('L'));
-      const registry = makeRegistry([widget]);
-      render(<HelmRenderer registry={registry} context={ctx} />);
+      render(<HelmRenderer registry={makeRegistry([widget])} context={ctx} />);
       await waitFor(() => expect(screen.getByText('L')).toBeInTheDocument());
       expect(widget.compute).toHaveBeenCalledWith(ctx, expect.any(AbortSignal));
+    });
+  });
+
+  describe('AbortController cancellation (F3 — parity with Blazor cleanup)', () => {
+    it('unmounting before compute resolves does not trigger a late state update', async () => {
+      // Must not throw "Cannot update a component while rendering a different component"
+      // or "Warning: Can't perform a React state update on an unmounted component"
+      let resolve!: (v: HelmWidgetViewState) => void;
+      const slowWidget: HelmWidget = {
+        metadata: { widgetId: 'slow', slot: HelmSlot.GlanceBand, orderHint: 1, accessibleName: 'slow' },
+        compute: vi.fn().mockReturnValue(
+          new Promise<HelmWidgetViewState>((r) => { resolve = r; }),
+        ),
+      };
+      const { unmount } = render(
+        <HelmRenderer registry={makeRegistry([slowWidget])} context={makeContext()} />,
+      );
+      // nav is present immediately
+      expect(screen.getByRole('navigation')).toBeInTheDocument();
+      // Unmount before compute resolves — active flag prevents setState
+      unmount();
+      // Resolve the promise after unmount — should be a no-op
+      await act(async () => { resolve(makeViewState('late result')); });
+      // No assertion: test passes if no unhandled error or act() warning is thrown
+    });
+
+    it('replacing registry mid-compute drops stale view-states', async () => {
+      let resolveFirst!: (v: HelmWidgetViewState) => void;
+      const slowWidget: HelmWidget = {
+        metadata: { widgetId: 'slow', slot: HelmSlot.GlanceBand, orderHint: 1, accessibleName: 'slow' },
+        compute: vi.fn().mockReturnValueOnce(
+          new Promise<HelmWidgetViewState>((r) => { resolveFirst = r; }),
+        ).mockResolvedValue(makeViewState('new result')),
+      };
+
+      const { rerender } = render(
+        <HelmRenderer registry={makeRegistry([slowWidget])} context={makeContext()} />,
+      );
+
+      // Re-render with a new registry before the first compute resolves
+      const newRegistry = makeRegistry([slowWidget]);
+      rerender(<HelmRenderer registry={newRegistry} context={makeContext()} />);
+
+      // New compute should be called with the new registry (second invocation)
+      await waitFor(() => expect(screen.getByText('new result')).toBeInTheDocument());
+
+      // Now resolve the original stale promise — its result should be discarded
+      await act(async () => { resolveFirst(makeViewState('stale result')); });
+      expect(screen.queryByText('stale result')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('error propagation (F2 — parity with Blazor OnParametersSetAsync behaviour)', () => {
+    it('throws compute errors to be caught by the nearest React error boundary', async () => {
+      const error = new Error('compute failed');
+      const failingWidget: HelmWidget = {
+        metadata: { widgetId: 'fail', slot: HelmSlot.GlanceBand, orderHint: 1, accessibleName: 'fail' },
+        compute: vi.fn().mockRejectedValue(error),
+      };
+
+      // Suppress the error boundary console output during this test
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      class ErrorBoundary extends (await import('react')).Component<
+        { children: React.ReactNode },
+        { caught: Error | null }
+      > {
+        constructor(props: { children: React.ReactNode }) {
+          super(props);
+          this.state = { caught: null };
+        }
+        static getDerivedStateFromError(err: Error) {
+          return { caught: err };
+        }
+        render() {
+          if (this.state.caught) return <div data-testid="caught">{this.state.caught.message}</div>;
+          return this.props.children;
+        }
+      }
+
+      render(
+        <ErrorBoundary>
+          <HelmRenderer registry={makeRegistry([failingWidget])} context={makeContext()} />
+        </ErrorBoundary>,
+      );
+
+      await waitFor(() =>
+        expect(screen.getByTestId('caught')).toHaveTextContent('compute failed'),
+      );
+
+      consoleError.mockRestore();
     });
   });
 

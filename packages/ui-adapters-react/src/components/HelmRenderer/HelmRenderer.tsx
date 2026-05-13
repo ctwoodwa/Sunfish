@@ -10,7 +10,14 @@ import {
 export interface HelmRendererProps {
   /** The Helm widget registry to render. Required for output. */
   registry: HelmWidgetRegistry | undefined;
-  /** The ambient render context passed to each widget's `compute`. Required for output. */
+  /**
+   * The ambient render context passed to each widget's `compute`. Required for output.
+   *
+   * @remarks Memoize the `context` object (or avoid passing a freshly constructed literal
+   * each render) to prevent recomputing all widgets on every parent re-render, since the
+   * `useEffect` dependency tracks object identity. Parity behaviour with Blazor
+   * `OnParametersSetAsync` which re-runs on any parameter change.
+   */
   context: HelmRenderContext | undefined;
   /**
    * Accessible label on the outer `<nav>` landmark per WCAG 2.4.6 + 4.1.2.
@@ -35,11 +42,22 @@ export interface HelmRendererProps {
  * `sync-state` widget region carries `aria-live="polite"` (WCAG 4.1.3)
  * so SyncState transitions are announced to screen readers.
  *
- * View-states are pre-computed via `useEffect` when `registry` or
- * `context` changes. The effect fires async `widget.compute` for all
- * widgets in parallel, then batches the results into a single state
- * update. An `AbortController` cancels in-flight computations on
+ * The outer `<nav>` landmark is rendered unconditionally (parity with Blazor
+ * where the `<nav>` is always in the DOM; only inner slot markup is gated on
+ * `Registry is not null && Context is not null`). Slot content is omitted
+ * while `registry` or `context` are undefined, or while the initial
+ * view-state computation is in flight.
+ *
+ * View-states are pre-computed via `useEffect` when `registry` or `context`
+ * changes. The effect fires async `widget.compute` for all widgets in
+ * parallel, then batches the results into a single state update. An
+ * `AbortController` + `active` flag cancel in-flight computations on
  * registry/context change or unmount.
+ *
+ * Compute errors (excluding `AbortError` cancellation) are stored in state
+ * and thrown during the next render to surface to the nearest React error
+ * boundary — parity with Blazor `OnParametersSetAsync` where a throwing
+ * widget aborts the batch and surfaces to the component error boundary.
  *
  * Action-button wire contract (parity with `HelmRenderer.razor`):
  * - `data-action-id`     → `HelmWidgetAction.actionId`
@@ -57,6 +75,12 @@ export const HelmRenderer: FC<HelmRendererProps> = ({
   activityFeedSlotLabel = 'Activity',
 }) => {
   const [viewStates, setViewStates] = useState<Map<string, HelmWidgetViewState> | null>(null);
+  const [computeError, setComputeError] = useState<unknown>(null);
+
+  // Propagate compute errors to the nearest React error boundary — parity
+  // with Blazor OnParametersSetAsync where a throwing widget surfaces to the
+  // component error boundary rather than being silently swallowed.
+  if (computeError !== null) throw computeError;
 
   useEffect(() => {
     if (!registry || !context) {
@@ -71,17 +95,19 @@ export const HelmRenderer: FC<HelmRendererProps> = ({
       registry.widgets.map((widget) =>
         widget
           .compute(context, controller.signal)
-          .then((state) => [widget.metadata.widgetId, state] as const)
-          .catch(() => null),
+          .then((state) => [widget.metadata.widgetId, state] as const),
       ),
-    ).then((results) => {
-      if (!active) return;
-      const map = new Map<string, HelmWidgetViewState>();
-      for (const entry of results) {
-        if (entry) map.set(entry[0], entry[1]);
-      }
-      setViewStates(map);
-    });
+    )
+      .then((results) => {
+        if (!active) return;
+        setViewStates(new Map(results));
+      })
+      .catch((err) => {
+        if (!active) return;
+        // AbortError = expected cancellation from cleanup — ignore silently.
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setComputeError(err);
+      });
 
     return () => {
       active = false;
@@ -89,33 +115,38 @@ export const HelmRenderer: FC<HelmRendererProps> = ({
     };
   }, [registry, context]);
 
-  if (!registry || !context || viewStates === null) {
-    return null;
-  }
+  // Always render the <nav> landmark unconditionally (parity with Blazor
+  // where <nav class="sunfish-helm"> is always in the DOM). Slot content is
+  // gated on registry + context + resolved view-states being available.
+  const ready = registry !== undefined && context !== undefined && viewStates !== null;
 
   return (
     <nav className="sunfish-helm" aria-label={helmAriaLabel}>
-      <SlotGroup
-        slot={HelmSlot.GlanceBand}
-        slotClass="sunfish-helm-glance"
-        slotAriaLabel={glanceBandSlotLabel}
-        registry={registry}
-        viewStates={viewStates}
-      />
-      <SlotGroup
-        slot={HelmSlot.ActionStack}
-        slotClass="sunfish-helm-actionstack"
-        slotAriaLabel={actionStackSlotLabel}
-        registry={registry}
-        viewStates={viewStates}
-      />
-      <SlotGroup
-        slot={HelmSlot.ActivityFeed}
-        slotClass="sunfish-helm-activityfeed"
-        slotAriaLabel={activityFeedSlotLabel}
-        registry={registry}
-        viewStates={viewStates}
-      />
+      {ready && (
+        <>
+          <SlotGroup
+            slot={HelmSlot.GlanceBand}
+            slotClass="sunfish-helm-glance"
+            slotAriaLabel={glanceBandSlotLabel}
+            registry={registry}
+            viewStates={viewStates}
+          />
+          <SlotGroup
+            slot={HelmSlot.ActionStack}
+            slotClass="sunfish-helm-actionstack"
+            slotAriaLabel={actionStackSlotLabel}
+            registry={registry}
+            viewStates={viewStates}
+          />
+          <SlotGroup
+            slot={HelmSlot.ActivityFeed}
+            slotClass="sunfish-helm-activityfeed"
+            slotAriaLabel={activityFeedSlotLabel}
+            registry={registry}
+            viewStates={viewStates}
+          />
+        </>
+      )}
     </nav>
   );
 };
