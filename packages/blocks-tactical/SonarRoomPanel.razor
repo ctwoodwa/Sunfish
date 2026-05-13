@@ -1,0 +1,148 @@
+@*
+    W#52 Phase 3a — SonarRoomPanel per ADR 0081 §7.3.
+
+    Accessibility (WCAG 2.2 AA):
+      - Landmark: <section role="region" aria-labelledby="sonar-room-heading" id="sonar-room" tabindex="-1">
+        id="sonar-room" is a skip-link target.
+      - Signal-rate gauge: role="meter" + aria-label + aria-valuemin/max/now/text;
+        both numeric span AND trailing text are aria-hidden; accessible name is
+        exclusively from aria-valuetext.
+      - SR-safe rate updates: separate polite sibling <div aria-live="polite"
+        aria-atomic="true"> — announcements throttled to threshold crossings only;
+        suppressed on initial mount.
+      - Registered rules list: <ul aria-label="Registered rules"> with <li> per rule.
+      - InformationalSonar-policy alert list: <ul aria-label="Sonar room alerts">.
+      - SC 1.4.1 / §7.4: severity by color token (--color-severity-*) + non-color
+        icon shape (distinct SVG polygon per severity) + text label per §7.4 table.
+      - SonarRoomPanel.razor.css binds severity classes to --color-severity-* tokens.
+      - SunfishA11yAssertions.ReducedMotionDefaultsToPaused: rate gauge animation
+        suppressed via @media (prefers-reduced-motion: reduce) in .razor.css.
+*@
+
+<section class="sonar-room-panel"
+         role="region"
+         aria-labelledby="sonar-room-heading"
+         id="sonar-room"
+         tabindex="-1"
+         data-test-id="sonar-room-panel">
+
+    <h2 id="sonar-room-heading">Sonar Room</h2>
+
+    @* Signal-rate gauge per §7.3 *@
+    <div class="sonar-rate-gauge"
+         role="meter"
+         aria-label="Signal rate"
+         aria-valuemin="0"
+         aria-valuemax="@MaxAlertsPerMinutePerRule"
+         aria-valuenow="@_rateNow"
+         aria-valuetext="@_rateNow signals per minute"
+         data-test-id="sonar-rate-gauge">
+        <span aria-hidden="true">@_rateNow</span>
+    </div>
+
+    @* Polite live region for threshold crossings — NOT every heartbeat; suppressed on mount *@
+    <div class="sonar-rate-announce sr-only"
+         aria-live="polite"
+         aria-atomic="true"
+         data-test-id="sonar-rate-announce">@_rateAnnouncement</div>
+
+    @* Registered rules list *@
+    @if (RegisteredRuleNames is { Count: > 0 })
+    {
+        <ul aria-label="Registered rules" data-test-id="registered-rules-list">
+            @foreach (var ruleName in RegisteredRuleNames)
+            {
+                <li>@ruleName</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="sonar-no-rules" data-test-id="sonar-no-rules">No rules registered.</p>
+    }
+
+    @* InformationalSonar-policy alert list *@
+    @if (InformationalAlerts is { Count: > 0 })
+    {
+        <ul aria-label="Sonar room alerts" data-test-id="sonar-alerts-list">
+            @foreach (var alert in InformationalAlerts)
+            {
+                <li data-alert-id="@alert.AlertId">
+                    <span class="severity-icon severity-@alert.Severity.ToString().ToLowerInvariant()">
+                        @SeverityIcon(alert.Severity)
+                    </span>
+                    <span class="severity-label">@SeverityText(alert.Severity)</span>
+                    @alert.Title
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="sonar-no-alerts" data-test-id="sonar-no-alerts">No sonar alerts.</p>
+    }
+
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<TacticalAlert>? InformationalAlerts { get; set; }
+    [Parameter] public IReadOnlyList<string>? RegisteredRuleNames { get; set; }
+    [Parameter] public int SignalRatePerMinute { get; set; }
+    [Parameter] public int MaxAlertsPerMinutePerRule { get; set; } = 60;
+
+    private int _rateNow;
+    private string _rateAnnouncement = string.Empty;
+    private int _lastAnnouncedThreshold = -2; // -2 sentinel: never-rendered state
+
+    protected override void OnParametersSet()
+    {
+        var newRate = SignalRatePerMinute;
+        _rateNow = newRate;
+
+        var threshold = newRate / 10 * 10;
+
+        // -2 → first render: silently initialise without announcing
+        if (_lastAnnouncedThreshold == -2)
+        {
+            _lastAnnouncedThreshold = threshold;
+            return;
+        }
+
+        if (threshold != _lastAnnouncedThreshold)
+        {
+            _rateAnnouncement = $"Signal rate crossed {threshold} signals per minute.";
+            _lastAnnouncedThreshold = threshold;
+        }
+    }
+
+    // §7.4 normative shape table per ADR 0081.
+    private static Microsoft.AspNetCore.Components.MarkupString SeverityIcon(AlertSeverity severity)
+    {
+        var svg = severity switch
+        {
+            AlertSeverity.Critical      =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><polygon points=\"5,1 11,1 15,5 15,11 11,15 5,15 1,11 1,5\"/></svg>",
+            AlertSeverity.High          =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><polygon points=\"8,2 15,14 1,14\"/></svg>",
+            AlertSeverity.Medium        =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><polygon points=\"8,1 15,8 8,15 1,8\"/></svg>",
+            AlertSeverity.Low           =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><circle cx=\"8\" cy=\"8\" r=\"7\"/></svg>",
+            AlertSeverity.Informational =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><circle cx=\"8\" cy=\"8\" r=\"7\"/><rect x=\"7\" y=\"6\" width=\"2\" height=\"6\" fill=\"white\"/><circle cx=\"8\" cy=\"4\" r=\"1\" fill=\"white\"/></svg>",
+            _                           => "",
+        };
+        return new Microsoft.AspNetCore.Components.MarkupString(svg);
+    }
+
+    // §7.4 normative text-label table per ADR 0081.
+    private static string SeverityText(AlertSeverity severity) => severity switch
+    {
+        AlertSeverity.Critical      => "Critical",
+        AlertSeverity.High          => "High",
+        AlertSeverity.Medium        => "Medium",
+        AlertSeverity.Low           => "Low",
+        AlertSeverity.Informational => "Info",
+        _                           => severity.ToString(),
+    };
+}

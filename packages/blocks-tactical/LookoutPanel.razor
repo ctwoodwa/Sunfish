@@ -1,0 +1,237 @@
+@*
+    W#52 Phase 3a — LookoutPanel per ADR 0081 §7.3.
+
+    Accessibility (WCAG 2.2 AA):
+      - Landmark: <section role="region" aria-labelledby="lookout-heading" id="lookout" tabindex="-1">
+        id="lookout" is a skip-link target.
+      - Assertive live region: aria-live="assertive" aria-atomic="false" aria-relevant="additions"
+        — new alerts only; acknowledged status-changes go to a separate polite channel.
+        On first unpause, live region is suppressed (aria-live="off") for one render cycle
+        to prevent announcement storm from the initial alert backlog.
+      - Pause control: <button type="button" aria-pressed> with static label.
+        _userPaused = true (default); _hoverPaused auto-set on hover/focus.
+      - SC 2.2.2: auto-pause on hover + keyboard focus via @onmouseenter/@onfocusin.
+      - Default-to-paused: _userPaused = true. No alerts enter the assertive region
+        until user explicitly clicks unpause. ReducedMotionDefaultsToPaused: aria-pressed="true"
+        on initial render; suppressed via LookoutPanel.razor.css @media rule.
+      - Acknowledge button: aria-disabled="true" (NOT native disabled — stays in tab order).
+        Suppresses click via HandleAcknowledge early-return.
+        Suppresses keydown (Enter, Space) via HandleAckKeydown early-return.
+        AriaDisabledButtonRemainsInTabOrder + AriaDisabledSuppressesActivation.
+      - Denial reason: id="ack-denial-reason-{alertId}" + aria-describedby on button.
+      - SC 1.4.1 / §7.4: severity by color token + non-color SVG shape + text label.
+*@
+
+<section class="lookout-panel"
+         role="region"
+         aria-labelledby="lookout-heading"
+         id="lookout"
+         tabindex="-1"
+         data-test-id="lookout-panel"
+         @onmouseenter="OnHoverEnter"
+         @onmouseleave="OnHoverLeave"
+         @onfocusin="OnFocusIn"
+         @onfocusout="OnFocusOut">
+
+    <h2 id="lookout-heading">Lookout</h2>
+
+    @* Pause control — static label; aria-pressed reflects _userPaused only *@
+    <button class="lookout-pause-btn"
+            type="button"
+            aria-pressed="@(_userPaused ? "true" : "false")"
+            @onclick="TogglePause"
+            data-test-id="lookout-pause-btn">
+        Pause Lookout ticker
+    </button>
+
+    @* Assertive live region — new alerts only; aria-live="off" on initial unpause
+       to prevent announcement storm from the pre-existing alert backlog. *@
+    <ul class="lookout-alert-list"
+        aria-live="@(_suppressLiveRegion ? "off" : "assertive")"
+        aria-atomic="false"
+        aria-relevant="additions"
+        aria-label="High-priority tactical alerts"
+        data-test-id="lookout-alert-list">
+        @foreach (var alert in _visibleAlerts)
+        {
+            <li class="lookout-alert-item" data-alert-id="@alert.AlertId">
+                <span class="severity-icon severity-@alert.Severity.ToString().ToLowerInvariant()">
+                    @SeverityIcon(alert.Severity)
+                </span>
+                <span class="severity-label">@SeverityText(alert.Severity)</span>
+                <span class="alert-title">@alert.Title</span>
+
+                @{
+                    var isAckDisabled = !CanAcknowledgeAlerts
+                        || alert.Status == AlertStatus.Acknowledged;
+                    var denialId = $"ack-denial-reason-{alert.AlertId}";
+                }
+
+                @if (isAckDisabled)
+                {
+                    <span id="@denialId" class="ack-denial-reason" data-test-id="@($"ack-denial-{alert.AlertId}")">
+                        @(CanAcknowledgeAlerts ? "Already acknowledged" : "Insufficient permissions to acknowledge")
+                    </span>
+                }
+
+                <button class="ack-btn @(isAckDisabled ? "ack-btn--disabled" : "")"
+                        type="button"
+                        aria-disabled="@(isAckDisabled ? "true" : "false")"
+                        aria-describedby="@(isAckDisabled ? denialId : null)"
+                        @onclick="() => HandleAcknowledge(alert, isAckDisabled)"
+                        @onkeydown="(e) => HandleAckKeydown(e, alert, isAckDisabled)"
+                        data-test-id="@($"ack-btn-{alert.AlertId}")">
+                    Acknowledge
+                </button>
+            </li>
+        }
+    </ul>
+
+    @* Polite channel for acknowledged status-changes — separate from assertive *@
+    <div class="lookout-ack-announce sr-only"
+         aria-live="polite"
+         aria-atomic="true"
+         data-test-id="lookout-ack-announce">@_ackAnnouncement</div>
+
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<TacticalAlert>? LookoutAlerts { get; set; }
+    [Parameter] public bool CanAcknowledgeAlerts { get; set; }
+    [Parameter] public EventCallback<string> OnAcknowledge { get; set; }
+
+    // Default-to-paused: SC 2.2.2 + reduced-motion safe default.
+    private bool _userPaused = true;
+    // Auto-pause from hover or keyboard focus.
+    private bool _hoverPaused = false;
+    private bool IsPaused => _userPaused || _hoverPaused;
+
+    // Suppress assertive live region for one cycle on first unpause to avoid
+    // announcement storm from the initial alert backlog.
+    private bool _suppressLiveRegion = true;
+
+    private readonly List<TacticalAlert> _visibleAlerts = new();
+    private readonly HashSet<string> _visibleAlertIds = new(StringComparer.Ordinal);
+    private string _ackAnnouncement = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (IsPaused) return;
+
+        var incoming = LookoutAlerts ?? Array.Empty<TacticalAlert>();
+
+        // Route ack status-changes to polite channel (not assertive).
+        foreach (var alert in incoming)
+        {
+            if (alert.Status != AlertStatus.Acknowledged) continue;
+            if (!_visibleAlertIds.Contains(alert.AlertId)) continue;
+            var prev = _visibleAlerts.Find(a => a.AlertId == alert.AlertId);
+            if (prev is not null && prev.Status != AlertStatus.Acknowledged)
+                _ackAnnouncement = $"{alert.Title} was acknowledged.";
+        }
+
+        // Update status on already-visible alerts (in-place; no assertive announcement).
+        for (var i = 0; i < _visibleAlerts.Count; i++)
+        {
+            var updated = incoming.FirstOrDefault(a => a.AlertId == _visibleAlerts[i].AlertId);
+            if (updated is not null) _visibleAlerts[i] = updated;
+        }
+
+        // Append genuinely new alerts (these enter the assertive region).
+        foreach (var alert in incoming)
+        {
+            if (_visibleAlertIds.Contains(alert.AlertId)) continue;
+            _visibleAlerts.Add(alert);
+            _visibleAlertIds.Add(alert.AlertId);
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // After the silent initial-load render, re-enable the assertive region.
+        if (_suppressLiveRegion && !IsPaused)
+        {
+            _suppressLiveRegion = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void TogglePause()
+    {
+        _userPaused = !_userPaused;
+        _hoverPaused = false;
+
+        if (!_userPaused)
+        {
+            // Unpausing: silently populate visible list from current snapshot.
+            // _suppressLiveRegion remains true; OnAfterRender will re-enable assertive.
+            _suppressLiveRegion = true;
+            var incoming = LookoutAlerts ?? Array.Empty<TacticalAlert>();
+            foreach (var alert in incoming)
+            {
+                if (_visibleAlertIds.Contains(alert.AlertId)) continue;
+                _visibleAlerts.Add(alert);
+                _visibleAlertIds.Add(alert.AlertId);
+            }
+        }
+    }
+
+    // SC 2.2.2: auto-pause on hover.
+    private void OnHoverEnter() => _hoverPaused = true;
+    private void OnHoverLeave() => _hoverPaused = false;
+
+    // SC 2.2.2: auto-pause on keyboard focus entering Lookout region.
+    private void OnFocusIn() => _hoverPaused = true;
+    private void OnFocusOut() => _hoverPaused = false;
+
+    private async Task HandleAcknowledge(TacticalAlert alert, bool isDisabled)
+    {
+        // Suppress activation when aria-disabled per §7.5.
+        if (isDisabled) return;
+        _ackAnnouncement = $"Acknowledged: {alert.Title}";
+        await OnAcknowledge.InvokeAsync(alert.AlertId);
+    }
+
+    private async Task HandleAckKeydown(
+        Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e,
+        TacticalAlert alert,
+        bool isDisabled)
+    {
+        // SunfishA11yAssertions.AriaDisabledSuppressesActivation:
+        // Suppress Enter and Space keydown when aria-disabled.
+        if (isDisabled && (e.Key is "Enter" or " ")) return;
+        if (e.Key is "Enter" or " ")
+            await HandleAcknowledge(alert, false);
+    }
+
+    // §7.4 normative shape table per ADR 0081.
+    private static Microsoft.AspNetCore.Components.MarkupString SeverityIcon(AlertSeverity severity)
+    {
+        var svg = severity switch
+        {
+            AlertSeverity.Critical      =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><polygon points=\"5,1 11,1 15,5 15,11 11,15 5,15 1,11 1,5\"/></svg>",
+            AlertSeverity.High          =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><polygon points=\"8,2 15,14 1,14\"/></svg>",
+            AlertSeverity.Medium        =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><polygon points=\"8,1 15,8 8,15 1,8\"/></svg>",
+            AlertSeverity.Low           =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><circle cx=\"8\" cy=\"8\" r=\"7\"/></svg>",
+            AlertSeverity.Informational =>
+                "<svg aria-hidden=\"true\" class=\"severity-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><circle cx=\"8\" cy=\"8\" r=\"7\"/><rect x=\"7\" y=\"6\" width=\"2\" height=\"6\" fill=\"white\"/><circle cx=\"8\" cy=\"4\" r=\"1\" fill=\"white\"/></svg>",
+            _                           => "",
+        };
+        return new Microsoft.AspNetCore.Components.MarkupString(svg);
+    }
+
+    // §7.4 normative text-label table per ADR 0081.
+    private static string SeverityText(AlertSeverity severity) => severity switch
+    {
+        AlertSeverity.Critical      => "Critical",
+        AlertSeverity.High          => "High",
+        AlertSeverity.Medium        => "Medium",
+        AlertSeverity.Low           => "Low",
+        AlertSeverity.Informational => "Info",
+        _                           => severity.ToString(),
+    };
+}

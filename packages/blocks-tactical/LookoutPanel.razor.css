@@ -1,0 +1,35 @@
+/* W#52 Phase 3a — LookoutPanel scoped CSS per ADR 0081 §7.4.
+   Severity-icon classes bound to --color-severity-* design tokens.
+   Fallback values ensure readability when tokens are not yet defined globally. */
+
+.severity-icon { display: inline-flex; align-items: center; }
+
+.severity-svg { vertical-align: middle; margin-inline-end: 0.25em; }
+
+.severity-critical      { color: var(--color-severity-critical,      #dc2626); }
+.severity-high          { color: var(--color-severity-high,          #ea580c); }
+.severity-medium        { color: var(--color-severity-medium,        #ca8a04); }
+.severity-low           { color: var(--color-severity-low,           #16a34a); }
+.severity-informational { color: var(--color-severity-informational, #2563eb); }
+
+/* SC 7.5 — aria-disabled acknowledge button styling */
+.ack-btn--disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* SC 2.2.2 / SunfishA11yAssertions.ReducedMotionDefaultsToPaused:
+   Auto-pause on hover and keyboard focus via CSS pause indicator.
+   The C# _hoverPaused flag gates live-region updates; CSS provides the visual cue. */
+.lookout-panel:hover .lookout-pause-btn,
+.lookout-panel:focus-within .lookout-pause-btn {
+    outline: 2px solid var(--color-focus-ring, #2563eb);
+}
+
+/* Suppress any ticker animation under prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .lookout-alert-list * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

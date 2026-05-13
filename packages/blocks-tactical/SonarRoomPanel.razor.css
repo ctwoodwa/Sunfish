@@ -1,0 +1,23 @@
+/* W#52 Phase 3a — SonarRoomPanel scoped CSS per ADR 0081 §7.4.
+   Severity-icon classes are bound to --color-severity-* design tokens.
+   Fallback values ensure readability when tokens are not yet defined
+   in the consuming app's global stylesheet. */
+
+.severity-icon { display: inline-flex; align-items: center; }
+
+.severity-svg { vertical-align: middle; margin-inline-end: 0.25em; }
+
+.severity-critical     { color: var(--color-severity-critical,     #dc2626); }
+.severity-high         { color: var(--color-severity-high,         #ea580c); }
+.severity-medium       { color: var(--color-severity-medium,       #ca8a04); }
+.severity-low          { color: var(--color-severity-low,          #16a34a); }
+.severity-informational { color: var(--color-severity-informational, #2563eb); }
+
+/* SC 2.2.2 / SunfishA11yAssertions.ReducedMotionDefaultsToPaused:
+   Any future rate-gauge animation MUST be suppressed under reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+    .sonar-rate-gauge * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
