@@ -497,6 +497,9 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An iOS-paired-device <c>POST /api/v1/field/blob/{sha256}</c> request was rejected (SHA-256 path-param mismatch, payload too large, invalid pairing-token); per W#23 P4.5 unblock addendum.</summary>
     public static readonly AuditEventType FieldBlobRejected = new("FieldBlobRejected");
 
+    /// <summary>A paired iOS device called <c>POST /api/v1/field/unpair</c>; Bridge revoked the pairing token and cleared the device's sync rights. Per W#23 Phase 6.</summary>
+    public static readonly AuditEventType FieldDeviceRevoked = new("FieldDeviceRevoked");
+
     // ===== ADR 0075 — extension-field feature-gate hook =====
 
     /// <summary>Spec has a <c>FeatureKey</c>; gate evaluated ON; field appears in the materialized list. Per ADR 0075.</summary>
