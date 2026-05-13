@@ -26,6 +26,8 @@
     <!-- W#23 P4.5 — Bridge audit emission for field-event + field-blob endpoints
          (Option C in-memory v1 per the audit-infra unblock addendum). -->
     <ProjectReference Include="..\..\..\packages\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <!-- W#56 Phase 1 — SystemRequirements JSON contract + Bridge endpoint. -->
+    <ProjectReference Include="..\..\..\packages\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
   </ItemGroup>
 
   <ItemGroup>
