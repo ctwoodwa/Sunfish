@@ -1,9 +1,21 @@
 @* ElectricalPanel — Engine Room electrical subsystem observability surface (ADR 0079 §2, W#50 Phase 3a).
-   CRDT growth gauge with sr-only <table> alternative always in SR tree (clip technique; NOT display:none).
-   Two sibling aria-live regions per §6: assertive for degradation, polite for heartbeat.
-   Permission gate: ShipAction.ViewEngineRoom must be verified before the provider is called. *@
+   CRDT growth gauge with sr-only <table> always in SR tree (clip technique; NOT display:none per §6).
+   Live regions always in DOM (ARIA22/SC 4.1.3). SeverityRank guards Unknown from triggering
+   assertive degradation announcements. Permission gate: ShipAction.ViewEngineRoom. *@
+
+@implements IDisposable
 
 <div class="er-electrical-panel" role="region" aria-label="Electrical">
+
+    @* Live regions always in DOM — hoisted above all conditional branches (ARIA22/SC 4.1.3). *@
+    <div role="alert" aria-live="assertive" aria-atomic="true"
+         class="er-live-assertive sf-sr-only">
+        @_assertiveAnnouncement
+    </div>
+    <div role="status" aria-live="polite" aria-atomic="false"
+         class="er-live-polite sf-sr-only">
+        @_politeAnnouncement
+    </div>
 
     @if (_permissionDenied)
     {
@@ -15,24 +27,9 @@
     }
     else
     {
-        @* Assertive live region: announces degradation or critical transitions immediately.
-           Per §6: assertive ONLY for status degradation — not for heartbeat updates. *@
-        <div role="alert" aria-live="assertive" aria-atomic="true"
-             class="er-live-assertive sf-sr-only">
-            @_assertiveAnnouncement
-        </div>
-
-        @* Polite live region: announces routine heartbeat updates without interrupting. *@
-        <div role="status" aria-live="polite" aria-atomic="false"
-             class="er-live-polite sf-sr-only">
-            @_politeAnnouncement
-        </div>
-
-        @* Subsystem status header — severity via text label AND icon aria-label (SC 1.4.1) *@
+        @* Subsystem status header — icon is decorative; adjacent text conveys severity (SC 1.4.1). *@
         <div class="er-subsystem-status-header">
-            <span class="er-subsystem-icon"
-                  aria-label="@SubsystemStatusLabel(_subsystem.Status) status"
-                  aria-hidden="false">
+            <span class="er-subsystem-icon" aria-hidden="true">
                 @SubsystemStatusIcon(_subsystem.Status)
             </span>
             <span class="er-subsystem-name">Electrical</span>
@@ -45,12 +42,11 @@
             }
         </div>
 
-        @* CRDT growth gauge section *@
         <section class="er-crdt-gauge-section" aria-labelledby="@_gaugeHeadingId">
             <h3 id="@_gaugeHeadingId">CRDT document store</h3>
 
-            @* Visual gauge — aria-hidden on the decorative bar; the sr-only table below
-               provides the accessible text alternative (SC 1.3.1 non-text content). *@
+            @* Visual gauge — aria-hidden; sr-only table below provides accessible alternative
+               (SC 1.3.1 non-text content). Gauge is purely decorative reinforcement. *@
             <div class="er-crdt-gauge" aria-hidden="true">
                 <div class="er-crdt-gauge-track">
                     <div class="er-crdt-gauge-fill er-crdt-gauge-fill--bytes"
@@ -64,8 +60,8 @@
                 </div>
             </div>
 
-            @* Sr-only table alternative — always in SR tree (clip technique; NOT display:none per §6 FAIL gate).
-               Provides full numeric data for screen reader users in lieu of the visual gauge. *@
+            @* Sr-only table — always in SR tree (clip technique; NOT display:none per §6 FAIL gate).
+               Text alternative for the visual gauge for screen reader users. *@
             <table class="sf-sr-only">
                 <caption>CRDT document store metrics</caption>
                 <thead>
@@ -94,7 +90,7 @@
                 </tbody>
             </table>
 
-            @* Summary stats visible to all users *@
+            @* Visible summary stats — icon is decorative reinforcement; text communicates severity *@
             <dl class="er-crdt-stats">
                 <div class="er-crdt-stat">
                     <dt>Documents</dt>
@@ -109,14 +105,12 @@
                     <dd>@_tombstoneCount.ToString("N0")</dd>
                 </div>
                 <div class="er-crdt-stat">
-                    @* Severity conveyed via text AND icon aria-label (SC 1.4.1) *@
                     <dt>Compaction eligible</dt>
                     <dd>
                         @if (_compactionEligibleCount > 0)
                         {
-                            <span class="er-compaction-icon"
-                                  aria-label="Warning: compaction needed"
-                                  aria-hidden="false">!</span>
+                            @* Icon is decorative reinforcement; text count conveys the severity *@
+                            <span class="er-compaction-icon" aria-hidden="true">!</span>
                         }
                         @_compactionEligibleCount.ToString("N0")
                     </dd>
@@ -146,12 +140,18 @@
     private int _compactionEligibleCount;
     private int _bytesFillPercent;
     private int _tombstoneFillPercent;
+    private CancellationTokenSource _cts = new();
     private readonly string _gaugeHeadingId = $"er-gauge-{Guid.NewGuid():N}";
 
-    private const long BytesFillCeiling = 100 * 1024 * 1024; // 100 MB reference ceiling for gauge
+    // L suffix: guards against silent int overflow if ceiling is ever raised past 2GB.
+    private const long BytesFillCeiling = 100L * 1024L * 1024L;
 
     protected override async Task OnParametersSetAsync()
     {
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
+
         _permissionDenied = false;
         _subsystem = null;
 
@@ -172,12 +172,15 @@
             return;
         }
 
-        await RefreshAsync();
+        await RefreshAsync(_cts.Token);
     }
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(CancellationToken ct)
     {
-        var summary = await DataProvider.GetHealthSummaryAsync(Tenant);
+        _assertiveAnnouncement = null;
+        _politeAnnouncement    = null;
+
+        var summary = await DataProvider.GetHealthSummaryAsync(Tenant, ct);
         var subsystem = summary.For(EngineRoomSubsystem.Electrical)
             ?? new SubsystemHealth(EngineRoomSubsystem.Electrical, SubsystemStatus.Unknown, null);
 
@@ -186,46 +189,61 @@
         var tombstoneCount = 0;
         var compactionEligibleCount = 0;
 
-        await foreach (var m in DataProvider.GetCrdtGrowthMetricsAsync(Tenant))
+        await foreach (var m in DataProvider.GetCrdtGrowthMetricsAsync(Tenant, ct))
         {
             docCount++;
-            totalBytes      += m.TotalByteEstimate;
-            tombstoneCount  += m.TombstoneCount;
+            totalBytes             += m.TotalByteEstimate;
+            tombstoneCount         += m.TombstoneCount;
             if (m.CompactionEligible) compactionEligibleCount++;
         }
 
-        if (_previousStatus.HasValue && subsystem.Status > _previousStatus.Value)
-        {
+        // SeverityRank maps Unknown → -1 so it never triggers a false assertive announcement.
+        var rankNow  = SeverityRank(subsystem.Status);
+        var rankPrev = _previousStatus.HasValue ? SeverityRank(_previousStatus.Value) : -1;
+
+        if (rankNow > 0 && rankNow > rankPrev)
             _assertiveAnnouncement =
                 $"Electrical status degraded: {SubsystemStatusLabel(subsystem.Status)}.";
-        }
         else
-        {
             _politeAnnouncement =
                 $"Electrical updated: {SubsystemStatusLabel(subsystem.Status)}, " +
                 $"{docCount} document(s), {FormatBytes(totalBytes)} total.";
-        }
 
-        _previousStatus            = subsystem.Status;
-        _subsystem                 = subsystem;
-        _documentCount             = docCount;
-        _totalBytes                = totalBytes;
-        _tombstoneCount            = tombstoneCount;
-        _compactionEligibleCount   = compactionEligibleCount;
-        _bytesFillPercent          = GaugeFillPercent(totalBytes, BytesFillCeiling);
-        _tombstoneFillPercent      = docCount == 0 ? 0
+        _previousStatus          = subsystem.Status;
+        _subsystem               = subsystem;
+        _documentCount           = docCount;
+        _totalBytes              = totalBytes;
+        _tombstoneCount          = tombstoneCount;
+        _compactionEligibleCount = compactionEligibleCount;
+        _bytesFillPercent        = GaugeFillPercent(totalBytes, BytesFillCeiling);
+        _tombstoneFillPercent    = docCount == 0 ? 0
             : Math.Min(tombstoneCount * 100 / docCount, 100);
     }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+
+    // Unknown → -1: not a degraded state; prevents Unknown from sorting higher than Critical.
+    private static int SeverityRank(SubsystemStatus s) => s switch
+    {
+        SubsystemStatus.Operational => 0,
+        SubsystemStatus.Warning     => 1,
+        SubsystemStatus.Critical    => 2,
+        _                           => -1,
+    };
 
     private static int GaugeFillPercent(long value, long ceiling) =>
         ceiling <= 0 ? 0 : (int)Math.Min(value * 100L / ceiling, 100L);
 
     private static string FormatBytes(long bytes) => bytes switch
     {
-        < 1024             => $"{bytes} B",
-        < 1024 * 1024      => $"{bytes / 1024.0:F1} KB",
-        < 1024 * 1024 * 1024 => $"{bytes / (1024.0 * 1024):F1} MB",
-        _                  => $"{bytes / (1024.0 * 1024 * 1024):F2} GB",
+        < 1024L             => $"{bytes} B",
+        < 1024L * 1024L     => $"{bytes / 1024.0:F1} KB",
+        < 1024L * 1024 * 1024L => $"{bytes / (1024.0 * 1024):F1} MB",
+        _                   => $"{bytes / (1024.0 * 1024 * 1024):F2} GB",
     };
 
     private static string SubsystemStatusLabel(SubsystemStatus status) => status switch
