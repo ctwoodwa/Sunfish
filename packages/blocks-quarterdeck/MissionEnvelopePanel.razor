@@ -1,0 +1,73 @@
+@* MissionEnvelopePanel — Quarterdeck Mission Envelope status (ADR 0080 §2.3 rule 6, W#51 Phase 3b).
+   Status badge uses text label AND CSS class — not color-only (SC 1.4.1).
+   Links to the mission-space detail page when status is not Unknown.
+   Council amendments applied: A6 (aria-live scoped to status badge, not whole section);
+   A12 (status span always in DOM — NVDA/JAWS only monitor live regions present at page load;
+        inserting the span after data arrives produces no announcement on many SR+browser combos). *@
+
+<section class="qd-mission-envelope" aria-label="Mission envelope">
+    @* A12: status span always present so live-region monitoring is established at page load.
+       Content empty during loading; NVDA/JAWS will announce when Envelope data arrives. *@
+    <span class="qd-envelope-status @(Envelope is not null ? $"qd-envelope-status--{StatusCssClass(Envelope.Status)}" : "")"
+          role="status" aria-live="polite" aria-atomic="true">
+        @(Envelope is not null ? StatusLabel(Envelope.Status) : "")
+    </span>
+
+    @if (Envelope is null)
+    {
+        <p aria-busy="true">Loading mission envelope…</p>
+    }
+    else
+    {
+        <div class="qd-envelope-header">
+            @if (Envelope.VersionLabel is { } version)
+            {
+                <span class="qd-envelope-version">@version</span>
+            }
+
+            @if (Envelope.LastEvaluatedAt is { } evaluatedAt)
+            {
+                <span class="qd-envelope-evaluated">
+                    Last evaluated
+                    <time datetime="@evaluatedAt.ToString("o")">
+                        @evaluatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    </time>
+                </span>
+            }
+        </div>
+
+        @if (Envelope.Status != MissionEnvelopeStatus.Unknown && MissionSpaceHref is { } href)
+        {
+            <a class="qd-envelope-detail-link" href="@href">
+                View mission details
+            </a>
+        }
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public MissionEnvelopeSummary? Envelope { get; set; }
+
+    /// <summary>
+    /// Optional href to the full mission-space detail page. When non-null
+    /// and the envelope status is not <see cref="MissionEnvelopeStatus.Unknown"/>,
+    /// a "View mission details" link is rendered.
+    /// </summary>
+    [Parameter] public string? MissionSpaceHref { get; set; }
+
+    private static string StatusCssClass(MissionEnvelopeStatus s) => s switch
+    {
+        MissionEnvelopeStatus.Passed  => "passed",
+        MissionEnvelopeStatus.Warning => "warning",
+        MissionEnvelopeStatus.Failed  => "failed",
+        _                             => "unknown",
+    };
+
+    private static string StatusLabel(MissionEnvelopeStatus s) => s switch
+    {
+        MissionEnvelopeStatus.Passed  => "Passed",
+        MissionEnvelopeStatus.Warning => "Warning",
+        MissionEnvelopeStatus.Failed  => "Failed",
+        _                             => "Unknown",
+    };
+}

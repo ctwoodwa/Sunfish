@@ -1,0 +1,181 @@
+@* SearchPanel — Quarterdeck search-as-you-type (ADR 0080 §2.3 rule 7 + W#46 Phase 3 ISearchAsYouType, W#51 Phase 3b).
+   ARIA 1.2 combobox pattern: role="combobox" + aria-expanded + aria-controls + aria-activedescendant.
+   Result IDs follow the convention: quarterdeck-search-result-{stableKey} (ADR 0080 §6).
+   SR-only polite live region announces result count on update (SC 4.1.3 / ARIA22).
+   Results always in DOM when expanded so aria-activedescendant references are valid.
+   Council amendments applied: A3 (combobox ARIA pattern); A4 (result-count announcement);
+   A9 (CTS local-capture avoids ObjectDisposedException on fast keystroke churn);
+   A10 (type=text + form onsubmit:preventDefault — prevents Enter form-submit + Escape-clears-field);
+   A13 (aria-selected omitted on non-active options per ARIA 1.2 §6.6.10);
+   A14 (query truncated at 256 chars before provider call). *@
+
+@implements IAsyncDisposable
+@using System.Threading
+
+<div class="qd-search" role="search" aria-label="Quarterdeck search">
+
+    @* Polite live region — announces result count (SC 4.1.3). Always in DOM per ARIA22. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="qd-search-count sf-sr-only">
+        @_countAnnouncement
+    </div>
+
+    @* A10: form wrapper neutralises Enter→submit without preventDefault on every keydown.
+       type="text" (not "search") — prevents Chrome/Edge Escape-clears-field on type=search. *@
+    <form @onsubmit:preventDefault="true">
+        @* A1: explicit label gives the combobox input an accessible name (placeholder is not sufficient). *@
+        <label for="@_inputId" class="sf-sr-only">Search Quarterdeck</label>
+        <input type="text"
+               id="@_inputId"
+               class="qd-search-input"
+               role="combobox"
+               aria-expanded="@(_resultsOpen ? "true" : "false")"
+               aria-controls="@_listboxId"
+               aria-autocomplete="list"
+               aria-activedescendant="@(_activeResultKey is null ? null : $"quarterdeck-search-result-{_activeResultKey}")"
+               placeholder="Search…"
+               autocomplete="off"
+               value="@_query"
+               @oninput="OnInputAsync"
+               @onkeydown="OnKeyDown" />
+    </form>
+
+    @* A2: hidden removes listbox from AT tree when closed (ARIA 1.2 combobox §3.4).
+       Belt-and-suspenders with aria-expanded="false" on the combobox input. *@
+    <ul id="@_listboxId"
+        role="listbox"
+        aria-label="Search results"
+        hidden="@(!_resultsOpen)"
+        class="qd-search-results @(_resultsOpen ? "qd-search-results--open" : "")">
+        @foreach (var result in _results)
+        {
+            var resultId = $"quarterdeck-search-result-{StableKey(result)}";
+            var isActive = _activeResultKey == StableKey(result);
+            @* A13: aria-selected present only when true (ARIA 1.2 §6.6.10 — activedescendant
+               drives focus indication; emitting aria-selected=false reads "not selected" on every arrow). *@
+            <li id="@resultId"
+                role="option"
+                aria-selected="@(isActive ? "true" : null)"
+                class="qd-search-result @(isActive ? "qd-search-result--active" : "")"
+                @onclick="() => SelectResult(result)">
+                @ResultLabel(result)
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    /// <summary>
+    /// Search provider injected by the parent. Implements <see cref="ISearchAsYouType{T}"/>
+    /// where T is <see cref="QuarterdeckSearchResult"/> — a thin DTO wrapping a label and target href.
+    /// </summary>
+    [Parameter, EditorRequired] public ISearchAsYouType<QuarterdeckSearchResult> SearchProvider { get; set; } = default!;
+
+    /// <summary>Callback when a result is selected — navigates or updates parent state.</summary>
+    [Parameter] public EventCallback<QuarterdeckSearchResult> OnResultSelected { get; set; }
+
+    private string _query = string.Empty;
+    private IReadOnlyList<QuarterdeckSearchResult> _results = [];
+    private bool _resultsOpen;
+    private string? _activeResultKey;
+    // A5: initialize to NBSP so first announcement fires (empty → non-empty suppressed by JAWS+Chrome).
+    private string _countAnnouncement = " ";
+    private CancellationTokenSource? _cts;
+
+    // A1: initialize at field declaration — IDs are empty-string free and stable across re-renders.
+    private readonly string _inputId   = $"qd-search-input-{Guid.NewGuid():N}";
+    private readonly string _listboxId = $"qd-search-listbox-{Guid.NewGuid():N}";
+
+    private async Task OnInputAsync(ChangeEventArgs e)
+    {
+        _query = e.Value?.ToString() ?? string.Empty;
+        // A14: guard against paste-bomb before hitting the provider.
+        if (_query.Length > 256) _query = _query[..256];
+
+        // A9: cancel the previous search then immediately create and capture the new CTS locally
+        // before yielding — prevents ObjectDisposedException if a subsequent keystroke disposes
+        // the old CTS while SearchAsync is still holding its token.
+        _cts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _cts = cts;
+
+        if (_query.Trim().Length == 0)
+        {
+            _results = [];
+            _resultsOpen = false;
+            _activeResultKey = null;
+            _countAnnouncement = " ";
+            return;
+        }
+
+        try
+        {
+            _results = await SearchProvider.SearchAsync(_query, cts.Token);
+            _resultsOpen = _results.Count > 0;
+            _activeResultKey = _results.Count > 0 ? StableKey(_results[0]) : null;
+            _countAnnouncement = _results.Count == 0
+                ? "No results."
+                : $"{_results.Count} result{(_results.Count == 1 ? "" : "s")}.";
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            // Dispose our CTS only if it hasn't been superseded by a later keystroke.
+            if (ReferenceEquals(_cts, cts))
+                _cts = null;
+            cts.Dispose();
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (!_resultsOpen || _results.Count == 0) return;
+
+        // FindIndex returns -1 when activeKey is null/stale; ArrowDown at -1 → 0 (first item),
+        // ArrowUp at -1 → last item. Both match the WAI-ARIA combobox convention.
+        var currentIdx = _results.ToList().FindIndex(r => StableKey(r) == _activeResultKey);
+
+        if (e.Key == "ArrowDown")
+        {
+            var nextIdx = (currentIdx + 1) % _results.Count;
+            _activeResultKey = StableKey(_results[nextIdx]);
+        }
+        else if (e.Key == "ArrowUp")
+        {
+            var prevIdx = currentIdx <= 0 ? _results.Count - 1 : currentIdx - 1;
+            _activeResultKey = StableKey(_results[prevIdx]);
+        }
+        else if (e.Key == "Enter" && _activeResultKey is not null)
+        {
+            var selected = _results.FirstOrDefault(r => StableKey(r) == _activeResultKey);
+            if (selected is not null)
+                await SelectResult(selected);
+        }
+        else if (e.Key == "Escape")
+        {
+            _resultsOpen = false;
+            _activeResultKey = null;
+        }
+    }
+
+    private async Task SelectResult(QuarterdeckSearchResult result)
+    {
+        _query = result.Label;
+        _resultsOpen = false;
+        _activeResultKey = null;
+        _results = [];
+        _countAnnouncement = " ";
+        await OnResultSelected.InvokeAsync(result);
+    }
+
+    private static string StableKey(QuarterdeckSearchResult r) => r.StableKey;
+    private static string ResultLabel(QuarterdeckSearchResult r) => r.Label;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_cts is { } cts)
+        {
+            await cts.CancelAsync();
+            cts.Dispose();
+        }
+    }
+}

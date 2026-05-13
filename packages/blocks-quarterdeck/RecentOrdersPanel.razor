@@ -1,0 +1,47 @@
+@* RecentOrdersPanel — Quarterdeck recent Standing Orders (ADR 0080 §2.3 rule 3, W#51 Phase 3b).
+   Last 5 StandingOrderSummary items, newest-first. Ordered list (<ol>) with date + path + issuer.
+   Links to the full Standing Order via the Wayfinder surface. *@
+
+<section class="qd-recent-orders" aria-label="Recent orders">
+    @if (Orders.Count == 0)
+    {
+        <p class="qd-recent-orders-empty">No recent standing orders.</p>
+    }
+    else
+    {
+        <ol class="qd-recent-orders-list">
+            @foreach (var order in Orders)
+            {
+                @* A7: full row is the link — path + date + issuer all in accessible name (WCAG 2.4.4).
+                   A8: local time includes TZ marker to avoid ambiguity on a multi-timezone ops surface. *@
+                <li class="qd-recent-order">
+                    <a class="qd-recent-order-row" href="@OrderHref(order)">
+                        <span class="qd-recent-order-path">@order.Path</span>
+                        <time class="qd-recent-order-time"
+                              datetime="@order.IssuedAt.ToString("o")">
+                            @order.IssuedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm zzz")
+                        </time>
+                        <span class="qd-recent-order-issuer">@order.IssuedByDisplayName</span>
+                    </a>
+                </li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    /// <summary>
+    /// Last 5 Standing Order summaries, newest-first, from
+    /// <see cref="Sunfish.Foundation.Quarterdeck.QuarterdeckSnapshot.RecentOrders"/>.
+    /// </summary>
+    [Parameter, EditorRequired] public IReadOnlyList<StandingOrderSummary> Orders { get; set; } = [];
+
+    /// <summary>
+    /// Base URL of the Wayfinder surface. Standing Order detail links are constructed as
+    /// <c>{WayfinderBaseUrl}/orders/{id}</c>. Defaults to <c>/wayfinder</c>.
+    /// </summary>
+    [Parameter] public string WayfinderBaseUrl { get; set; } = "/wayfinder";
+
+    private string OrderHref(StandingOrderSummary order) =>
+        $"{WayfinderBaseUrl.TrimEnd('/')}/orders/{order.Id.Value:N}";
+}
