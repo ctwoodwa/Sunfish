@@ -1,0 +1,240 @@
+@* MainPropulsionPanel — Engine Room main-propulsion observability surface (ADR 0079 §2, W#50 Phase 3a).
+   Accessible data grid (role="grid" + rowgroup + aria-rowcount) for sync-daemon metrics + trace
+   timeline with sr-only table alternative (clip technique; chart toggled via aria-hidden + hidden).
+   Live regions always in DOM (ARIA22/SC 4.1.3). Permission gate: ShipAction.ViewEngineRoom. *@
+
+@implements IDisposable
+
+<div class="er-propulsion-panel" role="region" aria-label="Main Propulsion">
+
+    @* Live regions always in DOM — hoisted above all conditional branches (ARIA22/SC 4.1.3). *@
+    <div role="alert" aria-live="assertive" aria-atomic="true"
+         class="er-live-assertive sf-sr-only">
+        @_assertiveAnnouncement
+    </div>
+    <div role="status" aria-live="polite" aria-atomic="false"
+         class="er-live-polite sf-sr-only">
+        @_politeAnnouncement
+    </div>
+
+    @if (_permissionDenied)
+    {
+        <p role="alert">You do not have permission to view the Engine Room.</p>
+    }
+    else if (_health is null)
+    {
+        <p role="status" aria-busy="true">Loading Main Propulsion status…</p>
+    }
+    else
+    {
+        @* Subsystem status header — icon is decorative; adjacent text is the accessible
+           representation of severity (SC 1.4.1 — not color alone). *@
+        <div class="er-subsystem-status-header">
+            <span class="er-subsystem-icon" aria-hidden="true">
+                @DaemonStatusIcon(_health.Status)
+            </span>
+            <span class="er-subsystem-name">Main Propulsion</span>
+            <span class="er-subsystem-status @DaemonStatusCssClass(_health.Status)">
+                @DaemonStatusLabel(_health.Status)
+            </span>
+        </div>
+
+        @* Sync-daemon metrics grid — role="grid" per ARIA 1.2; rowgroup separates header from
+           body; aria-rowcount includes header row; aria-rowindex 1-based per §6 (SC 1.3.1). *@
+        <div role="grid"
+             aria-label="Sync daemon metrics"
+             aria-rowcount="@(_metricsRows.Count + 1)"
+             aria-colcount="2"
+             class="er-metrics-grid">
+
+            <div role="rowgroup">
+                <div role="row" aria-rowindex="1" class="er-metrics-header-row">
+                    <span role="columnheader" aria-colindex="1">Metric</span>
+                    <span role="columnheader" aria-colindex="2">Value</span>
+                </div>
+            </div>
+
+            <div role="rowgroup">
+                @for (var i = 0; i < _metricsRows.Count; i++)
+                {
+                    var row = _metricsRows[i];
+                    var rowIndex = i + 2;
+                    <div role="row" aria-rowindex="@rowIndex" class="er-metrics-row">
+                        <span role="gridcell" aria-colindex="1" class="er-metric-name">@row.Label</span>
+                        <span role="gridcell" aria-colindex="2" class="er-metric-value">@row.Value</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Trace timeline — sr-only table always in SR tree (clip technique; chart has no focusable
+           descendants, but hidden attribute keeps keyboard + AT state consistent; SC 1.3.1). *@
+        <section class="er-trace-timeline" aria-labelledby="@_timelineHeadingId">
+            <div class="er-trace-timeline-header">
+                <h3 id="@_timelineHeadingId">Trace timeline</h3>
+                <button type="button"
+                        class="er-chart-toggle"
+                        aria-expanded="@(!_chartHidden ? "true" : "false")"
+                        aria-controls="@_chartId"
+                        @onclick="ToggleChart">
+                    @(_chartHidden ? "Show chart" : "Hide chart")
+                </button>
+            </div>
+
+            @* Visual chart — hidden attribute + aria-hidden together: `hidden` removes
+               from visual + keyboard flow; aria-hidden removes from AT tree (SC 4.1.2). *@
+            <div id="@_chartId"
+                 class="er-trace-chart"
+                 aria-hidden="@(_chartHidden ? "true" : "false")"
+                 hidden="@_chartHidden">
+                <div class="er-trace-chart-bar"
+                     style="width: @TraceBarWidthPercent(_health.EventsThroughput)%; max-height: 60px">
+                </div>
+                <span class="er-trace-chart-label" aria-hidden="true">
+                    @_health.EventsThroughput.ToString("F1") ev/s
+                </span>
+            </div>
+
+            @* Sr-only table — always in SR tree (clip technique; NOT display:none per §6 FAIL gate).
+               Text alternative for the visual chart for screen reader users. *@
+            <table class="sf-sr-only">
+                <caption>Sync throughput snapshot</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Metric</th>
+                        <th scope="col">Value</th>
+                        <th scope="col">As of</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Events throughput</td>
+                        <td>@_health.EventsThroughput.ToString("F1") events per second</td>
+                        <td>@_health.AsOf.ToString("R")</td>
+                    </tr>
+                    <tr>
+                        <td>Gossip cycles</td>
+                        <td>@_health.GossipCycles.ToString("N0")</td>
+                        <td>@_health.AsOf.ToString("R")</td>
+                    </tr>
+                    <tr>
+                        <td>Peers connected</td>
+                        <td>@_health.PeerCount</td>
+                        <td>@_health.AsOf.ToString("R")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TenantId Tenant { get; set; }
+    [Parameter, EditorRequired] public ActorId Actor { get; set; }
+
+    [Inject] private IEngineRoomDataProvider DataProvider { get; set; } = default!;
+    [Inject] private IPermissionResolver PermissionResolver { get; set; } = default!;
+    [Inject] private IActorPrincipalResolver ActorPrincipalResolver { get; set; } = default!;
+
+    private SyncDaemonHealth? _health;
+    private bool _permissionDenied;
+    private bool _chartHidden;
+    private string? _assertiveAnnouncement;
+    private string? _politeAnnouncement;
+    private SyncDaemonStatus? _previousStatus;
+    private List<(string Label, string Value)> _metricsRows = [];
+    private CancellationTokenSource _cts = new();
+    private readonly string _timelineHeadingId = $"er-timeline-{Guid.NewGuid():N}";
+    private readonly string _chartId = $"er-chart-{Guid.NewGuid():N}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
+
+        _permissionDenied = false;
+        _health = null;
+
+        var principal = await ActorPrincipalResolver.ResolveAsync(Tenant, Actor);
+        if (principal is null)
+        {
+            _permissionDenied = true;
+            return;
+        }
+
+        var decision = await PermissionResolver.ResolveAsync(
+            Tenant, principal, ShipLocation.EngineRoom, DeckDepth.MainDeck,
+            ShipAction.ViewEngineRoom, resource: null);
+
+        if (decision is PermissionDecision.Denied)
+        {
+            _permissionDenied = true;
+            return;
+        }
+
+        await RefreshAsync(_cts.Token);
+    }
+
+    private async Task RefreshAsync(CancellationToken ct)
+    {
+        _assertiveAnnouncement = null;
+        _politeAnnouncement    = null;
+
+        var health = await DataProvider.GetSyncDaemonHealthAsync(Tenant, ct);
+
+        if (_previousStatus.HasValue && health.Status > _previousStatus.Value)
+            _assertiveAnnouncement =
+                $"Main Propulsion status degraded: {DaemonStatusLabel(health.Status)}.";
+        else
+            _politeAnnouncement =
+                $"Main Propulsion updated: {DaemonStatusLabel(health.Status)}, {health.PeerCount} peer(s).";
+
+        _previousStatus = health.Status;
+        _health = health;
+        _metricsRows =
+        [
+            ("Status",           DaemonStatusLabel(health.Status)),
+            ("Peers connected",  health.PeerCount.ToString()),
+            ("Events / second",  health.EventsThroughput.ToString("F1")),
+            ("Gossip cycles",    health.GossipCycles.ToString("N0")),
+            ("Snapshot time",    health.AsOf.ToString("R")),
+        ];
+    }
+
+    private void ToggleChart() => _chartHidden = !_chartHidden;
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+
+    private static int TraceBarWidthPercent(double throughput) =>
+        throughput <= 0 ? 0 : Math.Min((int)(throughput / 10.0 * 100), 100);
+
+    private static string DaemonStatusLabel(SyncDaemonStatus status) => status switch
+    {
+        SyncDaemonStatus.Healthy     => "Healthy",
+        SyncDaemonStatus.Degraded    => "Degraded",
+        SyncDaemonStatus.Unavailable => "Unavailable",
+        _                            => "Unknown",
+    };
+
+    private static string DaemonStatusIcon(SyncDaemonStatus status) => status switch
+    {
+        SyncDaemonStatus.Healthy     => "✓",
+        SyncDaemonStatus.Degraded    => "!",
+        SyncDaemonStatus.Unavailable => "✗",
+        _                            => "?",
+    };
+
+    private static string DaemonStatusCssClass(SyncDaemonStatus status) => status switch
+    {
+        SyncDaemonStatus.Healthy     => "er-status--operational",
+        SyncDaemonStatus.Degraded    => "er-status--warning",
+        SyncDaemonStatus.Unavailable => "er-status--critical",
+        _                            => "er-status--unknown",
+    };
+}
