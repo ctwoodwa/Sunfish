@@ -4,16 +4,23 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.MissionSpace;
 using Sunfish.Foundation.SickBay;
+using Sunfish.Foundation.UI;
 using Xunit;
 
 namespace Sunfish.Blocks.SickBay.Tests;
 
 public class SickBayDataProviderTests
 {
-    private static SickBayDataProvider Build(SickBayOptions? options = null) =>
-        new SickBayDataProvider(Options.Create(options ?? new SickBayOptions()));
+    private static SickBayDataProvider Build(
+        SickBayOptions? options = null,
+        IMissionEnvelopeProvider? envelopeProvider = null) =>
+        new SickBayDataProvider(
+            Options.Create(options ?? new SickBayOptions()),
+            envelopeProvider);
 
     [Fact]
     public async Task GetSnapshotAsync_EmptyOptions_ReturnsEmptyPharmacyAndIdleMedevac()
@@ -183,5 +190,98 @@ public class SickBayDataProviderTests
                 AssertNotForbidden(arg, site + " (generic arg)", forbiddenName);
             }
         }
+    }
+
+    // ── Phase 2b — Mission Envelope atmosphere projection ────────────────────
+
+    private static MissionEnvelope AllHealthy() => new()
+    {
+        Hardware     = new() { ProbeStatus = ProbeStatus.Healthy },
+        User         = new() { ProbeStatus = ProbeStatus.Healthy, IsSignedIn = true },
+        Regulatory   = new() { ProbeStatus = ProbeStatus.Healthy },
+        Runtime      = new() { ProbeStatus = ProbeStatus.Healthy },
+        FormFactor   = new() { ProbeStatus = ProbeStatus.Healthy },
+        Edition      = new() { ProbeStatus = ProbeStatus.Healthy, EditionKey = "anchor-self-host" },
+        Network      = new() { ProbeStatus = ProbeStatus.Healthy, IsOnline = true },
+        TrustAnchor  = new() { ProbeStatus = ProbeStatus.Healthy, HasIdentityKey = true },
+        SyncState    = new() { ProbeStatus = ProbeStatus.Healthy, State = SyncState.Healthy },
+        VersionVector = new() { ProbeStatus = ProbeStatus.Healthy },
+        SnapshotAt   = DateTimeOffset.UtcNow,
+    };
+
+    private static IMissionEnvelopeProvider ProviderFor(MissionEnvelope envelope)
+    {
+        var provider = Substitute.For<IMissionEnvelopeProvider>();
+        provider.GetCurrentAsync(Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult(envelope));
+        return provider;
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithAllHealthyProbes_ReturnsGreen()
+    {
+        var snapshot = await Build(envelopeProvider: ProviderFor(AllHealthy()))
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Green, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(0, snapshot.Atmosphere.WarningProbeCount);
+        Assert.Equal(0, snapshot.Atmosphere.CriticalProbeCount);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithOneWarningProbe_ReturnsYellow()
+    {
+        var envelope = AllHealthy() with
+        {
+            Hardware = new() { ProbeStatus = ProbeStatus.Stale },
+        };
+        var snapshot = await Build(envelopeProvider: ProviderFor(envelope))
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Yellow, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(1, snapshot.Atmosphere.WarningProbeCount);
+        Assert.Equal(0, snapshot.Atmosphere.CriticalProbeCount);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithOneCriticalProbe_ReturnsOrange()
+    {
+        var envelope = AllHealthy() with
+        {
+            Network = new() { ProbeStatus = ProbeStatus.Failed, IsOnline = false },
+        };
+        var snapshot = await Build(envelopeProvider: ProviderFor(envelope))
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Orange, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(0, snapshot.Atmosphere.WarningProbeCount);
+        Assert.Equal(1, snapshot.Atmosphere.CriticalProbeCount);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithTwoCriticalProbes_ReturnsRed()
+    {
+        var envelope = AllHealthy() with
+        {
+            Network     = new() { ProbeStatus = ProbeStatus.Unreachable, IsOnline = false },
+            TrustAnchor = new() { ProbeStatus = ProbeStatus.Failed, HasIdentityKey = false },
+        };
+        var snapshot = await Build(envelopeProvider: ProviderFor(envelope))
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Red, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(0, snapshot.Atmosphere.WarningProbeCount);
+        Assert.Equal(2, snapshot.Atmosphere.CriticalProbeCount);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithNullProvider_ReturnsUnknown()
+    {
+        var snapshot = await Build(envelopeProvider: null)
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Unknown, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(0, snapshot.Atmosphere.WarningProbeCount);
+        Assert.Equal(0, snapshot.Atmosphere.CriticalProbeCount);
     }
 }
