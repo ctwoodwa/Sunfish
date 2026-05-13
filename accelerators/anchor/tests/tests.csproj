@@ -85,6 +85,8 @@
     <ProjectReference Include="..\..\..\packages\foundation-channels\Sunfish.Foundation.Channels.csproj" />
     <ProjectReference Include="..\..\..\packages\foundation-transport\Sunfish.Foundation.Transport.csproj" />
     <ProjectReference Include="..\..\..\packages\blocks-crew-comms\Sunfish.Blocks.CrewComms.csproj" />
+    <!-- W#47 Phase 4 — a11y harness for WCAG 2.2 AA structural assertions per ADR 0034. -->
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor-a11y\Sunfish.UIAdapters.Blazor.A11y.csproj" />
   </ItemGroup>
 
 </Project>

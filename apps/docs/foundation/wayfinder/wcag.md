@@ -90,11 +90,43 @@ Every UI-bearing Stage 06 follow-up that consumes Wayfinder MUST:
 3. Apply council amendments to the same branch before opening the PR.
 4. Reference this baseline + the council outcome in the Stage 06 PR description.
 
+## Per-adapter conformance: Anchor MAUI
+
+**Baseline established 2026-05-13 — W#47 P4 (PRs #765 / #768 / #769 / this PR).**
+
+Three render modes verified on Win (WinUI / WebView2 UIA bridge) + MacCatalyst (WKWebView NSAccessibility bridge). iOS / Android deferred per ADR 0048 §A1 mobile-scope clearance.
+
+| Render mode | Source component | Verified SCs | Inherited SCs |
+|---|---|---|---|
+| `PreInstallFullPage` | `SystemRequirements.razor` | 1.3.1 (list label), 4.1.3 (polite verdict live-region) | 1.4.3, 1.4.11, 2.1.1, 2.4.3, 2.4.7, 2.5.8 — inherited from Blazor adapter baseline tests |
+| `PostInstallInlineExplanation` | `SystemRequirementsInlinePanel.razor` | 1.1.1 (fail-badge text alt); liveRegion:Off (no role="alert", no aria-live="assertive") | Same Blazor adapter baseline |
+| `PostInstallRegressionBanner` | `SystemRequirementsRegressionBanner.razor` | 4.1.3 (role="alert" + C3 NVDA+Firefox fix + C4 polite additions list) | Same Blazor adapter baseline |
+
+**Claim scope:** "Verified SCs" are confirmed by the a11y harness tests in this PR (ARIA/live-region structure + localization-key presence). "Inherited SCs" are covered by the shared Blazor adapter baseline in `packages/ui-adapters-blazor-a11y/tests/`. Visual SCs (1.4.3 contrast, 1.4.11 non-text contrast, 1.4.10 reflow, forced-colors) are tracked under ADR 0034 §Phase-3 browser axe integration milestone, NOT claimed here. WCAG council PASS-WITH-AMENDMENTS ran on every UI-bearing phase (P1–P4; batting average 22-of-22 cohort).
+
+**WCAG council amendments applied:**
+
+- **C1** — `border-inline-start` / `padding-inline-start` (RTL logical properties) on banner CSS
+- **C2** — ARIA attribute cleanup on banner wrapper (no redundant `role="region"`)
+- **C3** — Dropped explicit `aria-live="assertive"` from banner div; `role="alert"` carries it per ARIA 1.2 (NVDA+Firefox double-announcement fix)
+- **C4** — Split banner into title div (`role="alert"` + `aria-atomic="true"`) + secondary polite `<ul>` (`aria-live="polite"` + `aria-relevant="additions"`) for incremental regression announcements
+- **C5** — `IAsyncDisposable` (awaits consumer task before CTS disposal, prevents AT flicker at component teardown)
+- **B4–B9** — Full-page council amendments (in-progress button label + polite sr-only region; bundle-not-found demoted to role="status"; localized dimension list label; single verdict live region; forced-colors border)
+
+**A11y harness test classes** (W#47 Phase 4):
+
+| Test class | File | Assertions |
+|---|---|---|
+| `SystemRequirementsPreInstallFullPageA11yTests` | `tests/A11y/SystemRequirementsPreInstallFullPageA11yTests.cs` | role="main" landmark; aria-labelledby; single polite status region; localized dimension list label |
+| `SystemRequirementsInlinePanelA11yTests` | `tests/A11y/SystemRequirementsInlinePanelA11yTests.cs` | fail-badge aria-label; no assertive live region; fallback detail strings |
+| `SystemRequirementsRegressionBannerA11yTests` | `tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs` | role="alert"; no redundant aria-live="assertive"; polite additions-only list |
+
 ## Revision tracking
 
 | Version | Date | Note |
 |---|---|---|
 | baseline | 2026-05-04 | Initial substrate-tier baseline shipped with W#42 P4 (this PR). |
+| anchor-maui-p4 | 2026-05-13 | Per-adapter conformance section: Anchor MAUI 3-mode baseline + council amendments C1–C5 + B4–B9 + a11y harness test index (W#47 P4). |
 
 Future revisions track changes to the substrate API or to the WCAG / EN 301 549 specification version. The current document targets WCAG 2.2 (W3C Recommendation 2023-10-05) + EN 301 549 v3.2.1 (2021-03).
 
