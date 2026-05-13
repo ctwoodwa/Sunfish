@@ -500,6 +500,13 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A paired iOS device called <c>POST /api/v1/field/unpair</c>; Bridge revoked the pairing token and cleared the device's sync rights. Per W#23 Phase 6.</summary>
     public static readonly AuditEventType FieldDeviceRevoked = new("FieldDeviceRevoked");
 
+    // W#23.2 — Equipment Asset Photo
+    /// <summary>An <c>EventType.Asset</c> field-event envelope was accepted and <c>Equipment.PrimaryPhotoBlobRef</c> updated. Per W#23.2 P2.</summary>
+    public static readonly AuditEventType FieldAssetPhotoAccepted = new("FieldAssetPhotoAccepted");
+
+    /// <summary>An <c>EventType.Asset</c> field-event envelope was rejected (missing equipmentId, missing blobRef, equipment not found, or payload schema failure). Per W#23.2 P2.</summary>
+    public static readonly AuditEventType FieldAssetPhotoRejected = new("FieldAssetPhotoRejected");
+
     // ===== ADR 0075 — extension-field feature-gate hook =====
 
     /// <summary>Spec has a <c>FeatureKey</c>; gate evaluated ON; field appears in the materialized list. Per ADR 0075.</summary>
