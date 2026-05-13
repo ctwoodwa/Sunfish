@@ -4,7 +4,7 @@ number: 55
 slug: ships-office-content-aggregation-surface
 title: "**Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` — **Phase 1–3 MERGED 2026-05-13** (PR #624 + #711 + #753 + #756 + #759 + #762; `blocks-ships-office` + `foundation-ships-office` + 5 Razor components + 59 tests); **Phase 4 (Anchor + Bridge wiring + apps/docs) ready-to-build** — hand-off: `icm/_state/handoffs/ships-office-stage06-handoff.md` §Phase 4; Phase 5 gated on ADR 0055 Accepted (H4 gate); Phase 6 ledger flip pending"
+status_cell: "`building` — **Phase 1–4 MERGED 2026-05-13** (PR #624 + #711 + #753 + #756 + #759 + #762 P1–P3; PR #787 P4 Anchor+Bridge wiring+apps/docs; `blocks-ships-office` + `foundation-ships-office` + 5 Razor components + 59 tests + ShipsOfficePage Anchor consumer + Bridge DI); **Phase 5 gated on ADR 0055 Accepted** (H4 gate — ADR 0055 currently Proposed); Phase 6 ledger flip pending"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md`"
