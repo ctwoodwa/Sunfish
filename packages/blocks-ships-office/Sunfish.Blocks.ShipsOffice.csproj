@@ -3,12 +3,16 @@
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.ShipsOffice</PackageId>
     <RootNamespace>Sunfish.Blocks.ShipsOffice</RootNamespace>
-    <Description>Block-tier substrate for the Ship's Office aggregation surface (ADR 0083): ShipsOfficeDataProvider stub (Phase 2a placeholder over the foundation contracts; Phase 2b wires real cross-package integration with BundleCatalog / ILeaseDocumentVersionLog / IW9DocumentService / IMissionEnvelopeObserver) + NoopContentEditorSurface + DI extension. Per W#55 Phase 2a. Critical invariant: NO IFieldDecryptor reference anywhere (W9 TIN field excluded from the browse view by design).</Description>
+    <Description>Block-tier substrate for the Ship's Office aggregation surface (ADR 0083): ShipsOfficeDataProvider real cross-package projection (Phase 2b: BundleCatalog + ILeaseDocumentVersionLog + IW9DocumentService + IMissionEnvelopeProvider) + NoopContentEditorSurface + DI extension. Per W#55 Phase 2b. Critical invariant: NO IFieldDecryptor reference anywhere (W9 TIN field excluded from the browse view by design).</Description>
     <PackageTags>sunfish;blocks;ships-office;adr-0083</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\blocks-leases\Sunfish.Blocks.Leases.csproj" />
+    <ProjectReference Include="..\blocks-maintenance\Sunfish.Blocks.Maintenance.csproj" />
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-catalog\Sunfish.Foundation.Catalog.csproj" />
+    <ProjectReference Include="..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
     <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
     <ProjectReference Include="..\foundation-ships-office\Sunfish.Foundation.ShipsOffice.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />

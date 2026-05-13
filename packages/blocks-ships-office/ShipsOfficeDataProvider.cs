@@ -1,84 +1,107 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Sunfish.Blocks.Leases.Models;
+using Sunfish.Blocks.Leases.Services;
+using Sunfish.Blocks.Maintenance.Services;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Catalog.Bundles;
+using Sunfish.Foundation.MissionSpace;
 using Sunfish.Foundation.ShipsOffice;
 
 namespace Sunfish.Blocks.ShipsOffice;
 
 /// <summary>
-/// Reference <see cref="IShipsOfficeDataProvider"/> stub per
-/// W#55 Phase 2a. Returns empty snapshots / search results / change
-/// streams — the cross-package integration to
-/// <c>BundleCatalog</c> / <c>ILeaseDocumentVersionLog</c> /
-/// <c>IW9DocumentService</c> / <c>IMissionEnvelopeObserver</c> is
-/// deferred to Phase 2b (per the cob-question filed alongside this
-/// PR).
+/// Reference <see cref="IShipsOfficeDataProvider"/> per ADR 0083 §1+§2 + W#55 Phase 2b.
+/// Projects a tenant's Ship's Office document browse from four sources:
+/// <list type="bullet">
+///   <item><description><see cref="IBundleCatalog"/> — registered bundle manifests</description></item>
+///   <item><description><see cref="ILeaseDocumentVersionLog"/> — latest revision per lease</description></item>
+///   <item><description><see cref="IW9DocumentService"/> (NEVER <c>GetWithDecryptedTinAsync</c>) — vendor W9s; TIN excluded</description></item>
+///   <item><description>SignatureEnvelope — empty-list stub (H6 pending ADR 0004 Stage 06)</description></item>
+/// </list>
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Phase 2a behavior contract (§Trust UI guard, per W#55 P2a council
-/// Minor M2 + cohort precedent W#54 P2 AtmosphereHealth.Green / W#50
-/// P2a Operational defaults):</b> until Phase 2b lands, this provider
-/// returns an empty projection REGARDLESS of host
-/// <c>BundleCatalog</c> / <c>ILeaseDocumentVersionLog</c> /
-/// <c>IW9DocumentService</c> registration. UI surfaces SHOULD NOT
-/// render "Your Ship's Office is empty" off this provider in Phase 2a
-/// hosts — the empty-snapshot signals "wiring not yet present", not
-/// "no documents". Phase 2b graduates this to genuine cross-package
-/// projection.
+/// <b>H4 invariant (load-bearing, ADR 0046-A2 §4 + ADR 0083 §Trust):</b> this
+/// implementation MUST NOT depend on <c>Sunfish.Foundation.Recovery.IFieldDecryptor</c>.
+/// W9 integration uses <see cref="IW9DocumentService.GetAsync"/> only — the TIN is
+/// intentionally excluded from <see cref="ShipsOfficeDocumentView"/> per the §Trust
+/// redaction policy. The H4 reflection test in
+/// <c>ShipsOfficeProviderTests.Provider_DoesNotReference_FoundationRecovery</c>
+/// pins this at the AssemblyName level + type-graph walk.
 /// </para>
 /// <para>
-/// <b>H4 invariant (load-bearing per ADR 0083 §Trust):</b> this
-/// implementation MUST NOT depend on
-/// <c>Sunfish.Foundation.Recovery.IFieldDecryptor</c>. Phase 2b's full
-/// implementation will integrate with <c>IW9DocumentService.GetAsync</c>
-/// (NEVER <c>GetWithDecryptedTinAsync</c>); the
-/// <see cref="ShipsOfficeDocumentView"/> record has no TIN field and the
-/// browse view EXCLUDES it entirely.
+/// <b>H5 revisit-trigger:</b> <see cref="SubscribeChangesAsync"/> subscribes to
+/// <see cref="IMissionEnvelopeProvider"/> for push-driven invalidation. A fallback
+/// poll fires on <see cref="ShipsOfficeOptions.FallbackPollingInterval"/> (default 60s)
+/// even when no envelope event arrives. Revisit when ADR 0065-A1
+/// <c>IStandingOrderEventStream</c> matures further.
 /// </para>
 /// <para>
-/// <b>Phase 2b deferral:</b>
-/// <list type="bullet">
-/// <item><description>BundleManifest projection from <c>BundleCatalog.GetAllAsync</c></description></item>
-/// <item><description>LeaseDocument projection from <c>ILeaseDocumentVersionLog.ListAsync</c></description></item>
-/// <item><description>VendorW9 projection from <c>IW9DocumentService</c> (TIN excluded)</description></item>
-/// <item><description><c>IMissionEnvelopeObserver</c> wiring for change-driven snapshot invalidation</description></item>
-/// <item><description><c>SearchAsync</c> in-memory linear scan over the projection with
-/// <c>KindFilter</c> / <c>StatusFilter</c> / <c>TextQuery</c> handling</description></item>
-/// <item><description><c>ShipsOfficeCommandService</c> + <c>IDocumentDiffService</c> + the
-/// <c>SUNFISH_SHIPSOFFICE_PERM001</c> Roslyn analyzer</description></item>
-/// </list>
+/// <b>H6 revisit-trigger:</b> <see cref="ShipsOfficeDocumentKind.SignatureEnvelope"/>
+/// returns an empty list. Revisit when ADR 0004 Stage 06 ships
+/// <c>ISignatureEnvelopeStore</c> with a queryable surface.
 /// </para>
 /// </remarks>
 internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
 {
+    private readonly IBundleCatalog _bundleCatalog;
+    private readonly ILeaseService _leaseService;
+    private readonly ILeaseDocumentVersionLog _leaseDocLog;
+    private readonly IMaintenanceService _maintenanceService;
+    private readonly IW9DocumentService _w9Service;
+    private readonly IMissionEnvelopeProvider _missionEnvelopeProvider;
     private readonly IOptions<ShipsOfficeOptions> _options;
     private readonly TimeProvider _time;
 
     public ShipsOfficeDataProvider(
+        IBundleCatalog bundleCatalog,
+        ILeaseService leaseService,
+        ILeaseDocumentVersionLog leaseDocLog,
+        IMaintenanceService maintenanceService,
+        IW9DocumentService w9Service,
+        IMissionEnvelopeProvider missionEnvelopeProvider,
         IOptions<ShipsOfficeOptions> options,
         TimeProvider? timeProvider = null)
     {
+        ArgumentNullException.ThrowIfNull(bundleCatalog);
+        ArgumentNullException.ThrowIfNull(leaseService);
+        ArgumentNullException.ThrowIfNull(leaseDocLog);
+        ArgumentNullException.ThrowIfNull(maintenanceService);
+        ArgumentNullException.ThrowIfNull(w9Service);
+        ArgumentNullException.ThrowIfNull(missionEnvelopeProvider);
         ArgumentNullException.ThrowIfNull(options);
+        _bundleCatalog = bundleCatalog;
+        _leaseService = leaseService;
+        _leaseDocLog = leaseDocLog;
+        _maintenanceService = maintenanceService;
+        _w9Service = w9Service;
+        _missionEnvelopeProvider = missionEnvelopeProvider;
         _options = options;
         _time = timeProvider ?? TimeProvider.System;
     }
 
     /// <inheritdoc />
-    public Task<ShipsOfficeSnapshot> GetSnapshotAsync(
+    public async Task<ShipsOfficeSnapshot> GetSnapshotAsync(
         TenantId tenant,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(BuildEmptySnapshot());
+        var views = await BuildViewsAsync(tenant, ct).ConfigureAwait(false);
+        var list = views.ToArray();
+        return new ShipsOfficeSnapshot(
+            Documents: list,
+            TotalCount: list.Length,
+            AsOf: _time.GetUtcNow());
     }
 
     /// <inheritdoc />
-#pragma warning disable CS1998 // async lacks await — IAsyncEnumerable shape requires it
     public async IAsyncEnumerable<ShipsOfficeDocumentView> SearchAsync(
         TenantId tenant,
         ShipsOfficeSearchQuery query,
@@ -86,53 +109,193 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
     {
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
-        // Phase 2a empty stub: nothing to yield. Phase 2b adds the
-        // in-memory linear scan over the snapshot projection.
-        yield break;
+
+        var all = await BuildViewsAsync(tenant, ct).ConfigureAwait(false);
+        IEnumerable<ShipsOfficeDocumentView> filtered = all;
+
+        if (query.KindFilter is { Count: > 0 })
+        {
+            var kindSet = query.KindFilter.ToHashSet();
+            filtered = filtered.Where(v => kindSet.Contains(v.Kind));
+        }
+
+        if (query.StatusFilter.HasValue)
+        {
+            filtered = filtered.Where(v => v.Status == query.StatusFilter.Value);
+        }
+
+        if (!string.IsNullOrEmpty(query.TextQuery))
+        {
+            var text = query.TextQuery;
+            filtered = filtered.Where(v => v.Title.Contains(text, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Opaque cursor: base64-encoded decimal offset. Treat invalid/stale as first page (per P1 council SI-4).
+        int offset = 0;
+        if (!string.IsNullOrEmpty(query.PageToken))
+        {
+            try
+            {
+                var decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(query.PageToken));
+                if (!int.TryParse(decoded, out var parsed) || parsed < 0)
+                    offset = 0;
+                else
+                    offset = parsed;
+            }
+            catch (FormatException)
+            {
+                offset = 0;
+            }
+        }
+
+        var pageSize = query.PageSize > 0 ? query.PageSize : 50;
+        foreach (var view in filtered.Skip(offset).Take(pageSize))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return view;
+        }
     }
-#pragma warning restore CS1998
 
     /// <inheritdoc />
-    /// <remarks>
-    /// Per W#55 P2a council Minor M1: this stub never completes its own
-    /// stream — consumers MUST own a CancellationToken to terminate.
-    /// Phase 2b graduates the stream to genuine push-driven invalidation
-    /// via IMissionEnvelopeObserver and starts yielding views as
-    /// documents change.
-    /// </remarks>
     public async IAsyncEnumerable<ShipsOfficeDocumentView> SubscribeChangesAsync(
         TenantId tenant,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        // Phase 2a stub: no document-change events ever fire (the
-        // empty-snapshot projection has nothing to mutate). The
-        // method still honors the FallbackPollingInterval contract by
-        // suspending until cancellation rather than completing the
-        // stream — Phase 2b adds push-driven invalidation via
-        // IMissionEnvelopeObserver and starts yielding views as
-        // documents change.
-        var interval = _options.Value.FallbackPollingInterval;
-        if (interval <= TimeSpan.Zero)
+        // Bounded channel (capacity 1, drop-oldest) so envelope bursts don't queue up —
+        // we only need to know "something changed."
+        var channel = Channel.CreateBounded<bool>(
+            new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
+
+        var observer = new EnvelopeObserver(channel.Writer);
+        _missionEnvelopeProvider.Subscribe(observer);
+        try
         {
-            yield break;
+            // Initial projection — yield all current documents.
+            var views = await BuildViewsAsync(tenant, ct).ConfigureAwait(false);
+            foreach (var v in views)
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return v;
+            }
+
+            var interval = _options.Value.FallbackPollingInterval;
+            if (interval <= TimeSpan.Zero)
+                interval = TimeSpan.FromSeconds(60);
+
+            while (!ct.IsCancellationRequested)
+            {
+                // Wait for a push signal or fallback timeout — whichever fires first.
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(interval);
+                try
+                {
+                    await channel.Reader.ReadAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                {
+                    // Fallback poll timeout — not user cancellation.
+                }
+
+                if (ct.IsCancellationRequested) yield break;
+
+                views = await BuildViewsAsync(tenant, ct).ConfigureAwait(false);
+                foreach (var v in views)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    yield return v;
+                }
+            }
         }
-        while (!ct.IsCancellationRequested)
+        finally
         {
-            try
-            {
-                await Task.Delay(interval, _time, ct).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                yield break;
-            }
-            // Intentionally yield nothing — Phase 2a stub.
+            _missionEnvelopeProvider.Unsubscribe(observer);
         }
     }
 
-    private ShipsOfficeSnapshot BuildEmptySnapshot() =>
-        new ShipsOfficeSnapshot(
-            Documents: Array.Empty<ShipsOfficeDocumentView>(),
-            TotalCount: 0,
-            AsOf: _time.GetUtcNow());
+    private async Task<List<ShipsOfficeDocumentView>> BuildViewsAsync(
+        TenantId tenant, CancellationToken ct)
+    {
+        var views = new List<ShipsOfficeDocumentView>();
+        var now = _time.GetUtcNow();
+
+        // 1. BundleManifest — static catalog registration; no per-tenant scoping.
+        foreach (var manifest in _bundleCatalog.GetBundles())
+        {
+            views.Add(new ShipsOfficeDocumentView(
+                Id: new ShipsOfficeDocumentId($"bundle:{manifest.Key}"),
+                Kind: ShipsOfficeDocumentKind.BundleManifest,
+                Title: manifest.Name,
+                Status: MapBundleStatus(manifest.Status),
+                UpdatedAt: now,
+                LastModifiedBy: ActorId.Sunfish,
+                VersionLabel: manifest.Version));
+        }
+
+        // 2. LeaseDocument — latest document version per lease.
+        await foreach (var lease in _leaseService.ListAsync(ListLeasesQuery.Empty, ct).ConfigureAwait(false))
+        {
+            if (lease.DocumentVersions.Count == 0) continue;
+            var latest = await _leaseDocLog.GetLatestAsync(lease.Id, ct).ConfigureAwait(false);
+            if (latest is null) continue;
+
+            views.Add(new ShipsOfficeDocumentView(
+                Id: new ShipsOfficeDocumentId($"lease-doc:{latest.Id.Value}"),
+                Kind: ShipsOfficeDocumentKind.LeaseDocument,
+                Title: $"Lease {lease.Id.Value}",
+                Status: MapLeasePhase(lease.Phase),
+                UpdatedAt: latest.AuthoredAt,
+                LastModifiedBy: latest.AuthoredBy,
+                VersionLabel: $"v{latest.VersionNumber}"));
+        }
+
+        // 3. VendorW9 — vendor display name only; TIN excluded per ADR 0083 §Trust.
+        await foreach (var vendor in _maintenanceService.ListVendorsAsync(ListVendorsQuery.Empty, ct).ConfigureAwait(false))
+        {
+            if (!vendor.W9.HasValue) continue;
+            var doc = await _w9Service.GetAsync(vendor.W9.Value, tenant, ct).ConfigureAwait(false);
+            if (doc is null) continue;
+
+            views.Add(new ShipsOfficeDocumentView(
+                Id: new ShipsOfficeDocumentId($"w9:{doc.Id.Value}"),
+                Kind: ShipsOfficeDocumentKind.VendorW9,
+                Title: vendor.DisplayName,
+                Status: doc.VerifiedAt.HasValue ? DocumentStatus.Published : DocumentStatus.Draft,
+                UpdatedAt: doc.VerifiedAt ?? doc.ReceivedAt,
+                LastModifiedBy: doc.VerifiedBy ?? ActorId.System,
+                VersionLabel: null));
+        }
+
+        // 4. SignatureEnvelope — H6 pending (ADR 0004 Stage 06 not yet shipped).
+        // Revisit when ISignatureEnvelopeStore ships a queryable tenant surface.
+
+        return views;
+    }
+
+    private static DocumentStatus MapBundleStatus(BundleStatus status) => status switch
+    {
+        BundleStatus.Draft => DocumentStatus.Draft,
+        BundleStatus.Deprecated => DocumentStatus.Archived,
+        _ => DocumentStatus.Published,
+    };
+
+    private static DocumentStatus MapLeasePhase(LeasePhase phase) => phase switch
+    {
+        LeasePhase.Draft => DocumentStatus.Draft,
+        LeasePhase.AwaitingSignature => DocumentStatus.PendingSignature,
+        LeasePhase.Cancelled or LeasePhase.Terminated => DocumentStatus.Archived,
+        _ => DocumentStatus.Published,
+    };
+
+    private sealed class EnvelopeObserver : IMissionEnvelopeObserver
+    {
+        private readonly ChannelWriter<bool> _writer;
+
+        public EnvelopeObserver(ChannelWriter<bool> writer) => _writer = writer;
+
+        public ValueTask OnChangedAsync(EnvelopeChange change, CancellationToken ct = default)
+        {
+            _writer.TryWrite(true);
+            return ValueTask.CompletedTask;
+        }
+    }
 }
