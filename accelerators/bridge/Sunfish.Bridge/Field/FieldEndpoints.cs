@@ -101,6 +101,7 @@ public static class FieldEndpoints
         HttpRequest request,
         IAuditTrail auditTrail,
         IOperationSigner signer,
+        Sunfish.Blocks.PropertyEquipment.Services.IEquipmentRepository equipmentRepository,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(auditTrail);
@@ -158,19 +159,40 @@ public static class FieldEndpoints
             return Results.Ok(new { eventId = envelope.EventId, accepted_at = DateTimeOffset.UtcNow });
         }
 
-        _eventIdempotencyCache[envelope.EventId] = ImmutableArray.Create(canonicalBytes);
-
-        await EmitAuditAsync(auditTrail, signer,
-            AuditEventType.FieldEventAccepted,
-            envelope.TenantId,
-            BuildAcceptPayload(envelope.EventId, envelope.EventType, envelope.DeviceId),
-            ct).ConfigureAwait(false);
-
-        return Results.Ok(new
+        // Per-event-type dispatch (v1: only Asset handled; all others fall through to
+        // the generic FieldEventAccepted emit).
+        // Ordinal comparison: iOS canonical form is "Asset"; OrdinalIgnoreCase would
+        // silently dispatch non-canonical spellings and complicate future enum migration.
+        IResult dispatchResult;
+        if (envelope.EventType == "Asset")
         {
-            eventId = envelope.EventId,
-            accepted_at = DateTimeOffset.UtcNow,
-        });
+            dispatchResult = await AssetEventHandler.HandleAsync(
+                envelope, equipmentRepository, auditTrail, signer, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            // Generic path for unhandled event types (Receipt, Inspection, Signature,
+            // Mileage, WorkOrderResponse) — accepted; no per-type side-effects in v1.
+            await EmitAuditAsync(auditTrail, signer,
+                AuditEventType.FieldEventAccepted,
+                envelope.TenantId,
+                BuildAcceptPayload(envelope.EventId, envelope.EventType, envelope.DeviceId),
+                ct).ConfigureAwait(false);
+
+            dispatchResult = Results.Ok(new
+            {
+                eventId = envelope.EventId,
+                accepted_at = DateTimeOffset.UtcNow,
+            });
+        }
+
+        // Cache write is deferred until after successful dispatch. 4xx responses from
+        // per-type handlers are NOT cached — iOS may retry with a corrected payload
+        // under the same eventId. Only a 200 response is idempotency-pinned.
+        if (dispatchResult is IStatusCodeHttpResult { StatusCode: 200 })
+            _eventIdempotencyCache[envelope.EventId] = ImmutableArray.Create(canonicalBytes);
+
+        return dispatchResult;
     }
 
     /// <summary>
@@ -351,7 +373,7 @@ public static class FieldEndpoints
             ["sha256"] = sha256,
         });
 
-    private static async Task EmitAuditAsync(
+    internal static async Task EmitAuditAsync(
         IAuditTrail auditTrail,
         IOperationSigner signer,
         AuditEventType eventType,
@@ -372,21 +394,4 @@ public static class FieldEndpoints
         await auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
     }
 
-    /// <summary>Wire-format envelope as parsed off the request body.</summary>
-    /// <remarks>
-    /// Field shape mirrors <c>EventEnvelope</c> on the iOS side (W#23 P3
-    /// PR #516 post-A9 wire shape). Bridge accepts the envelope as opaque
-    /// JSON for substrate v1; signature verification + per-event-type
-    /// schema validation are follow-up work.
-    /// </remarks>
-    internal sealed record FieldEventEnvelope(
-        Guid EventId,
-        TenantId TenantId,
-        string ActorId,
-        string EventType,
-        JsonElement Payload,
-        DateTimeOffset CapturedAt,
-        string CapturedUnderKernel,
-        uint CapturedUnderSchemaEpoch,
-        string DeviceId);
 }

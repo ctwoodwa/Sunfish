@@ -28,6 +28,7 @@ using Sunfish.Blocks.Subscriptions.DependencyInjection;
 using Sunfish.Blocks.TenantAdmin.DependencyInjection;
 using Sunfish.Blocks.BusinessCases.DependencyInjection;
 using Sunfish.Blocks.PublicListings.DependencyInjection;
+using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
 using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Bridge.Features.Identity;
@@ -300,6 +301,10 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
         opts.SnapshotPageSize = 500;
         opts.RequireSecondActorPublish = true;
     });
+
+    // W#23.2 P2 — InMemory equipment repository (H2: EFCore adapter deferred to follow-up;
+    // dev/staging uses InMemory for now; Production will Replace with EFCore impl).
+    builder.Services.AddInMemoryPropertyEquipment();
 
     // W#56 Phase 1 — SystemRequirements resolver + force-install surface + server-level envelope.
     builder.Services.AddBridgeSystemRequirements();
