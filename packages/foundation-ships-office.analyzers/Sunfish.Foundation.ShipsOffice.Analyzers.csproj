@@ -1,0 +1,56 @@
+<!--
+    Roslyn analyzer for Sunfish Ship's Office (ADR 0083 / W#55 Phase 2d).
+    Targets netstandard2.0 (Roslyn analyzer contract).
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Opt out of Central Package Management; analyzer needs Microsoft.CodeAnalysis.* not in repo-wide pins. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.ShipsOffice.Analyzers</PackageId>
+    <Description>Roslyn analyzer that emits SUNFISH_SHIPSOFFICE_PERM001 on IShipsOfficeDataProvider calls not preceded by an IPermissionResolver.AuthorizeAsync(ShipAction.ViewShipsOffice) call site. Per ADR 0083 §2 / W#55 Phase 2d.</Description>
+    <PackageTags>roslyn;analyzer;sunfish;ships-office;adr-0083</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Sunfish.Foundation.ShipsOffice.Analyzers</RootNamespace>
+    <AssemblyName>Sunfish.Foundation.ShipsOffice.Analyzers</AssemblyName>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.ShipsOffice.Analyzers.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+</Project>
