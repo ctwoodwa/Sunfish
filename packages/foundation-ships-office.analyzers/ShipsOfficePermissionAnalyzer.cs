@@ -16,15 +16,16 @@ namespace Sunfish.Foundation.ShipsOffice.Analyzers;
 /// Per ADR 0083 §2 / W#55 Phase 2d.
 /// </summary>
 /// <remarks>
-/// Detection is purely syntactic — we scan method bodies for the guarded
-/// member-access names. This avoids needing symbol resolution (which requires
-/// a full compilation) and keeps the analyzer fast in live-build scenarios.
-/// Trade-off: false-positives are possible when non-Ships-Office methods share
-/// the same member names, which is unlikely given the specific surface names.
+/// Uses semantic analysis to verify the invocation receiver is actually
+/// <c>IShipsOfficeDataProvider</c> (or a concrete implementation) before
+/// reporting — avoids false-positives on unrelated types that happen to
+/// expose the same method names. Falls back to syntactic matching when the
+/// semantic model cannot resolve the symbol (partial compilation).
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ShipsOfficePermissionAnalyzer : DiagnosticAnalyzer
 {
+    private const string DataProviderInterfaceName = "IShipsOfficeDataProvider";
     private const string GetSnapshotAsyncName = "GetSnapshotAsync";
     private const string SearchAsyncName = "SearchAsync";
     private const string AuthorizeAsyncName = "AuthorizeAsync";
@@ -57,17 +58,27 @@ public sealed class ShipsOfficePermissionAnalyzer : DiagnosticAnalyzer
             .OfType<InvocationExpressionSyntax>()
             .ToList();
 
-        // Find all data-provider calls (GetSnapshotAsync / SearchAsync).
+        // Find data-provider calls: resolve symbol to confirm the receiver is
+        // IShipsOfficeDataProvider (or an implementation). Fall back to syntactic
+        // name match when the semantic model can't resolve the symbol.
         var dataProviderCalls = invocations.Where(inv =>
         {
             var name = GetSimpleName(inv.Expression);
-            return name is GetSnapshotAsyncName or SearchAsyncName;
+            if (name is not (GetSnapshotAsyncName or SearchAsyncName)) return false;
+
+            var symbol = ctx.SemanticModel.GetSymbolInfo(inv, ctx.CancellationToken).Symbol;
+            if (symbol is null)
+                return true; // partial compilation — be conservative, match by name
+
+            // Accept if the method belongs to IShipsOfficeDataProvider itself
+            // or to a type that implements it (containingType chain check).
+            return IsDataProviderMember(symbol);
         }).ToList();
 
         if (dataProviderCalls.Count == 0) return;
 
         // Check whether the method body contains an AuthorizeAsync call that
-        // references ViewShipsOffice.
+        // references ViewShipsOffice in its argument list.
         var hasPermissionCheck = invocations.Any(inv =>
         {
             if (GetSimpleName(inv.Expression) != AuthorizeAsyncName) return false;
@@ -83,6 +94,16 @@ public sealed class ShipsOfficePermissionAnalyzer : DiagnosticAnalyzer
             ctx.ReportDiagnostic(
                 Diagnostic.Create(Diagnostics.PermissionCheckMissing, call.GetLocation(), name));
         }
+    }
+
+    private static bool IsDataProviderMember(ISymbol symbol)
+    {
+        if (symbol is not IMethodSymbol method) return false;
+        var containingType = method.ContainingType;
+        if (containingType is null) return false;
+        if (containingType.Name == DataProviderInterfaceName) return true;
+        // Check if any implemented interface matches.
+        return containingType.AllInterfaces.Any(i => i.Name == DataProviderInterfaceName);
     }
 
     private static string? GetSimpleName(ExpressionSyntax expr) => expr switch
