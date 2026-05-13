@@ -15,6 +15,15 @@ supersedes: []
 superseded_by: null
 amendments:
   - A1
+  - A2
+  - A3
+  - A4
+  - A5
+  - A6
+  - A7
+  - A8
+  - A9
+  - A10
 ---
 # ADR 0061 — Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)
 
@@ -621,3 +630,81 @@ This is captured here, in the amendments section, rather than rewriting the Cont
 - [x] **Revisit triggers.** Five named with externally-observable signals.
 - [x] **Cold Start Test.** Implementation checklist is 10 specific tasks. Stage 02 contributor reading this ADR + ADR 0013 + ADR 0031 + paper §6.1 should be able to scaffold without asking.
 - [x] **Sources cited.** Headscale + Tailscale + NetBird + WireGuard + Nebula + Innernet GitHub repos referenced. NetMaker + ZeroTier explicitly excluded with license citations. Paper §6.1 + §6.2 + §17.2 cited.
+
+
+### A10 (REQUIRED) — NetBird license reclassification (BSD-3 → AGPLv3 split)
+
+**Date:** 2026-05-13
+**Driver:** Carryover finding C3 from the 2026-05-11 F/OSS gap analysis (memory: `project_foss_gap_conflict_analysis_2026_05_11.md`) refreshed against W#60's stack in `icm/01_discovery/output/2026-05-13_w60-final-stack-foss-substitutability-recheck.md`. **2026-05-13 correction:** the May 11 analysis (C3) characterized the NetBird license change as a move to BSL 1.1. That characterization is wrong — the actual change is AGPLv3, not BSL. This amendment corrects both the original ADR body and the F/OSS-analysis C3 framing.
+
+The ADR body multiple times cites "NetBird (BSD-3)" as an in-scope permissive mesh-VPN provider (lines 45, 47, 159, 198, 386). That claim was correct at acceptance time (2026-04-29) but became partially wrong in **August 2025 (NetBird v0.53.0)**, when NetBird split its license: client side stays BSD-3, server side moved to AGPLv3.
+
+#### A10.1 — Component-level license accuracy (post-v0.53.0, August 2025)
+
+| NetBird component | License (current) | License (pre-v0.53.0 legacy) | In-scope for Sunfish? |
+|---|---|---|---|
+| NetBird **client / agent** | **BSD-3-Clause** | BSD-3 | ✓ yes — permissive, MIT-compatible. Sunfish's `IPeerTransport` adapter (`packages/providers-mesh-netbird`) talks to this; the adapter is fine to ship under Sunfish's chosen license (MIT per Phase 5 D4 recommendation). |
+| NetBird **management** (control server) | **AGPLv3** | BSD-3 | ✓ as **external network service**; ✗ as embedded/linked code (see A10.2) |
+| NetBird **relay** | **AGPLv3** | BSD-3 | same as management |
+| NetBird **signal** | **AGPLv3** | BSD-3 | same as management |
+| NetBird **dashboard** | **AGPLv3** | BSD-3 | same as management |
+| NetBird **SaaS** (netbird.io hosted) | Commercial / proprietary | n/a | ✓ permitted as bring-your-own per A10.3 |
+| **Pre-v0.53.0 codebase** (entire tree, legacy) | BSD-3-Clause throughout | n/a | ✓ vendorable if needed (note: loses post-Aug-2025 fixes; vendoring is a contingency, not a default) |
+
+#### A10.2 — AGPLv3 boundary: what Sunfish can and cannot do
+
+AGPLv3 is **OSI-approved open source** (unlike BSL, which the May 11 analysis incorrectly named). Operators are free to self-host NetBird's server components — the AGPLv3 just imposes copyleft obligations: derivative works must be AGPLv3, and offering the software as a network service triggers source-disclosure to users.
+
+**Sunfish's MIT-licensed code can:**
+
+- Use NetBird's BSD-3 client library directly (link, embed, vendor — all fine).
+- Run NetBird's AGPLv3 server components as **external services** alongside Sunfish (e.g., in the same `docker-compose`), communicating via network APIs (gRPC/REST). Service consumption across a network boundary is **not** a derivative work under any standard AGPLv3 interpretation.
+- Document and recommend self-hosting NetBird's AGPLv3 server in self-hosting guides.
+
+**Sunfish's MIT-licensed code cannot:**
+
+- Embed, link, or statically compile AGPLv3 source into Sunfish binaries.
+- Distribute Sunfish binaries that include AGPLv3 server code in the same artifact.
+- Modify AGPLv3 server code and ship the result under MIT.
+
+**Practical adapter pattern:** `packages/providers-mesh-netbird` (MIT) speaks NetBird's wire protocols against an externally-running NetBird management/relay/signal stack. The adapter file does not include AGPLv3 source; it only calls APIs.
+
+#### A10.3 — Bring-your-own NetBird SaaS remains permitted
+
+Operators with existing NetBird SaaS subscriptions (netbird.io) may use the `packages/providers-mesh-netbird` adapter to route Tier 2 sync through NetBird's hosted control plane. Same pattern as bring-your-own Tailscale SaaS — the adapter remains MIT (talks to NetBird's BSD-3 agent + NetBird's hosted REST API); the operator's relationship with NetBird the company is separate.
+
+This preserves the original ADR 0061's "bring-your-own SaaS is OK" stance (line 47) for NetBird.
+
+#### A10.4 — Updates to specific ADR body claims
+
+The following lines in the ADR body are now historical-correct-as-of-acceptance-date but require A10 to be applied for current-state accuracy:
+
+- **Line 45** ("NetBird (BSD-3)") — read as "NetBird client (BSD-3); server components (management/relay/signal/dashboard) AGPLv3 since v0.53.0 (August 2025), usable as external service per A10.2".
+- **Line 47** ("bring-your-own SaaS is OK ... NetBird") — unchanged in spirit; reaffirmed by A10.3.
+- **Line 159** (`AdapterName { get; }` enumerating "netbird") — unchanged; the adapter is valid against either BSD-3 client + AGPLv3 server (self-hosted) or NetBird SaaS.
+- **Line 198** + line 386 (`packages/providers-mesh-netbird` — BSD-3) — **read as "BSD-3 (client library) + MIT (adapter package itself, Sunfish-authored)".**
+
+#### A10.5 — Relationship to ADR 0067-A1 precedent
+
+ADR 0067-A1 (Tailscale BSL → Headscale BSD-3 substitution) is the precedent for substitution-when-forced-off-a-commercial-license. NetBird's situation is **less severe** than Tailscale's: AGPLv3 is open source, while BSL is not. Self-hosters who want a fully-permissive stack still choose Headscale; self-hosters comfortable with AGPLv3 obligations can run NetBird's server stack alongside Sunfish without legal risk.
+
+Net effect:
+
+- **Headscale** remains the canonical Tier 2 permissive control plane.
+- **NetBird** is a valid alternative for operators who prefer it and accept AGPLv3 on their server side (or use NetBird SaaS).
+- **Tailscale** path is unchanged: BSL self-hosted is out; SaaS bring-your-own remains in.
+
+#### A10.6 — Cited-symbol re-verification
+
+| Reference | Status |
+|---|---|
+| `packages/providers-mesh-netbird` | ⏳ planned (Phase 2.3 per Stage 02 plan; not yet shipping; A10 lands before package creation so the adapter ships with correct license metadata from day one) |
+| `packages/providers-mesh-headscale` | ✓ exists on `main` (per W#60 F/OSS re-check 2026-05-13) |
+| ADR 0067-A1 (Headscale substitution precedent) | ✓ Accepted |
+| `feedback_oss_substitutability_principle.md` (memory) | ✓ existing |
+| 2026-05-11 F/OSS gap analysis (memory) C3 entry | ⚠️ contains license-name error (says BSL, actually AGPLv3); update or supersede the memory entry to point at this A10 as authoritative |
+| NetBird v0.53.0 release notes (August 2025) | ✓ public; license split documented in NetBird's GitHub LICENSE files per-directory |
+
+#### A10.7 — Resolves carryover from F/OSS analysis with correction
+
+This amendment closes carryover item **C3** (NetBird server-side license change) from the 2026-05-11 F/OSS gap analysis, with the correction that the change is to **AGPLv3** (not BSL as originally claimed). Remaining carryover items (G2 group E2E, C2 role-key forward-secrecy, OQ-1 GPLv3 boundary, OQ-3 Loro→Automerge migration story) are tracked in the W#60 F/OSS re-check discovery doc.
