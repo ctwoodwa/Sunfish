@@ -27,7 +27,7 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore packages/ui-adapters-blazor/tests/tests.csproj
+        run: dotnet restore packages/ui-adapters-blazor/tests/tests.csproj -p:NoWarn=NU1510
 
       - name: Build
         run: dotnet build packages/ui-adapters-blazor/tests/tests.csproj -c Release --no-restore
