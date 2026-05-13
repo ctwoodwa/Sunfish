@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Sunfish.Blocks.SickBay.csproj" />
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
     <ProjectReference Include="..\..\foundation-sick-bay\Sunfish.Foundation.SickBay.csproj" />
   </ItemGroup>
 
