@@ -1,0 +1,108 @@
+@* DepartmentNavPanel — Quarterdeck department navigation (ADR 0080 §2.3 rules 4+5, W#51 Phase 3b).
+   role="navigation" landmark via <nav>; denied departments use aria-disabled (NOT native disabled)
+   so the element remains focusable + discoverable by SR (denied-not-hidden per ADR 0080 §2.3 rule 5).
+   Skip-link must be the FIRST focusable element on the page; <main id="main-content"> is the target.
+   Council amendments applied: A1 (aria-disabled on denied); A2 (skip-link placement);
+   A11 (RenderMainLandmark — caller sets false when host page already owns <main>, preventing
+        duplicate <main> landmarks which confuse AT; defaults true for standalone use). *@
+
+<a href="#main-content" class="qd-skip-link sf-sr-only sf-sr-only--focusable">
+    Skip to main content
+</a>
+
+<nav aria-label="Departments" class="qd-dept-nav">
+    @if (Links.Count == 0)
+    {
+        <p class="qd-dept-nav-empty">No departments available.</p>
+    }
+    else
+    {
+        <ul class="qd-dept-nav-list" role="list">
+            @foreach (var link in Links)
+            {
+                var isDenied = link.AccessDecision == DepartmentStatus.Denied;
+                <li class="qd-dept-nav-item" role="listitem">
+                    @if (!isDenied)
+                    {
+                        @* Accessible department: normal link. href resolved from ShipLocation. *@
+                        <a class="qd-dept-nav-link" href="@LocationHref(link.Location)">
+                            @link.DisplayName
+                        </a>
+                    }
+                    else
+                    {
+                        // A4: stable ID for aria-describedby linkage.
+                        var reasonId = $"qd-dept-denied-{link.Location}";
+                        @* Denied department: aria-disabled button stays focusable + discoverable
+                           by SR (denied-not-hidden, ADR 0080 §2.3 rule 5 + ARIA 1.2 §6.6).
+                           A3: @onclick + @onkeydown both suppressed — prevents Space/Enter activation
+                           on the Blazor Server circuit, not just click events.
+                           A4: aria-describedby links to the denial reason span. *@
+                        <button type="button"
+                                class="qd-dept-nav-link qd-dept-nav-link--denied"
+                                aria-disabled="true"
+                                aria-describedby="@(link.DenialReason is not null ? reasonId : null)"
+                                @onclick:preventDefault="true"
+                                @onclick="SuppressActivation"
+                                @onkeydown="SuppressKeyActivation">
+                            @link.DisplayName
+                        </button>
+                        @if (link.DenialReason is { } reason)
+                        {
+                            <span id="@reasonId" class="qd-dept-nav-denial-reason sf-sr-only">
+                                @reason
+                            </span>
+                        }
+                    }
+                </li>
+            }
+        </ul>
+    }
+</nav>
+
+@* A11: conditional <main> — host pages that own the landmark set RenderMainLandmark=false
+   to prevent duplicate <main> landmarks. tabindex="-1" allows programmatic focus from the
+   skip-link without adding <main> to the tab sequence (SC 2.4.1). *@
+@if (RenderMainLandmark)
+{
+    <main id="main-content" tabindex="-1" class="qd-main-content">
+        @ChildContent
+    </main>
+}
+else
+{
+    <div id="main-content" tabindex="-1" class="qd-main-content">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<DepartmentLink> Links { get; set; } = [];
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// When true (default), renders a <c>&lt;main id="main-content"&gt;</c> landmark as the
+    /// skip-link target. Set to false when the host page already owns the sole <c>&lt;main&gt;</c>
+    /// landmark (prevents duplicate landmarks, which confuse assistive technology).
+    /// </summary>
+    [Parameter] public bool RenderMainLandmark { get; set; } = true;
+
+    private static void SuppressActivation() { }
+
+    // A3: suppress Space + Enter keyboard activation on aria-disabled denied buttons (WCAG 2.1.1).
+    private static void SuppressKeyActivation(KeyboardEventArgs e) { }
+
+    private static string LocationHref(ShipLocation location) => location switch
+    {
+        ShipLocation.Quarterdeck  => "/quarterdeck",
+        ShipLocation.Wayfinder    => "/wayfinder",
+        ShipLocation.EngineRoom   => "/engine-room",
+        ShipLocation.Tactical     => "/tactical",
+        ShipLocation.SickBay      => "/sick-bay",
+        ShipLocation.ShipsOffice  => "/ships-office",
+        ShipLocation.SupplyOffice => "/supply-office",
+        ShipLocation.Wardroom     => "/wardroom",
+        ShipLocation.Brig         => "/brig",
+        _                         => $"/{location.ToString().ToLowerInvariant()}",
+    };
+}
