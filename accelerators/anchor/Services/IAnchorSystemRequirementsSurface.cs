@@ -27,6 +27,16 @@ public interface IAnchorSystemRequirementsSurface : ISystemRequirementsSurface
     /// </summary>
     RenderFragment? InlineFragment { get; set; }
 
+    /// <summary>
+    /// Populated by the renderer when
+    /// <see cref="SystemRequirementsRenderMode.PostInstallRegressionBanner"/> is requested.
+    /// Shell-level consumers render this fragment (e.g., in <c>MainLayout</c>) to display
+    /// a regression banner; driven by the renderer's manual-trigger path.
+    /// Automatic regression detection uses <see cref="SystemRequirementsRegressionObserver"/>
+    /// and its <see cref="SystemRequirementsRegressionObserver.Regressions"/> channel.
+    /// </summary>
+    RenderFragment? RegressionBannerFragment { get; set; }
+
     /// <summary>Navigation manager used for <see cref="SystemRequirementsRenderMode.PreInstallFullPage"/> dispatch.</summary>
     NavigationManager NavigationManager { get; }
 }

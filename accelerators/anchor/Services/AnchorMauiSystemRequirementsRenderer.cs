@@ -8,7 +8,7 @@ namespace Sunfish.Anchor.Services;
 
 /// <summary>
 /// Anchor MAUI concrete <see cref="ISystemRequirementsRenderer"/> per ADR 0063-A1.1
-/// + W#47 Phase 2.
+/// + W#47 Phase 2+3.
 /// <list type="bullet">
 /// <item><description>
 /// <see cref="SystemRequirementsRenderMode.PreInstallFullPage"/> — navigates
@@ -21,13 +21,29 @@ namespace Sunfish.Anchor.Services;
 /// fragment; does NOT navigate.
 /// </description></item>
 /// <item><description>
-/// <see cref="SystemRequirementsRenderMode.PostInstallRegressionBanner"/> — Phase 3;
-/// no-op here.
+/// <see cref="SystemRequirementsRenderMode.PostInstallRegressionBanner"/> — sets
+/// <see cref="IAnchorSystemRequirementsSurface.RegressionBannerFragment"/> to a
+/// regression summary fragment AND publishes failing Required dimensions to the
+/// optional <see cref="SystemRequirementsRegressionObserver"/> (injected at
+/// construction) for the shell-level banner's channel-driven path.
 /// </description></item>
 /// </list>
 /// </summary>
 public sealed class AnchorMauiSystemRequirementsRenderer : ISystemRequirementsRenderer
 {
+    private readonly SystemRequirementsRegressionObserver? _observer;
+
+    /// <summary>Production constructor — no observer (observer registered separately in DI).</summary>
+    public AnchorMauiSystemRequirementsRenderer() { }
+
+    /// <summary>
+    /// Constructor with observer — used in tests and production composition root
+    /// (via <c>AddAnchorSystemRequirementsRenderer</c>) to wire the
+    /// <see cref="SystemRequirementsRenderMode.PostInstallRegressionBanner"/> mode.
+    /// </summary>
+    public AnchorMauiSystemRequirementsRenderer(SystemRequirementsRegressionObserver observer)
+        => _observer = observer;
+
     /// <inheritdoc/>
     public ValueTask RenderAsync(
         SystemRequirementsResult result,
@@ -51,7 +67,8 @@ public sealed class AnchorMauiSystemRequirementsRenderer : ISystemRequirementsRe
                 break;
 
             case SystemRequirementsRenderMode.PostInstallRegressionBanner:
-                // Phase 3 — regression observer not yet wired.
+                anchorSurface.RegressionBannerFragment = BuildRegressionFragment(result);
+                PublishRegressions(result);
                 break;
         }
 
@@ -82,6 +99,16 @@ public sealed class AnchorMauiSystemRequirementsRenderer : ISystemRequirementsRe
         };
     }
 
+    private void PublishRegressions(SystemRequirementsResult result)
+    {
+        if (_observer is null) return;
+        foreach (var dim in result.Dimensions)
+        {
+            if (dim.Policy == DimensionPolicyKind.Required && dim.Outcome == DimensionPassFail.Fail)
+                _observer.PublishRegression(dim.Dimension);
+        }
+    }
+
     private static RenderFragment BuildInlineFragment(SystemRequirementsResult result) =>
         builder =>
         {
@@ -100,6 +127,25 @@ public sealed class AnchorMauiSystemRequirementsRenderer : ISystemRequirementsRe
                         ? "sf-inline-req-item sf-inline-req-item--fail"
                         : "sf-inline-req-item");
                 builder.AddContent(4, $"{dim.Dimension}: {dim.Outcome}");
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+        };
+
+    private static RenderFragment BuildRegressionFragment(SystemRequirementsResult result) =>
+        builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "sf-regression-summary");
+            var idx = 0;
+            foreach (var dim in result.Dimensions)
+            {
+                if (dim.Policy != DimensionPolicyKind.Required || dim.Outcome != DimensionPassFail.Fail)
+                    continue;
+                builder.OpenElement(2, "div");
+                builder.SetKey(idx++);
+                builder.AddAttribute(3, "class", "sf-regression-item");
+                builder.AddContent(4, dim.Dimension.ToString());
                 builder.CloseElement();
             }
             builder.CloseElement();

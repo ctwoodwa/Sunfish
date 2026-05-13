@@ -64,6 +64,9 @@
     <!-- W#47 Phase 2 — renderer + surface interface are MAUI-free; surface concrete class is not. -->
     <Compile Include="..\Services\IAnchorSystemRequirementsSurface.cs" Link="Anchor\IAnchorSystemRequirementsSurface.cs" />
     <Compile Include="..\Services\AnchorMauiSystemRequirementsRenderer.cs" Link="Anchor\AnchorMauiSystemRequirementsRenderer.cs" />
+    <!-- W#47 Phase 3 — regression observer is MAUI-free (depends only on
+         IMissionEnvelopeProvider + IMinimumSpecResolver from foundation-mission-space). -->
+    <Compile Include="..\Services\SystemRequirementsRegressionObserver.cs" Link="Anchor\SystemRequirementsRegressionObserver.cs" />
   </ItemGroup>
 
   <ItemGroup>

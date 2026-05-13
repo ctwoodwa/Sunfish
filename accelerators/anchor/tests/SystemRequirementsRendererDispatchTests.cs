@@ -144,6 +144,7 @@ public sealed class SystemRequirementsRendererDispatchTests
         public string Platform => "test-platform";
         public string? BundleId { get; set; }
         public RenderFragment? InlineFragment { get; set; }
+        public RenderFragment? RegressionBannerFragment { get; set; }
         public NavigationManager NavigationManager => _nav;
     }
 

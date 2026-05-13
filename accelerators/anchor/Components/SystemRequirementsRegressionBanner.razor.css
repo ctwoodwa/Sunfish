@@ -1,0 +1,39 @@
+/* SystemRequirementsRegressionBanner — W#47 Phase 3 */
+
+.sf-regression-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--sf-color-danger-surface, #fff3f3);
+    /* C1: border-inline-start mirrors correctly in RTL locales (ar, he-IL)
+       per EN 301 549 §9.1.3.2 / WCAG 2.2 SC 1.3.2. */
+    border-inline-start: 4px solid var(--sf-color-danger, #d32f2f);
+    margin-bottom: 0.5rem;
+    border-radius: 2px;
+}
+
+.sf-regression-banner__icon {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    flex-shrink: 0;
+}
+
+.sf-regression-banner__message {
+    font-weight: 600;
+}
+
+.sf-regression-banner__list {
+    margin: 0.25rem 0 0;
+    padding-inline-start: 1.25rem;
+    font-size: 0.875rem;
+}
+
+@media (forced-colors: active) {
+    .sf-regression-banner {
+        border-inline-start-color: ButtonText;
+        background-color: Canvas;
+    }
+}
+
+/* No animations — reduced-motion honoured by omission (ADR 0034 reducedMotion contract). */

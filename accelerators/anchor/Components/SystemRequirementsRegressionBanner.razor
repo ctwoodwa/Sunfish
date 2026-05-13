@@ -1,0 +1,86 @@
+@using Microsoft.Extensions.Localization
+@using Sunfish.Anchor.Localization
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.MissionSpace
+@inject SystemRequirementsRegressionObserver Observer
+@inject IStringLocalizer<SharedResource> L
+@implements IAsyncDisposable
+
+@*
+  SystemRequirementsRegressionBanner — top-of-shell banner per W#47 Phase 3.
+  Mounted once in MainLayout; monitors SystemRequirementsRegressionObserver.Regressions
+  channel and renders an assertive live-region announcement when a Required+Pass
+  dimension regresses to Required+Fail post-install.
+  Per ADR 0063-A1.1 + WCAG 2.2 SC 4.1.3.
+  WCAG council PASS-WITH-AMENDMENTS applied: C1 (RTL logical-props), C2 (ARIA cleanup),
+  C3 (drop redundant aria-live), C4 (split atomic/polite regions), C5 (IAsyncDisposable).
+*@
+
+@if (_regressions.Count > 0)
+{
+    @* C3: role="alert" carries implicit aria-live="assertive"; aria-atomic="true" keeps the
+       title region fully re-announced on the initial alert fire. Explicit aria-live is dropped
+       per WCAG 2.2 SC 4.1.3 to avoid double-announcement on NVDA+Firefox. *@
+    <div class="sf-regression-banner"
+         role="alert"
+         aria-atomic="true">
+        <span class="sf-regression-banner__icon" aria-hidden="true">⚠</span>
+        <span class="sf-regression-banner__message">
+            @L["sysreq.regression.banner_title"]
+        </span>
+    </div>
+
+    @* C4: separate polite region with additions-only relevance so subsequent regressions
+       are announced incrementally rather than re-reading the full list (ARIA 1.2 §aria-atomic). *@
+    <ul class="sf-regression-banner__list"
+        aria-live="polite"
+        aria-relevant="additions"
+        aria-label="@L["sysreq.regression.list_label"]">
+        @foreach (var dim in _regressions)
+        {
+            var locKey = SystemRequirementsViewHelpers.GetDimensionLocKey(dim);
+            <li>@L[$"sysreq.dimension.{locKey}.name"]</li>
+        }
+    </ul>
+}
+
+@code {
+    // C5: ADR 0065 §7 / WCAG 2.2 SC 3.2.1: role="alert" announces without stealing focus
+    // by design. Do NOT add tabindex="-1" + ElementReference.FocusAsync here — moving
+    // focus on regression would violate "On Focus" predictability (SC 3.2.1 + SC 2.4.3).
+    // Users act on regressions via the SystemRequirements diagnostic page, not via the banner.
+
+    private readonly List<DimensionChangeKind> _regressions = new();
+    private CancellationTokenSource? _cts;
+    private Task? _consumerTask;
+
+    protected override void OnInitialized()
+    {
+        _cts = new CancellationTokenSource();
+        _consumerTask = ConsumeRegressionChannelAsync(_cts.Token);
+    }
+
+    private async Task ConsumeRegressionChannelAsync(CancellationToken ct)
+    {
+        try
+        {
+            await foreach (var dim in Observer.Regressions.ReadAllAsync(ct))
+            {
+                if (_regressions.Contains(dim)) continue;
+                _regressions.Add(dim);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        if (_consumerTask is not null)
+        {
+            try { await _consumerTask; } catch (OperationCanceledException) { }
+        }
+        _cts?.Dispose();
+    }
+}
