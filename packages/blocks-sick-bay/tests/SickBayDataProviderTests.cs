@@ -284,4 +284,44 @@ public class SickBayDataProviderTests
         Assert.Equal(0, snapshot.Atmosphere.WarningProbeCount);
         Assert.Equal(0, snapshot.Atmosphere.CriticalProbeCount);
     }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithWarningAndOneCritical_ReturnsOrange()
+    {
+        var envelope = AllHealthy() with
+        {
+            Hardware = new() { ProbeStatus = ProbeStatus.Stale },
+            Network  = new() { ProbeStatus = ProbeStatus.Failed, IsOnline = false },
+        };
+        var snapshot = await Build(envelopeProvider: ProviderFor(envelope))
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Orange, snapshot.Atmosphere.OverallHealth);
+        Assert.Equal(1, snapshot.Atmosphere.WarningProbeCount);
+        Assert.Equal(1, snapshot.Atmosphere.CriticalProbeCount);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithThrowingProvider_ReturnsUnknown()
+    {
+        var provider = Substitute.For<IMissionEnvelopeProvider>();
+        provider.GetCurrentAsync(Arg.Any<CancellationToken>())
+            .Returns<ValueTask<MissionEnvelope>>(_ => throw new InvalidOperationException("provider fault"));
+
+        var snapshot = await Build(envelopeProvider: provider)
+            .GetSnapshotAsync(new TenantId("alpha"));
+
+        Assert.Equal(AtmosphereHealth.Unknown, snapshot.Atmosphere.OverallHealth);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WithThrowingProvider_OperationCancelledPropagates()
+    {
+        var provider = Substitute.For<IMissionEnvelopeProvider>();
+        provider.GetCurrentAsync(Arg.Any<CancellationToken>())
+            .Returns<ValueTask<MissionEnvelope>>(_ => throw new OperationCanceledException());
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => Build(envelopeProvider: provider).GetSnapshotAsync(new TenantId("alpha")));
+    }
 }

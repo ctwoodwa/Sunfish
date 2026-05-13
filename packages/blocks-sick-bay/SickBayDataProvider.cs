@@ -204,6 +204,8 @@ internal sealed class SickBayDataProvider : ISickBayDataProvider
         return (w, c);
     }
 
+    // Arm order is load-bearing: (_, 0) consumes all zero-critical cases before (_, 1).
+    // Do NOT reorder without re-verifying the Orange/Red boundary.
     private static AtmosphereHealth Classify(int w, int c) => (w, c) switch
     {
         (0, 0) => AtmosphereHealth.Green,
