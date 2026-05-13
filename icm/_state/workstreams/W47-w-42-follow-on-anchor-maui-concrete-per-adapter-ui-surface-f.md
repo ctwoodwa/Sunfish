@@ -3,8 +3,8 @@ sort_order: 56
 number: 47
 slug: w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f
 title: "**W#42 follow-on — Anchor MAUI `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; mounts ADR 0063-A1.1 `SystemRequirementsResult` onto Anchor's MAUI Blazor Hybrid shell"
-status: "ready-to-build"
-status_cell: "`ready-to-build` (W#42 substrate built 2026-05-04 across PRs #503/#504/#505/#510/#513/#514; Stage 06 hand-off authored 2026-05-04; sunfish-PM may begin Phase 1 once a COB capacity slot opens)"
+status: "building"
+status_cell: "`building` — Phase 1 PR #765 open (SystemRequirements PreInstallFullPage + DimensionRow + 30 RESX keys + 19 tests; WCAG council PASS-WITH-AMENDMENTS B1–B9 applied); Phases 2–5 next"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` + `docs/adrs/0063-mission-space-requirements.md` (substrate spec) + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Decision §7 (WCAG mandate) + `docs/adrs/0048-anchor-multi-backend-maui.md` (multi-backend) + `docs/adrs/0032-multi-team-anchor-workspace-switching.md` (active-team scoping)"
