@@ -8,9 +8,11 @@ import { LeaseDetailPage } from '@/pages/LeaseDetailPage'
 import { RentCollectionPage } from '@/pages/RentCollectionPage'
 import { AccountingPage } from '@/pages/AccountingPage'
 import { CrewCommsPage } from '@/pages/CrewCommsPage'
+import { MaintenancePage } from '@/pages/MaintenancePage'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
+import { useAuthStore } from '@/stores/authStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,16 +60,20 @@ function AppErrorFallback({ error, resetErrorBoundary }: { error: Error; resetEr
 function AppLayout() {
   const setActiveCompany = useCompanyStore((s) => s.setActiveCompany)
   const setAvailableCompanies = useCompanyStore((s) => s.setAvailableCompanies)
+  const setAuth = useAuthStore((s) => s.setAuth)
 
   useEffect(() => {
     fetch('/api/v1/whoami', { credentials: 'include' })
       .then((r) => r.json())
-      .then((data: { defaultCompany?: string; availableCompanies?: string[] }) => {
+      .then((data: { user?: string; role?: string; defaultCompany?: string; availableCompanies?: string[] }) => {
         if (data.defaultCompany) setActiveCompany(data.defaultCompany)
         if (data.availableCompanies) setAvailableCompanies(data.availableCompanies)
+        setAuth(data.user ?? 'dev-user', data.role ?? 'owner')
       })
-      .catch(() => {/* whoami unavailable in dev without Bridge running */})
-  }, [setActiveCompany, setAvailableCompanies])
+      .catch(() => {
+        setAuth('dev-user', 'owner')
+      })
+  }, [setActiveCompany, setAvailableCompanies, setAuth])
 
   return (
     <div className="min-h-screen bg-white">
@@ -116,6 +122,14 @@ function AppLayout() {
             >
               Comms
             </NavLink>
+            <NavLink
+              to="/maintenance"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Maintenance
+            </NavLink>
           </nav>
           <CompanySwitcher />
         </div>
@@ -129,6 +143,7 @@ function AppLayout() {
           <Route path="/rent" element={<RentCollectionPage />} />
           <Route path="/accounting" element={<AccountingPage />} />
           <Route path="/comms" element={<CrewCommsPage />} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
         </Routes>
       </main>
     </div>

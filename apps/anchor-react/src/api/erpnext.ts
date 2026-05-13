@@ -114,3 +114,51 @@ export async function getAccountingOutstanding(): Promise<OutstandingInvoice[]> 
   const result = await apiFetch<OutstandingListResponse>('/api/v1/erpnext/accounting/outstanding')
   return result.data.filter((inv) => inv.outstanding_amount > 0)
 }
+
+// ── Phase 5: Maintenance ─────────────────────────────────────────────────────
+
+export interface MaintenanceTicket {
+  name: string
+  subject: string
+  property: string
+  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed'
+  priority: 'Low' | 'Medium' | 'High' | 'Critical'
+  assigned_to: string | null
+  cost: number | null
+}
+
+export interface CreateMaintenanceInput {
+  Subject: string
+  Property: string
+  Priority: string
+  AssignedTo?: string
+  Description?: string
+}
+
+export interface UpdateMaintenanceInput {
+  Status?: string
+  AssignedTo?: string
+  Cost?: number
+  Resolution?: string
+}
+
+export async function getMaintenanceTickets(): Promise<MaintenanceTicket[]> {
+  const result = await apiFetch<{ data: MaintenanceTicket[] }>('/api/v1/erpnext/maintenance')
+  return result.data
+}
+
+export async function createMaintenanceTicket(payload: CreateMaintenanceInput): Promise<{ data: MaintenanceTicket }> {
+  return apiFetch<{ data: MaintenanceTicket }>('/api/v1/erpnext/maintenance', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function updateMaintenanceTicket(name: string, payload: UpdateMaintenanceInput): Promise<{ data: MaintenanceTicket }> {
+  return apiFetch<{ data: MaintenanceTicket }>(`/api/v1/erpnext/maintenance/${encodeURIComponent(name)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}

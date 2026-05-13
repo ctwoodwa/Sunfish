@@ -157,5 +157,17 @@ public sealed class ERPNextProxyTests
             LastCompany = company;
             return Task.FromResult(_result);
         }
+
+        public string? LastPutDoctype { get; private set; }
+        public string? LastPutName { get; private set; }
+
+        public Task<JsonElement> PutAsync(
+            string doctype, string name, object payload, string company, CancellationToken ct = default)
+        {
+            LastPutDoctype = doctype;
+            LastPutName = name;
+            LastCompany = company;
+            return Task.FromResult(_result);
+        }
     }
 }

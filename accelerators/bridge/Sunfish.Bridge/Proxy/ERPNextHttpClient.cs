@@ -118,6 +118,26 @@ public sealed class ERPNextHttpClient : IERPNextClient
         return await ParseJsonAsync(resp, ct).ConfigureAwait(false);
     }
 
+    public async Task<JsonElement> PutAsync(
+        string doctype,
+        string name,
+        object payload,
+        string company,
+        CancellationToken ct = default)
+    {
+        // Verify the record belongs to the requested company (defense in depth).
+        var existing = await GetResourceAsync(doctype, name, company, ct).ConfigureAwait(false);
+        _ = existing; // validation performed inside GetResourceAsync
+
+        var json = JsonSerializer.Serialize(payload, _jsonOptions);
+        var url = $"/api/resource/{Uri.EscapeDataString(doctype)}/{Uri.EscapeDataString(name)}";
+        using var req = BuildRequest(HttpMethod.Put, url);
+        req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var resp = await _http.SendAsync(req, ct).ConfigureAwait(false);
+        resp.EnsureSuccessStatusCode();
+        return await ParseJsonAsync(resp, ct).ConfigureAwait(false);
+    }
+
     private static string EscapeJson(string value)
         => value.Replace("\\", "\\\\", StringComparison.Ordinal)
                 .Replace("\"", "\\\"", StringComparison.Ordinal);

@@ -33,4 +33,16 @@ public interface IERPNextClient
         IReadOnlyList<string> fields,
         int limit = 100,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// PUT /api/resource/{doctype}/{name} — partial field update on an existing ERPNext document.
+    /// Bridge accepts PATCH from the React client and translates to ERPNext's PUT convention.
+    /// Company-ownership is validated before the write.
+    /// </summary>
+    Task<JsonElement> PutAsync(
+        string doctype,
+        string name,
+        object payload,
+        string company,
+        CancellationToken ct = default);
 }

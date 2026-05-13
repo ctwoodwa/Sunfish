@@ -139,3 +139,29 @@ Should return `{ "user": "dev-user", "role": "owner", "defaultCompany": "...", .
 | Maintenance | `Maintenance Ticket` |
 | Payments | `Payment Entry` (standard ERPNext) |
 | Journal entries | `Journal Entry` (standard ERPNext) |
+
+## Role setup (Phase 5)
+
+The `whoami` endpoint (`GET /api/v1/whoami`) returns `{ user, role, defaultCompany, availableCompanies }`.
+In production, `role` is populated from OIDC claims. In development it defaults to `"owner"`.
+
+Valid roles: `owner`, `manager`, `viewer`.
+
+To test role-gated UI locally, temporarily edit `Program.cs`:
+```csharp
+role = "viewer"  // instead of "owner"
+```
+
+Role-gated React components use `<RoleGate allow={['owner', 'manager']}>` from
+`apps/anchor-react/src/components/RoleGate.tsx`. The underlying primitive
+`@sunfish/ui-react` `RoleGate` is role-value-agnostic (accepts any `allow` string[]).
+
+## Adding a new screen
+
+1. Add API functions to `apps/anchor-react/src/api/erpnext.ts`.
+2. Create `apps/anchor-react/src/pages/YourPage.tsx` using `useQuery` from
+   `@tanstack/react-query`.
+3. Add the Bridge route in `accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs`
+   by adding a `group.MapGet/MapPost/MapMethods(...)` call and a handler.
+4. Update `apps/anchor-react/src/app.tsx`: add a `<NavLink>` and a `<Route>`.
+5. If the route is role-protected, wrap `<Route element>` children in `<RoleGate allow={[...]}>`.
