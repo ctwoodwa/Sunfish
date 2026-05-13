@@ -333,4 +333,103 @@
     <Project Path="tooling/Sunfish.Tooling.ColorAudit/Sunfish.Tooling.ColorAudit.csproj" />
     <Project Path="tooling/design-tokens-codegen/DesignTokensCodegenTool.csproj" />
   </Folder>
+  <Folder Name="/foundation/channels/">
+    <Project Path="packages/foundation-channels/Sunfish.Foundation.Channels.csproj" />
+  </Folder>
+  <Folder Name="/foundation/transport/">
+    <Project Path="packages/foundation-transport/Sunfish.Foundation.Transport.csproj" />
+    <Project Path="packages/foundation-transport/tests/Sunfish.Foundation.Transport.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/migration/">
+    <Project Path="packages/foundation-migration/Sunfish.Foundation.Migration.csproj" />
+    <Project Path="packages/foundation-migration/tests/Sunfish.Foundation.Migration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/versioning/">
+    <Project Path="packages/foundation-versioning/Sunfish.Foundation.Versioning.csproj" />
+    <Project Path="packages/foundation-versioning/tests/Sunfish.Foundation.Versioning.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/ui-syncstate/">
+    <Project Path="packages/foundation-ui-syncstate/Sunfish.Foundation.UI.SyncState.csproj" />
+    <Project Path="packages/foundation-ui-syncstate/tests/Sunfish.Foundation.UI.SyncState.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/mission-space/">
+    <Project Path="packages/foundation-mission-space/Sunfish.Foundation.MissionSpace.csproj" />
+    <Project Path="packages/foundation-mission-space/tests/Sunfish.Foundation.MissionSpace.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/mission-space-regulatory/">
+    <Project Path="packages/foundation-mission-space-regulatory/Sunfish.Foundation.MissionSpace.Regulatory.csproj" />
+    <Project Path="packages/foundation-mission-space-regulatory/tests/Sunfish.Foundation.MissionSpace.Regulatory.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/ship-common/">
+    <Project Path="packages/foundation-ship-common/Sunfish.Foundation.Ship.Common.csproj" />
+    <Project Path="packages/foundation-ship-common/tests/Sunfish.Foundation.Ship.Common.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/quarterdeck/">
+    <Project Path="packages/foundation-quarterdeck/Sunfish.Foundation.Quarterdeck.csproj" />
+    <Project Path="packages/foundation-quarterdeck/tests/Sunfish.Foundation.Quarterdeck.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/tactical/">
+    <Project Path="packages/foundation-tactical/Sunfish.Foundation.Tactical.csproj" />
+    <Project Path="packages/foundation-tactical/tests/Sunfish.Foundation.Tactical.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/sick-bay/">
+    <Project Path="packages/foundation-sick-bay/Sunfish.Foundation.SickBay.csproj" />
+    <Project Path="packages/foundation-sick-bay/tests/Sunfish.Foundation.SickBay.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/engine-room/">
+    <Project Path="packages/foundation-engine-room/Sunfish.Foundation.EngineRoom.csproj" />
+    <Project Path="packages/foundation-engine-room/tests/Sunfish.Foundation.EngineRoom.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/ships-office/">
+    <Project Path="packages/foundation-ships-office/Sunfish.Foundation.ShipsOffice.csproj" />
+    <Project Path="packages/foundation-ships-office/tests/Sunfish.Foundation.ShipsOffice.Tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/wayfinder/">
+    <Project Path="packages/foundation-wayfinder/Sunfish.Foundation.Wayfinder.csproj" />
+    <Project Path="packages/foundation-wayfinder/tests/Sunfish.Foundation.Wayfinder.Tests.csproj" />
+  </Folder>
+  <Folder Name="/analyzers/foundation-ships-office/">
+    <Project Path="packages/foundation-ships-office.analyzers/Sunfish.Foundation.ShipsOffice.Analyzers.csproj" />
+    <Project Path="packages/foundation-ships-office.analyzers/tests/Sunfish.Foundation.ShipsOffice.Analyzers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/analyzers/foundation-wayfinder/">
+    <Project Path="packages/foundation-wayfinder-analyzers/Sunfish.Wayfinder.Analyzers.csproj" />
+    <Project Path="packages/foundation-wayfinder-analyzers/tests/Sunfish.Wayfinder.Analyzers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/kernel/signatures/">
+    <Project Path="packages/kernel-signatures/Sunfish.Kernel.Signatures.csproj" />
+    <Project Path="packages/kernel-signatures/tests/Sunfish.Kernel.Signatures.Tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/crew-comms/">
+    <Project Path="packages/blocks-crew-comms/Sunfish.Blocks.CrewComms.csproj" />
+    <Project Path="packages/blocks-crew-comms/tests/Sunfish.Blocks.CrewComms.Tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/engine-room/">
+    <Project Path="packages/blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj" />
+    <Project Path="packages/blocks-engine-room/tests/Sunfish.Blocks.EngineRoom.Tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/sick-bay/">
+    <Project Path="packages/blocks-sick-bay/Sunfish.Blocks.SickBay.csproj" />
+    <Project Path="packages/blocks-sick-bay/tests/Sunfish.Blocks.SickBay.Tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/ships-office/">
+    <Project Path="packages/blocks-ships-office/Sunfish.Blocks.ShipsOffice.csproj" />
+    <Project Path="packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/property-leasing-pipeline/">
+    <Project Path="packages/blocks-property-leasing-pipeline/Sunfish.Blocks.PropertyLeasingPipeline.csproj" />
+    <Project Path="packages/blocks-property-leasing-pipeline/tests/Sunfish.Blocks.PropertyLeasingPipeline.Tests.csproj" />
+  </Folder>
+  <Folder Name="/providers/mesh-headscale/">
+    <Project Path="packages/providers-mesh-headscale/Sunfish.Providers.Mesh.Headscale.csproj" />
+    <Project Path="packages/providers-mesh-headscale/tests/Sunfish.Providers.Mesh.Headscale.Tests.csproj" />
+  </Folder>
+  <Folder Name="/providers/recaptcha/">
+    <Project Path="packages/providers-recaptcha/Sunfish.Providers.Recaptcha.csproj" />
+    <Project Path="packages/providers-recaptcha/tests/Sunfish.Providers.Recaptcha.Tests.csproj" />
+  </Folder>
+  <Folder Name="/bridge-subscription/">
+    <Project Path="packages/bridge-subscription/Sunfish.Bridge.Subscription.csproj" />
+    <Project Path="packages/bridge-subscription/tests/Sunfish.Bridge.Subscription.Tests.csproj" />
+  </Folder>
 </Solution>
