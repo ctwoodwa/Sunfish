@@ -44,6 +44,7 @@ public sealed class BlazorLiveAnnouncer : ILiveAnnouncer, IAsyncDisposable
                 politeness.ToString().ToLowerInvariant()).ConfigureAwait(false);
         }
         catch (JSDisconnectedException) { /* component unmounted mid-flight */ }
+        catch (JSException)             { /* module load failure (404) or JS error */ }
         catch (TaskCanceledException)   { /* navigation or disposal */ }
     }
 

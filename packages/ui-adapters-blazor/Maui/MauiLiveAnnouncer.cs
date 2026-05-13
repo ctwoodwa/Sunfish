@@ -63,13 +63,22 @@ public sealed class WindowsA11yNotifier : IPlatformA11yNotifier
 {
     public void Notify(string message, LiveRegionPoliteness politeness)
     {
-        var kind = politeness == LiveRegionPoliteness.Polite
-            ? Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.ActionCompleted
-            : Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.ActionAborted;
-
-        var processing = politeness == LiveRegionPoliteness.Polite
-            ? Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.CurrentThenMostRecent
-            : Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent;
+        // Kind/Processing mapping per MSAA/UIA guidance:
+        // Polite    → ActionCompleted + CurrentThenMostRecent (waits for current speech)
+        // Assertive → Other + ImportantMostRecent            (interrupts; drops older)
+        // Critical  → Other + ImportantAll                  (interrupts; keeps history)
+        var (kind, processing) = politeness switch
+        {
+            LiveRegionPoliteness.Polite =>
+                (Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.ActionCompleted,
+                 Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.CurrentThenMostRecent),
+            LiveRegionPoliteness.Critical =>
+                (Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                 Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.ImportantAll),
+            _ => // Assertive
+                (Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                 Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.ImportantMostRecent),
+        };
 
         var window = Microsoft.Maui.MauiWinUIApplication.Current?.MainWindow;
         window?.GetAutomationPeer()?.RaiseNotificationEvent(
@@ -79,14 +88,17 @@ public sealed class WindowsA11yNotifier : IPlatformA11yNotifier
 #endif
 
 #if MACCATALYST || IOS
-/// <summary>MacCatalyst/iOS UIAccessibility announcement.</summary>
+/// <summary>MacCatalyst/iOS UIAccessibility announcement per Apple Accessibility API.</summary>
 public sealed class MacCatalystA11yNotifier : IPlatformA11yNotifier
 {
     public void Notify(string message, LiveRegionPoliteness politeness)
     {
+        // UIAccessibility.PostNotification(UIAccessibilityPostNotification, NSObject) is
+        // the canonical .NET iOS/MacCatalyst surface. Use NSString (not NSObject.FromObject)
+        // to ensure the AT receives a well-typed string announcement.
         UIKit.UIAccessibility.PostNotification(
             UIKit.UIAccessibilityPostNotification.Announcement,
-            Foundation.NSObject.FromObject(message));
+            new Foundation.NSString(message));
     }
 }
 #endif

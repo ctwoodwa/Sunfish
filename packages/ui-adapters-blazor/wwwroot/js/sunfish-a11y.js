@@ -49,6 +49,10 @@ function getFocusable(root) {
     if (!root) return [];
     return Array.from(root.querySelectorAll(FOCUSABLE_SELECTOR)).filter(el => {
         if (el.closest('[aria-hidden="true"]')) return false;
+        if (el.closest('[inert]')) return false;
+        if (el.hasAttribute('disabled')) return false;
+        const style = getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') return false;
         return true;
     });
 }

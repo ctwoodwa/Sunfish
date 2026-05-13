@@ -41,7 +41,7 @@ export function FirstAidRenderer({
   const resolvedHint = nextActionHintText?.trim() || contract.nextActionHintKey;
 
   return (
-    <div className="sf-first-aid" role="region" aria-describedby={helpId}>
+    <div className="sf-first-aid" aria-describedby={helpId}>
       {/* Visually hidden help text — WCAG SC 3.3.2 */}
       <span id={helpId} className="sf-sr-only">
         {resolvedHelp}
