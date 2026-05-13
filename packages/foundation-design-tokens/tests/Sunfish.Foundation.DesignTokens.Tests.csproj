@@ -18,6 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Sunfish.Foundation.DesignTokens.csproj" />
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\tooling\Sunfish.Tooling.ColorAudit\Sunfish.Tooling.ColorAudit.csproj" />
+    <ProjectReference Include="..\..\..\tooling\design-tokens-codegen\DesignTokensCodegenTool.csproj" />
   </ItemGroup>
 
 </Project>
