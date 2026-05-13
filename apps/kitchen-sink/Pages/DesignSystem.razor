@@ -1,0 +1,103 @@
+@page "/design-system"
+@using Sunfish.Foundation.Ship.Common
+@using Sunfish.UICore.Conformance
+@inject IDeckRegistry DeckRegistry
+@inject IPermissionResolver PermissionResolver
+@inject IConformanceRegistry ConformanceRegistry
+
+<PageTitle>Shared Design System — Sunfish Kitchen Sink</PageTitle>
+
+<h1>Shared Design System (ADR 0077)</h1>
+
+<p>
+    Demonstrates the W#46 Shared Design System substrate: role/deck/location
+    permission primitives + conformance registry wired via
+    <code>AddSunfishSharedDesignSystem()</code>.
+</p>
+
+<section aria-labelledby="deck-section-heading">
+    <h2 id="deck-section-heading">Deck Registry</h2>
+    @{
+        var decks = DeckRegistry.ForLocation(ShipLocation.Quarterdeck);
+    }
+    @if (!decks.Any())
+    {
+        <p><em>No surfaces registered yet.</em></p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var d in decks)
+            {
+                <li>
+                    <strong>@d.SurfaceId</strong>
+                    (<code>@d.Depth</code>) — <em>@d.DisplayNameKey</em>
+                    @if (d.DefaultLandingFor.Any())
+                    {
+                        <span> · default for: @string.Join(", ", d.DefaultLandingFor)</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+<section aria-labelledby="conformance-section-heading">
+    <h2 id="conformance-section-heading">Conformance Registry</h2>
+    @{
+        var declarations = ConformanceRegistry.ForLocation("quarterdeck");
+    }
+    @if (!declarations.Any())
+    {
+        <p><em>No conformance declarations for "quarterdeck" yet.</em></p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Surface</th>
+                    <th scope="col">Level</th>
+                    <th scope="col">SCs Covered</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in declarations)
+                {
+                    <tr>
+                        <td>@d.SurfaceId</td>
+                        <td>@d.Level</td>
+                        <td>@string.Join(", ", d.Covered.Select(sc => sc.Id))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Demo: register a Quarterdeck surface so the page renders non-empty content.
+        DeckRegistry.Register(new DeckRegistration(
+            ShipLocation.Quarterdeck,
+            DeckDepth.MainDeck,
+            "quarterdeck.status-overview",
+            "DemoKS.Quarterdeck.StatusOverview",
+            ShipAction.Read,
+            [ShipRole.Captain, ShipRole.XO]));
+
+        // Demo: register a conformance declaration for the same surface.
+        ConformanceRegistry.Register(new ConformanceDeclaration(
+            "quarterdeck",
+            "quarterdeck.status-overview",
+            Wcag22Level.AA,
+            [
+                new WcagSuccessCriterion("1.3.1", "Info and Relationships"),
+                new WcagSuccessCriterion("4.1.3", "Status Messages"),
+            ],
+            [],
+            [],
+            System.DateTimeOffset.UtcNow));
+    }
+}

@@ -13,6 +13,10 @@
     <ProjectReference Include="..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
     <ProjectReference Include="..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <!-- Safe: ui-core → foundation-ship-common would cycle (via kernel-crdt→ui-core);
+         the reverse (foundation-ship-common → ui-core) is cycle-safe.
+         Required for AddSunfishSharedDesignSystem() to register IConformanceRegistry. -->
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
