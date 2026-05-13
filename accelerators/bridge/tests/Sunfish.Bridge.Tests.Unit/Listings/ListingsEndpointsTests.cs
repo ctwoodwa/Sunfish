@@ -100,8 +100,8 @@ public sealed class ListingsEndpointsTests
     [Theory]
     [InlineData("demo-tenant.bridge.sunfish.dev", "demo-tenant")]
     [InlineData("acme.bridge.sunfish.dev", "acme")]
-    [InlineData("localhost", "default")]
-    [InlineData("", "default")]
+    [InlineData("localhost", "bridge-unresolved-host")]
+    [InlineData("", "bridge-unresolved-host")]
     public void ResolveTenantFromHost_StripsLeadingSubdomainLabel(string host, string expectedTenantValue)
     {
         var tenant = ListingsEndpoints.ResolveTenantFromHost(host);
