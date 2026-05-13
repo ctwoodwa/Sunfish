@@ -19,8 +19,7 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@sunfish/ui-react": ["../../packages/ui-react/src"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]

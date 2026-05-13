@@ -63,6 +63,10 @@ jobs:
             librsvg2-dev \
             patchelf
 
+      - name: Build @sunfish/ui-react
+        run: npm install && npm run build
+        working-directory: packages/ui-react
+
       - name: Install npm dependencies
         run: npm ci
         working-directory: apps/anchor-tauri
