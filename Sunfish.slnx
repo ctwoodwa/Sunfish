@@ -412,6 +412,10 @@
     <Project Path="packages/blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj" />
     <Project Path="packages/blocks-engine-room/tests/Sunfish.Blocks.EngineRoom.Tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/quarterdeck/">
+    <Project Path="packages/blocks-quarterdeck/Sunfish.Blocks.Quarterdeck.csproj" />
+    <Project Path="packages/blocks-quarterdeck/tests/Sunfish.Blocks.Quarterdeck.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/sick-bay/">
     <Project Path="packages/blocks-sick-bay/Sunfish.Blocks.SickBay.csproj" />
     <Project Path="packages/blocks-sick-bay/tests/Sunfish.Blocks.SickBay.Tests.csproj" />
