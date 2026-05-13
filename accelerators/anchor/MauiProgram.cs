@@ -26,9 +26,11 @@ using Microsoft.Maui.Storage;
 using Sunfish.Blocks.EngineRoom;
 using Sunfish.Blocks.Quarterdeck;
 using Sunfish.Blocks.ShipsOffice;
+using Sunfish.Blocks.SickBay;
 using Sunfish.Foundation.Quarterdeck;
 using Sunfish.Foundation.Ship.Common;
 using Sunfish.Foundation.ShipsOffice;
+using Sunfish.Foundation.SickBay;
 using Sunfish.Foundation.Wayfinder;
 
 namespace Sunfish.Anchor;
@@ -351,6 +353,24 @@ public static class MauiProgram
 		// No additional permission seam changes needed for Anchor single-operator
 		// posture — AnchorGrantAllPermissionResolver grants ViewQuarterdeck to all.
 		builder.Services.AddSunfishQuarterdeck();
+
+		// W#54 Phase 4 — Sick Bay aggregation surface (ADR 0082).
+		//
+		// AddSunfishSickBayDefaults registers SickBayDataProvider +
+		// DefaultFirstAidSurface + DefaultStretcherBearerPolicy +
+		// SickBayCommandService + MedevacServiceImpl.
+		// Anchor is single-operator; AnchorGrantAllPermissionResolver
+		// (registered by Engine Room wiring above) grants ViewPharmacy
+		// unconditionally — CanViewPharmacy=true in SickBayPage.razor.
+		// RegisterNoopKeyRotationScheduler=true: the real W#32 scheduler
+		// is not yet wired in Anchor; Noop is the safe default per ADR 0082-A1.4.
+		builder.Services.AddSunfishSickBayDefaults(opts =>
+		{
+			opts.RegisterNoopKeyRotationScheduler = true;
+			opts.RegisterPurpose("ssn", "Social Security Number");
+			opts.RegisterPurpose("dob", "Date of Birth");
+			opts.FallbackPollingInterval = TimeSpan.FromSeconds(60);
+		});
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

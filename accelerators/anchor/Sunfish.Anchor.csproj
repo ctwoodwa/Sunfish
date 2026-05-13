@@ -162,6 +162,8 @@
         <ProjectReference Include="..\..\packages\blocks-engine-room\Sunfish.Blocks.EngineRoom.csproj" />
         <!-- W#51 Phase 4 — Quarterdeck entry-point block + DI surface (ADR 0080) -->
         <ProjectReference Include="..\..\packages\blocks-quarterdeck\Sunfish.Blocks.Quarterdeck.csproj" />
+        <!-- W#54 Phase 4 — Sick Bay aggregation surface block + DI surface (ADR 0082) -->
+        <ProjectReference Include="..\..\packages\blocks-sick-bay\Sunfish.Blocks.SickBay.csproj" />
     </ItemGroup>
 
 </Project>
