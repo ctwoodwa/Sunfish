@@ -29,6 +29,7 @@ using Sunfish.Blocks.TenantAdmin.DependencyInjection;
 using Sunfish.Blocks.BusinessCases.DependencyInjection;
 using Sunfish.Blocks.PublicListings.DependencyInjection;
 using Sunfish.Bridge.Listings;
+using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -144,6 +145,11 @@ app.MapHub<BridgeHub>("/hubs/bridge");
 // follow in subsequent phases.
 app.MapListingsEndpoints();
 
+// W#56 Phase 1 — SystemRequirements JSON contract + Bridge endpoint.
+// GET /api/system-requirements/{bundleId}?platform={platformKey} → SystemRequirementsResult JSON.
+// POST /api/system-requirements/{bundleId}/force-install → 204 No Content.
+app.MapSystemRequirementsEndpoints();
+
 // W#23 Phase 4.5 — iOS field-capture endpoints (POST /api/v1/field/event +
 // POST /api/v1/field/blob/{sha256}). Per the audit-infra unblock addendum,
 // audit emission is in-memory only for v1; persistent infra defers to ~ADR 0076.
@@ -249,6 +255,8 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // (ADR 0015 module-entity registration, ADR 0007 bundles, ADR 0009 features).
     builder.Services.AddSunfishBundleCatalog();
     builder.Services.AddSunfishFeatureManagement();
+    // W#56 Phase 1 — SystemRequirements resolver + force-install surface + server-level envelope.
+    builder.Services.AddBridgeSystemRequirements();
     if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Demo"))
         builder.Services.AddInMemorySubscriptions();
     builder.Services.AddInMemoryTenantAdmin();
