@@ -1,0 +1,46 @@
+@page "/identity/profile"
+@using Sunfish.UICore.Wayfinder
+@using Sunfish.Bridge.Client.Services
+@inject IIdentityAtlasSurface AtlasSurface
+@inject IBridgeRequestContext RequestContext
+
+<PageTitle>Identity Profile · Sunfish PM</PageTitle>
+
+<main role="main" aria-labelledby="page-heading">
+    <h1 id="page-heading">Identity Profile</h1>
+
+    @if (!RequestContext.IsResolved)
+    {
+        <p role="status" aria-live="polite">Loading identity context…</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p role="status" aria-live="polite">Loading profile…</p>
+    }
+    else
+    {
+        <section aria-labelledby="profile-section-heading">
+            <h2 id="profile-section-heading">Profile details</h2>
+            <dl>
+                <dt>Display name</dt>
+                <dd>@(string.IsNullOrEmpty(_viewModel.DisplayName) ? "Not set" : _viewModel.DisplayName)</dd>
+                <dt>Contact email</dt>
+                <dd>@(string.IsNullOrEmpty(_viewModel.ContactEmail) ? "Not set" : _viewModel.ContactEmail)</dd>
+                <dt>Phone number</dt>
+                <dd>@(_viewModel.PhoneNumber ?? "Not set")</dd>
+            </dl>
+        </section>
+    }
+</main>
+
+@code {
+    private IdentityProfileEditViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!RequestContext.IsResolved) return;
+        _viewModel = await AtlasSurface.GetProfileEditAsync(
+            RequestContext.TenantId,
+            RequestContext.ActorId);
+    }
+}

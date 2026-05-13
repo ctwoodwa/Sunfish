@@ -1,0 +1,56 @@
+@page "/identity/keys"
+@using Sunfish.UICore.Wayfinder
+@using Sunfish.Bridge.Client.Services
+@inject IIdentityAtlasSurface AtlasSurface
+@inject IBridgeRequestContext RequestContext
+
+<PageTitle>Key Management · Sunfish PM</PageTitle>
+
+<main role="main" aria-labelledby="page-heading">
+    <h1 id="page-heading">Key Management</h1>
+
+    @if (!RequestContext.IsResolved)
+    {
+        <p role="status" aria-live="polite">Loading identity context…</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p role="status" aria-live="polite">Loading key information…</p>
+    }
+    else
+    {
+        <section aria-labelledby="key-section-heading">
+            <h2 id="key-section-heading">Current signing key</h2>
+            <dl>
+                <dt>Fingerprint</dt>
+                <dd>@(_viewModel.CurrentFingerprint == default ? "No key registered" : _viewModel.CurrentFingerprint.ToString())</dd>
+                <dt>Historical keys</dt>
+                <dd>@_viewModel.HistoricalKeyCount rotation(s)</dd>
+                <dt>Rotation in progress</dt>
+                <dd>@(_viewModel.RotationInProgress ? "Yes" : "No")</dd>
+                @if (_viewModel.RotationWindowExpiry.HasValue)
+                {
+                    <dt>Rotation window expires</dt>
+                    <dd>@_viewModel.RotationWindowExpiry.Value.ToString("f")</dd>
+                }
+            </dl>
+        </section>
+
+        <section aria-labelledby="key-history-section-heading">
+            <h2 id="key-history-section-heading">Key history</h2>
+            <p><a href="/identity/keys/history">View key history</a></p>
+        </section>
+    }
+</main>
+
+@code {
+    private KeyRotationViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!RequestContext.IsResolved) return;
+        _viewModel = await AtlasSurface.GetKeyRotationAsync(
+            RequestContext.TenantId,
+            RequestContext.ActorId);
+    }
+}

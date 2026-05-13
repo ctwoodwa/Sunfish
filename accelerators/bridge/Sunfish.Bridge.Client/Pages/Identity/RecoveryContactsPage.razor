@@ -1,0 +1,65 @@
+@page "/identity/recovery"
+@using Sunfish.UICore.Wayfinder
+@using Sunfish.Bridge.Client.Services
+@inject IIdentityAtlasSurface AtlasSurface
+@inject IBridgeRequestContext RequestContext
+
+<PageTitle>Recovery Contacts · Sunfish PM</PageTitle>
+
+<main role="main" aria-labelledby="page-heading">
+    <h1 id="page-heading">Recovery Contacts</h1>
+
+    @if (!RequestContext.IsResolved)
+    {
+        <p role="status" aria-live="polite">Loading identity context…</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p role="status" aria-live="polite">Loading recovery contacts…</p>
+    }
+    else
+    {
+        <section aria-labelledby="contacts-section-heading">
+            <h2 id="contacts-section-heading">
+                Enrolled contacts
+                <span class="sf-badge" aria-label="@_viewModel.Contacts.Count of @_viewModel.MaxContacts contacts enrolled">
+                    @_viewModel.Contacts.Count / @_viewModel.MaxContacts
+                </span>
+            </h2>
+
+            @if (_viewModel.Contacts.Count == 0)
+            {
+                <p>No recovery contacts enrolled. Add contacts to enable account recovery.</p>
+            }
+            else
+            {
+                <ul aria-label="Recovery contacts list" aria-live="polite">
+                    @foreach (var contact in _viewModel.Contacts)
+                    {
+                        <li>
+                            <span class="sf-contact-name">@contact.DisplayName</span>
+                            <span class="sf-contact-status" aria-label="Verification status: @contact.VerificationStatus">
+                                @contact.VerificationStatus
+                            </span>
+                            <span class="sf-contact-date">
+                                Enrolled @contact.EnrolledAt.ToString("d")
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</main>
+
+@code {
+    private RecoveryContactsViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!RequestContext.IsResolved) return;
+        _viewModel = await AtlasSurface.GetRecoveryContactsAsync(
+            RequestContext.TenantId,
+            RequestContext.ActorId);
+    }
+}

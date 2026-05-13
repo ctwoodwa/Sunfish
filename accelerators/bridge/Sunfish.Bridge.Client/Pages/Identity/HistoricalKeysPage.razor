@@ -1,0 +1,64 @@
+@page "/identity/keys/history"
+@using Sunfish.UICore.Wayfinder
+@using Sunfish.Bridge.Client.Services
+@inject IIdentityAtlasSurface AtlasSurface
+@inject IBridgeRequestContext RequestContext
+
+<PageTitle>Key History · Sunfish PM</PageTitle>
+
+<main role="main" aria-labelledby="page-heading">
+    <h1 id="page-heading">Key History</h1>
+
+    @if (!RequestContext.IsResolved)
+    {
+        <p role="status" aria-live="polite">Loading identity context…</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p role="status" aria-live="polite">Loading key history…</p>
+    }
+    else if (_viewModel.Keys.Count == 0)
+    {
+        @* H4 placeholder: ADR 0046-A1 HistoricalKeysProjection not yet shipped.
+           Show informative empty state per handoff acceptance criteria. *@
+        <section aria-labelledby="history-empty-heading">
+            <h2 id="history-empty-heading">No key history available</h2>
+            <p>
+                Historical key records will appear here once key rotation history is
+                available. This feature requires ADR 0046-A1 (HistoricalKeysProjection)
+                to be shipped.
+            </p>
+        </section>
+    }
+    else
+    {
+        <section aria-labelledby="history-section-heading">
+            <h2 id="history-section-heading">Rotated keys</h2>
+            <ul aria-label="Historical signing keys">
+                @foreach (var entry in _viewModel.Keys)
+                {
+                    <li>
+                        <dl>
+                            <dt>Fingerprint</dt>
+                            <dd>@entry.Fingerprint</dd>
+                            <dt>Retired</dt>
+                            <dd>@(entry.RetiredAt?.ToString("f") ?? "—")</dd>
+                        </dl>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</main>
+
+@code {
+    private HistoricalKeysBrowseViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!RequestContext.IsResolved) return;
+        _viewModel = await AtlasSurface.GetHistoricalKeysAsync(
+            RequestContext.TenantId,
+            RequestContext.ActorId);
+    }
+}

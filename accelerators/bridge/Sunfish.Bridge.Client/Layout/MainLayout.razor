@@ -53,6 +53,21 @@
                 <Icon><SunfishIcon Name="alert-triangle" Size="IconSize.Small" /></Icon>
             </SunfishAppShellNavLink>
         </SunfishAppShellNavGroup>
+        <SunfishAppShellNavGroup Title="My Identity">
+            <SunfishAppShellNavLink Href="/identity/profile" Label="Profile">
+                <Icon><SunfishIcon Name="user" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/identity/keys" Label="Signing Key">
+                <Icon><SunfishIcon Name="key" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/identity/recovery" Label="Recovery Contacts">
+                <Icon><SunfishIcon Name="shield" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/identity/teams" Label="Team Memberships">
+                <Icon><SunfishIcon Name="users" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+        </SunfishAppShellNavGroup>
+
         <SunfishAppShellNavGroup Title="Design System">
             <div style="padding: 4px 12px; display: flex; flex-direction: column; gap: 4px;">
                 <button type="button" class="sf-btn mar-btn--sm @(_activeProvider == DesignProvider.FluentUI ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.FluentUI)">Fluent UI</button>
