@@ -89,6 +89,7 @@ public static class FieldEndpoints
         var group = app.MapGroup("/api/v1/field");
         group.MapPost("/event", HandleFieldEventPostAsync);
         group.MapPost("/blob/{sha256}", HandleFieldBlobPostAsync);
+        group.MapPost("/unpair", HandleFieldUnpairAsync);
         return app;
     }
 
@@ -259,6 +260,72 @@ public static class FieldEndpoints
             sha256,
             blob_url = $"/api/v1/field/blob/{sha256}",
         });
+    }
+
+    // Per ADR 0028-A2.8: device_id is a hex string of fixed length (16 chars).
+    // Council Security-B1 (2026-05-13): header is attacker-supplied on this
+    // unauthenticated substrate-v1 endpoint; validate before writing to the
+    // signed audit log to prevent log injection or audit poisoning.
+    private static readonly System.Text.RegularExpressions.Regex SafeDeviceIdPattern =
+        new(@"^[0-9a-f]{1,64}$",
+            System.Text.RegularExpressions.RegexOptions.Compiled |
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Revoke a paired device. The iOS app calls this when the user taps
+    /// "Unpair this device"; Bridge emits <see cref="AuditEventType.FieldDeviceRevoked"/>
+    /// and returns 204. Per W#23 Phase 6.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Substrate v1 scope:</b> audit emission + 204 response. Full token
+    /// invalidation (blacklisting the pairing-token in a persistent store)
+    /// ships as part of the auth-layer follow-up (ADR 0028-A2.6). This
+    /// endpoint is LAN-only in substrate-v1 deployments; WAN exposure
+    /// requires the auth layer.
+    /// </para>
+    /// <para>
+    /// <b>Security posture (Council Security-B1 + B2 amendment, 2026-05-13):</b>
+    /// <c>X-Sunfish-Device-Id</c> is validated against <c>^[0-9a-f]{1,64}$</c>
+    /// before writing to the signed audit log. Rejected or absent headers
+    /// are logged as <c>device_id: null</c> with <c>source: "client-claimed"</c>
+    /// so forensics can distinguish asserted-vs-verified identity. Rate
+    /// limiting is deferred to the auth-layer follow-up; document in the
+    /// Phase 7 hand-off that this route must be protected before WAN exposure.
+    /// </para>
+    /// </remarks>
+    internal static async Task<IResult> HandleFieldUnpairAsync(
+        HttpRequest request,
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentNullException.ThrowIfNull(signer);
+
+        // Read and validate the device-id header. Council Security-B1:
+        // do not write raw caller-supplied strings to the signed audit log.
+        string? deviceId = null;
+        if (request.Headers.TryGetValue("X-Sunfish-Device-Id", out var hv))
+        {
+            var candidate = hv.ToString();
+            if (SafeDeviceIdPattern.IsMatch(candidate))
+                deviceId = candidate;
+            // Invalid header value: leave deviceId null; log as unrecognised below.
+        }
+
+        await EmitAuditAsync(
+            auditTrail, signer,
+            AuditEventType.FieldDeviceRevoked,
+            tenantId: BridgeAnonymousTenant,
+            payload: new AuditPayload(new Dictionary<string, object?>
+            {
+                ["device_id"] = deviceId,
+                ["source"] = "client-claimed",   // distinguishes from future auth-verified device_id
+            }),
+            ct).ConfigureAwait(false);
+
+        return Results.NoContent();
     }
 
     private static AuditPayload BuildAcceptPayload(Guid eventId, string? eventType, string? deviceId)

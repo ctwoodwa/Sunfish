@@ -25,6 +25,15 @@ public protocol EventQueueServicing: Sendable {
     /// the `reason` for surfacing to the queue-status home screen
     /// (Phase 6).
     func markFailed(deviceLocalSeq: Int64, reason: String) async throws
+
+    // MARK: Phase 6 — queue-status home screen
+
+    /// Count of rows with `queue_status = 'pending'`. Used by `QueueStatusRow`.
+    func pendingCount() async throws -> Int
+
+    /// Approximate total byte size of the `payload` BLOB column for pending rows.
+    /// Used by `QueueStatusRow` to surface MB storage usage.
+    func pendingBlobBytes() async throws -> Int64
 }
 
 /// Default GRDB-backed implementation. Per W#23 hand-off Phase 3.
@@ -101,6 +110,28 @@ public final class EventQueueService: EventQueueServicing, @unchecked Sendable {
                 try db.execute(
                     sql: "INSERT INTO audit_local (occurred_at, event_type, payload) VALUES (?, ?, ?)",
                     arguments: [nowIso, "EventQueueMarkedFailed", Data(reason.utf8)])
+            }
+        }.value
+    }
+
+    public func pendingCount() async throws -> Int {
+        try await Task {
+            try database.queue.read { db in
+                try Int.fetchOne(
+                    db,
+                    sql: "SELECT COUNT(*) FROM event_queue WHERE queue_status = ?",
+                    arguments: [QueueStatus.pending.rawValue]) ?? 0
+            }
+        }.value
+    }
+
+    public func pendingBlobBytes() async throws -> Int64 {
+        try await Task {
+            try database.queue.read { db in
+                try Int64.fetchOne(
+                    db,
+                    sql: "SELECT COALESCE(SUM(LENGTH(payload)), 0) FROM event_queue WHERE queue_status = ?",
+                    arguments: [QueueStatus.pending.rawValue]) ?? 0
             }
         }.value
     }
