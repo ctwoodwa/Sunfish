@@ -90,3 +90,26 @@ export interface ActiveTeamOverviewResponse {
   /** Lowercase hyphenated UUID string; null when no team is active (Bridge tenant case). */
   activeTeamId: string | null;
 }
+
+// ===== Diff-preview types (ADR 0077 §4, IDiffPreview projection — W#58 Phase 4) =====
+
+/**
+ * Single field-level change entry — TypeScript projection of
+ * `Sunfish.UICore.Primitives.DiffEntry`.
+ * OldValue / NewValue are nullable strings (values are pre-formatted server-side
+ * or rendered as-is on the client).
+ */
+export interface DiffEntry {
+  field: string;
+  oldValue: string | null;
+  newValue: string | null;
+}
+
+/**
+ * Pending Standing Order diff payload — TypeScript projection of IDiffPreview.
+ * Cascaded from the Helm widget to identity pages when a mutation is pending confirmation.
+ */
+export interface PendingDiffPreview {
+  summary: string;
+  entries: DiffEntry[];
+}

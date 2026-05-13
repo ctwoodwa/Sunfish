@@ -1,9 +1,14 @@
 import { useEffect, useId, useState } from 'react';
-import type { KeyRotationResponse } from '../../contracts/IdentityTypes';
+import type { KeyRotationResponse, PendingDiffPreview } from '../../contracts/IdentityTypes';
 
 export interface KeyRotationPageProps {
   /** Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). */
   apiBaseUrl?: string;
+  /**
+   * Pending Standing Order diff — cascaded from the Helm widget when a key-rotation
+   * mutation is awaiting confirmation (ADR 0077 §4 + ADR 0066 §Phase 4).
+   */
+  pendingDiff?: PendingDiffPreview | null;
 }
 
 /**
@@ -13,12 +18,13 @@ export interface KeyRotationPageProps {
  *
  * Mirrors `accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/KeyRotationPage.razor`.
  */
-export function KeyRotationPage({ apiBaseUrl = '' }: KeyRotationPageProps) {
+export function KeyRotationPage({ apiBaseUrl = '', pendingDiff }: KeyRotationPageProps) {
   const [data, setData] = useState<KeyRotationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const headingId = useId();
   const keySectionId = useId();
   const historyLinkSectionId = useId();
+  const pendingOrderHeadingId = useId();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -74,6 +80,34 @@ export function KeyRotationPage({ apiBaseUrl = '' }: KeyRotationPageProps) {
             </p>
           </section>
         </>
+      )}
+
+      {/* Diff-preview confirmation surface — ADR 0077 §4 + ADR 0066 §Phase 4. */}
+      {pendingDiff != null && pendingDiff.entries.length > 0 && (
+        <section aria-labelledby={pendingOrderHeadingId}>
+          <h2 id={pendingOrderHeadingId}>Pending change — {pendingDiff.summary}</h2>
+          <table>
+            <caption className="sr-only">Pending key rotation field changes</caption>
+            <thead>
+              <tr>
+                <th scope="col">Field</th>
+                <th scope="col">Current</th>
+                <th scope="col">New value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingDiff.entries.map((entry) => (
+                <tr key={entry.field}>
+                  <th scope="row">{entry.field}</th>
+                  <td className="sf-diff-old">{entry.oldValue ?? '—'}</td>
+                  <td className="sf-diff-new">
+                    <span aria-hidden="true">{'→ '}</span>{entry.newValue ?? '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
       )}
     </main>
   );
