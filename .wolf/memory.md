@@ -4931,3 +4931,630 @@
 
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
+| 16:23 | Created icm/07_review/output/2026-05-12_w60-phase2-handoff-audit.md | — | ~1763 |
+| 16:24 | Created icm/00_intake/output/2026-05-12_w60-phase3-tauri-loro-local-first.md | — | ~2561 |
+| 16:25 | Created icm/00_intake/output/2026-05-12_w60-phase4-peer-node-cpa-tenant-portal.md | — | ~2851 |
+| 20:50 | Created icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-addendum.md | — | ~3832 |
+| 20:52 | Created icm/00_intake/output/2026-05-12_anchor-maui-vs-tauri-fate.md | — | ~2647 |
+| 22:14 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextOptions.cs | — | ~245 |
+| 22:15 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Proxy/IERPNextClient.cs | — | ~163 |
+| 22:15 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextHttpClient.cs | — | ~1248 |
+| 22:15 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | — | ~454 |
+| 22:15 | Edited ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/appsettings.json | expanded (+8 lines) | ~105 |
+| 22:15 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/appsettings.Development.json.example | — | ~87 |
+| 22:15 | Edited ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | added optional chaining | ~230 |
+| 22:16 | Edited ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+13 lines) | ~183 |
+| 22:16 | Edited ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | added 1 condition(s) | ~68 |
+| 22:16 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/ERPNextProxyTests.cs | — | ~781 |
+| 22:16 | Created ../../../../../tmp/wt-w60-p1/.github/workflows/anchor-react-ci.yml | — | ~186 |
+| 22:17 | Created ../../../../../tmp/wt-w60-p1/accelerators/bridge/CONTRIBUTING-REACT.md | — | ~1195 |
+| 22:21 | Created ../coordination/inbox/cob-question-2026-05-13T02-21Z-w60-userservice-oidc-design.md | — | ~298 |
+| 02:21 | W#60 Phase 2 Phase 1 — ERPNext proxy layer shipped | PR #731 (draft); ERPNextOptions/IERPNextClient/ERPNextHttpClient/ERPNextProxy + 3 tests; CORS; whoami stub; cob-question filed for UserService/OIDC design | ~513 changes |
+| 22:22 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/package.json | — | ~351 |
+| 22:22 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/vite.config.ts | — | ~160 |
+| 22:22 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/tsconfig.json | — | ~34 |
+| 22:22 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/tsconfig.app.json | — | ~197 |
+| 22:22 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/tsconfig.node.json | — | ~158 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/index.html | — | ~101 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/index.css | — | ~242 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/lib/utils.ts | — | ~48 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/api/erpnext.ts | — | ~232 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/hooks/useProperties.ts | — | ~124 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/stores/companyStore.ts | — | ~138 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/ui/card.tsx | — | ~523 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/ui/badge.tsx | — | ~331 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/OfflineBanner.tsx | — | ~198 |
+| 22:23 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/CompanySwitcher.tsx | — | ~232 |
+| 22:24 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/pages/PropertiesPage.tsx | — | ~732 |
+| 22:24 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/app.tsx | — | ~1052 |
+| 22:24 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/main.tsx | — | ~66 |
+| 22:24 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/test-setup.ts | — | ~10 |
+| 22:24 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/pages/PropertiesPage.test.tsx | — | ~858 |
+| 22:25 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/vite-env.d.ts | — | ~11 |
+| 22:25 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/vite.config.ts | — | ~173 |
+| 22:25 | Edited ../../../../../tmp/wt-w60-p2/apps/anchor-react/tsconfig.node.json | 1→2 lines | ~14 |
+| 22:26 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/vite.config.ts | — | ~142 |
+| 22:26 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/vitest.config.ts | — | ~111 |
+| 22:26 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/index.css | — | ~287 |
+| 22:26 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/ui/card.tsx | — | ~519 |
+| 22:26 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/pages/PropertiesPage.tsx | — | ~715 |
+| 22:27 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/app.tsx | — | ~1050 |
+| 22:27 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/CompanySwitcher.tsx | — | ~231 |
+| 22:27 | Created ../../../../../tmp/wt-w60-p2/apps/anchor-react/.gitignore | — | ~15 |
+| 02:27 | W#60 Phase 2 Phase 2 — React scaffold + Properties screen shipped | PR #732 (draft); Vite6+React19+TW4; Card grid; CompanySwitcher; OfflineBanner; ErrorBoundary; 3/3 tests pass; prod build clean | 24 files |
+
+## Session: 2026-05-13 22:33
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:36 | Created ../../../../../tmp/wt-w50-p2b/packages/foundation-engine-room/IDocumentQuarantineStore.cs | — | ~351 |
+| 22:37 | Edited ../../../../../tmp/wt-w50-p2b/packages/foundation-engine-room/EngineRoomServiceCollectionExtensions.cs | modified AddSunfishEngineRoom() | ~577 |
+| 22:37 | Created ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | — | ~3429 |
+| 22:38 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj | inline fix | ~122 |
+| 22:38 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj | 4→6 lines | ~146 |
+| 22:38 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/EngineRoomServiceCollectionExtensions.cs | modified AddSunfishEngineRoomDefaults() | ~487 |
+| 22:39 | Edited ../../../../../tmp/wt-w50-p2b/packages/foundation-engine-room/IDocumentQuarantineStore.cs | "DI.EngineRoomServiceColle" → "EngineRoomServiceCollecti" | ~29 |
+| 22:40 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | inline fix | ~10 |
+| 22:40 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/Sunfish.Blocks.EngineRoom.Tests.csproj | 5→7 lines | ~170 |
+| 22:42 | Created ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/DefaultEngineRoomCommandServiceTests.cs | — | ~3239 |
+| 22:43 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/DefaultEngineRoomCommandServiceTests.cs | modified EoowPresent() | ~172 |
+| 22:43 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/DefaultEngineRoomCommandServiceTests.cs | modified SuccessfulStore() | ~248 |
+| 22:43 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/DefaultEngineRoomCommandServiceTests.cs | inline fix | ~16 |
+| 03:45 | W#50 Phase 2b built: IDocumentQuarantineStore + DefaultEngineRoomCommandService + 5 tests | packages/blocks-engine-room/ packages/foundation-engine-room/ | PR #733 draft; 18/18 passing; security-engineering review pending | ~4000 |
+| 22:45 | Created icm/00_intake/output/2026-05-12_w60-phase5-self-hosting-docs-foss-polish.md | — | ~3032 |
+| 22:46 | Created ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/SickBayDataProvider.cs | — | ~2221 |
+| 22:48 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/Sunfish.Blocks.SickBay.Tests.csproj | 4→5 lines | ~120 |
+| 22:48 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | expanded (+7 lines) | ~183 |
+| 22:48 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified AssertNotForbidden() | ~1161 |
+| 22:49 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | inline fix | ~8 |
+
+## Session: 2026-05-13 22:51
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:51 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | inline fix | ~26 |
+| 22:52 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified new() | ~39 |
+| 22:52 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified new() | ~67 |
+| 23:01 | Created ../coordination/inbox/cob-question-2026-05-12T21-00Z-w1-wsb-circular-dependency.md | — | ~353 |
+| 23:05 | W#54 Phase 2b: fixed SyncState.Healthy + required member errors; 25/25 tests pass; PR #735 draft created | blocks-sick-bay | complete |
+| 23:08 | W#1 WS-B: halted — AuditQuery/EntityQuery in foundation cannot reference TenantSelection in foundation-multitenancy (circular dep); cob-question beacon filed | coordination/inbox | blocked |
+| 23:10 | PR #733 security council + PR #735 standard council launched in parallel background agents | — | in-flight |
+| 23:05 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/SickBayDataProvider.cs | 7→9 lines | ~111 |
+| 23:05 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified GetSnapshotAsync_WithNullProvider_ReturnsUnknown() | ~567 |
+| 23:07 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | modified CheckEoowAsync() | ~443 |
+| 23:07 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | modified EmitDenialAsync() | ~168 |
+| 23:07 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | added optional chaining | ~281 |
+| 23:08 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | inline fix | ~15 |
+| 23:08 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | modified when() | ~86 |
+| 23:08 | Edited ../../../../../tmp/wt-w50-p2b/packages/foundation-engine-room/EngineRoomServiceCollectionExtensions.cs | 1→3 lines | ~62 |
+| 23:08 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/DefaultEngineRoomCommandServiceTests.cs | modified QuarantineDocument_AuthDenied_PreOpOrderedBeforeDenialAudit() | ~1465 |
+| 23:35 | PR #733 (W#50 P2b): PASS WITH AMENDMENTS — applied B1/B2/B3/R1/R2/R3/R4; pushed; marked ready | blocks-engine-room | complete |
+| 23:36 | PR #735 (W#54 P2b): PASS WITH AMENDMENTS — applied R-1/R-2/R-3; pushed; marked ready | blocks-sick-bay | complete |
+
+## Session: 2026-05-13 23:13
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:24 | Created ../../../../../tmp/wt-w56-p1/packages/ui-adapters-react/src/contracts/SystemRequirements.ts | — | ~1597 |
+| 23:24 | Created ../../../../../tmp/wt-w56-p1/packages/ui-adapters-react/src/contracts/SystemRequirements.test.ts | — | ~1418 |
+| 23:25 | Created ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/SystemRequirements/SystemRequirementsEndpoints.cs | — | ~1963 |
+| 23:25 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 3→5 lines | ~120 |
+| 23:25 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 4→9 lines | ~135 |
+| 23:25 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 4→7 lines | ~108 |
+| 23:25 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→2 lines | ~19 |
+| 23:26 | Created ../../../../../tmp/wt-w56-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SystemRequirements/SystemRequirementsEndpointsTests.cs | — | ~1975 |
+| 23:29 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SystemRequirements/SystemRequirementsEndpointsTests.cs | 5→8 lines | ~112 |
+| 23:29 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SystemRequirements/SystemRequirementsEndpointsTests.cs | modified new() | ~57 |
+| 23:29 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SystemRequirements/SystemRequirementsEndpointsTests.cs | 2→2 lines | ~31 |
+
+## Session: 2026-05-13 23:36
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+| 23:40 | W#56 P1 git stash pop + pnpm install + TS tests | ui-adapters-react | 10 TS tests pass, 26 total | 2k |
+| 23:42 | W#56 P1 commit + PR #736 (draft) | 6 files, bridge+ui-adapters-react | PR created, CI pending | 3k |
+| 23:40 | Created docs/adrs/0086-anchor-tauri-react-product-surface.md | — | ~3955 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation/Sunfish.Foundation.csproj | 4→2 lines | ~41 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation/tests/tests.csproj | 4→2 lines | ~42 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation-wayfinder/Sunfish.Foundation.Wayfinder.csproj | 2→1 lines | ~20 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation-rule-engine-event-bridge/Sunfish.Foundation.RuleEngine.EventBridge.csproj | 3→1 lines | ~20 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation-rule-engine-event-bridge/tests/tests.csproj | 3→1 lines | ~20 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation-localfirst/Sunfish.Foundation.LocalFirst.csproj | 2→1 lines | ~20 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/foundation-localfirst/tests/tests.csproj | 2→1 lines | ~20 |
+| 23:44 | Edited ../../../../../tmp/wt-nu1510-fix/packages/federation-common/Sunfish.Federation.Common.csproj | 5→2 lines | ~37 |
+| 23:49 | Created ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Audit/AuditQuery.cs | — | ~134 |
+| 23:49 | Created ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Entities/EntityQuery.cs | — | ~119 |
+| 23:49 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-localfirst/DataExport.cs | 3→4 lines | ~32 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-localfirst/DataExport.cs | 2→7 lines | ~97 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Audit/InMemoryAuditLog.cs | 3→4 lines | ~38 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Audit/InMemoryAuditLog.cs | inline fix | ~22 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Entities/InMemoryEntityStore.cs | 2→3 lines | ~32 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Entities/InMemoryEntityStore.cs | Equals() → Matches() | ~29 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs | 6→8 lines | ~68 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs | added 2 condition(s) | ~137 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Entities/PostgresEntityStore.cs | 3→4 lines | ~46 |
+| 23:50 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Entities/PostgresEntityStore.cs | added 2 condition(s) | ~132 |
+| 23:51 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs | modified if() | ~128 |
+| 23:51 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Entities/PostgresEntityStore.cs | modified if() | ~125 |
+| 23:51 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs | 3→2 lines | ~16 |
+| 23:53 | Created ../../../../../tmp/wt-w1-wsb/packages/foundation/tests/Assets/TenantSelectionQueryTests.cs | — | ~1031 |
+| 23:53 | Created ../../../../../tmp/wt-w1-wsb/packages/foundation/tests/Assets/TenantSelectionQueryTests.cs | — | ~992 |
+| 23:54 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/tests/Assets/TenantSelectionQueryTests.cs | 2→2 lines | ~54 |
+| 23:58 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs | added 1 condition(s) | ~162 |
+| 23:58 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Entities/PostgresEntityStore.cs | added 1 condition(s) | ~162 |
+| 23:59 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Audit/AuditQuery.cs | inline fix | ~39 |
+| 23:59 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Entities/EntityQuery.cs | inline fix | ~39 |
+| 23:59 | Edited ../../../../../tmp/wt-w1-wsb/packages/foundation/tests/Assets/TenantSelectionQueryTests.cs | modified AuditQuery_AllAccessible_ExcludesSystemSentinelRows() | ~207 |
+
+| 00:10 | W#1 WS-B TenantSelection query migration + council | 10 files + PR #739 | 286 tests pass, auto-merge enabled | 8k |
+| 00:15 | Archive 2 XO rulings from inbox | coordination/_archive/ | Inbox clean | <1k |
+
+## Session: 2026-05-13 00:04
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 00:04 | Edited ../../../../../tmp/wt-nu1510-b2/packages/kernel-audit/Sunfish.Kernel.Audit.csproj | 3→1 lines | ~20 |
+| 00:04 | Edited ../../../../../tmp/wt-nu1510-b2/packages/ui-core/Sunfish.UICore.csproj | 2→1 lines | ~20 |
+| 00:04 | Edited ../../../../../tmp/wt-nu1510-b2/packages/kernel-event-bus/Sunfish.Kernel.EventBus.csproj | 4→2 lines | ~35 |
+| 00:13 | Edited ../../../../../tmp/wt-inmem-chore/packages/blocks-subscriptions/DependencyInjection/SubscriptionsServiceCollectionExtensions.cs | 3→3 lines | ~50 |
+| 00:13 | Edited ../../../../../tmp/wt-inmem-chore/packages/blocks-subscriptions/DependencyInjection/SubscriptionsServiceCollectionExtensions.cs | inline fix | ~22 |
+| 00:13 | Edited ../../../../../tmp/wt-inmem-chore/accelerators/bridge/Sunfish.Bridge/Program.cs | added 1 condition(s) | ~78 |
+| 00:17 | Edited ../../../../../tmp/wt-inmem-chore/packages/foundation/Sunfish.Foundation.csproj | inline fix | ~14 |
+| 00:17 | Edited ../../../../../tmp/wt-inmem-chore/packages/foundation/Sunfish.Foundation.csproj | 2→3 lines | ~62 |
+| 00:18 | Edited ../../../../../tmp/wt-inmem-chore/packages/ui-core/Wayfinder/Integrations/IIntegrationAtlasProvider.cs | 2→2 lines | ~27 |
+| 00:22 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | EmitAsync() → EmitPreOpAsync() | ~112 |
+| 00:22 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | 7→7 lines | ~88 |
+| 00:22 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | 7→7 lines | ~85 |
+| 00:22 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | modified when() | ~206 |
+| 00:22 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/DefaultEngineRoomCommandService.cs | modified EmitPreOpAsync() | ~300 |
+| 00:22 | Edited ../../../../../tmp/wt-w50-p2b/packages/foundation-engine-room/EngineRoomServiceCollectionExtensions.cs | 3→5 lines | ~124 |
+| 00:23 | Edited ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/DefaultEngineRoomCommandServiceTests.cs | modified CompactDocument_AuthorizedActor_ReturnsStoreResult_AndEmitsBothAuditEvents() | ~2189 |
+| 00:26 | Edited ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 9→4 lines | ~79 |
+
+## Session: 2026-05-13 00:30
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 00:33 | Created ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/contracts/HelmTypes.ts | — | ~848 |
+| 00:33 | Created ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/HelmRenderer.tsx | — | ~1774 |
+| 00:34 | Created ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/HelmRenderer.test.tsx | — | ~4571 |
+| 00:34 | Created ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/index.ts | — | ~21 |
+| 00:34 | Edited ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/index.ts | expanded (+11 lines) | ~167 |
+| 00:34 | Edited ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/index.ts | 1→2 lines | ~48 |
+| 00:35 | Edited ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/HelmRenderer.tsx | 8→7 lines | ~47 |
+| 00:35 | Edited ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/index.ts | 11→12 lines | ~71 |
+| 00:36 | Created icm/01_discovery/output/2026-05-13_w60-final-stack-foss-substitutability-recheck.md | — | ~3550 |
+| 00:39 | Created ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/HelmRenderer.tsx | — | ~2284 |
+| 00:40 | Created ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/HelmRenderer.test.tsx | — | ~5952 |
+| 00:42 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_53_helm_identity_atlas.md | modified 2a() | ~401 |
+| 00:42 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_53_helm_identity_atlas.md | build() → closure() | ~45 |
+| 04:41 | Built W#53 Phase 2 PR 2c-react: HelmRenderer.tsx + HelmTypes.ts + 59 tests; council F1/F2/F3/F5 applied; PR #744 draft→ready→auto-merge | packages/ui-adapters-react/src/{contracts/HelmTypes.ts,components/HelmRenderer/} | 59/59 pass; ~3550 |
+
+## Session: 2026-05-13 00:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 00:55 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/DesignTokensCodegenTool.csproj | — | ~149 |
+| 00:56 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/TokensModel.cs | — | ~2351 |
+| 00:56 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/ContrastVerifier.cs | — | ~733 |
+| 00:56 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/CvdAuditor.cs | — | ~781 |
+| 00:57 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/CssGenerator.cs | — | ~2746 |
+| 00:57 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/MarkdownGenerator.cs | — | ~1649 |
+| 00:58 | Created ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/Program.cs | — | ~935 |
+| 00:59 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/Sunfish.Foundation.DesignTokens.csproj | expanded (+16 lines) | ~362 |
+| 00:59 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Sunfish.Foundation.DesignTokens.Tests.csproj | 4→6 lines | ~107 |
+| 01:00 | Created ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | — | ~1544 |
+| 01:00 | Created ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | — | ~1532 |
+| 01:01 | Created ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | — | ~1331 |
+| 01:02 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | modified ContrastVerifier_LowContrastPair_FailsEnhancedThreshold() | ~163 |
+| 01:02 | Created ../../../../../tmp/wt-w46-p2b/.github/workflows/tokens-contrast.yml | — | ~266 |
+| 01:03 | Edited ../../../../../tmp/wt-w46-p2b/Sunfish.slnx | 4→8 lines | ~116 |
+| 01:03 | Edited ../../../../../tmp/wt-w46-p2b/Sunfish.slnx | 3→5 lines | ~82 |
+| 01:08 | Edited ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/Program.cs | modified for() | ~225 |
+| 01:08 | Edited ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/Program.cs | added 1 condition(s) | ~90 |
+| 01:08 | Edited ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/Program.cs | added 3 condition(s) | ~215 |
+| 01:08 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/Sunfish.Foundation.DesignTokens.csproj | 12→17 lines | ~395 |
+| 01:09 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | added 1 condition(s) | ~463 |
+| 01:09 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | modified GeneratedCss() | ~204 |
+| 01:09 | Edited ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/CssGenerator.cs | added 1 condition(s) | ~232 |
+| 01:09 | Edited ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/CvdAuditor.cs | variant() → case() | ~611 |
+| 01:09 | Edited ../../../../../tmp/wt-w46-p2b/.github/workflows/tokens-contrast.yml | 9→11 lines | ~93 |
+| 01:09 | Edited ../../../../../tmp/wt-w46-p2b/.github/workflows/tokens-contrast.yml | 6→6 lines | ~88 |
+| 01:11 | Edited ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/Phase2bTests.cs | inline fix | ~5 |
+
+## Session: 2026-05-13 01:16
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 01:20 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/wwwroot/js/sunfish-a11y.js | — | ~1311 |
+| 01:20 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | — | ~552 |
+| 01:20 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFocusTrap.cs | — | ~715 |
+| 01:20 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/DefaultConformanceRegistry.cs | — | ~390 |
+| 01:20 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFirstAidRenderer.razor | — | ~184 |
+| 01:20 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFirstAidRenderer.razor.cs | — | ~517 |
+| 01:21 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFirstAidRenderer.razor | — | ~188 |
+| 01:21 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiLiveAnnouncer.cs | — | ~676 |
+| 01:21 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiFocusTrap.cs | — | ~523 |
+| 01:21 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiFirstAidRenderer.cs | — | ~510 |
+| 01:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorA11yServiceExtensions.cs | — | ~270 |
+| 01:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/LiveAnnouncer.tsx | — | ~700 |
+| 01:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/FocusTrap.tsx | — | ~857 |
+| 01:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/FirstAidRenderer.tsx | — | ~498 |
+| 01:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/ConformanceRegistry.ts | — | ~472 |
+| 01:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/index.ts | — | ~185 |
+| 01:23 | Created ../../../../../tmp/wt-w46-p4/.github/workflows/conformance-coverage.yml | — | ~470 |
+| 01:23 | Created ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | — | ~773 |
+| 01:24 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiLiveAnnouncer.cs | — | ~927 |
+| 01:24 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/LiveAnnouncer.test.ts | — | ~374 |
+| 01:25 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/tests/Phase4Tests.cs | — | ~2015 |
+| 01:26 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiFocusTrap.cs | — | ~585 |
+| 01:26 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiFocusTrap.cs | inline fix | ~18 |
+| 01:28 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | 7→8 lines | ~83 |
+| 01:30 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | 8→12 lines | ~161 |
+| 01:31 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/tests/Phase4Tests.cs | Delay() → AnnounceAsync() | ~335 |
+| 01:32 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/tests/Phase4Tests.cs | added optional chaining | ~712 |
+| 01:32 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/tests/Phase4Tests.cs | added optional chaining | ~511 |
+| 01:33 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor-a11y/SunfishA11yContract.cs | expanded (+18 lines) | ~375 |
+| 01:34 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor-a11y/SunfishA11yAssertions.cs | added 3 condition(s) | ~408 |
+| 01:37 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiLiveAnnouncer.cs | modified Notify() | ~602 |
+| 01:38 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/MauiFocusTrap.cs | — | ~1107 |
+| 01:38 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFirstAidRenderer.razor | 3→2 lines | ~16 |
+| 01:38 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/FirstAidRenderer.tsx | 2→2 lines | ~21 |
+| 01:38 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/wwwroot/js/sunfish-a11y.js | added 3 condition(s) | ~132 |
+| 01:38 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | modified catch() | ~65 |
+
+## Session: 2026-05-13 01:44
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 01:46 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | 2→2 lines | ~37 |
+| 01:46 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | 4→4 lines | ~61 |
+| 01:46 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/conformance-coverage.yml | 2→2 lines | ~33 |
+| 01:52 | Created ../../../../../tmp/wt-w46-p5/packages/ui-core/Conformance/DefaultConformanceRegistry.cs | — | ~310 |
+| 01:52 | Created ../../../../../tmp/wt-w46-p5/packages/foundation-ship-common/DefaultDeckRegistry.cs | — | ~380 |
+| 01:52 | Created ../../../../../tmp/wt-w46-p5/packages/foundation-ship-common/DefaultShipRoleRegistry.cs | — | ~310 |
+| 01:53 | Edited ../../../../../tmp/wt-w46-p5/packages/foundation-ship-common/Sunfish.Foundation.Ship.Common.csproj | 5→9 lines | ~205 |
+| 01:53 | Created ../../../../../tmp/wt-w46-p5/packages/foundation-ship-common/ShipDesignSystemServiceExtensions.cs | — | ~593 |
+| 01:53 | Edited ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Sunfish.KitchenSink.csproj | 2→4 lines | ~78 |
+| 01:53 | Edited ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Program.cs | 5→6 lines | ~66 |
+| 01:53 | Edited ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Program.cs | expanded (+6 lines) | ~148 |
+| 01:54 | Created ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Pages/DesignSystem.razor | — | ~819 |
+| 01:54 | Created ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Pages/DesignSystem.razor | — | ~856 |
+| 01:56 | Edited ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Pages/DesignSystem.razor | inline fix | ~12 |
+| 01:57 | Created ../../../../../tmp/wt-w46-p5/apps/docs/design-system/README.md | — | ~536 |
+| 01:57 | Created ../../../../../tmp/wt-w46-p5/apps/docs/design-system/conformance-baseline.md | — | ~794 |
+| 01:58 | Created ../../../../../tmp/wt-w46-p5/apps/docs/design-system/platform-a11y-bindings.md | — | ~1168 |
+| 01:59 | Created ../../../../../tmp/wt-w46-p5/apps/docs/design-system/tokens.md | — | ~623 |
+| 01:59 | Created ../../../../../tmp/wt-w46-p5/apps/docs/design-system/role-band-cvd.md | — | ~425 |
+| 02:00 | Created docs/adrs/0087-role-key-forward-secrecy-explicit-acceptance.md | — | ~3185 |
+| 02:02 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | inline fix | ~10 |
+| 02:02 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/conformance-coverage.yml | inline fix | ~10 |
+| 02:04 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | 7→9 lines | ~121 |
+| 02:04 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | 7→7 lines | ~91 |
+| 02:04 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/conformance-coverage.yml | 12→7 lines | ~96 |
+| 02:05 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_46_shared_design_system.md | — | ~577 |
+| 02:06 | Edited icm/_state/workstreams/W46-shared-design-system-load-bearing-w-35-ship-architecture-fol.md | inline fix | ~68 |
+| 02:07 | Edited Directory.Build.props | expanded (+6 lines) | ~143 |
+| 02:08 | Edited ../../../../../tmp/wt-w46-p4/Directory.Build.props | expanded (+6 lines) | ~139 |
+
+## Session: 2026-05-13 02:11
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:12 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | 9→7 lines | ~93 |
+| 02:12 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/a11y-bindings.yml | 4→3 lines | ~48 |
+| 02:12 | Edited ../../../../../tmp/wt-w46-p4/.github/workflows/conformance-coverage.yml | 4→3 lines | ~50 |
+| 02:12 | Edited ../../../../../tmp/wt-w46-p5/Directory.Build.props | expanded (+6 lines) | ~151 |
+| 02:22 | Created ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/wwwroot/js/sunfish-a11y.js | — | ~1816 |
+| 02:22 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | 8→13 lines | ~188 |
+| 02:22 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | 4→6 lines | ~83 |
+| 02:22 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorLiveAnnouncer.cs | modified EnsureModuleAsync() | ~179 |
+| 02:22 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFocusTrap.cs | 3→5 lines | ~78 |
+| 02:22 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/BlazorFocusTrap.cs | modified EnsureModuleAsync() | ~231 |
+| 02:23 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/LiveAnnouncer.tsx | CSS: BOUNDARY | ~136 |
+| 02:23 | Edited ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/FocusTrap.tsx | 9→10 lines | ~123 |
+| 02:27 | Edited ../../../../../tmp/wt-w46-p5/packages/foundation-ship-common/DefaultShipRoleRegistry.cs | added nullish coalescing | ~345 |
+| 02:27 | Edited ../../../../../tmp/wt-w46-p5/apps/docs/design-system/README.md | inline fix | ~31 |
+| 02:31 | Edited ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 23→21 lines | ~247 |
+| 02:32 | Edited ../../../../../tmp/wt-w60-p1/.github/workflows/anchor-react-ci.yml | 5→4 lines | ~18 |
+
+## Session: 2026-05-13 02:34
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:44 | Edited icm/_state/workstreams/W46-shared-design-system-load-bearing-w-35-ship-architecture-fol.md | 2→2 lines | ~71 |
+| 02:45 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 4→4 lines | ~67 |
+| 02:47 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 2→2 lines | ~54 |
+| 02:49 | Edited ../../../../../private/tmp/wt-w60-p3/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | modified MapERPNextProxy() | ~228 |
+| 02:49 | Edited ../../../../../private/tmp/wt-w60-p3/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | added 5 condition(s) | ~919 |
+| 02:50 | Edited ../../../../../private/tmp/wt-w60-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/ERPNextProxyTests.cs | modified GetLeases_ReturnsOk_WithClientData() | ~804 |
+| 02:50 | Edited ../../../../../private/tmp/wt-w60-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/ERPNextProxyTests.cs | modified GetResourceListAsync() | ~364 |
+| 02:50 | Edited ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/api/erpnext.ts | modified getProperties() | ~457 |
+| 02:50 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/hooks/useLeases.ts | — | ~273 |
+| 02:50 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/pages/LeasesPage.tsx | — | ~1428 |
+| 02:51 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/pages/LeaseDetailPage.tsx | — | ~1341 |
+| 02:51 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/pages/RentCollectionPage.tsx | — | ~2099 |
+| 02:51 | Edited ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/app.tsx | added 3 import(s) | ~65 |
+| 02:51 | Edited ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/app.tsx | expanded (+16 lines) | ~222 |
+| 02:51 | Edited ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/app.tsx | 2→5 lines | ~98 |
+| 02:52 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/pages/LeasesPage.test.tsx | — | ~931 |
+| 02:57 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 2→2 lines | ~51 |
+| 02:57 | W#46 P4+P5 built (PR #747+#749 merged); PR #750 fixed duplicate DefaultConformanceRegistry + pnpm lockfile; W#60 P2 sub-phases 1+2+3 built (PR #731+#732 merged, PR #751 in CI); W#46 ledger → built | multiple | success | ~15k |
+| 02:58 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/eslint.config.js | — | ~118 |
+| 02:59 | Created ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/eslint.config.js | — | ~103 |
+| 02:59 | Edited ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/pages/LeasesPage.tsx | 4→3 lines | ~39 |
+
+## Session: 2026-05-13 03:02
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 03:04 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~46 |
+| 03:12 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/Sunfish.Blocks.ShipsOffice.csproj | inline fix | ~117 |
+| 03:12 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/Sunfish.Blocks.ShipsOffice.csproj | 6→10 lines | ~200 |
+| 03:14 | Created ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/ShipsOfficeDataProvider.cs | — | ~3293 |
+| 03:14 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/ShipsOfficeServiceCollectionExtensions.cs | modified convention() | ~455 |
+| 03:16 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj | 6→10 lines | ~204 |
+| 03:19 | Created ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | — | ~5672 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj | 9→11 lines | ~250 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | 10→12 lines | ~113 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | "unit-1" → "unit" | ~17 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | inline fix | ~16 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | inline fix | ~16 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | PhysicalAddress() → W9MailingAddress() | ~187 |
+| 03:21 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | 7→8 lines | ~75 |
+| 03:22 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | PhysicalAddress() → W9MailingAddress() | ~218 |
+| 03:22 | Edited ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/ShipsOfficeProviderTests.cs | modified NoopContentEditorSurface_ReturnsCancelledNotSaved() | ~87 |
+
+## Session: 2026-05-13 03:26
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 03:28 | Edited icm/_state/workstreams/W53-helm-identity-atlas-surface-stage-06-build-of-load-bearing-p.md | 2→2 lines | ~71 |
+| 03:28 | Edited icm/_state/workstreams/W53-helm-identity-atlas-surface-stage-06-build-of-load-bearing-p.md | 7→3 lines | ~114 |
+| 03:28 | Edited icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | inline fix | ~164 |
+| 03:37 | Created ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeCommandService.cs | — | ~2323 |
+| 03:37 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeServiceCollectionExtensions.cs | modified convention() | ~588 |
+| 03:37 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/Sunfish.Blocks.ShipsOffice.csproj | modified surface() | ~329 |
+| 03:38 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeCommandService.cs | 12→14 lines | ~126 |
+| 03:38 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeCommandService.cs | Find() → FirstOrDefault() | ~103 |
+| 03:38 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeCommandService.cs | AuditRecord() → KernelAuditRecord() | ~80 |
+| 03:39 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj | 6→8 lines | ~152 |
+| 03:41 | Created ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | — | ~3868 |
+| 03:42 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | 3→4 lines | ~43 |
+| 03:42 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | 3→3 lines | ~56 |
+| 03:42 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | inline fix | ~25 |
+| 03:42 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | 3→3 lines | ~49 |
+| 03:46 | Edited .husky/commit-msg | expanded (+11 lines) | ~307 |
+| 03:47 | Created ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeCommandService.cs | — | ~3050 |
+
+## Session: 2026-05-13 03:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 03:52 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/ShipsOfficeCommandService.cs | modified TryEmitRejectionAsync() | ~468 |
+| 03:53 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | modified PublishAsync_audit_trail_failure_propagates_does_not_silently_succeed() | ~538 |
+| 03:53 | Edited ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/ShipsOfficeCommandServiceTests.cs | expanded (+13 lines) | ~150 |
+| 03:55 | Edited icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | inline fix | ~202 |
+| 04:01 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Proxy/IERPNextClient.cs | expanded (+11 lines) | ~270 |
+| 04:01 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextHttpClient.cs | modified GetListWithFieldsAsync() | ~279 |
+| 04:01 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | 4→5 lines | ~44 |
+| 04:02 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | modified Note() | ~305 |
+| 04:02 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | added 5 condition(s) | ~671 |
+| 04:02 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Hubs/BridgeHub.cs | added optional chaining | ~378 |
+| 04:02 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Hubs/IBridgeHubClient.cs | 6→9 lines | ~65 |
+| 04:02 | Edited ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/ERPNextProxyTests.cs | modified PostAsync() | ~167 |
+| 04:05 | Edited ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/api/erpnext.ts | modified recordPayment() | ~315 |
+| 04:05 | Created ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/pages/AccountingPage.tsx | — | ~1520 |
+| 04:05 | Created ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/pages/CrewCommsPage.tsx | — | ~1678 |
+| 04:05 | Edited ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/app.tsx | added 2 import(s) | ~96 |
+| 04:06 | Edited ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/app.tsx | expanded (+16 lines) | ~227 |
+| 04:06 | Edited ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/app.tsx | 2→4 lines | ~61 |
+| 04:07 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~69 |
+
+| 04:10 | W#55 P2c ShipsOfficeCommandService security council amendments (B1-B5 + M3 tests) | ShipsOfficeCommandService.cs, ShipsOfficeCommandServiceTests.cs | PR #756 created + auto-merge enabled; PrincipalId.ToBase64Url()/ShipAction.Name bug fixed; 38/38 tests after rebase | ~4500 |
+| 04:10 | W#60 P2-Phase4 Accounting+CrewComms | AccountingPage.tsx, CrewCommsPage.tsx, ERPNextProxy.cs, BridgeHub.cs | PR #757 created + auto-merge enabled; GL Entry accounting summary + outstanding invoices + SignalR crew-comms | ~3500 |
+| 04:13 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/Sunfish.Bridge/Proxy/IERPNextClient.cs | expanded (+12 lines) | ~229 |
+| 04:13 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextHttpClient.cs | modified PutAsync() | ~299 |
+| 04:13 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | modified Note() | ~238 |
+
+## Session: 2026-05-13 04:16
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 04:16 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/Sunfish.Bridge/Proxy/ERPNextProxy.cs | added 3 condition(s) | ~687 |
+| 04:16 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/ERPNextProxyTests.cs | modified GetListWithFieldsAsync() | ~209 |
+| 04:18 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/api/erpnext.ts | modified getAccountingOutstanding() | ~491 |
+| 04:18 | Created ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/stores/authStore.ts | — | ~92 |
+| 04:18 | Created ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/components/RoleGate.tsx | — | ~132 |
+| 04:19 | Created ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/pages/MaintenancePage.tsx | — | ~2084 |
+| 04:19 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/app.tsx | added 2 import(s) | ~113 |
+| 04:19 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/app.tsx | added nullish coalescing | ~227 |
+| 04:19 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/app.tsx | expanded (+8 lines) | ~155 |
+| 04:19 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/app.tsx | 2→3 lines | ~43 |
+| 04:20 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/package.json | — | ~381 |
+| 04:20 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/vite.config.ts | — | ~262 |
+| 04:20 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/tsconfig.json | — | ~201 |
+| 04:20 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/tsconfig.build.json | — | ~85 |
+| 04:20 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/SyncStateBadge.tsx | — | ~274 |
+| 04:20 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/OfflineIndicator.tsx | — | ~380 |
+| 04:21 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/FreshnessBadge.tsx | — | ~331 |
+| 04:21 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/PropertyCard.tsx | — | ~436 |
+| 04:21 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/RoleGate.tsx | — | ~92 |
+| 04:21 | Created ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/index.ts | — | ~124 |
+| 04:21 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/CONTRIBUTING-REACT.md | expanded (+26 lines) | ~378 |
+| 04:25 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/components/AuthRoleGate.tsx | modified AuthRoleGate() | ~235 |
+| 04:25 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/pages/MaintenancePage.tsx | "@/components/RoleGate" → "@/components/AuthRoleGate" | ~16 |
+| 04:25 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/pages/MaintenancePage.tsx | inline fix | ~4 |
+| 04:25 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/package.json | 2→3 lines | ~28 |
+| 04:26 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/package.json | inline fix | ~16 |
+| 04:26 | Edited ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/vite.config.ts | 5→6 lines | ~57 |
+| 04:26 | Edited ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/FreshnessBadge.tsx | added 1 condition(s) | ~378 |
+| 04:26 | Edited ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/OfflineIndicator.tsx | 10→10 lines | ~107 |
+| 04:26 | Edited ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/ERPNextProxyTests.cs | modified PostPayment_Returns503_WhenDefaultCompanyNotConfigured() | ~1235 |
+| 04:29 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~75 |
+| 04:33 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/Sunfish.Blocks.ShipsOffice.csproj | 11→12 lines | ~244 |
+| 04:33 | Created ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/IDocumentDiffService.cs | — | ~618 |
+| 04:33 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/ShipsOfficeServiceCollectionExtensions.cs | modified AddSunfishShipsOfficeDefaults() | ~159 |
+| 04:33 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/Sunfish.Foundation.ShipsOffice.Analyzers.csproj | — | ~622 |
+| 04:34 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/AnalyzerReleases.Shipped.md | — | ~41 |
+| 04:34 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/AnalyzerReleases.Unshipped.md | — | ~108 |
+| 04:34 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/Diagnostics.cs | — | ~339 |
+| 04:34 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/ShipsOfficePermissionAnalyzer.cs | — | ~1007 |
+| 04:34 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj | 3→4 lines | ~70 |
+| 04:35 | Created ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/tests/DocumentDiffServiceTests.cs | — | ~575 |
+| 04:35 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/IDocumentDiffService.cs | 5→6 lines | ~53 |
+| 04:37 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/tests/DocumentDiffServiceTests.cs | 6→6 lines | ~48 |
+| 04:38 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/tests/Sunfish.Foundation.ShipsOffice.Analyzers.Tests.csproj | — | ~407 |
+| 04:38 | Created ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/tests/ShipsOfficePermissionAnalyzerTests.cs | — | ~1086 |
+| 04:38 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/tests/Sunfish.Foundation.ShipsOffice.Analyzers.Tests.csproj | inline fix | ~13 |
+| 04:39 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/tests/ShipsOfficePermissionAnalyzerTests.cs | modified GetSnapshotAsync_WithoutPermissionCheck_DiagnosticFires() | ~297 |
+| 04:41 | Edited ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/ShipsOfficePermissionAnalyzer.cs | added 5 condition(s) | ~1308 |
+
+## Session: 2026-05-13 04:44
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 04:45 | Edited icm/_state/active-workstreams.md | inline fix | ~129 |
+| 04:47 | Edited ../../../../../private/tmp/wt-listings-test-fix/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Listings/ListingsEndpointsTests.cs | 2→2 lines | ~28 |
+| 04:56 | Edited ../../../../../private/tmp/wt-slnx-hygiene/Sunfish.slnx | expanded (+99 lines) | ~1795 |
+
+| 09:02 | W#55 P2d council Blocking amendment (semantic analysis in PERM001 analyzer) fixed + PR #759 merged; W#60 P5 PR #758 merged; PR #760 Listings test fix merged; PR #761 solution hygiene (25 missing packages) in CI | ShipsOfficePermissionAnalyzer.cs, Sunfish.slnx | 5/5 analyzer tests pass; build 0 errors |
+| 09:02 | W#58 Phase 1 HALT — IKeyStore/ITrusteeRegistry/ITeamRegistry not on origin/main; cob-question-2026-05-13T09-10Z-w58-missing-backing-services.md filed | coordination/inbox/ | awaiting XO ruling |
+| 05:03 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_55_ships_office.md | modified 712() | ~238 |
+| 05:03 | Edited icm/_state/active-workstreams.md | inline fix | ~90 |
+| 05:05 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/Sunfish.Blocks.ShipsOffice.csproj | modified surface() | ~561 |
+| 05:05 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/_Imports.razor | — | ~71 |
+| 05:06 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/ShipsOfficeBlock.razor | — | ~1648 |
+| 05:07 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/ShipsOfficeBlock.razor | — | ~1880 |
+| 05:08 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentListItem.razor | — | ~959 |
+| 05:08 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDetailDrawer.razor | — | ~801 |
+| 05:08 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDiffPanel.razor | — | ~689 |
+| 05:09 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/ShipsOfficeSearchBar.razor | — | ~1278 |
+
+## Session: 2026-05-13 05:12
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 05:15 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj | 17→22 lines | ~209 |
+| 05:15 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/Sunfish.Blocks.ShipsOffice.Tests.csproj | 1→2 lines | ~44 |
+| 05:15 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/_Imports.razor | — | ~71 |
+| 05:15 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeBlockTests.cs | — | ~2155 |
+| 05:15 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentListItemTests.cs | — | ~632 |
+| 05:16 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentDiffPanelTests.cs | — | ~568 |
+| 05:16 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeSearchBarTests.cs | — | ~288 |
+| 05:16 | Created ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | — | ~1479 |
+| 05:17 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentDiffPanelTests.cs | 3→4 lines | ~26 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeBlockTests.cs | 7→9 lines | ~78 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeBlockTests.cs | 5→5 lines | ~90 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | 7→9 lines | ~82 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | 5→5 lines | ~91 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | inline fix | ~16 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentListItemTests.cs | 3→4 lines | ~36 |
+| 05:18 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeSearchBarTests.cs | 3→4 lines | ~30 |
+| 05:19 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeSearchBarTests.cs | inline fix | ~24 |
+| 05:20 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeBlockTests.cs | modified RegisterServices() | ~175 |
+| 05:20 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | modified RegisterServices() | ~172 |
+| 05:20 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeSearchBarTests.cs | modified RenderBar() | ~358 |
+| 05:22 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | 2→3 lines | ~23 |
+| 05:23 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | 6→7 lines | ~142 |
+| 05:23 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | 6→6 lines | ~91 |
+| 05:23 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/LiveRegionTests.cs | 4→5 lines | ~27 |
+| 05:26 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/ShipsOfficeSearchBar.razor | 18→18 lines | ~218 |
+| 05:26 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDetailDrawer.razor | 14→16 lines | ~130 |
+| 05:26 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDetailDrawer.razor | added 2 condition(s) | ~208 |
+| 05:26 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentListItem.razor | 6→4 lines | ~47 |
+| 05:26 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentListItem.razor | 2→2 lines | ~6 |
+| 05:26 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentListItem.razor | reduced (-7 lines) | ~16 |
+| 05:27 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDiffPanel.razor | modified if() | ~182 |
+| 05:27 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDiffPanel.razor | 3→2 lines | ~23 |
+| 05:27 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/ShipsOfficeBlock.razor | modified OnParametersSetAsync() | ~48 |
+| 05:27 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/ShipsOfficeSearchBar.razor | 3→3 lines | ~71 |
+| 05:27 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentDiffPanel.razor | 4→4 lines | ~88 |
+| 05:27 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/DocumentListItem.razor | operable() → preventDefault() | ~62 |
+| 05:28 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentListItemTests.cs | modified Row_is_keyboard_operable_with_Enter() | ~258 |
+| 05:28 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentListItemTests.cs | 5→6 lines | ~71 |
+| 05:28 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeSearchBarTests.cs | 5→6 lines | ~94 |
+| 05:28 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/ShipsOfficeSearchBarTests.cs | 4→3 lines | ~50 |
+| 05:28 | Edited ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/DocumentDiffPanelTests.cs | Diff_table_has_caption() → Diff_table_has_accessible_label_via_figcaption() | ~131 |
+| 05:31 | Edited icm/_state/active-workstreams.md | inline fix | ~108 |
+| 05:31 | W#55 Phase 3 COMPLETE — PR #762 created + auto-merge enabled; 2 council Blocking fixed (ARIA APG 1.2 combobox, focus trap), 4 Advisory fixed; 59/59 tests pass | packages/blocks-ships-office/ (5 Razor + 5 test files) | success | ~8500 |
+| 05:31 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_55_ships_office.md | modified deliverables() | ~343 |
+| 05:32 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~54 |
+| 05:34 | Edited ../../../../../private/tmp/wt-w58-p1a/packages/foundation/Crypto/KeyFingerprint.cs | 3→5 lines | ~35 |
+| 05:34 | Edited ../../../../../private/tmp/wt-w58-p1a/packages/foundation/Crypto/KeyFingerprint.cs | added 1 condition(s) | ~248 |
+| 05:34 | Edited ../../../../../private/tmp/wt-w58-p1a/packages/foundation/tests/Crypto/KeyFingerprintTests.cs | modified RecordEquality_SameValueAreEqual() | ~349 |
+| 05:35 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/Sunfish.Foundation.IdentityAtlas.csproj | — | ~251 |
+| 05:35 | Edited ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/Sunfish.Foundation.IdentityAtlas.csproj | "Microsoft.Extensions.Depe" → "Microsoft.Extensions.Depe" | ~20 |
+| 05:35 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/IdentityProfile.cs | — | ~186 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/KeyInfo.cs | — | ~228 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/TrusteePolicy.cs | — | ~92 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/Trustee.cs | — | ~286 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/TeamMembership.cs | — | ~344 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/IKeyStore.cs | — | ~349 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/ITrusteeRegistry.cs | — | ~306 |
+| 05:36 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/ITeamRegistry.cs | — | ~243 |
+| 05:37 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/NullKeyStore.cs | — | ~296 |
+
+## Session: 2026-05-13 05:39
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 05:39 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/NullTrusteeRegistry.cs | — | ~344 |
+| 05:39 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/NullTeamRegistry.cs | — | ~255 |
+| 05:39 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/IdentityAtlasServiceCollectionExtensions.cs | — | ~309 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/tests.csproj | — | ~176 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/GlobalUsings.cs | — | ~18 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/NullKeyStoreTests.cs | — | ~202 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/NullKeyStoreTests.cs | — | ~197 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/NullTrusteeRegistryTests.cs | — | ~247 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/NullTeamRegistryTests.cs | — | ~176 |
+| 05:40 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/IdentityAtlasServiceCollectionExtensionsTests.cs | — | ~618 |
+| 05:41 | Edited ../../../../../private/tmp/wt-w58-p1a/Sunfish.slnx | 4→8 lines | ~123 |
+| 05:41 | Edited ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/Sunfish.Foundation.IdentityAtlas.csproj | 4→9 lines | ~103 |
+| 05:42 | Edited ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/tests.csproj | 3→5 lines | ~77 |
+| 05:42 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/IdentityAtlasServiceCollectionExtensionsTests.cs | — | ~585 |
+| 05:43 | Created ../../../../../tmp/commit-msg-w58.txt | — | ~168 |
+| 05:47 | Created ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/Services/AnchorIdentityAtlasSurface.cs | — | ~1337 |
+| 05:47 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/Sunfish.Anchor.csproj | 2→3 lines | ~90 |
+| 05:48 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/MauiProgram.cs | expanded (+6 lines) | ~126 |
+| 05:48 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/MauiProgram.cs | 2→4 lines | ~44 |
+| 05:48 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/tests.csproj | 5→6 lines | ~84 |
+| 05:49 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/tests.csproj | 4→6 lines | ~147 |
+| 05:49 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/tests.csproj | 1→2 lines | ~62 |
+| 05:49 | Created ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/AnchorIdentityAtlasSurfaceTests.cs | — | ~1596 |
+| 05:50 | Created ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/AnchorIdentityAtlasSurfaceTests.cs | — | ~1687 |
+| 05:53 | Created ../../../../../tmp/commit-msg-w58-p1a2.txt | — | ~205 |
+| 05:57 | Created ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/TeamMembership.cs | — | ~314 |
+| 05:57 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/Services/AnchorIdentityAtlasSurface.cs | 11→12 lines | ~89 |
+| 05:57 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/Services/AnchorIdentityAtlasSurface.cs | 7→7 lines | ~63 |
+| 05:57 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/Services/AnchorIdentityAtlasSurface.cs | expanded (+7 lines) | ~245 |
+| 05:57 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/AnchorIdentityAtlasSurfaceTests.cs | — | ~0 |
+| 05:57 | Edited ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/AnchorIdentityAtlasSurfaceTests.cs | 4→4 lines | ~34 |
+| 05:59 | Created ../../../../../tmp/commit-msg-w58-council.txt | — | ~194 |
+| 06:00 | Edited icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | 2→2 lines | ~59 |
+| 06:00 | W#58 Phase 1a COMPLETE — PR #763 (foundation-identity-atlas stubs + AnchorIdentityAtlasSurface + 19 tests; council B2 TeamId→Guid fix applied, B1 was false-pos); auto-merge enabled | 22 new files | ~562 |
+| 06:01 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | — | ~791 |
+
+## Session: 2026-05-13 06:03
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 06:07 | Created ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/IdentityProfileEditPage.razor | — | ~748 |
+| 06:07 | Created ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | — | ~1008 |
+| 06:08 | Created ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | — | ~1387 |
+| 06:08 | Created ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/HistoricalKeysPage.razor | — | ~874 |
+| 06:08 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/HistoricalKeysPage.razor | added 2 condition(s) | ~190 |
+| 06:09 | Created ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/ActiveTeamOverviewPage.razor | — | ~1121 |
+| 06:09 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+22 lines) | ~425 |
+| 06:09 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Layout/NavMenu.razor.css | expanded (+11 lines) | ~89 |
+| 06:11 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | 16→16 lines | ~232 |
+| 06:13 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | 3→2 lines | ~20 |
+| 06:20 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Layout/NavMenu.razor | 22→25 lines | ~376 |
+| 06:21 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Layout/NavMenu.razor.css | CSS: display, margin | ~80 |
+| 06:21 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | modified if() | ~263 |
+| 06:21 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | 5→5 lines | ~122 |
+| 06:21 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/HistoricalKeysPage.razor | modified if() | ~182 |
+| 06:21 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/HistoricalKeysPage.razor | keys() → history() | ~39 |
+| 06:24 | Edited icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | inline fix | ~58 |
+| 06:24 | W#58 Phase 1b: 5 Anchor Blazor identity pages (PR #764 open, auto-merge enabled) | accelerators/anchor/Components/Pages/Identity/ + NavMenu.razor | WCAG council PASS-WITH-AMENDMENTS; B1–B4 applied; CI running | ~8k |
