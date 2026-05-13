@@ -4,7 +4,7 @@ number: 50
 slug: engine-room-observability-surface
 title: "**Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1 #626 + Phase 2a #696 + Phase 2b #790 + **Phase 3a #797 MERGED 2026-05-13** — read-only Main Propulsion + QA Workshop Blazor panels; WCAG M1–M4 + council amendments applied; **Phase 3b next** — Damage Control + QA Workshop write panels; WCAG/a11y + security-engineering councils mandatory; Phase 4 pending)"
+status_cell: "`building` (Phase 1 #626 + Phase 2a #696 + Phase 2b #790 + Phase 3a #797 + **Phase 3b #800 MERGED 2026-05-13** — DamageControlPanel + QaWorkshopPanel write surfaces; **Phase 4 next** — Anchor + Bridge wiring + apps/docs + ledger close; hand-off: engine-room-observability-stage06-handoff.md §Phase 4)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0079-engine-room-observability.md` (PR #572 merged) + `icm/_state/handoffs/engine-room-observability-stage06-handoff.md` + `packages/foundation-engine-room/` (P1 merged)"
