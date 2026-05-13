@@ -23,7 +23,7 @@ public sealed class ShipsOfficeSearchBarTests : BunitContext
     {
         var cut = RenderBar();
 
-        var combobox = cut.Find("[role='combobox']");
+        var combobox = cut.Find("input[role='combobox']");
         Assert.NotNull(combobox);
         Assert.NotNull(combobox.GetAttribute("aria-expanded"));
         Assert.NotNull(combobox.GetAttribute("aria-haspopup"));

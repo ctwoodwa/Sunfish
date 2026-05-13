@@ -1,13 +1,11 @@
 @* DocumentListItem — per-row presentation of ShipsOfficeDocumentView.
    Kind badge and status badge use icon + text dual-encoding (SC 1.4.1).
-   Row is keyboard-operable (Enter = open detail drawer). SC 2.4.3 focus order. *@
+   Native <button> element handles Enter + Space without preventDefault (SC 2.1.1). *@
 
-<div class="ships-office-list-item"
-     role="button"
-     tabindex="0"
-     aria-label="@($"{Document.Title} — {Document.Kind} — {Document.Status}")"
-     @onclick="HandleClick"
-     @onkeydown="HandleKeyDown">
+<button type="button"
+        class="ships-office-list-item"
+        aria-label="@($"{Document.Title} — {Document.Kind} — {Document.Status}")"
+        @onclick="HandleClick">
 
     <div class="ships-office-item-kind-badge" aria-hidden="true">
         <span class="kind-icon @KindIconClass(Document.Kind)"></span>
@@ -36,20 +34,13 @@
             @Document.UpdatedAt.ToString("MMM d, yyyy")
         </time>
     </div>
-</div>
+</button>
 
 @code {
     [Parameter, EditorRequired] public ShipsOfficeDocumentView Document { get; set; } = default!;
     [Parameter, EditorRequired] public EventCallback OnSelect { get; set; }
 
     private Task HandleClick() => OnSelect.InvokeAsync();
-
-    private Task HandleKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key is "Enter" or " ")
-            return OnSelect.InvokeAsync();
-        return Task.CompletedTask;
-    }
 
     private static string KindLabel(ShipsOfficeDocumentKind kind) => kind switch
     {

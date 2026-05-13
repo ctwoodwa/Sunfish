@@ -89,6 +89,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        _permissionDenied = false;
         var principal = await ActorPrincipalResolver.ResolveAsync(Tenant, Actor);
         if (principal is null)
         {

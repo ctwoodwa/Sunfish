@@ -31,6 +31,7 @@ public sealed class DocumentListItemTests : BunitContext
             .Add(c => c.Document, doc)
             .Add(c => c.OnSelect, EventCallback.Empty));
 
+        Assert.NotNull(cut.Find("button.ships-office-list-item"));
         Assert.Contains("icon-lease", cut.Markup);
         Assert.Contains("Lease Document", cut.Markup);
     }
@@ -48,7 +49,7 @@ public sealed class DocumentListItemTests : BunitContext
     }
 
     [Fact]
-    public async Task Row_is_keyboard_operable_with_Enter()
+    public void Row_is_keyboard_operable_with_Enter()
     {
         var doc = MakeDoc();
         var selected = false;
@@ -56,8 +57,8 @@ public sealed class DocumentListItemTests : BunitContext
             .Add(c => c.Document, doc)
             .Add(c => c.OnSelect, EventCallback.Factory.Create(this, () => selected = true)));
 
-        var row = cut.Find("[role='button']");
-        await row.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+        // Native <button> fires click on Enter; Click() exercises the same path.
+        cut.Find("button.ships-office-list-item").Click();
 
         Assert.True(selected);
     }
@@ -70,7 +71,9 @@ public sealed class DocumentListItemTests : BunitContext
             .Add(c => c.Document, doc)
             .Add(c => c.OnSelect, EventCallback.Empty));
 
-        var row = cut.Find("[role='button']");
-        Assert.Equal("0", row.GetAttribute("tabindex"));
+        // Native <button> is in tab order by default; no tabindex="0" needed.
+        var btn = cut.Find("button.ships-office-list-item");
+        Assert.NotNull(btn);
+        Assert.Null(btn.GetAttribute("tabindex"));
     }
 }

@@ -1,7 +1,7 @@
 @* DocumentDiffPanel — diff table per ADR 0083 §8 + ADR 0077 §6.4.
-   Table has a <caption> (SC 2.4.6).
-   Added/removed rows use text prefix labels "Added:" / "Removed:" (SC 1.3.3).
-   Color + text dual-encoding for status (SC 1.4.1). *@
+   <figcaption id="diff-caption"> + table aria-describedby satisfy SC 2.4.6 without duplicate caption.
+   Added/removed rows use text prefix labels "Added:" / "Removed:" adjacent to values (SC 1.3.3).
+   Color + text dual-encoding for row status (SC 1.4.1). *@
 
 <figure class="ships-office-diff-panel">
     <figcaption id="diff-caption">@Preview.Summary</figcaption>
@@ -13,7 +13,6 @@
     else
     {
         <table aria-describedby="diff-caption" class="diff-table">
-            <caption class="visually-hidden">@Preview.Summary</caption>
             <thead>
                 <tr>
                     <th scope="col">Field</th>
@@ -29,16 +28,16 @@
                     <tr class="@rowClass" aria-label="@rowLabel">
                         <td>@entry.Field</td>
                         <td>
-                            @if (entry.OldValue is null && entry.NewValue is not null)
+                            @if (entry.OldValue is not null && entry.NewValue is null)
                             {
-                                <span class="visually-hidden">Added: </span>
+                                <span class="visually-hidden">Removed: </span>
                             }
                             @entry.OldValue?.ToString()
                         </td>
                         <td>
-                            @if (entry.OldValue is not null && entry.NewValue is null)
+                            @if (entry.OldValue is null && entry.NewValue is not null)
                             {
-                                <span class="visually-hidden">Removed: </span>
+                                <span class="visually-hidden">Added: </span>
                             }
                             @entry.NewValue?.ToString()
                         </td>

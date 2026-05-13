@@ -22,13 +22,16 @@ public sealed class DocumentDiffPanelTests : BunitContext
         new FakePreview([entry], "One change");
 
     [Fact]
-    public void Diff_table_has_caption()
+    public void Diff_table_has_accessible_label_via_figcaption()
     {
         var cut = Render<DocumentDiffPanel>(p => p
             .Add(c => c.Preview, WithEntry(new DiffEntry("Title", "Old", "New"))));
 
-        var caption = cut.Find("caption");
-        Assert.NotNull(caption);
+        // SC 2.4.6: figcaption provides the visible label; table links via aria-describedby.
+        var figcaption = cut.Find("figcaption");
+        Assert.NotNull(figcaption);
+        var table = cut.Find("table[aria-describedby]");
+        Assert.NotNull(table);
     }
 
     [Fact]
