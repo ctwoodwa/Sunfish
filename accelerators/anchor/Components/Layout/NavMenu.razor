@@ -39,6 +39,14 @@
                     <span class="bi bi-chat-dots-fill" aria-hidden="true"></span> Chat
                 </NavLink>
             </div>
+            @* W#51 Phase 4 — Quarterdeck entry-point surface (ADR 0080).
+               Root navigation landing; DepartmentNavPanel owns the main
+               landmark + department links + skip-link. *@
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="quarterdeck">
+                    <span class="bi bi-compass-fill" aria-hidden="true"></span> Quarterdeck
+                </NavLink>
+            </div>
             @* W#55 Phase 4 — Ship's Office aggregation surface (ADR 0083).
                Visible to all post-onboarding sessions. A1 council note: the link
                existence is not sensitive; ShipsOfficeBlock gates ViewShipsOffice
