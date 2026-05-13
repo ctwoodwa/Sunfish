@@ -54,9 +54,10 @@ Standing Order is awaiting confirmation.
 When a pending Standing Order is cascaded to a mutation page (profile, keys,
 recovery contacts), a `DiffPreviewView.Expanded` confirmation table renders:
 
-- **SC 1.3.1**: `<table>` with `<caption class="sf-sr-only">` + `<th scope="col">` column headers + `<th scope="row">` field-name headers. Text alternative for all visual diff rendering.
-- **SC 1.4.1 Use of Color**: Old value: line-through decoration AND muted color class (`sf-diff-old` / `anchor-diff-old`). New value: distinct color AND `→ ` prefix text with `aria-hidden="true"` on the arrow (text is conveyed structurally by table position).
-- **SC 2.4.6**: Diff-preview section heading includes the human-readable `summary` string (e.g., "Pending change — 2 changes").
+- **SC 1.3.1**: `<table aria-describedby>` with `<caption class="sf-sr-only">` (includes entry count) + `<th scope="col">` column headers ("Field", "Previous", "New value") + `<th scope="row">` field-name headers. Text alternative for all visual diff rendering.
+- **SC 1.4.1 Use of Color**: Old value: `text-decoration: line-through` + dark muted color `#4b5563` (≥7.4:1 contrast on `#fffbeb`). New value: dark green `#065f46` (≥9.6:1 on white) AND `→ ` prefix text with `aria-hidden="true"` on the arrow (text is conveyed structurally by table column position, not color alone). Column header "Previous" + "New value" provide semantic context via `<th scope="col">`.
+- **SC 2.4.6**: Diff-preview section heading includes the human-readable `summary` string (e.g., "Pending change — 2 changes"); fallback "pending fields below" when `Summary` is empty/whitespace.
+- **SC 4.1.2**: Per-instance heading IDs generated via `Guid.NewGuid():N` (Blazor) / `useId()` (React) — no DOM ID collisions when multiple instances render simultaneously (e.g., Helm modal stacked over page).
 - **SC 4.1.3**: Diff-preview section appears when `PendingDiff.Entries.Count > 0`; no live-region announcement required since the cascade is synchronous pre-render.
 
 ---

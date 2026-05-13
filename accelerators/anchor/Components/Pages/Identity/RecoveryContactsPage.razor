@@ -64,14 +64,16 @@
         @* Diff-preview confirmation surface — ADR 0077 §4 + ADR 0066 §Phase 4. *@
         @if (PendingDiff is { Entries.Count: > 0 })
         {
-            <section class="anchor-diff-preview" aria-labelledby="pending-order-heading">
-                <h2 id="pending-order-heading">Pending change — @PendingDiff.Summary</h2>
-                <table class="anchor-diff-table">
-                    <caption class="sf-sr-only">Pending recovery-contact changes</caption>
+            <section class="anchor-diff-preview" aria-labelledby="@_pendingOrderHeadingId">
+                <h2 id="@_pendingOrderHeadingId">
+                    Pending change — @(!string.IsNullOrWhiteSpace(PendingDiff.Summary) ? PendingDiff.Summary : "pending fields below")
+                </h2>
+                <table class="anchor-diff-table" aria-describedby="@_pendingOrderHeadingId">
+                    <caption class="sf-sr-only">Pending recovery-contact changes (@PendingDiff.Entries.Count)</caption>
                     <thead>
                         <tr>
                             <th scope="col">Field</th>
-                            <th scope="col">Current</th>
+                            <th scope="col">Previous</th>
                             <th scope="col">New value</th>
                         </tr>
                     </thead>
@@ -96,6 +98,7 @@
 @code {
     [CascadingParameter] public IDiffPreview? PendingDiff { get; set; }
 
+    private readonly string _pendingOrderHeadingId = $"pending-order-heading-{Guid.NewGuid():N}";
     private RecoveryContactsViewModel? _viewModel;
 
     protected override async Task OnInitializedAsync()
@@ -148,6 +151,6 @@
     .anchor-diff-table th, .anchor-diff-table td { padding: 0.4rem 0.75rem; text-align: left; border-bottom: 1px solid #fde68a; }
     .anchor-diff-table thead th { font-weight: 600; color: #78350f; background: #fef3c7; }
     .anchor-diff-table th[scope="row"] { font-weight: 500; color: #555; width: 10rem; }
-    .anchor-diff-old { color: #6b7280; text-decoration: line-through; }
+    .anchor-diff-old { color: #4b5563; text-decoration: line-through; }
     .anchor-diff-new { color: #065f46; font-weight: 500; }
 </style>

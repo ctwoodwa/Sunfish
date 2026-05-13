@@ -35,14 +35,16 @@
         @* Diff-preview confirmation surface — ADR 0077 §4 + ADR 0066 §Phase 4. *@
         @if (PendingDiff is { Entries.Count: > 0 })
         {
-            <section class="sf-diff-preview" aria-labelledby="pending-order-heading">
-                <h2 id="pending-order-heading">Pending change — @PendingDiff.Summary</h2>
-                <table class="sf-diff-table">
-                    <caption class="sf-sr-only">Pending profile field changes</caption>
+            <section class="sf-diff-preview" aria-labelledby="@_pendingOrderHeadingId">
+                <h2 id="@_pendingOrderHeadingId">
+                    Pending change — @(!string.IsNullOrWhiteSpace(PendingDiff.Summary) ? PendingDiff.Summary : "pending fields below")
+                </h2>
+                <table class="sf-diff-table" aria-describedby="@_pendingOrderHeadingId">
+                    <caption class="sf-sr-only">Pending profile field changes (@PendingDiff.Entries.Count)</caption>
                     <thead>
                         <tr>
                             <th scope="col">Field</th>
-                            <th scope="col">Current</th>
+                            <th scope="col">Previous</th>
                             <th scope="col">New value</th>
                         </tr>
                     </thead>
@@ -67,6 +69,7 @@
 @code {
     [CascadingParameter] public IDiffPreview? PendingDiff { get; set; }
 
+    private readonly string _pendingOrderHeadingId = $"pending-order-heading-{Guid.NewGuid():N}";
     private IdentityProfileEditViewModel? _viewModel;
 
     protected override async Task OnInitializedAsync()
@@ -77,3 +80,14 @@
             RequestContext.ActorId);
     }
 }
+
+<style>
+    .sf-diff-preview { margin-top: 2rem; padding: 1rem 1.25rem; border: 2px solid #f59e0b; border-radius: 8px; background: #fffbeb; }
+    .sf-diff-preview h2 { font-size: 1rem; color: #92400e; margin: 0 0 0.75rem; }
+    .sf-diff-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .sf-diff-table th, .sf-diff-table td { padding: 0.4rem 0.75rem; text-align: left; border-bottom: 1px solid #fde68a; }
+    .sf-diff-table thead th { font-weight: 600; color: #78350f; background: #fef3c7; }
+    .sf-diff-table th[scope="row"] { font-weight: 500; color: #555; width: 10rem; }
+    .sf-diff-old { color: #4b5563; text-decoration: line-through; }
+    .sf-diff-new { color: #065f46; font-weight: 500; }
+</style>

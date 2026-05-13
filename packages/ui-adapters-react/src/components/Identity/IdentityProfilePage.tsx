@@ -72,19 +72,23 @@ export function IdentityProfilePage({ apiBaseUrl = '', pendingDiff }: IdentityPr
           DiffPreviewView.Expanded: tabular field-by-field change list (SC 1.3.1). */}
       {pendingDiff != null && pendingDiff.entries.length > 0 && (
         <section aria-labelledby={pendingOrderHeadingId}>
-          <h2 id={pendingOrderHeadingId}>Pending change — {pendingDiff.summary}</h2>
-          <table>
-            <caption className="sr-only">Pending profile field changes</caption>
+          <h2 id={pendingOrderHeadingId}>
+            Pending change — {pendingDiff.summary || 'pending fields below'}
+          </h2>
+          <table aria-describedby={pendingOrderHeadingId}>
+            <caption className="sr-only">
+              Pending profile field changes ({pendingDiff.entries.length})
+            </caption>
             <thead>
               <tr>
                 <th scope="col">Field</th>
-                <th scope="col">Current</th>
+                <th scope="col">Previous</th>
                 <th scope="col">New value</th>
               </tr>
             </thead>
             <tbody>
-              {pendingDiff.entries.map((entry) => (
-                <tr key={entry.field}>
+              {pendingDiff.entries.map((entry, idx) => (
+                <tr key={`${entry.field}-${idx}`}>
                   <th scope="row">{entry.field}</th>
                   <td className="sf-diff-old">{entry.oldValue ?? '—'}</td>
                   <td className="sf-diff-new">
