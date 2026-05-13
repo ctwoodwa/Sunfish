@@ -46,8 +46,11 @@ public interface ITacticalRule
     /// <summary>
     /// Evaluate the signal. Returns <c>true</c> + an emitted alert
     /// when the rule matches; <c>false</c> + null otherwise.
-    /// MUST NOT throw — wrap unexpected payload shapes in defensive
-    /// branches.
+    /// MUST NOT perform I/O — state needed for evaluation MUST be
+    /// pre-populated externally (e.g., via constructor injection or
+    /// a preceding async fetch step) before <see cref="Evaluate"/>
+    /// is called. MUST NOT throw — wrap unexpected payload shapes
+    /// in defensive branches.
     /// </summary>
     bool Evaluate(TacticalSignal signal, out TacticalAlert? alert);
 }
