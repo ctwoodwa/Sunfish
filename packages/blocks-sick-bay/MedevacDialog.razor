@@ -87,13 +87,23 @@
     private ElementReference _authorizeButtonRef;
     private string _politeAnnouncement = string.Empty;
     private string _assertiveAnnouncement = string.Empty;
+    private bool _wasOpen;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsOpen && firstRender)
+        // Enter focus trap and focus Cancel button on every false→true transition,
+        // not just firstRender — handles toggle re-open on same component instance.
+        if (IsOpen && !_wasOpen)
         {
+            _wasOpen = true;
             if (FocusTrap is not null)
                 await FocusTrap.EnterAsync();
+            // ADR 0081 §7.6: initial focus → Cancel (safe default for destructive dialog).
+            await _cancelButtonRef.FocusAsync();
+        }
+        else if (!IsOpen && _wasOpen)
+        {
+            _wasOpen = false;
         }
     }
 
@@ -111,6 +121,7 @@
         await OnAuthorize.InvokeAsync();
     }
 
+    // Intentional no-op: alertdialog MUST NOT dismiss on backdrop click per APG.
     private void HandleBackdropClick() { }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
@@ -120,6 +131,17 @@
             _politeAnnouncement = "Medevac dialog closed.";
             await CloseAsync();
             await OnClose.InvokeAsync();
+            return;
+        }
+
+        // Inline Tab-trap: cycle focus between Cancel and Authorize when
+        // IFocusTrap is not registered in DI (SC 2.1.2 + SC 2.4.3).
+        if (e.Key == "Tab" && FocusTrap is null)
+        {
+            if (e.ShiftKey)
+                await _cancelButtonRef.FocusAsync();
+            else
+                await _authorizeButtonRef.FocusAsync();
         }
     }
 
