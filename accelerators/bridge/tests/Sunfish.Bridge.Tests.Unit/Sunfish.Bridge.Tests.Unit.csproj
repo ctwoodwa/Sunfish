@@ -15,9 +15,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <PackageReference Include="Microsoft.Extensions.Options" />
-  </ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Sunfish.Bridge.Data\Sunfish.Bridge.Data.csproj" />
