@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.MultiTenancy;
 
 namespace Sunfish.Foundation.Assets.Audit;
 
@@ -78,7 +79,7 @@ public sealed class InMemoryAuditLog : IAuditLog
 
         var filtered = source
             .Where(r => query.Actor is not { } actor || r.Actor == actor)
-            .Where(r => query.Tenant is not { } tenant || r.Tenant == tenant)
+            .Where(r => query.Tenant is null || query.Tenant.Matches(r.Tenant))
             .Where(r => query.Op is not { } op || r.Op == op)
             .Where(r => query.FromInclusive is not { } from || r.At >= from)
             .Where(r => query.ToExclusive is not { } to || r.At < to)

@@ -1,4 +1,5 @@
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.MultiTenancy;
 
 namespace Sunfish.Foundation.Assets.Audit;
 
@@ -6,7 +7,7 @@ namespace Sunfish.Foundation.Assets.Audit;
 public sealed record AuditQuery(
     EntityId? Entity = null,
     ActorId? Actor = null,
-    TenantId? Tenant = null,
+    TenantSelection? Tenant = null,   // null == AllAccessible (no tenant filter)
     DateTimeOffset? FromInclusive = null,
     DateTimeOffset? ToExclusive = null,
     Op? Op = null,

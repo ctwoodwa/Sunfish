@@ -1,4 +1,5 @@
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.MultiTenancy;
 
 namespace Sunfish.Foundation.LocalFirst;
 
@@ -21,8 +22,13 @@ public enum ExportState
 /// <summary>Parameters for a tenant data export.</summary>
 public sealed record ExportRequest
 {
-    /// <summary>Tenant whose data is being exported; null for system-scope exports.</summary>
-    public TenantId? TenantId { get; init; }
+    /// <summary>
+    /// Tenant scope for this export. <see cref="TenantSelection.ForSingle"/> for a single
+    /// tenant, <see cref="TenantSelection.ForMultiple"/> for a set, or null /
+    /// <see cref="TenantSelection.AllAccessible"/> for a system-scope export.
+    /// Per ADR 0085 §1.3.
+    /// </summary>
+    public TenantSelection? Tenant { get; init; }
 
     /// <summary>Requested output format media type (defaults to JSON).</summary>
     public string Format { get; init; } = "application/json";

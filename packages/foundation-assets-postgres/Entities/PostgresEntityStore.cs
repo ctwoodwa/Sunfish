@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Assets.Entities;
 using Sunfish.Foundation.Assets.Postgres.Internal;
+using Sunfish.Foundation.MultiTenancy;
 using Sunfish.Foundation.Assets.Postgres.Versions;
 using Sunfish.Foundation.Assets.Versions;
 
@@ -356,8 +357,16 @@ public sealed class PostgresEntityStore : IEntityStore
         IQueryable<EntityRow> q = db.Entities.AsNoTracking();
         if (query.Schema is { } schema)
             q = q.Where(e => e.Schema == schema.Value);
-        if (query.Tenant is { } tenant)
+        if (query.Tenant is TenantSelection.ForSingle(var tenant))
             q = q.Where(e => e.Tenant == tenant.Value);
+        else if (query.Tenant is TenantSelection.ForMultiple { TenantIds: var tenants })
+        {
+            if (tenants.IsEmpty)
+                yield break;
+            var values = tenants.Select(t => t.Value).ToArray();
+            q = q.Where(e => values.Contains(e.Tenant));
+        }
+        // AllAccessible and null → no tenant filter
 
         if (!query.IncludeDeleted)
         {

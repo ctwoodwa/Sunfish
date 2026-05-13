@@ -507,3 +507,14 @@ grep -rn "ExportRequest" packages/ apps/ --include="*.cs" | grep "TenantId\s*="
 - [ ] New tests: `EntityQuery_ForMultiple_FiltersToSet`, `AuditQuery_AllAccessible_NoFilter`,
   `InMemoryEntityStore_ForMultiple_FiltersToSet`, `TenantSelection_Matches_ForMultiple_Empty_ReturnsFalse`
 - [ ] Pre-merge council complete; no Blocking findings
+
+## Implementation note (2026-05-13 — XO ruling xo-ruling-2026-05-13T03-15Z-w1-wsb-tenantselection-layer)
+
+`TenantSelection` physically lives in the `foundation` package at
+`packages/foundation/MultiTenancy/TenantSelection.cs` while retaining the
+`Sunfish.Foundation.MultiTenancy` namespace. This resolves the circular
+dependency that would arise from `foundation` importing
+`foundation-multitenancy` (which already depends on `foundation`).
+`foundation-multitenancy` references `foundation` via a ProjectReference, so
+all consumers of `TenantSelection` who already depend on `foundation` (directly
+or transitively) see it without any change to their `using` statements.
