@@ -33,7 +33,9 @@ using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Bridge.Features.Identity;
 using Sunfish.Blocks.ShipsOffice;
+using Sunfish.Blocks.SickBay;
 using Sunfish.Foundation.ShipsOffice;
+using Sunfish.Foundation.SickBay;
 using Sunfish.UICore.Wayfinder;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
@@ -304,6 +306,17 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     {
         opts.SnapshotPageSize = 500;
         opts.RequireSecondActorPublish = true;
+    });
+
+    // W#54 Phase 4 — Sick Bay aggregation surface (ADR 0082).
+    // blocks-sick-bay is a Razor class library; Bridge's Blazor router does NOT
+    // discover SickBayPage.razor from here (no React Sick Bay component yet).
+    // Service registration only; Blazor assembly scan is safe.
+    // RegisterNoopKeyRotationScheduler=true: the real W#32 scheduler is not yet
+    // wired in Bridge; Noop is the safe default per ADR 0082-A1.4 §Trust posture.
+    builder.Services.AddSunfishSickBayDefaults(opts =>
+    {
+        opts.RegisterNoopKeyRotationScheduler = true;
     });
 
     // W#23.2 P2 — InMemory equipment repository (H2: EFCore adapter deferred to follow-up;

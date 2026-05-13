@@ -1,0 +1,41 @@
+@page "/sick-bay"
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.SickBay
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Foundation.SickBay
+@using Sunfish.Kernel.Runtime.Teams
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+@inject ISickBayDataProvider DataProvider
+
+<PageTitle>Sunfish Anchor — Sick Bay</PageTitle>
+
+@*
+    W#54 Phase 4 — Anchor consumer page hosting the Sick Bay
+    aggregation surface per ADR 0082 §Phase 4.
+
+    Fetches an initial SickBaySnapshot on load. CanViewPharmacy is
+    always true for Anchor's single-operator grant-all posture;
+    Bridge's multi-tenant posture gates ViewPharmacy via
+    IPermissionResolver before passing the flag.
+*@
+
+@if (!Session.IsOnboarded || ActiveTeam.Active is null)
+{
+    <p class="anchor-muted">Complete onboarding to access Sick Bay.</p>
+}
+else
+{
+    <SickBayBlock Snapshot="@_snapshot" CanViewPharmacy="true" />
+}
+
+@code {
+    private SickBaySnapshot? _snapshot;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ActiveTeam.Active is null) return;
+        var tenant = new TenantId(ActiveTeam.Active.TeamId.Value.ToString("D"));
+        _snapshot = await DataProvider.GetSnapshotAsync(tenant, CancellationToken.None);
+    }
+}

@@ -66,6 +66,14 @@
                     <span class="bi bi-gear-fill" aria-hidden="true"></span> Engine Room
                 </NavLink>
             </div>
+            @* W#54 Phase 4 — Sick Bay aggregation surface (ADR 0082).
+               SickBayBlock gates ViewPharmacy internally; Anchor single-operator
+               posture grants all permissions via AnchorGrantAllPermissionResolver. *@
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="sick-bay">
+                    <span class="bi bi-heart-pulse-fill" aria-hidden="true"></span> Sick Bay
+                </NavLink>
+            </div>
             @* W#58 Phase 1b — Identity Atlas pages. B1 fix: group with heading so AT users
                get the section label; role=group + aria-labelledby gives grouping context. *@
             <div role="group" aria-labelledby="identity-nav-label">

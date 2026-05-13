@@ -88,7 +88,12 @@
     <!-- W#47 Phase 4 — a11y harness for WCAG 2.2 AA structural assertions per ADR 0034. -->
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor-a11y\Sunfish.UIAdapters.Blazor.A11y.csproj" />
     <!-- W#55 Phase 4 — DI resolution tests for Ship's Office block. -->
+    <ProjectReference Include="..\..\..\packages\foundation-ships-office\Sunfish.Foundation.ShipsOffice.csproj" />
     <ProjectReference Include="..\..\..\packages\blocks-ships-office\Sunfish.Blocks.ShipsOffice.csproj" />
+    <!-- W#54 Phase 4 — DI resolution tests for Sick Bay block. -->
+    <ProjectReference Include="..\..\..\packages\blocks-sick-bay\Sunfish.Blocks.SickBay.csproj" />
+    <!-- W#54 Phase 4 — SickBayCommandService + MedevacServiceImpl stubs need IAuditTrail. -->
+    <ProjectReference Include="..\..\..\packages\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
 
 </Project>
