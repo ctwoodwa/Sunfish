@@ -249,7 +249,8 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // (ADR 0015 module-entity registration, ADR 0007 bundles, ADR 0009 features).
     builder.Services.AddSunfishBundleCatalog();
     builder.Services.AddSunfishFeatureManagement();
-    builder.Services.AddInMemorySubscriptions();
+    if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Demo"))
+        builder.Services.AddInMemorySubscriptions();
     builder.Services.AddInMemoryTenantAdmin();
     builder.Services.AddInMemoryBusinessCases();
     builder.Services.AddInMemoryPublicListings();

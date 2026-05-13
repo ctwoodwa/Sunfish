@@ -13,10 +13,11 @@
          wiring (per commit 93c53ba2 "scaffold SharedResource bundle — proof of layered cascade").
          Remove this suppression once consumers wire the keys via IStringLocalizer indexer or
          GetString. Follow-up issue: wire foundation SharedResource consumers. -->
-    <NoWarn>CS1591;SUNFISH_I18N_002</NoWarn>
+    <NoWarn>CS1591;SUNFISH_I18N_002;NU1510</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" />
     <PackageReference Include="NSec.Cryptography" />
     <PackageReference Include="SmartFormat" />
