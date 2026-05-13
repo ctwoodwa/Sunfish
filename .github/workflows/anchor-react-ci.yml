@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'apps/anchor-react/**'
+      - 'packages/ui-react/**'
+      - '.github/workflows/anchor-react-ci.yml'
 
 jobs:
   lint-test:
