@@ -3,6 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from 'react-error-boundary'
 import { useEffect } from 'react'
 import { PropertiesPage } from '@/pages/PropertiesPage'
+import { LeasesPage } from '@/pages/LeasesPage'
+import { LeaseDetailPage } from '@/pages/LeaseDetailPage'
+import { RentCollectionPage } from '@/pages/RentCollectionPage'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -79,6 +82,22 @@ function AppLayout() {
             >
               Properties
             </NavLink>
+            <NavLink
+              to="/leases"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Leases
+            </NavLink>
+            <NavLink
+              to="/rent"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Rent
+            </NavLink>
           </nav>
           <CompanySwitcher />
         </div>
@@ -87,6 +106,9 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Navigate to="/properties" replace />} />
           <Route path="/properties" element={<PropertiesPage />} />
+          <Route path="/leases" element={<LeasesPage />} />
+          <Route path="/leases/:name" element={<LeaseDetailPage />} />
+          <Route path="/rent" element={<RentCollectionPage />} />
         </Routes>
       </main>
     </div>

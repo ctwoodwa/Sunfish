@@ -47,11 +47,77 @@ public sealed class ERPNextProxyTests
         Assert.Equal("Property", client.LastDoctype);
     }
 
+    [Fact]
+    public async Task GetLeases_ReturnsOk_WithClientData()
+    {
+        var expected = JsonDocument.Parse("""{"data":[{"name":"LEASE-0001","tenant":"John Doe"}]}""").RootElement.Clone();
+        var client = new FakeERPNextClient(expected);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "Royal Key Management LLC" });
+
+        var result = await ERPNextProxy.HandleGetLeasesAsync(client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<JsonElement>>(result);
+        Assert.Equal("Lease", client.LastDoctype);
+    }
+
+    [Fact]
+    public async Task GetLeases_Returns503_WhenDefaultCompanyNotConfigured()
+    {
+        var client = new FakeERPNextClient(default);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "" });
+
+        var result = await ERPNextProxy.HandleGetLeasesAsync(client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult>(result);
+    }
+
+    [Fact]
+    public async Task GetLease_ReturnsOk_WithSingleResource()
+    {
+        var expected = JsonDocument.Parse("""{"data":{"name":"LEASE-0001"}}""").RootElement.Clone();
+        var client = new FakeERPNextClient(expected);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "Royal Key Management LLC" });
+
+        var result = await ERPNextProxy.HandleGetLeaseAsync("LEASE-0001", client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<JsonElement>>(result);
+        Assert.Equal("LEASE-0001", client.LastName);
+    }
+
+    [Fact]
+    public async Task PostPayment_ReturnsOk_WithCreatedPayment()
+    {
+        var expected = JsonDocument.Parse("""{"data":{"name":"PAY-0001"}}""").RootElement.Clone();
+        var client = new FakeERPNextClient(expected);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "Royal Key Management LLC" });
+        var body = new ERPNextProxy.RecordPaymentRequest("LEASE-0001", 1500m, "2026-05-13", "ACH");
+
+        var result = await ERPNextProxy.HandlePostPaymentAsync(body, client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<JsonElement>>(result);
+        Assert.Equal("Payment", client.LastPostEndpoint);
+        Assert.Equal("Royal Key Management LLC", client.LastCompany);
+    }
+
+    [Fact]
+    public async Task PostPayment_Returns503_WhenDefaultCompanyNotConfigured()
+    {
+        var client = new FakeERPNextClient(default);
+        var options = Options.Create(new ERPNextOptions { DefaultCompany = "" });
+        var body = new ERPNextProxy.RecordPaymentRequest("LEASE-0001", 1500m, "2026-05-13", "ACH");
+
+        var result = await ERPNextProxy.HandlePostPaymentAsync(body, client, options, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult>(result);
+    }
+
     private sealed class FakeERPNextClient : IERPNextClient
     {
         private readonly JsonElement _result;
         public string? LastDoctype { get; private set; }
         public string? LastCompany { get; private set; }
+        public string? LastName { get; private set; }
+        public string? LastPostEndpoint { get; private set; }
 
         public FakeERPNextClient(JsonElement result) => _result = result;
 
@@ -67,10 +133,19 @@ public sealed class ERPNextProxyTests
 
         public Task<JsonElement> GetResourceAsync(
             string doctype, string name, string company, CancellationToken ct = default)
-            => Task.FromResult(_result);
+        {
+            LastDoctype = doctype;
+            LastName = name;
+            LastCompany = company;
+            return Task.FromResult(_result);
+        }
 
         public Task<JsonElement> PostAsync(
             string endpoint, object payload, string company, CancellationToken ct = default)
-            => Task.FromResult(_result);
+        {
+            LastPostEndpoint = endpoint;
+            LastCompany = company;
+            return Task.FromResult(_result);
+        }
     }
 }
