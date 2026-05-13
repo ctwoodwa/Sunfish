@@ -1,0 +1,32 @@
+@page "/ships-office"
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.ShipsOffice
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Ship's Office</PageTitle>
+
+@* B1 council fix: gate on IsOnboarded before rendering any block content.
+   Consistent with Anchor's session-based auth pattern (see HistoricalKeysPage,
+   RecoveryContactsPage). ShipsOfficeBlock also gates on ShipAction.ViewShipsOffice
+   internally; this outer guard prevents the page title / layout from rendering
+   for unauthenticated / pre-onboarding sessions. *@
+@if (!Session.IsOnboarded || ActiveTeam.Active is null)
+{
+    <p class="anchor-muted">Complete onboarding to access Ship's Office.</p>
+}
+else
+{
+    <ShipsOfficeBlock Tenant="@CurrentTenant" Actor="@CurrentActor" />
+}
+
+@code {
+    private TenantId CurrentTenant =>
+        ActiveTeam.Active is { } team
+            ? new TenantId(team.TeamId.Value.ToString("D"))
+            : default;
+
+    private ActorId CurrentActor => new ActorId(Session.NodeId ?? "");
+}

@@ -87,6 +87,8 @@
     <ProjectReference Include="..\..\..\packages\blocks-crew-comms\Sunfish.Blocks.CrewComms.csproj" />
     <!-- W#47 Phase 4 — a11y harness for WCAG 2.2 AA structural assertions per ADR 0034. -->
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor-a11y\Sunfish.UIAdapters.Blazor.A11y.csproj" />
+    <!-- W#55 Phase 4 — DI resolution tests for Ship's Office block. -->
+    <ProjectReference Include="..\..\..\packages\blocks-ships-office\Sunfish.Blocks.ShipsOffice.csproj" />
   </ItemGroup>
 
 </Project>

@@ -23,6 +23,8 @@ using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.Providers.Bootstrap.Extensions;
 using Microsoft.Maui.Storage;
+using Sunfish.Blocks.ShipsOffice;
+using Sunfish.Foundation.ShipsOffice;
 
 namespace Sunfish.Anchor;
 
@@ -300,6 +302,18 @@ public static class MauiProgram
 		// W#47 Phase 4 — consolidated via AddAnchorSystemRequirementsRenderer extension
 		// (AnchorMauiServiceCollectionExtensions). Registers observer + renderer + surface.
 		builder.Services.AddAnchorSystemRequirementsRenderer();
+
+		// W#55 Phase 4 — Ship's Office aggregation surface (ADR 0083).
+		// A3 council note: Anchor is single-operator; RequireSecondActorPublish=false
+		// (the default) is correct here. Bridge sets it to true for regulated multi-
+		// tenant posture. The explicit Configure call makes the intent auditable.
+		builder.Services.AddSunfishShipsOfficeDefaults();
+		builder.Services.Configure<ShipsOfficeOptions>(opts =>
+		{
+			opts.SnapshotPageSize = 200;
+			opts.FallbackPollingInterval = TimeSpan.FromSeconds(60);
+			opts.RequireSecondActorPublish = false;
+		});
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

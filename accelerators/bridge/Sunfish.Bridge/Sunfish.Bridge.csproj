@@ -30,6 +30,8 @@
     <ProjectReference Include="..\..\..\packages\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
     <!-- W#58 Phase 2 — BridgeIdentityAtlasSurface projection-only reads. -->
     <ProjectReference Include="..\..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
+    <!-- W#55 Phase 4 — Ship's Office aggregation surface (ADR 0083). -->
+    <ProjectReference Include="..\..\..\packages\blocks-ships-office\Sunfish.Blocks.ShipsOffice.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -156,6 +156,8 @@
         <!-- W#47 Phase 1 — Anchor MAUI ISystemRequirementsRenderer (PreInstallFullPage) -->
         <ProjectReference Include="..\..\packages\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
         <ProjectReference Include="..\..\packages\foundation-catalog\Sunfish.Foundation.Catalog.csproj" />
+        <!-- W#55 Phase 4 — Ship's Office block + DI surface (ADR 0083) -->
+        <ProjectReference Include="..\..\packages\blocks-ships-office\Sunfish.Blocks.ShipsOffice.csproj" />
     </ItemGroup>
 
 </Project>
