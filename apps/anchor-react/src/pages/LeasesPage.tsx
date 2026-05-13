@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useLeases } from '@/hooks/useLeases'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Lease } from '@/api/erpnext'
 
 function daysUntilExpiry(endDate: string): number {
