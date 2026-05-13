@@ -6,27 +6,32 @@ using Sunfish.Foundation.EngineRoom;
 namespace Sunfish.Blocks.EngineRoom;
 
 /// <summary>
-/// DI registration for the block-tier Engine Room reference data
-/// provider per W#50 Phase 2a. Per cohort
-/// <c>AddSunfishXDefaults()</c> convention.
+/// DI registration for the block-tier Engine Room reference implementations
+/// per W#50 Phase 2a + Phase 2b. Per cohort <c>AddSunfishXDefaults()</c>
+/// convention.
 /// </summary>
 public static class EngineRoomServiceCollectionExtensions
 {
     /// <summary>
     /// Registers the reference <see cref="IEngineRoomDataProvider"/>
-    /// implementation (<see cref="DefaultEngineRoomDataProvider"/>) and
-    /// binds <see cref="EngineRoomOptions"/>. Hosts that run a real sync
+    /// (<see cref="DefaultEngineRoomDataProvider"/>) and the reference
+    /// <see cref="IEngineRoomCommandService"/>
+    /// (<see cref="DefaultEngineRoomCommandService"/>). Binds
+    /// <see cref="EngineRoomOptions"/>. Hosts that run a real sync
     /// daemon or CRDT document store also register
-    /// <see cref="ISyncDaemonHealthSource"/> + / or
+    /// <see cref="ISyncDaemonHealthSource"/> and/or
     /// <see cref="ICrdtDocumentRegistry"/>; if they don't, the data
     /// provider returns sensible defaults
     /// (<see cref="SyncDaemonStatus.Unavailable"/> + zeros for the
     /// daemon snapshot; an empty stream for CRDT growth metrics).
     /// </summary>
     /// <remarks>
-    /// Phase 2b will add <c>DefaultEngineRoomCommandService</c> +
-    /// <c>IDocumentQuarantineStore</c> registrations once the EOOW +
-    /// IPermissionResolver wiring lands.
+    /// Hosts MUST also register an <see cref="IDocumentQuarantineStore"/>
+    /// implementation via
+    /// <see cref="Foundation.EngineRoom.EngineRoomServiceCollectionExtensions.AddEngineRoomQuarantineStore{TImpl}"/>
+    /// before invoking <see cref="IEngineRoomCommandService"/> — the
+    /// command service will throw at DI resolution time if no store is
+    /// registered.
     /// </remarks>
     public static IServiceCollection AddSunfishEngineRoomDefaults(
         this IServiceCollection services)
@@ -34,6 +39,7 @@ public static class EngineRoomServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         services.AddOptions<EngineRoomOptions>();
         services.TryAddSingleton<IEngineRoomDataProvider, DefaultEngineRoomDataProvider>();
+        services.TryAddSingleton<IEngineRoomCommandService, DefaultEngineRoomCommandService>();
         return services;
     }
 }
