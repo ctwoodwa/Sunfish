@@ -9,14 +9,22 @@ import SunfishFieldIdentity
 struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
 
+    /// Stub equipment item for v1 capture smoke test.
+    /// Replaced by a real GET /api/v1/equipment fetch in a deepening follow-up.
+    private let stubEquipment = EquipmentListItem(id: "stub-001", name: "Equipment")
+
     init(
         queueService: any EventQueueServicing,
         syncEngine: SyncEngine,
+        blobStore: BlobStore,
+        deviceId: String = "simulator",
         onUnpaired: @escaping @MainActor () -> Void = {}
     ) {
         _viewModel = StateObject(wrappedValue: HomeViewModel(
             queueService: queueService,
             syncEngine: syncEngine,
+            blobStore: blobStore,
+            deviceId: deviceId,
             onUnpaired: onUnpaired))
     }
 
@@ -25,9 +33,21 @@ struct HomeView: View {
             List {
                 Section("Capture") {
                     ForEach(CaptureFlow.allCases) { flow in
-                        Label(flow.label, systemImage: flow.icon)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel("\(flow.label) — coming soon")
+                        if flow == .asset {
+                            NavigationLink {
+                                AssetCaptureView(
+                                    equipment: stubEquipment,
+                                    queueService: viewModel.queueService,
+                                    blobStore: viewModel.blobStore,
+                                    deviceId: viewModel.deviceId)
+                            } label: {
+                                Label(flow.label, systemImage: flow.icon)
+                            }
+                        } else {
+                            Label(flow.label, systemImage: flow.icon)
+                                .foregroundStyle(.secondary)
+                                .accessibilityLabel("\(flow.label) — coming soon")
+                        }
                     }
                 }
 
@@ -96,17 +116,23 @@ final class HomeViewModel: ObservableObject {
     @Published var showSyncError = false
     @Published private(set) var syncErrorMessage = ""
 
-    private let queueService: any EventQueueServicing
+    let queueService: any EventQueueServicing
+    let blobStore: BlobStore
+    let deviceId: String
     private let syncEngine: SyncEngine
     private let onUnpaired: @MainActor () -> Void
 
     init(
         queueService: any EventQueueServicing,
         syncEngine: SyncEngine,
+        blobStore: BlobStore,
+        deviceId: String,
         onUnpaired: @escaping @MainActor () -> Void
     ) {
         self.queueService = queueService
         self.syncEngine = syncEngine
+        self.blobStore = blobStore
+        self.deviceId = deviceId
         self.onUnpaired = onUnpaired
     }
 

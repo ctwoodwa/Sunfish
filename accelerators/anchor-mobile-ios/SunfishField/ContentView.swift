@@ -6,6 +6,20 @@ import SwiftUI
 /// in the simulator without a real Anchor pairing.
 struct ContentView: View {
     @State private var isPaired = true   // Phase 5 replaces with persistent pairing state.
+    // Simulator-only stub: temp dir is effectively infallible on iOS/macOS.
+    // Phase 5 replaces with a real sandboxed BlobStore from app documents dir.
+    // Council AMENDMENT-2: if temp dir init fails, fall back to a child of
+    // temp so the app boots with a degraded (but non-crashing) blob path.
+    private static let stubBlobStore: BlobStore = {
+        let primary = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sunfish-blobs")
+        if let store = try? BlobStore(rootDirectory: primary) { return store }
+        // Fallback: unique subdir (avoids collision if primary path is stale).
+        let fallback = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sunfish-blobs-\(UUID().uuidString)")
+        return (try? BlobStore(rootDirectory: fallback))
+            ?? (try! BlobStore(rootDirectory: FileManager.default.temporaryDirectory))
+    }()
 
     var body: some View {
         if isPaired {
@@ -14,7 +28,8 @@ struct ContentView: View {
                 syncEngine: SyncEngine(
                     queueService: StubEventQueueService(),
                     bridgeBaseURL: URL(string: "https://bridge.local")!,
-                    urlSession: .shared))
+                    urlSession: .shared),
+                blobStore: Self.stubBlobStore)
         } else {
             // Phase 5 replaces with PairingFlowView.
             Text("Sunfish Field — tap to pair")
