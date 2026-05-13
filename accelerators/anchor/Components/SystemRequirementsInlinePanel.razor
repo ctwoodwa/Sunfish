@@ -1,0 +1,84 @@
+@using Microsoft.Extensions.Localization
+@using Microsoft.Maui.Devices
+@using Sunfish.Anchor.Localization
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Catalog.Bundles
+@using Sunfish.Foundation.MissionSpace
+@inject IBundleCatalog Catalog
+@inject IMissionEnvelopeProvider EnvelopeProvider
+@inject IMinimumSpecResolver Resolver
+@inject IStringLocalizer<SharedResource> L
+
+@*
+  SystemRequirementsInlinePanel — collapsed-by-default <details> element that renders
+  a single dimension's DimensionEvaluation inline. W#47 Phase 2 per ADR 0063-A1.1.
+  Auto-opens when the dimension fails (Required + Fail).
+  Consumers mount via: <SystemRequirementsInlinePanel BundleId="@bundleId" Dimension="DimensionChangeKind.Hardware" />
+*@
+
+@if (_eval is not null)
+{
+    var locKey = SystemRequirementsViewHelpers.GetDimensionLocKey(Dimension);
+    var dimName = L[$"sysreq.dimension.{locKey}.name"];
+    var isFail = _eval.Outcome == DimensionPassFail.Fail;
+    var detailId = $"sf-inline-req-detail-{BundleId}-{Dimension}";
+
+    @* C1: polite live region announces fail state after async resolve (SC 4.1.3). *@
+    @if (isFail)
+    {
+        <span class="sf-visually-hidden" role="status" aria-live="polite">
+            @dimName: @L["sysreq.inline.requirement_not_met"]
+        </span>
+    }
+
+    <details class="sf-inline-req @(isFail ? "sf-inline-req--fail" : "")"
+             open="@isFail">
+        @* A1: aria-describedby wires summary to the explanatory detail paragraph. *@
+        <summary class="sf-inline-req__summary" aria-describedby="@detailId">
+            @dimName
+            @* C2: role="img" ensures aria-label is honoured on MacCatalyst WebKit (SC 1.1.1). *@
+            @if (isFail)
+            {
+                <span class="sf-inline-req__badge sf-inline-req__badge--fail"
+                      role="img"
+                      aria-label="@L["sysreq.inline.requirement_not_met"]">
+                    <span aria-hidden="true">!</span>
+                </span>
+            }
+        </summary>
+        <p id="@detailId" class="sf-inline-req__detail">
+            @(_eval.Detail ?? (isFail
+                ? L["sysreq.inline.detail_fail_default"]
+                : L["sysreq.inline.detail_pass_default"]))
+        </p>
+    </details>
+}
+
+@code {
+    [Parameter, EditorRequired] public required string BundleId { get; set; }
+    [Parameter, EditorRequired] public required DimensionChangeKind Dimension { get; set; }
+
+    private DimensionEvaluation? _eval;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Catalog.TryGet(BundleId, out var manifest) || manifest is null)
+            return;
+
+        var spec = manifest.Requirements is { } catalogSpec
+            ? new Sunfish.Foundation.MissionSpace.MinimumSpec
+            {
+                Policy = Enum.Parse<Sunfish.Foundation.MissionSpace.SpecPolicy>(catalogSpec.Policy.ToString())
+            }
+            : new Sunfish.Foundation.MissionSpace.MinimumSpec
+            {
+                Policy = Sunfish.Foundation.MissionSpace.SpecPolicy.Recommended
+            };
+
+        var envelope = await EnvelopeProvider.GetCurrentAsync();
+        var platformKey = SystemRequirementsViewHelpers.GetPlatformKey(
+            DeviceInfo.Current.Platform.ToString());
+        var result = await Resolver.EvaluateAsync(spec, envelope, platformKey);
+        _eval = result.Dimensions.FirstOrDefault(d => d.Dimension == Dimension);
+    }
+}
