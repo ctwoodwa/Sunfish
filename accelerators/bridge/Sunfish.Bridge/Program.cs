@@ -161,6 +161,10 @@ app.MapListingsEndpoints();
 // POST /api/system-requirements/{bundleId}/force-install → 204 No Content.
 app.MapSystemRequirementsEndpoints();
 
+// W#58 Phase 3 — Identity Atlas JSON surface (ADR 0066 §Phase 3; React adapter parity).
+// GET /api/v1/identity/profile|keys|recovery|keys/history|teams → identity view-model JSON.
+app.MapIdentityEndpoints();
+
 // W#60 Phase 2 — ERPNext proxy (GET /api/v1/erpnext/properties, more in later phases).
 app.MapERPNextProxy();
 
