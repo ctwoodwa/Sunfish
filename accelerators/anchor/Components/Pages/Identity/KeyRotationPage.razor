@@ -2,6 +2,7 @@
 @using Sunfish.Anchor.Services
 @using Sunfish.Foundation.Assets.Common
 @using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Primitives
 @using Sunfish.UICore.Wayfinder
 @inject IIdentityAtlasSurface AtlasSurface
 @inject AnchorSessionService Session
@@ -62,10 +63,45 @@
         <p class="anchor-muted anchor-identity-note">
             Key rotation is issued as a Standing Order through the Helm.
         </p>
+
+        @* Diff-preview confirmation surface — ADR 0077 §4 + ADR 0066 §Phase 4. *@
+        @if (PendingDiff is { Entries.Count: > 0 })
+        {
+            <section class="anchor-diff-preview" aria-labelledby="@_pendingOrderHeadingId">
+                <h2 id="@_pendingOrderHeadingId">
+                    Pending change — @(!string.IsNullOrWhiteSpace(PendingDiff.Summary) ? PendingDiff.Summary : "pending fields below")
+                </h2>
+                <table class="anchor-diff-table" aria-describedby="@_pendingOrderHeadingId">
+                    <caption class="sf-sr-only">Pending key rotation field changes (@PendingDiff.Entries.Count)</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Field</th>
+                            <th scope="col">Previous</th>
+                            <th scope="col">New value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in PendingDiff.Entries)
+                        {
+                            <tr>
+                                <th scope="row">@entry.Field</th>
+                                <td class="anchor-diff-old">@(entry.OldValue?.ToString() ?? "—")</td>
+                                <td class="anchor-diff-new">
+                                    <span aria-hidden="true">→ </span>@(entry.NewValue?.ToString() ?? "—")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
     }
 </main>
 
 @code {
+    [CascadingParameter] public IDiffPreview? PendingDiff { get; set; }
+
+    private readonly string _pendingOrderHeadingId = $"pending-order-heading-{Guid.NewGuid():N}";
     private KeyRotationViewModel? _viewModel;
 
     protected override async Task OnInitializedAsync()
@@ -89,4 +125,12 @@
     .anchor-fingerprint { font-family: Consolas, Menlo, monospace; font-size: 0.8125rem; word-break: break-all; }
     .anchor-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
     .anchor-identity-note { margin-top: 1rem; }
+    .anchor-diff-preview { margin-top: 2rem; padding: 1rem 1.25rem; border: 2px solid #f59e0b; border-radius: 8px; background: #fffbeb; }
+    .anchor-diff-preview h2 { font-size: 1rem; color: #92400e; margin: 0 0 0.75rem; }
+    .anchor-diff-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .anchor-diff-table th, .anchor-diff-table td { padding: 0.4rem 0.75rem; text-align: left; border-bottom: 1px solid #fde68a; }
+    .anchor-diff-table thead th { font-weight: 600; color: #78350f; background: #fef3c7; }
+    .anchor-diff-table th[scope="row"] { font-weight: 500; color: #555; width: 10rem; }
+    .anchor-diff-old { color: #4b5563; text-decoration: line-through; }
+    .anchor-diff-new { color: #065f46; font-weight: 500; }
 </style>

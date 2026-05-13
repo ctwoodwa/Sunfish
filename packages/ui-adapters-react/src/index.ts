@@ -67,7 +67,7 @@ export {
   type ActiveTeamOverviewPageProps,
 } from './components/Identity';
 
-// Identity Atlas contract types (ADR 0066 §Phase 3 wire format)
+// Identity Atlas contract types (ADR 0066 §Phase 3 wire format + Phase 4 diff-preview)
 export type {
   SyncState,
   IdentityProfileResponse,
@@ -78,6 +78,8 @@ export type {
   HistoricalKeysResponse,
   TeamMembershipResponse,
   ActiveTeamOverviewResponse,
+  DiffEntry,
+  PendingDiffPreview,
 } from './contracts/IdentityTypes';
 
 // SystemRequirements contract types and values (Phase 1 serialization contract)
