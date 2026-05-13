@@ -3,10 +3,10 @@ sort_order: 69
 number: 60
 slug: erpnext-composition-pivot-react-ui
 title: "**ERPNext Composition Pivot — React UI + local-first sync layer** (5-phase; `sunfish-feature-change` pipeline) — CO UPF plan approved 2026-05-11; ERPNext (GPLv3, self-hosted) as property/accounting engine; Sunfish as local-first sync + offline + React UI + tenant comms layer over it"
-status: "ready-to-build"
-status_cell: "`ready-to-build` (Phase 1 PASS confirmed 2026-05-11 — ERPNext self-hosted + core accounting loop working on CO's device; Phase 2 Stage 06 hand-off authored at `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md`)"
-owner: "research (XO — Phase 2 hand-off authoring) → sunfish-PM (Phase 2+ implementation)"
-owner_cell: "research (XO — Phase 2 hand-off authoring) → sunfish-PM (Phase 2+ implementation)"
+status: "building"
+status_cell: "`building` (Phase 1 PASS confirmed 2026-05-11; P2-Phase1 ERPNext proxy PR #731 ✓ merged 2026-05-13; P2-Phase2 React scaffold PR #732 in CI review; P2-Phases 3–5 pending)"
+owner: "sunfish-PM"
+owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md` + UPF plan: `~/.claude/plans/noble-crunching-hopper.md`"
 ---
 
