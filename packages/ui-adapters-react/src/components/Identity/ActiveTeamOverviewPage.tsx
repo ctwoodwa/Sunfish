@@ -40,18 +40,25 @@ export function ActiveTeamOverviewPage({ apiBaseUrl = '' }: ActiveTeamOverviewPa
   const teamWord = teamCount === 1 ? 'team' : 'teams';
 
   return (
-    <main role="main" aria-labelledby={headingId}>
+    <main aria-labelledby={headingId}>
       <h1 id={headingId}>Team Memberships</h1>
 
-      {error !== null ? (
-        <p role="alert">{error}</p>
-      ) : data === null ? (
-        <p role="status" aria-live="polite">
-          Loading team memberships…
-        </p>
-      ) : data.teams.length === 0 ? (
+      {/* M4: alert container always present so AT observes it before content is injected */}
+      <div role="alert" aria-atomic="true">
+        {error !== null && (
+          <p><strong>Failed to load team memberships.</strong> {error}</p>
+        )}
+      </div>
+
+      {error === null && data === null && (
+        <p role="status">Loading team memberships…</p>
+      )}
+
+      {data !== null && data.teams.length === 0 && (
         <p>No team memberships found.</p>
-      ) : (
+      )}
+
+      {data !== null && data.teams.length > 0 && (
         <section aria-labelledby={sectionHeadingId}>
           <h2 id={sectionHeadingId}>
             Your teams{' '}
@@ -59,33 +66,34 @@ export function ActiveTeamOverviewPage({ apiBaseUrl = '' }: ActiveTeamOverviewPa
               {teamCount}
             </span>
           </h2>
-          <ul aria-label="Team memberships list">
+          {/* M9: aria-label matches visible heading text "Your teams" */}
+          <ul aria-label="Your teams">
             {data.teams.map((membership) => {
               const isActive =
                 data.activeTeamId !== null && data.activeTeamId === membership.teamId;
-              const nameLabel = isActive
-                ? `${membership.displayName} (active)`
-                : membership.displayName;
               const fpText = membership.subkeyFingerprint;
               const fpShort = fpText.length > 8 ? fpText.slice(0, 8) + '…' : fpText;
               const liClass = isActive ? 'sf-team-entry sf-team-entry--active' : 'sf-team-entry';
 
               return (
                 <li key={membership.teamId} className={liClass}>
-                  <span className="sf-team-name" aria-label={nameLabel}>
+                  {/* M6: no aria-label on parent span; sr-only conveys active status */}
+                  <span className="sf-team-name">
                     {membership.displayName}
                     {isActive && (
-                      <span className="sf-badge sf-badge--active" aria-hidden="true">
-                        Active
-                      </span>
+                      <>
+                        <span className="sf-badge sf-badge--active" aria-hidden="true">
+                          Active
+                        </span>
+                        <span className="sr-only"> (active team)</span>
+                      </>
                     )}
                   </span>
                   <span className="sf-team-role">{membership.roleDisplayName}</span>
-                  <span
-                    className="sf-team-fingerprint"
-                    aria-label={`Subkey fingerprint: ${fpText}`}
-                  >
-                    {fpShort}
+                  {/* M7: sr-only carries full fingerprint; aria-hidden shields truncated visible text */}
+                  <span className="sf-team-fingerprint">
+                    <span aria-hidden="true">{fpShort}</span>
+                    <span className="sr-only">Subkey fingerprint: {fpText}</span>
                   </span>
                 </li>
               );

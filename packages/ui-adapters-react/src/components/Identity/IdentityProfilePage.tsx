@@ -32,16 +32,21 @@ export function IdentityProfilePage({ apiBaseUrl = '' }: IdentityProfilePageProp
   }, [apiBaseUrl]);
 
   return (
-    <main role="main" aria-labelledby={headingId}>
+    <main aria-labelledby={headingId}>
       <h1 id={headingId}>Identity Profile</h1>
 
-      {error !== null ? (
-        <p role="alert">{error}</p>
-      ) : data === null ? (
-        <p role="status" aria-live="polite">
-          Loading profile…
-        </p>
-      ) : (
+      {/* M4: alert container always present so AT observes it before content is injected */}
+      <div role="alert" aria-atomic="true">
+        {error !== null && (
+          <p><strong>Failed to load profile.</strong> {error}</p>
+        )}
+      </div>
+
+      {error === null && data === null && (
+        <p role="status">Loading profile…</p>
+      )}
+
+      {data !== null && (
         <section aria-labelledby={sectionHeadingId}>
           <h2 id={sectionHeadingId}>Profile details</h2>
           <dl>

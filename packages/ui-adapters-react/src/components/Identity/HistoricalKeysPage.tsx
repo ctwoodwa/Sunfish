@@ -35,21 +35,29 @@ export function HistoricalKeysPage({ apiBaseUrl = '' }: HistoricalKeysPageProps)
   }, [apiBaseUrl]);
 
   return (
-    <main role="main" aria-labelledby={headingId}>
+    <main aria-labelledby={headingId}>
       <h1 id={headingId}>Key History</h1>
 
-      {error !== null ? (
-        <p role="alert">{error}</p>
-      ) : data === null ? (
-        <p role="status" aria-live="polite">
-          Loading key history…
-        </p>
-      ) : data.keys.length === 0 ? (
+      {/* M4: alert container always present so AT observes it before content is injected */}
+      <div role="alert" aria-atomic="true">
+        {error !== null && (
+          <p><strong>Failed to load key history.</strong> {error}</p>
+        )}
+      </div>
+
+      {error === null && data === null && (
+        <p role="status">Loading key history…</p>
+      )}
+
+      {data !== null && data.keys.length === 0 && (
         <p>No retired keys on record.</p>
-      ) : (
+      )}
+
+      {data !== null && data.keys.length > 0 && (
         <section aria-labelledby={sectionHeadingId}>
           <h2 id={sectionHeadingId}>Retired keys</h2>
-          <ul aria-label="Retired keys list">
+          {/* M9: aria-label matches visible heading text */}
+          <ul aria-label="Retired keys">
             {data.keys.map((entry) => {
               const fpShort =
                 entry.fingerprint.length > 8
@@ -59,7 +67,11 @@ export function HistoricalKeysPage({ apiBaseUrl = '' }: HistoricalKeysPageProps)
                 <li key={entry.fingerprint} className="sf-key-entry">
                   <dl>
                     <dt>Fingerprint</dt>
-                    <dd aria-label={`Fingerprint: ${entry.fingerprint}`}>{fpShort}</dd>
+                    {/* M7: sr-only carries full fingerprint; aria-hidden shields truncated visible text */}
+                    <dd>
+                      <span aria-hidden="true">{fpShort}</span>
+                      <span className="sr-only">Fingerprint {entry.fingerprint}</span>
+                    </dd>
                     <dt>Activated</dt>
                     <dd>{new Date(entry.activatedAt).toLocaleString()}</dd>
                     {entry.retiredAt !== null && (

@@ -36,31 +36,39 @@ export function RecoveryContactsPage({ apiBaseUrl = '' }: RecoveryContactsPagePr
 
   const enrolledCount = data?.contacts.length ?? 0;
   const maxCount = data?.maxContacts ?? 0;
-  const badgeLabel = `${enrolledCount} of ${maxCount} contacts enrolled`;
 
   return (
-    <main role="main" aria-labelledby={headingId}>
+    <main aria-labelledby={headingId}>
       <h1 id={headingId}>Recovery Contacts</h1>
 
-      {error !== null ? (
-        <p role="alert">{error}</p>
-      ) : data === null ? (
-        <p role="status" aria-live="polite">
-          Loading recovery contacts…
-        </p>
-      ) : (
+      {/* M4: alert container always present so AT observes it before content is injected */}
+      <div role="alert" aria-atomic="true">
+        {error !== null && (
+          <p><strong>Failed to load recovery contacts.</strong> {error}</p>
+        )}
+      </div>
+
+      {error === null && data === null && (
+        <p role="status">Loading recovery contacts…</p>
+      )}
+
+      {data !== null && (
         <section aria-labelledby={sectionHeadingId}>
+          {/* M5: badge uses aria-hidden + sr-only to avoid conflicting accessible names */}
           <h2 id={sectionHeadingId}>
-            Enrolled contacts{' '}
-            <span className="sf-badge" aria-label={badgeLabel}>
+            Enrolled contacts
+            <span className="sf-badge" aria-hidden="true">
               {enrolledCount} / {maxCount}
             </span>
+            <span className="sr-only"> — {enrolledCount} of {maxCount} contacts enrolled</span>
           </h2>
 
           {data.contacts.length === 0 ? (
             <p>No recovery contacts enrolled. Add contacts to enable account recovery.</p>
           ) : (
-            <ul aria-label="Recovery contacts list" aria-live="polite">
+            /* M8: no aria-live on the list (read-only page; live region is role="status" above) */
+            /* M9: aria-label matches visible heading text */
+            <ul aria-label="Enrolled contacts">
               {data.contacts.map((contact) => (
                 <li key={contact.contactActorId}>
                   <span className="sf-contact-name">{contact.displayName}</span>

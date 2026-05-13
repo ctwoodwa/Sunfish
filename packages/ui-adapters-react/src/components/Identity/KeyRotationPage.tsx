@@ -33,16 +33,21 @@ export function KeyRotationPage({ apiBaseUrl = '' }: KeyRotationPageProps) {
   }, [apiBaseUrl]);
 
   return (
-    <main role="main" aria-labelledby={headingId}>
+    <main aria-labelledby={headingId}>
       <h1 id={headingId}>Key Management</h1>
 
-      {error !== null ? (
-        <p role="alert">{error}</p>
-      ) : data === null ? (
-        <p role="status" aria-live="polite">
-          Loading key information…
-        </p>
-      ) : (
+      {/* M4: alert container always present so AT observes it before content is injected */}
+      <div role="alert" aria-atomic="true">
+        {error !== null && (
+          <p><strong>Failed to load key information.</strong> {error}</p>
+        )}
+      </div>
+
+      {error === null && data === null && (
+        <p role="status">Loading key information…</p>
+      )}
+
+      {data !== null && (
         <>
           <section aria-labelledby={keySectionId}>
             <h2 id={keySectionId}>Current signing key</h2>
