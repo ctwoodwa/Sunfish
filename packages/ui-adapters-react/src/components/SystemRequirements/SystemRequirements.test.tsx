@@ -170,15 +170,18 @@ describe('SystemRequirements (PreInstallFullPage)', () => {
     expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 
-  it('unimplemented mode throws an error', () => {
+  it('unknown mode string throws an error (all valid modes are now implemented in Phase 3)', () => {
+    // Phase 3 implements all three SystemRequirementsRenderMode values.
+    // Only a truly unknown mode string reaches the throw path.
     expect(() =>
       wrap(
         <SystemRequirements
           result={makePassResult()}
-          mode="PostInstallInlineExplanation"
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mode={'UnknownMode' as any}
           bundleId="test"
         />,
       ),
-    ).toThrow(/PostInstallInlineExplanation/);
+    ).toThrow(/unknown mode/);
   });
 });

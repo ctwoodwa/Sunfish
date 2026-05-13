@@ -32,11 +32,15 @@ export const STRINGS = {
     warn: 'Warning',
     block: 'Failed',
     unevaluated: 'Not evaluated',
+    // F2: regressed label for regression banner list items (council W#56 P3 amendment).
+    regressed: 'Regressed',
   },
   actions: {
     forceInstall: 'Force install anyway',
     installAnyway: 'Install anyway',
     continue: 'Continue',
+    // F3: dismiss label for regression banner dismiss button (council W#56 P3 amendment).
+    dismiss: 'Dismiss',
   },
   recovery: {
     tryThis: 'Try this',

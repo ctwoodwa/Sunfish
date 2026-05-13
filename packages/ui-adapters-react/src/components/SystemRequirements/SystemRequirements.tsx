@@ -1,9 +1,11 @@
 import { useId } from 'react';
 import type { SystemRequirementsResult, SystemRequirementsRenderMode as SystemRequirementsRenderModeType } from '../../contracts/SystemRequirements';
-import { OverallVerdict, SystemRequirementsRenderMode } from '../../contracts/SystemRequirements';
+import { OverallVerdict, DimensionChangeKind, SystemRequirementsRenderMode } from '../../contracts/SystemRequirements';
 import { SunfishButton } from '../SunfishButton/SunfishButton';
 import { ButtonVariant } from '../../contracts/ButtonVariant';
 import { SystemRequirementsDimensionRow } from './SystemRequirementsDimensionRow';
+import { SystemRequirementsInlinePanel } from './SystemRequirementsInlinePanel';
+import { SystemRequirementsRegressionBanner } from './SystemRequirementsRegressionBanner';
 import { STRINGS } from './SystemRequirements.strings';
 
 export interface SystemRequirementsProps {
@@ -12,6 +14,8 @@ export interface SystemRequirementsProps {
   onForceInstall?: () => void;
   onInstallAnyway?: () => void;
   onContinue?: () => void;
+  /** Required for PostInstallRegressionBanner mode; ignored for other modes. */
+  previousResult?: SystemRequirementsResult;
   bundleId: string;
 }
 
@@ -91,7 +95,7 @@ function PreInstallFullPage({
   onForceInstall,
   onInstallAnyway,
   onContinue,
-}: Omit<SystemRequirementsProps, 'mode'>) {
+}: Omit<SystemRequirementsProps, 'mode' | 'previousResult'>) {
   // B-ARCH-1: useId() prevents duplicate IDs when multiple instances mount.
   const titleId = useId();
   return (
@@ -121,15 +125,17 @@ function PreInstallFullPage({
   );
 }
 
+const ALL_DIMENSIONS = Object.values(DimensionChangeKind);
+
 export function SystemRequirements({
   result,
   mode,
   onForceInstall,
   onInstallAnyway,
   onContinue,
+  previousResult,
   bundleId,
 }: SystemRequirementsProps) {
-  // W-API-1: compare via const reference, not string literal.
   if (mode === SystemRequirementsRenderMode.PreInstallFullPage) {
     return (
       <PreInstallFullPage
@@ -141,9 +147,25 @@ export function SystemRequirements({
       />
     );
   }
-  // W-ARCH-1: throw for unimplemented modes so Phase 3 regressions fail loudly.
-  throw new Error(
-    `SystemRequirements: mode '${mode}' is not yet implemented. ` +
-    `PostInstallInlineExplanation and PostInstallRegressionBanner ship in Phase 3.`,
-  );
+
+  if (mode === SystemRequirementsRenderMode.PostInstallInlineExplanation) {
+    return (
+      <div className="sf-sysreq-inline-container" data-sf-bundle-id={bundleId}>
+        {ALL_DIMENSIONS.map((dim) => (
+          <SystemRequirementsInlinePanel key={dim} result={result} dimension={dim} />
+        ))}
+      </div>
+    );
+  }
+
+  if (mode === SystemRequirementsRenderMode.PostInstallRegressionBanner) {
+    return (
+      <SystemRequirementsRegressionBanner
+        result={result}
+        previousResult={previousResult}
+      />
+    );
+  }
+
+  throw new Error(`SystemRequirements: unknown mode '${mode}'`);
 }
