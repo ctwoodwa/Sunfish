@@ -3,10 +3,8 @@ sort_order: 0
 number: 1
 slug: multi-tenancy-type-surface-convention
 title: "Multi-tenancy type surface convention (WS-A + WS-B)"
-status: "building"
-status_cell: "`building` (WS-A + security follow-up COMPLETE: PR #688 + PR #692 merged
- 2026-05-06; **WS-B now `ready-to-build`** — all 3 gates met: ADR 0084 ✅ ADR 0085 ✅
- WS-A built ✅; hand-off at `tenant-selection-wsb-stage06-handoff.md`)"
+status: "built"
+status_cell: "`built` (WS-A PR #688 + security follow-up PR #692 + WS-B PR #739; all 3 sub-works complete 2026-05-13)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637)"

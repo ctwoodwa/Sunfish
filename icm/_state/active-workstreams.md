@@ -31,7 +31,7 @@ Canonical "what's in flight, who owns it, what state it's in" for cross-session 
 
 | # | Workstream | Status | Owner (current phase) | Reference | Notes |
 |---|---|---|---|---|---|
-| 1 | Multi-tenancy type surface convention (WS-A + WS-B) | "`building` (WS-A + security follow-up COMPLETE: PR #688 + PR #692 merged | sunfish-PM | `docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637) | **WS-A BUILT 2026-05-06 PR #688** — `TenantId.System` sentinel + `TenantSelection` DU
+| 1 | Multi-tenancy type surface convention (WS-A + WS-B) | `built` (WS-A PR #688 + security follow-up PR #692 + WS-B PR #739; all 3 sub-works complete 2026-05-13) | sunfish-PM | `docs/adrs/0084-tenant-selection-and-sentinel-governance.md` (WS-A) + `docs/adrs/0085-tenant-selection-query-migration.md` (WS-B) + `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md` (WS-A hand-off PR #637) + `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md` (WS-B hand-off PR #637) | **WS-A BUILT 2026-05-06 PR #688** — `TenantId.System` sentinel + `TenantSelection` DU
 (`ForSingle`/`ForMultiple`/`AllAccessible`) + implicit cast + `IMayHaveTenant` [Obsolete].
 ADR 0084 + ADR 0085 both Accepted 2026-05-06 PR #672.
 
