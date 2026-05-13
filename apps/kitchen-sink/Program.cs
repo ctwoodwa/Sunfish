@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using Sunfish.UICore.Contracts;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Foundation.Localization;
+using Sunfish.Foundation.Ship.Common;
 using Sunfish.Kernel.Runtime.Notifications;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.KitchenSink.Data;
@@ -43,6 +44,12 @@ builder.Services.AddRazorComponents()
 // AddSunfish() is a single entry point that replaces the legacy three-call registration.
 builder.Services.AddSunfish()
     .AddSunfishInteropServices();
+
+// W#46 Phase 5 — Shared Design System substrate (ADR 0077).
+// Registers IDeckRegistry, IPermissionResolver, IShipRoleRegistry (Phase 1)
+// and IConformanceRegistry (Phase 3). Adapters wire Phase 4 primitives
+// (ILiveAnnouncer, IFocusTrap) via their own AddSunfishA11y() call.
+builder.Services.AddSunfishSharedDesignSystem();
 
 // Plan 2 Task 3.5 (wave-2-cluster-E) — localization composition root.
 // Kitchen-sink is the central consumer that owns AddLocalization() because

@@ -21,6 +21,8 @@
   <Import Project="build\SunfishDemoSources.targets" />
 
   <ItemGroup>
+    <!-- W#46 Phase 5 — Shared Design System meta-extension -->
+    <ProjectReference Include="..\..\packages\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
     <ProjectReference Include="..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
     <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\FluentUI\Sunfish.Providers.FluentUI.csproj" />
     <!-- Conditional: only if Phase 3c/Bootstrap provider exists -->
