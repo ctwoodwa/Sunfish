@@ -45,7 +45,9 @@
 .sysreq-dim-policy--required    { background: #fee2e2; color: #991b1b; }
 .sysreq-dim-policy--recommended { background: #fef3c7; color: #92400e; }
 .sysreq-dim-policy--informational { background: #e0f2fe; color: #075985; }
-.sysreq-dim-policy--unevaluated { background: #f3f4f6; color: #6b7280; }
+/* B2 council fix: #6b7280 on #f3f4f6 was ~4.31:1 (fails 4.5:1 AA at 11px).
+   Darkened to #4b5563 (~7.0:1). */
+.sysreq-dim-policy--unevaluated { background: #f3f4f6; color: #4b5563; }
 
 .sysreq-dim-detail {
     margin: 0.375rem 0 0;

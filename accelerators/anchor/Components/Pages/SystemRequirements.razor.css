@@ -22,9 +22,10 @@
     margin-bottom: 1.25rem;
 }
 
-.sysreq-verdict--pass  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.sysreq-verdict--warn  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
-.sysreq-verdict--block { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+.sysreq-verdict--pass    { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.sysreq-verdict--warn    { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.sysreq-verdict--block   { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+.sysreq-verdict--loading { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
 
 .sysreq-dim-list {
     list-style: none;
@@ -66,13 +67,15 @@
 
 .sysreq-btn--primary:hover:not(:disabled) { background: #1d4ed8; }
 
+/* B1 council fix: #d97706 on #fff was ~3.4:1 (fails 4.5:1 AA). Darkened
+   resting to #b45309 (~4.7:1) and hover to #92400e (~6.3:1). */
 .sysreq-btn--warn {
-    background: #d97706;
+    background: #b45309;
     color: #fff;
-    border-color: #d97706;
+    border-color: #b45309;
 }
 
-.sysreq-btn--warn:hover:not(:disabled) { background: #b45309; }
+.sysreq-btn--warn:hover:not(:disabled) { background: #92400e; }
 
 .sysreq-btn--danger {
     background: #dc2626;
