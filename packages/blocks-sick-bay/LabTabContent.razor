@@ -1,0 +1,46 @@
+@*
+    W#54 Phase 3a — LabTabContent per ADR 0082 §8.
+    Probe-history table with <caption> per SC 1.3.1.
+    Contrast verified per SC 1.4.3 (semantic class names for host CSS).
+*@
+
+@if (Results is null || Results.Count == 0)
+{
+    <p data-test-id="lab-empty">No lab diagnostic results.</p>
+}
+else
+{
+    <table class="lab-table" data-test-id="lab-table">
+        <caption>Lab diagnostic results</caption>
+        <thead>
+            <tr>
+                <th scope="col">Probe</th>
+                <th scope="col">Status</th>
+                <th scope="col">Degradation</th>
+                <th scope="col">Last run</th>
+                <th scope="col">Detail</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var result in Results)
+            {
+                <tr data-test-id="lab-row" data-dimension-id="@result.DimensionId">
+                    <td>@result.ProbeName</td>
+                    <td>
+                        <span class="lab-status lab-status--@result.Status.ToString().ToLowerInvariant()"
+                              data-test-id="probe-status">
+                            @result.Status
+                        </span>
+                    </td>
+                    <td>@(result.Status == ProbeStatus.Healthy ? "—" : result.Degradation.ToString())</td>
+                    <td>@result.LastRunAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@(result.DiagnosticDetail ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<LabDiagnosticResult>? Results { get; set; }
+}

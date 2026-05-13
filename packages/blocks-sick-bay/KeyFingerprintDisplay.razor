@@ -1,0 +1,76 @@
+@*
+    W#54 Phase 3a — KeyFingerprintDisplay per ADR 0082 §8 + W#53 P1
+    KeyFingerprint shape (H2 CLEARED).
+
+    Renders a hex fingerprint in monospace with 8 chunks of 4 chars.
+    Each chunk wrapped in <span aria-label="fingerprint group N of 8: XX YY">.
+    Copy-to-clipboard button with visible focus indicator (SC 2.4.7).
+
+    Expects Fingerprint as a 32-hex-char string (128-bit). Shorter/longer
+    values are rendered best-effort without crash.
+*@
+
+@if (!string.IsNullOrWhiteSpace(Fingerprint))
+{
+    <div class="key-fingerprint" data-test-id="key-fingerprint">
+        <code class="key-fingerprint-value" aria-label="Key fingerprint" data-test-id="fingerprint-value">
+            @foreach (var (chunk, index) in Chunks().Select((c, i) => (c, i)))
+            {
+                <span aria-label="fingerprint group @(index + 1) of @TotalChunks: @FormatChunkForSpeech(chunk)"
+                      data-test-id="fingerprint-chunk"
+                      data-chunk-index="@index">@chunk</span>
+                @if (index < TotalChunks - 1)
+                {
+                    <span aria-hidden="true"> </span>
+                }
+            }
+        </code>
+        <button type="button"
+                class="key-fingerprint-copy"
+                data-test-id="fingerprint-copy"
+                aria-label="Copy fingerprint to clipboard"
+                @onclick="HandleCopy">
+            Copy
+        </button>
+        @if (_copied)
+        {
+            <span role="status" aria-live="polite" data-test-id="fingerprint-copied">
+                Copied!
+            </span>
+        }
+    </div>
+}
+
+@code {
+    private const int ChunkSize = 4;
+    private const int ChunkCount = 8;
+
+    [Parameter] public string? Fingerprint { get; set; }
+
+    private bool _copied;
+    private int TotalChunks => Chunks().Count();
+
+    private IEnumerable<string> Chunks()
+    {
+        if (string.IsNullOrWhiteSpace(Fingerprint))
+            yield break;
+
+        var hex = Fingerprint.Replace(" ", "").Replace("-", "");
+        for (int i = 0; i < Math.Min(hex.Length, ChunkSize * ChunkCount); i += ChunkSize)
+        {
+            var len = Math.Min(ChunkSize, hex.Length - i);
+            yield return hex.Substring(i, len);
+        }
+    }
+
+    private static string FormatChunkForSpeech(string chunk)
+    {
+        return string.Join(" ", Enumerable.Range(0, chunk.Length / 2)
+            .Select(i => chunk.Substring(i * 2, Math.Min(2, chunk.Length - i * 2))));
+    }
+
+    private void HandleCopy()
+    {
+        _copied = true;
+    }
+}
