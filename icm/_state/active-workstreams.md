@@ -470,7 +470,7 @@ subset + Options + DI). 26/26 in foundation-ship-common still pass
 **W#35 cohort progress**: substrate now 5/7 on origin/main (W#46 P1 +
 W#49 all + W#55 P1 + W#50 P1 + W#54 P1). Remaining: W#51 (Quarterdeck —
 gated on W#46 P3) + W#52 (Tactical — gated on W#46 P3). |
-| 55 | **Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline) | `building` — **Phase 1–4 MERGED 2026-05-13** (PR #624 + #711 + #753 + #756 + #759 + #762 P1–P3; PR #787 P4 Anchor+Bridge wiring+apps/docs; `blocks-ships-office` + `foundation-ships-office` + 5 Razor components + 59 tests + ShipsOfficePage Anchor consumer + Bridge DI); **Phase 5 gated on ADR 0055 Accepted** (H4 gate — ADR 0055 currently Proposed); Phase 6 ledger flip pending | sunfish-PM | `icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md` | **Phase 1 merged 2026-05-06 via PR #624.** New `Sunfish.Foundation.ShipsOffice`
+| 55 | **Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline) | `built` (5/6 phases shipped — Phase 5 deferred pending ADR 0055 Accepted; PRs #624+#711+#753+#756+#759+#762+#787; `foundation-ships-office` + `blocks-ships-office` + 5 Razor UI components + 59 tests + SUNFISH_SHIPSOFFICE_PERM001 analyzer + ShipsOfficePage Anchor consumer + Bridge DI wiring; W#35 cohort final follow-on — **all 7 W#35 follow-ons built**: W#46/49/50/51/52/54/55) | sunfish-PM | `icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md` | **Phase 1 merged 2026-05-06 via PR #624.** New `Sunfish.Foundation.ShipsOffice`
 package shipped: 8 data-model types + 4 contract interfaces
 (`IShipsOfficeDataProvider`, `IShipsOfficeCommandService`,
 `IContentEditorSurface`); `PublishOutcome` enum (added per Major SI-1:
@@ -521,10 +521,16 @@ cardinality test updated to assert the 4 new entries; net cardinality = 13).
   cleared.
 - **Phase 6** (~30min): ledger flip + close cohort follow-on row.
 
-**W#35 Ship Architecture cohort substrate complete on origin/main:**
-W#46 P1 ✓ (foundation-ship-common) + W#49 P1+P2+P2-amend+P3 ✓
-(foundation-wayfinder OOD watch) + W#55 P1 ✓ (foundation-ships-office;
-this PR). Phases 2+ for each cohort workstream remain. |
+**W#55 BUILT 2026-05-13.** Phases 1–4 + Phase 6 complete. Phase 5
+(DynamicTemplate kind + IFormSchemaStore) deferred pending ADR 0055
+Accepted (currently Proposed). When ADR 0055 flips, open a follow-on
+workstream or amendment PR to add the `DynamicTemplate` kind.
+
+**W#35 Ship Architecture cohort COMPLETE 2026-05-13.** All 7 follow-on
+Stage 06 builds shipped: W#46 (Shared Design System) + W#49 (OOD Watch
+Rotation) + W#50 (Engine Room Observability) + W#51 (Quarterdeck
+Entry-Point) + W#52 (Tactical Anomaly Detection) + W#54 (Sick Bay) +
+W#55 (Ship's Office). Pipeline closed. |
 | 58 | **Identity Atlas Implementations** (ADR 0066 §Phase 3; W#53 Phase 3-deferred; `sunfish-feature-change` pipeline) — Anchor + Bridge `IIdentityAtlasSurface` concrete implementations + five WCAG-conformant identity pages | `built` — **All 4 phases MERGED 2026-05-13** (P1a #763 + P1b #764 + P2 #767 + P3 #795 + P4 #799): AnchorIdentityAtlasSurface + BridgeIdentityAtlasSurface + 5 Anchor Blazor pages + 5 Bridge Blazor pages + 5 Bridge React TSX pages + IDiffPreview confirmation on 3 mutation pages + `IdentityTypes.ts` + `apps/docs/wcag/identity-atlas.md`; WCAG/a11y councils PASS-WITH-AMENDMENTS applied. Pipeline closed. | sunfish-PM | `icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` §Phase 3 + `packages/ui-core/Wayfinder/Identity/` (contracts on origin/main) | **W#53 Phase 3-deferred.** ADR 0066 §Phase 3 specifies concrete
 `IIdentityAtlasSurface` implementations for the Anchor and Bridge
 accelerators. Explicitly NOT part of W#53 per the W#53 hand-off
