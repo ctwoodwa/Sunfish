@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sunfish.Foundation.EngineRoom;
 
@@ -28,6 +29,22 @@ public static class EngineRoomServiceCollectionExtensions
         // concrete bindings before invoking the surfaces — DI resolution at
         // runtime throws if a Phase 2 implementation is missing.
 
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a host-supplied <see cref="IDocumentQuarantineStore"/>
+    /// implementation per ADR 0079 §2. Hosts MUST call this before invoking
+    /// <see cref="IEngineRoomCommandService"/> — the command service throws
+    /// at resolution time if no store is registered.
+    /// </summary>
+    /// <typeparam name="TImpl">The concrete store implementation.</typeparam>
+    public static IServiceCollection AddEngineRoomQuarantineStore<TImpl>(
+        this IServiceCollection services)
+        where TImpl : class, IDocumentQuarantineStore
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<IDocumentQuarantineStore, TImpl>();
         return services;
     }
 }

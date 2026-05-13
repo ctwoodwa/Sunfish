@@ -21,6 +21,8 @@
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
     <ProjectReference Include="..\..\foundation-engine-room\Sunfish.Foundation.EngineRoom.csproj" />
+    <ProjectReference Include="..\..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
     <ProjectReference Include="..\..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
 

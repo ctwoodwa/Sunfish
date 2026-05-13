@@ -3,7 +3,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.EngineRoom</PackageId>
     <RootNamespace>Sunfish.Blocks.EngineRoom</RootNamespace>
-    <Description>Block-tier reference data provider for the Engine Room observability surface (ADR 0079): DefaultEngineRoomDataProvider with optional ISyncDaemonHealthSource + ICrdtDocumentRegistry seams, EngineRoomOptions for heartbeat-interval tuning, and the SubscribeHealthAsync dedup pattern. Per W#50 Phase 2a. Phase 2b (DefaultEngineRoomCommandService + EOOW wiring) deferred to a follow-up PR per the hand-off split-PR fallback.</Description>
+    <Description>Block-tier reference implementations for the Engine Room observability surface (ADR 0079): DefaultEngineRoomDataProvider with optional ISyncDaemonHealthSource + ICrdtDocumentRegistry seams, EngineRoomOptions for heartbeat-interval tuning, the SubscribeHealthAsync dedup pattern, and DefaultEngineRoomCommandService with IPermissionResolver + EOOW watch advisory + §Trust audit-emission ordering. Per W#50 Phase 2a + Phase 2b.</Description>
     <PackageTags>sunfish;blocks;engine-room;adr-0079</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
@@ -11,6 +11,8 @@
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
     <ProjectReference Include="..\foundation-engine-room\Sunfish.Foundation.EngineRoom.csproj" />
+    <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
   <ItemGroup>
