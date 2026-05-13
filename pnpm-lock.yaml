@@ -120,6 +120,12 @@ importers:
         specifier: ^8.0.1
         version: 8.0.5
 
+  tooling/a11y-audit-runner: {}
+
+  tooling/cross-plan-health: {}
+
+  tooling/resx-xss-scanner: {}
+
 packages:
 
   '@adobe/css-tools@4.4.4':
