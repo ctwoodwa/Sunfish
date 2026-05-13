@@ -1,0 +1,87 @@
+@page "/identity/teams"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Wayfinder
+@inject IIdentityAtlasSurface AtlasSurface
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Team Overview</PageTitle>
+
+<main role="main" class="anchor-identity-page" aria-labelledby="page-heading">
+    <h1 id="page-heading">Team Overview</h1>
+
+    @if (!Session.IsOnboarded || ActiveTeam.Active is null)
+    {
+        <p class="anchor-muted">Join a team to view your team memberships.</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p aria-live="polite" aria-busy="true" class="anchor-muted">Loading…</p>
+    }
+    else if (_viewModel.Teams.Count == 0)
+    {
+        <p class="anchor-muted">No team memberships on record.</p>
+    }
+    else
+    {
+        <section aria-labelledby="teams-section-heading">
+            <h2 id="teams-section-heading">Memberships (@_viewModel.Teams.Count)</h2>
+            <ul class="anchor-teams-list" aria-label="Team memberships">
+                @foreach (var team in _viewModel.Teams)
+                {
+                    var isActive = _viewModel.ActiveTeamId.HasValue
+                        && team.TeamId == _viewModel.ActiveTeamId.Value;
+                    <li class="anchor-team-entry @(isActive ? "anchor-team-active" : "")"
+                        aria-current="@(isActive ? "true" : null)">
+                        <div class="anchor-team-header">
+                            <span class="anchor-team-name">@team.DisplayName</span>
+                            @if (isActive)
+                            {
+                                <span class="anchor-active-badge" aria-label="Active team">Active</span>
+                            }
+                        </div>
+                        <dl class="anchor-team-dl anchor-muted">
+                            <dt>Role</dt>
+                            <dd>@team.RoleDisplayName</dd>
+                            <dt>Subkey</dt>
+                            <dd><code class="anchor-fingerprint">@team.SubkeyFingerprint</code></dd>
+                        </dl>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</main>
+
+@code {
+    private ActiveTeamOverviewViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded || ActiveTeam.Active is not { } team)
+            return;
+
+        var tenant = new TenantId(team.TeamId.Value.ToString("D"));
+        var actor = new ActorId(Session.NodeId ?? "");
+        _viewModel = await AtlasSurface.GetActiveTeamOverviewAsync(tenant, actor);
+    }
+}
+
+<style>
+    .anchor-identity-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-identity-page h1 { font-size: 1.625rem; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+    .anchor-identity-page h2 { font-size: 1.0625rem; margin: 0 0 0.75rem; }
+    .anchor-teams-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .anchor-team-entry { padding: 0.875rem 1rem; border: 1px solid #e5e5e5; border-radius: 6px; background: #fafafa; }
+    .anchor-team-active { border-color: #2563eb; background: #eff6ff; }
+    .anchor-team-header { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .anchor-team-name { font-weight: 600; font-size: 0.9375rem; }
+    .anchor-active-badge { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: #2563eb; color: #fff; padding: 0.2em 0.55em; border-radius: 4px; }
+    .anchor-team-dl { display: grid; grid-template-columns: 4rem 1fr; column-gap: 0.75rem; row-gap: 0.25rem; margin: 0; }
+    .anchor-team-dl dt { font-weight: 600; }
+    .anchor-team-dl dd { margin: 0; overflow-wrap: anywhere; }
+    .anchor-fingerprint { font-family: Consolas, Menlo, monospace; font-size: 0.75rem; word-break: break-all; }
+    .anchor-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
+</style>

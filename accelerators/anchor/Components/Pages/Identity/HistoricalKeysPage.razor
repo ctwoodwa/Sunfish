@@ -1,0 +1,86 @@
+@page "/identity/keys/history"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Wayfinder
+@inject IIdentityAtlasSurface AtlasSurface
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Key History</PageTitle>
+
+<main role="main" class="anchor-identity-page" aria-labelledby="page-heading">
+    <h1 id="page-heading">Key History</h1>
+
+    @if (!Session.IsOnboarded || ActiveTeam.Active is null)
+    {
+        <p class="anchor-muted">Join a team to view your key history.</p>
+    }
+    else if (_viewModel is null)
+    {
+        <p aria-live="polite" aria-busy="true" class="anchor-muted">Loading…</p>
+    }
+    else if (_viewModel.Keys.Count == 0)
+    {
+        @* B4 fix: unconditional H2 describes content purpose (SC 2.4.6);
+           explanatory paragraph distinguishes H4-placeholder from genuine-empty. *@
+        <section aria-labelledby="history-section-heading">
+            <h2 id="history-section-heading">Key history</h2>
+            <p class="anchor-muted">
+                Full key history will be available once ADR 0046-A1
+                (HistoricalKeysProjection) is accepted and shipped.
+                This page will display all retired signing keys and their
+                rotation timestamps when that projection lands.
+            </p>
+        </section>
+    }
+    else
+    {
+        <section aria-labelledby="history-section-heading">
+            <h2 id="history-section-heading">Key history (@_viewModel.Keys.Count)</h2>
+            <ul class="anchor-key-history-list" aria-label="Historical signing keys">
+                @foreach (var entry in _viewModel.Keys)
+                {
+                    <li class="anchor-key-entry">
+                        <code class="anchor-fingerprint">@entry.Fingerprint</code>
+                        <div class="anchor-muted">
+                            Activated <time datetime="@entry.ActivatedAt.ToString("o")">@entry.ActivatedAt.ToLocalTime().ToString("g")</time>
+                            @if (entry.RetiredAt is { } retiredAt)
+                            {
+                                <span> · Retired <time datetime="@retiredAt.ToString("o")">@retiredAt.ToLocalTime().ToString("g")</time></span>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(entry.RotationReason))
+                        {
+                            <div class="anchor-muted">Reason: @entry.RotationReason</div>
+                        }
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</main>
+
+@code {
+    private HistoricalKeysBrowseViewModel? _viewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded || ActiveTeam.Active is not { } team)
+            return;
+
+        var tenant = new TenantId(team.TeamId.Value.ToString("D"));
+        var actor = new ActorId(Session.NodeId ?? "");
+        _viewModel = await AtlasSurface.GetHistoricalKeysAsync(tenant, actor);
+    }
+}
+
+<style>
+    .anchor-identity-page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-identity-page h1 { font-size: 1.625rem; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+    .anchor-identity-page h2 { font-size: 1.0625rem; margin: 0 0 0.75rem; }
+    .anchor-key-history-list { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    .anchor-key-entry { padding: 0.75rem 1rem; border: 1px solid #e5e5e5; border-radius: 6px; background: #fafafa; }
+    .anchor-fingerprint { font-family: Consolas, Menlo, monospace; font-size: 0.8125rem; word-break: break-all; }
+    .anchor-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
+</style>
