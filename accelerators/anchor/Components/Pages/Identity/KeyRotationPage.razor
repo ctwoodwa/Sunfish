@@ -31,18 +31,22 @@
                 <dd>@_viewModel.HistoricalKeyCount</dd>
                 <dt>Rotation status</dt>
                 <dd>
-                    @if (_viewModel.RotationInProgress)
-                    {
-                        <span aria-live="polite" role="status">Rotation in progress</span>
-                        @if (_viewModel.RotationWindowExpiry is { } expiry)
+                    @* B2 fix: single aria-atomic live region so the full sentence (status + expiry)
+                       is announced together on update; static on initial render per spec. *@
+                    <span role="status" aria-live="polite" aria-atomic="true">
+                        @if (_viewModel.RotationInProgress)
                         {
-                            <span> — expires <time datetime="@expiry.ToString("o")">@expiry.ToLocalTime().ToString("g")</time></span>
+                            <text>Rotation in progress</text>
+                            @if (_viewModel.RotationWindowExpiry is { } expiry)
+                            {
+                                <text> — expires </text><time datetime="@expiry.ToString("o")">@expiry.ToLocalTime().ToString("g")</time>
+                            }
                         }
-                    }
-                    else
-                    {
-                        <span>No rotation in progress</span>
-                    }
+                        else
+                        {
+                            <text>No rotation in progress</text>
+                        }
+                    </span>
                 </dd>
             </dl>
         </section>

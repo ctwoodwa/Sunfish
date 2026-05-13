@@ -39,8 +39,8 @@
                         <li class="anchor-contact-item">
                             <div class="anchor-contact-header">
                                 <span class="anchor-contact-name">@contact.DisplayName</span>
+                                @* B3 fix: no per-row aria-live; aria-label gives AT the label on focus. *@
                                 <span class="anchor-contact-status @GetStatusClass(contact.VerificationStatus)"
-                                      aria-live="polite"
                                       aria-label="Verification status: @GetStatusLabel(contact.VerificationStatus)">
                                     @GetStatusLabel(contact.VerificationStatus)
                                 </span>

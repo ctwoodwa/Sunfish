@@ -22,8 +22,10 @@
     }
     else if (_viewModel.Keys.Count == 0)
     {
-        <section aria-labelledby="history-empty-heading">
-            <h2 id="history-empty-heading">History not yet available</h2>
+        @* B4 fix: unconditional H2 describes content purpose (SC 2.4.6);
+           explanatory paragraph distinguishes H4-placeholder from genuine-empty. *@
+        <section aria-labelledby="history-section-heading">
+            <h2 id="history-section-heading">Key history</h2>
             <p class="anchor-muted">
                 Full key history will be available once ADR 0046-A1
                 (HistoricalKeysProjection) is accepted and shipped.
@@ -35,7 +37,7 @@
     else
     {
         <section aria-labelledby="history-section-heading">
-            <h2 id="history-section-heading">Historical keys (@_viewModel.Keys.Count)</h2>
+            <h2 id="history-section-heading">Key history (@_viewModel.Keys.Count)</h2>
             <ul class="anchor-key-history-list" aria-label="Historical signing keys">
                 @foreach (var entry in _viewModel.Keys)
                 {
