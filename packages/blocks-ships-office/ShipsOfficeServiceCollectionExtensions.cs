@@ -30,11 +30,6 @@ public static class ShipsOfficeServiceCollectionExtensions
     /// <see cref="NoopContentEditorSurface"/> (read-only stub; Phase 5 conditional).</description></item>
     /// </list>
     /// </summary>
-    /// <remarks>
-    /// Phase 2d adds <c>IDocumentDiffService</c> stub + the
-    /// <c>SUNFISH_SHIPSOFFICE_PERM001</c> Roslyn analyzer. Both ship in a
-    /// separate PR per the XO ruling.
-    /// </remarks>
     public static IServiceCollection AddSunfishShipsOfficeDefaults(
         this IServiceCollection services)
     {
@@ -43,6 +38,7 @@ public static class ShipsOfficeServiceCollectionExtensions
         services.TryAddSingleton<IShipsOfficeDataProvider, ShipsOfficeDataProvider>();
         services.TryAddSingleton<IShipsOfficeCommandService, ShipsOfficeCommandService>();
         services.TryAddSingleton<IContentEditorSurface, NoopContentEditorSurface>();
+        services.TryAddSingleton<IDocumentDiffService, DocumentDiffService>();
         return services;
     }
 }

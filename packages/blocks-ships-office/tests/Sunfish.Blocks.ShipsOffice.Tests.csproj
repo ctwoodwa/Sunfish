@@ -29,6 +29,7 @@
     <ProjectReference Include="..\..\foundation-ships-office\Sunfish.Foundation.ShipsOffice.csproj" />
     <ProjectReference Include="..\..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
     <ProjectReference Include="..\..\kernel-signatures\Sunfish.Kernel.Signatures.csproj" />
+    <ProjectReference Include="..\..\ui-core\Sunfish.UICore.csproj" />
   </ItemGroup>
 
 </Project>
