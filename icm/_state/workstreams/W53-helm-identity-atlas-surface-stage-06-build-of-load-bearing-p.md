@@ -4,7 +4,7 @@ number: 53
 slug: helm-identity-atlas-surface-stage-06-build-of-load-bearing-p
 title: "**Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1**"
 status: "building"
-status_cell: "`building` (Phase 1 fully merged PR #630+#633; Phase 2 PR 2a merged PR #663 — 4 GlanceBand widgets; PR 2b merged PR #665 — QuickToggles + RecentStandingOrders; PR 2c-blazor merged PR #666 — HelmRenderer.razor + WCAG tests; **React adapter PR 2c-react pending** — parity gate before Phase 2 closes; Phases 3-deferred pending)"
+status_cell: "`building` (Phase 1 fully merged PR #630+#633; Phase 2 COMPLETE — PR 2a #663 + PR 2b #665 + PR 2c-blazor #666 + **PR 2c-react #744 merged 2026-05-13** — H9 parity gate CLEARED; W#58 Phase 1 H1 gate CLEARED; Phases 3-deferred → W#58)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) + `packages/ui-core/Wayfinder/` (P1 merged)"
@@ -77,10 +77,6 @@ pickup.
 `QuickTogglesWidget` + `RecentStandingOrdersWidget` no longer need H8 periodic-fallback
 workaround; full reactive subscribe-before-load is available.
 
-**Phase 2 remaining** (~6-10h, 2 PRs):
-- PR 2b: `QuickTogglesWidget` (ActionStack, orderHint 100) + `RecentStandingOrdersWidget`
-  (ActivityFeed, orderHint 100) + Blazor adapter renderers.
-- PR 2c: React adapter renderers + WCAG tests.
-  Pre-merge WCAG/a11y subagent mandatory for all remaining Phase 2 PRs.
+**Phase 2 COMPLETE 2026-05-13.** All 4 PRs merged: 2a #663 + 2b #665 + 2c-blazor #666 + 2c-react #744. H9 TypeScript parity gate CLEARED. W#58 Phase 1 H1 gate CLEARED — `identity-atlas-implementations-stage06-handoff.md` now unblocked for COB pickup.
 
 **Phase 3 deferred** to **W#58** (identity Atlas implementations — hand-off authored 2026-05-06 at `icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md`).
