@@ -316,6 +316,49 @@ public class ShipsOfficeCommandServiceTests
         Assert.Equal(AuditEventType.ShipsOfficeDocumentPublished, trail.Records[0].EventType);
     }
 
+    // ─── Fail-closed audit trail (B5 invariant) ───────────────────────────────
+
+    [Fact]
+    public async Task PublishAsync_audit_trail_failure_propagates_does_not_silently_succeed()
+    {
+        // RequireEmitAsync must NOT swallow: if audit is unavailable, operation must abort.
+        var throwingTrail = new ThrowingAuditTrail(new InvalidOperationException("audit backend down"));
+        var svc = Build(auditTrail: throwingTrail);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => svc.PublishAsync(TenantA, DocId));
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_audit_trail_failure_propagates_does_not_silently_succeed()
+    {
+        var throwingTrail = new ThrowingAuditTrail(new InvalidOperationException("audit backend down"));
+        var svc = Build(auditTrail: throwingTrail);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => svc.ArchiveAsync(TenantA, DocId));
+    }
+
+    [Fact]
+    public async Task PublishAsync_rejection_audit_failure_does_not_mask_denial()
+    {
+        // TryEmitRejectionAsync is best-effort: audit failure on the rejection path
+        // must NOT promote a denial into an unhandled exception.
+        var perm = Substitute.For<IPermissionResolver>();
+        perm.ResolveAsync(
+                Arg.Any<TenantId>(), Arg.Any<Principal>(), Arg.Any<ShipLocation>(),
+                Arg.Any<DeckDepth>(), Arg.Any<ShipAction>(), Arg.Any<Resource?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(DeniedDecision);
+
+        var throwingTrail = new ThrowingAuditTrail(new InvalidOperationException("audit backend down"));
+        var svc = Build(permissionResolver: perm, auditTrail: throwingTrail);
+
+        // Should return Rejected — not throw — even though audit backend is down.
+        var outcome = await svc.PublishAsync(TenantA, DocId);
+        Assert.Equal(PublishOutcome.Rejected, outcome);
+    }
+
     // ─── DI registration ──────────────────────────────────────────────────────
 
     [Fact]
@@ -334,6 +377,19 @@ public class ShipsOfficeCommandServiceTests
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private sealed class ThrowingAuditTrail : IAuditTrail
+    {
+        private readonly Exception _ex;
+        public ThrowingAuditTrail(Exception ex) => _ex = ex;
+
+        public ValueTask AppendAsync(KernelAuditRecord record, CancellationToken ct = default)
+            => throw _ex;
+
+        public System.Collections.Generic.IAsyncEnumerable<KernelAuditRecord> QueryAsync(
+            KernelAuditQuery query, CancellationToken ct = default)
+            => throw new NotSupportedException();
+    }
 
     private sealed class RecordingAuditTrail : IAuditTrail
     {

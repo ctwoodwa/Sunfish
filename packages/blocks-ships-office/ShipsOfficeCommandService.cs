@@ -24,28 +24,30 @@ namespace Sunfish.Blocks.ShipsOffice;
 /// <para>
 /// <b>§5 ordering (B-2 council finding — load-bearing):</b>
 /// <list type="number">
-///   <item><description>Resolve current actor via <see cref="IAuditContextProvider"/> + verify TenantId scope</description></item>
+///   <item><description>Resolve current actor via <see cref="IAuditContextProvider"/> + TenantId scope</description></item>
 ///   <item><description><see cref="IPermissionResolver.ResolveAsync"/> gate</description></item>
-///   <item><description>Audit pre-op: emit BEFORE state mutation</description></item>
+///   <item><description>Audit pre-op: <see cref="RequireEmitAsync"/> emitted BEFORE state mutation; propagates on failure (fail-closed)</description></item>
 ///   <item><description>Execute state change (Phase 2 stub: audit trail is the durable record)</description></item>
 /// </list>
 /// </para>
 /// <para>
 /// <b>PublishAsync rejection path:</b> emit <see cref="AuditEventType.ShipsOfficePublishRejected"/>
-/// + return <see cref="PublishOutcome.Rejected"/> WITHOUT throwing (per SI-1 + §5).
+/// (best-effort) + return <see cref="PublishOutcome.Rejected"/> WITHOUT throwing (per SI-1 + §5).
+/// Payload includes a <c>rejection_reason</c> discriminant so post-incident triage can
+/// distinguish permission denial, same-actor four-eyes, and unresolvable principal.
 /// </para>
 /// <para>
-/// <b>ArchiveAsync rejection path:</b> throw <see cref="UnauthorizedAccessException"/>
-/// with NO audit event (informational-only path per §5).
-/// </para>
-/// <para>
-/// <b>RequireSecondActorPublish:</b> when <see cref="ShipsOfficeOptions.RequireSecondActorPublish"/>
-/// is true, a publish attempt by the same actor who last modified the document is treated
-/// as a rejection (four-eyes pattern). Phase 5 revisit per Open Q4 deferral.
+/// <b>ArchiveAsync rejection path:</b> throw <see cref="UnauthorizedAccessException"/> with a
+/// generic message (no tenant/role detail in the exception to avoid information leakage).
+/// NO audit event on denial per §5 informational-only path.
 /// </para>
 /// </remarks>
 internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
 {
+    private const string RejectionReasonPermissionDenied = "permission_denied";
+    private const string RejectionReasonPrincipalUnresolved = "principal_unresolved";
+    private const string RejectionReasonSameActor = "same_actor";
+
     private readonly IPermissionResolver _permissionResolver;
     private readonly IActorPrincipalResolver _actorResolver;
     private readonly IAuditContextProvider _actorContext;
@@ -95,11 +97,14 @@ internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
         var principal = await _actorResolver.ResolveAsync(tenant, actor, ct).ConfigureAwait(false);
         if (principal is null)
         {
-            await TryEmitAsync(AuditEventType.ShipsOfficePublishRejected, actor, id, tenant, ct).ConfigureAwait(false);
+            await TryEmitRejectionAsync(
+                actor, principalId: null, id, tenant,
+                ShipAction.PublishShipsOfficeDocument,
+                RejectionReasonPrincipalUnresolved, ct).ConfigureAwait(false);
             return PublishOutcome.Rejected;
         }
 
-        // Step 2: permission gate (XO+ required at MainDeck per §4 + ADR 0083 §5).
+        // Step 2: permission gate (XO+ required at MainDeck per ADR 0083 §4 + §5).
         var decision = await _permissionResolver.ResolveAsync(
             tenant, principal,
             ShipLocation.ShipsOffice, DeckDepth.MainDeck,
@@ -107,7 +112,10 @@ internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
 
         if (decision is PermissionDecision.Denied)
         {
-            await TryEmitAsync(AuditEventType.ShipsOfficePublishRejected, actor, id, tenant, ct).ConfigureAwait(false);
+            await TryEmitRejectionAsync(
+                actor, principal.Id, id, tenant,
+                ShipAction.PublishShipsOfficeDocument,
+                RejectionReasonPermissionDenied, ct).ConfigureAwait(false);
             return PublishOutcome.Rejected;
         }
 
@@ -118,13 +126,20 @@ internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
             var doc = snapshot.Documents.FirstOrDefault(d => d.Id == id);
             if (doc is not null && doc.LastModifiedBy == actor)
             {
-                await TryEmitAsync(AuditEventType.ShipsOfficePublishRejected, actor, id, tenant, ct).ConfigureAwait(false);
+                await TryEmitRejectionAsync(
+                    actor, principal.Id, id, tenant,
+                    ShipAction.PublishShipsOfficeDocument,
+                    RejectionReasonSameActor, ct).ConfigureAwait(false);
                 return PublishOutcome.Rejected;
             }
         }
 
-        // Step 3: audit pre-op — emitted BEFORE state mutation per ADR 0083 §5 B-2.
-        await TryEmitAsync(AuditEventType.ShipsOfficeDocumentPublished, actor, id, tenant, ct).ConfigureAwait(false);
+        // Step 3: audit pre-op — REQUIRED (fail-closed per security council B5 finding).
+        // If the audit trail is unavailable, do NOT proceed to state mutation.
+        await RequireEmitAsync(
+            AuditEventType.ShipsOfficeDocumentPublished,
+            actor, principal.Id, id, tenant,
+            ShipAction.PublishShipsOfficeDocument, ct).ConfigureAwait(false);
 
         // Step 4: execute state change.
         // Phase 2 stub: no document store yet — audit trail is the durable record.
@@ -145,33 +160,75 @@ internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
         var actor = _actorContext.GetActor();
         var principal = await _actorResolver.ResolveAsync(tenant, actor, ct).ConfigureAwait(false);
         if (principal is null)
-            throw new UnauthorizedAccessException(
-                $"Archive denied: actor '{actor.Value}' could not be resolved to a principal in tenant '{tenant.Value}'.");
+            throw new UnauthorizedAccessException("Archive denied.");
 
-        // Step 2: permission gate (XO+ required at MainDeck per §4 + ADR 0083 §5).
-        // ArchiveAsync denial THROWS — no audit event per §5 informational-only path.
+        // Step 2: permission gate — denial THROWS, no audit event per §5 informational-only path.
+        // Generic exception message: denial reason deliberately excluded to avoid leaking
+        // role/policy information to callers (security council B3 finding).
         var decision = await _permissionResolver.ResolveAsync(
             tenant, principal,
             ShipLocation.ShipsOffice, DeckDepth.MainDeck,
             ShipAction.ArchiveShipsOfficeDocument, resource: null, ct).ConfigureAwait(false);
 
-        if (decision is PermissionDecision.Denied denied)
-            throw new UnauthorizedAccessException(
-                $"Archive denied: {denied.Reason}. Remediation: {denied.Remediation}.");
+        if (decision is PermissionDecision.Denied)
+            throw new UnauthorizedAccessException("Archive denied.");
 
-        // Step 3: audit pre-op — emitted BEFORE state mutation per ADR 0083 §5 B-2.
-        await TryEmitAsync(AuditEventType.ShipsOfficeDocumentArchived, actor, id, tenant, ct).ConfigureAwait(false);
+        // Step 3: audit pre-op — REQUIRED (fail-closed).
+        await RequireEmitAsync(
+            AuditEventType.ShipsOfficeDocumentArchived,
+            actor, principal.Id, id, tenant,
+            ShipAction.ArchiveShipsOfficeDocument, ct).ConfigureAwait(false);
 
         // Step 4: execute state change.
         // Phase 2 stub: no document store yet — audit trail is the durable record.
-        // Revisit in Phase 3 when the Blazor block wires the real document lifecycle.
     }
 
-    private async Task TryEmitAsync(
+    /// <summary>
+    /// Emits a pre-operation audit record. MUST NOT swallow exceptions —
+    /// if the audit trail is unavailable, the operation must abort (fail-closed
+    /// per ADR 0083 §5 B-2 and security council finding B5).
+    /// </summary>
+    private async Task RequireEmitAsync(
         AuditEventType eventType,
         ActorId actor,
+        PrincipalId principalId,
         ShipsOfficeDocumentId docId,
         TenantId tenant,
+        ShipAction action,
+        CancellationToken ct)
+    {
+        var now = _time.GetUtcNow();
+        var payload = new AuditPayload(new Dictionary<string, object?>
+        {
+            ["actor"] = actor.Value,
+            ["principal_id"] = principalId.ToBase64Url(),
+            ["document_id"] = docId.Value,
+            ["tenant_id"] = tenant.Value,
+            ["ship_location"] = nameof(ShipLocation.ShipsOffice),
+            ["ship_action"] = action.Name,
+        });
+        var signed = await _signer.SignAsync(payload, now, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new KernelAuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: tenant,
+            EventType: eventType,
+            OccurredAt: now,
+            Payload: signed,
+            AttestingSignatures: Array.Empty<AttestingSignature>());
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Emits a rejection audit record. Best-effort — swallows non-cancellation exceptions
+    /// so a degraded audit backend does not promote a denial to an unhandled exception.
+    /// </summary>
+    private async Task TryEmitRejectionAsync(
+        ActorId actor,
+        PrincipalId? principalId,
+        ShipsOfficeDocumentId docId,
+        TenantId tenant,
+        ShipAction action,
+        string rejectionReason,
         CancellationToken ct)
     {
         try
@@ -180,13 +237,18 @@ internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
             var payload = new AuditPayload(new Dictionary<string, object?>
             {
                 ["actor"] = actor.Value,
+                ["principal_id"] = principalId?.ToBase64Url(),
                 ["document_id"] = docId.Value,
+                ["tenant_id"] = tenant.Value,
+                ["ship_location"] = nameof(ShipLocation.ShipsOffice),
+                ["ship_action"] = action.Name,
+                ["rejection_reason"] = rejectionReason,
             });
             var signed = await _signer.SignAsync(payload, now, Guid.NewGuid(), ct).ConfigureAwait(false);
             var record = new KernelAuditRecord(
                 AuditId: Guid.NewGuid(),
                 TenantId: tenant,
-                EventType: eventType,
+                EventType: AuditEventType.ShipsOfficePublishRejected,
                 OccurredAt: now,
                 Payload: signed,
                 AttestingSignatures: Array.Empty<AttestingSignature>());
@@ -194,8 +256,8 @@ internal sealed class ShipsOfficeCommandService : IShipsOfficeCommandService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Best-effort audit emission per cohort precedent (W#50 P2 + W#52 P2).
-            // Audit-backend hiccups MUST NOT block the user-facing permission flow.
+            // Best-effort: rejection events are already denying the operation;
+            // a degraded audit backend must not mask the denial with an exception.
             _ = ex;
         }
     }
