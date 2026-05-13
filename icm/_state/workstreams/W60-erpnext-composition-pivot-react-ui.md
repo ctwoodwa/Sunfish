@@ -4,10 +4,10 @@ number: 60
 slug: erpnext-composition-pivot-react-ui
 title: "**ERPNext Composition Pivot — React UI + local-first sync layer** (5-phase; `sunfish-feature-change` pipeline) — CO UPF plan approved 2026-05-11; ERPNext (GPLv3, self-hosted) as property/accounting engine; Sunfish as local-first sync + offline + React UI + tenant comms layer over it"
 status: "building"
-status_cell: "`building` (Phase 1 PASS 2026-05-11; P2-Phase1 PR #731 ✓; P2-Phase2 PR #732 ✓; P2-Phase3 Leases+Rent PR #751+#752 MERGED; P2-Phase4 Accounting+CrewComms PR #757 building 2026-05-13; P2-Phase5 Maintenance+role-routing+@sunfish/ui-react pending)"
+status_cell: "`building` — **P2 BUILT 2026-05-13** (PRs #731+#732+#751+#752+#757+#758; `apps/anchor-react/` + `@sunfish/ui-react`); **P3 hand-off authored 2026-05-13** — gated on ADR 0086 Accepted (PR #737 Proposed; council review running); hand-off: `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md`"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md` + UPF plan: `~/.claude/plans/noble-crunching-hopper.md`"
+reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md`; P3: `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md`; UPF: `~/.claude/plans/noble-crunching-hopper.md`"
 ---
 
 ## Notes
@@ -18,7 +18,7 @@ reference_cell: "`icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handof
 
 **Phase 2 (COB, ~6 dev-weeks, GATED on Phase 1 PASS):** React 19 + TypeScript + Vite + Tailwind + shadcn/ui skeleton; ASP.NET Core proxy layer between React and ERPNext API; 6 screens (properties, leases, rent, accounting, crew-comms, maintenance); `@sunfish/ui-react` npm package; role routing (CO/accountant/CPA/tenant). Hand-off to be authored by XO once Phase 1 PASS confirmed.
 
-**Phase 3 (~3 dev-weeks):** Tauri v2 on Surface Pro; offline SQLite cache; write queue → ERPNext sync on reconnect; Loro CRDT for AP-class data.
+**Phase 3 (~3 dev-weeks, GATED on ADR 0086 Accepted):** Tauri v2 on Surface Pro; offline SQLite cache; write queue → ERPNext sync on reconnect; Loro CRDT for AP-class data. Hand-off authored 2026-05-13. Council review of ADR 0086 dispatched 2026-05-13. PR #737 must merge (status: Accepted) before COB starts.
 
 **Phase 4 (~4 dev-weeks):** Accountant peer node (Headscale Tier 2, read/write, bidirectional sync); CPA read-only Bridge account; tenant magic-link portal; bank CSV import.
 
