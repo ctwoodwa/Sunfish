@@ -12,6 +12,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@sunfish/ui-react": "file:../../packages/ui-react",
     "@microsoft/signalr": "^8.0.0",
     "@tanstack/react-query": "^5.0.0",
     "class-variance-authority": "^0.7.0",

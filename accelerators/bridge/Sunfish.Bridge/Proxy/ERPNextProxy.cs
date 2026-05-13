@@ -33,6 +33,11 @@ public static class ERPNextProxy
         group.MapGet("/accounting/summary",     HandleGetAccountingSummaryAsync).WithName("GetERPNextAccountingSummary");
         group.MapGet("/accounting/outstanding", HandleGetAccountingOutstandingAsync).WithName("GetERPNextAccountingOutstanding");
 
+        // Phase 5 — maintenance queue.
+        group.MapGet("/maintenance",         HandleGetMaintenanceAsync).WithName("GetERPNextMaintenance");
+        group.MapPost("/maintenance",        HandlePostMaintenanceAsync).WithName("PostERPNextMaintenance");
+        group.MapMethods("/maintenance/{name}", ["PATCH"], HandlePatchMaintenanceAsync).WithName("PatchERPNextMaintenance");
+
         return app;
     }
 
@@ -176,6 +181,51 @@ public static class ERPNextProxy
         return Results.Ok(result);
     }
 
+    internal static async Task<IResult> HandleGetMaintenanceAsync(
+        IERPNextClient client,
+        IOptions<ERPNextOptions> options,
+        CancellationToken ct)
+    {
+        var company = options.Value.DefaultCompany;
+        if (string.IsNullOrWhiteSpace(company))
+            return MissingCompanyResult();
+
+        var result = await client.GetListWithFieldsAsync(
+            "Maintenance Ticket", company,
+            ["name", "subject", "property", "status", "priority", "assigned_to", "cost"],
+            limit: 50, ct: ct).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    internal static async Task<IResult> HandlePostMaintenanceAsync(
+        CreateMaintenanceRequest body,
+        IERPNextClient client,
+        IOptions<ERPNextOptions> options,
+        CancellationToken ct)
+    {
+        var company = options.Value.DefaultCompany;
+        if (string.IsNullOrWhiteSpace(company))
+            return MissingCompanyResult();
+
+        var result = await client.PostAsync("Maintenance Ticket", body, company, ct).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
+    internal static async Task<IResult> HandlePatchMaintenanceAsync(
+        string name,
+        UpdateMaintenanceRequest body,
+        IERPNextClient client,
+        IOptions<ERPNextOptions> options,
+        CancellationToken ct)
+    {
+        var company = options.Value.DefaultCompany;
+        if (string.IsNullOrWhiteSpace(company))
+            return MissingCompanyResult();
+
+        var result = await client.PutAsync("Maintenance Ticket", name, body, company, ct).ConfigureAwait(false);
+        return Results.Ok(result);
+    }
+
     private static IResult MissingCompanyResult() =>
         Results.Problem(
             detail: "ERPNext DefaultCompany is not configured. " +
@@ -189,4 +239,17 @@ public static class ERPNextProxy
         decimal Amount,
         string Date,
         string PaymentMethod);
+
+    internal sealed record CreateMaintenanceRequest(
+        string Subject,
+        string Property,
+        string Priority,
+        string? AssignedTo,
+        string? Description);
+
+    internal sealed record UpdateMaintenanceRequest(
+        string? Status,
+        string? AssignedTo,
+        decimal? Cost,
+        string? Resolution);
 }
