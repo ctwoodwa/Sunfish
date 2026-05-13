@@ -24,7 +24,9 @@ using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.Providers.Bootstrap.Extensions;
 using Microsoft.Maui.Storage;
 using Sunfish.Blocks.EngineRoom;
+using Sunfish.Blocks.Quarterdeck;
 using Sunfish.Blocks.ShipsOffice;
+using Sunfish.Foundation.Quarterdeck;
 using Sunfish.Foundation.Ship.Common;
 using Sunfish.Foundation.ShipsOffice;
 using Sunfish.Foundation.Wayfinder;
@@ -321,23 +323,15 @@ public static class MauiProgram
 		// W#50 Phase 4 — Engine Room observability surface (ADR 0079).
 		//
 		// AddSunfishEngineRoomDefaults registers DefaultEngineRoomDataProvider +
-		// DefaultEngineRoomCommandService. The command service requires
-		// IDocumentQuarantineStore + IAuditTrail + IOperationSigner; those land
-		// when the Quarterdeck Blazor UI (W#51 Phase 4) ships full ship-level
-		// permission + audit wiring. Until then DamageControlPanel is excluded
-		// from EngineRoomPage.razor so DefaultEngineRoomCommandService is never
-		// resolved at runtime.
+		// DefaultEngineRoomCommandService.
 		//
 		// Ship-level permission seams (single-operator Anchor posture):
 		//   IPermissionResolver → AnchorGrantAllPermissionResolver (grant-all stub;
 		//     Bridge uses DefaultPermissionResolver with real role assignments).
 		//   IActorPrincipalResolver → InMemoryActorPrincipalResolver with the
 		//     install's root Ed25519 public key registered as the operator principal.
-		//   IOodWatchService → AnchorNoOpOodWatchService (null EOOW; w51 p4 wires
-		//     DefaultOodWatchService once the Quarterdeck surface ships).
-		//
-		// TryAdd semantics throughout: W#51 Phase 4 may Replace with production
-		// implementations without touching this block.
+		//   IOodWatchService → AnchorNoOpOodWatchService (null EOOW; real OOD
+		//     watch lifecycle is a separate foundation-wayfinder concern).
 		builder.Services.AddSunfishEngineRoomDefaults();
 		builder.Services.TryAddSingleton<IPermissionResolver, AnchorGrantAllPermissionResolver>();
 		var actorResolver = new InMemoryActorPrincipalResolver();
@@ -347,6 +341,16 @@ public static class MauiProgram
 				Sunfish.Foundation.Crypto.PrincipalId.FromBytes(rootPublicKey)));
 		builder.Services.TryAddSingleton<IActorPrincipalResolver>(actorResolver);
 		builder.Services.TryAddSingleton<IOodWatchService, AnchorNoOpOodWatchService>();
+
+		// W#51 Phase 4 — Quarterdeck entry-point surface (ADR 0080).
+		//
+		// AddSunfishQuarterdeck registers DefaultQuarterdeckDataProvider +
+		// DefaultQuarterdeckCommandService. TryAdd semantics: the Engine Room
+		// block already registered IPermissionResolver + IActorPrincipalResolver
+		// + IOodWatchService via TryAdd above; this call reuses them.
+		// No additional permission seam changes needed for Anchor single-operator
+		// posture — AnchorGrantAllPermissionResolver grants ViewQuarterdeck to all.
+		builder.Services.AddSunfishQuarterdeck();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

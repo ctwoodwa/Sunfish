@@ -160,6 +160,8 @@
         <ProjectReference Include="..\..\packages\blocks-ships-office\Sunfish.Blocks.ShipsOffice.csproj" />
         <!-- W#50 Phase 4 — Engine Room observability block + DI surface (ADR 0079) -->
         <ProjectReference Include="..\..\packages\blocks-engine-room\Sunfish.Blocks.EngineRoom.csproj" />
+        <!-- W#51 Phase 4 — Quarterdeck entry-point block + DI surface (ADR 0080) -->
+        <ProjectReference Include="..\..\packages\blocks-quarterdeck\Sunfish.Blocks.Quarterdeck.csproj" />
     </ItemGroup>
 
 </Project>

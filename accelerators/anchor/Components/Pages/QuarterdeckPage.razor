@@ -1,0 +1,82 @@
+@page "/quarterdeck"
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Quarterdeck
+@using Sunfish.Foundation.Assets.Common
+@using Sunfish.Foundation.Quarterdeck
+@using Sunfish.Foundation.Wayfinder
+@using Sunfish.Kernel.Runtime.Teams
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+@inject IQuarterdeckDataProvider DataProvider
+
+<PageTitle>Sunfish Anchor — Quarterdeck</PageTitle>
+
+@*
+    W#51 Phase 4 — Anchor consumer page hosting the Quarterdeck entry-point
+    block components per ADR 0080 §Phase 4.
+
+    DepartmentNavPanel owns the skip-link + <main> landmark for this page;
+    RenderMainLandmark=true (default) is correct here because QuarterdeckPage
+    is a full-page consumer, not a nested sub-surface.
+*@
+
+@if (!Session.IsOnboarded || ActiveTeam.Active is null)
+{
+    <p class="anchor-muted">Complete onboarding to access the Quarterdeck.</p>
+}
+else if (_snapshot is null)
+{
+    <p aria-busy="true">Loading Quarterdeck…</p>
+}
+else
+{
+    <AlertTickerPanel Alerts="@_snapshot.PendingAlerts" />
+
+    <div class="qd-layout">
+        <aside class="qd-sidebar">
+            <WatchStatusPanel Tenant="@CurrentTenant"
+                              Actor="@CurrentActor"
+                              Role="@OodRole.OfficerOfTheDeck" />
+            <WatchStatusPanel Tenant="@CurrentTenant"
+                              Actor="@CurrentActor"
+                              Role="@OodRole.EngineeringOfficerOfTheWatch" />
+            <MissionEnvelopePanel Envelope="@_snapshot.MissionEnvelope" />
+            <RecentOrdersPanel Orders="@_snapshot.RecentOrders" />
+        </aside>
+
+        <DepartmentNavPanel Links="@_snapshot.DepartmentLinks">
+            <SearchPanel SearchProvider="@_searchProvider"
+                         OnResultSelected="@OnSearchResultSelected" />
+        </DepartmentNavPanel>
+    </div>
+}
+
+@code {
+    private QuarterdeckSnapshot? _snapshot;
+    private AnchorNoOpSearchProvider _searchProvider = new();
+
+    private TenantId CurrentTenant =>
+        ActiveTeam.Active is { } team
+            ? new TenantId(team.TeamId.Value.ToString("D"))
+            : default;
+
+    private ActorId CurrentActor => new ActorId(Session.NodeId ?? "");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _snapshot = await DataProvider.GetSnapshotAsync(CurrentTenant, CurrentActor, default);
+    }
+
+    private Task OnSearchResultSelected(QuarterdeckSearchResult result) =>
+        Task.CompletedTask;
+
+    // Stub search provider — Anchor demo uses an empty result set until a
+    // real Wayfinder-backed search index is wired in a follow-up workstream.
+    private sealed class AnchorNoOpSearchProvider
+        : Sunfish.UICore.Primitives.ISearchAsYouType<QuarterdeckSearchResult>
+    {
+        public ValueTask<System.Collections.Generic.IReadOnlyList<QuarterdeckSearchResult>> SearchAsync(
+            string query, System.Threading.CancellationToken ct) =>
+            ValueTask.FromResult<System.Collections.Generic.IReadOnlyList<QuarterdeckSearchResult>>([]);
+    }
+}
