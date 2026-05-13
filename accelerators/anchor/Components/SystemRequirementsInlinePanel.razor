@@ -21,20 +21,32 @@
     var locKey = SystemRequirementsViewHelpers.GetDimensionLocKey(Dimension);
     var dimName = L[$"sysreq.dimension.{locKey}.name"];
     var isFail = _eval.Outcome == DimensionPassFail.Fail;
+    var detailId = $"sf-inline-req-detail-{BundleId}-{Dimension}";
+
+    @* C1: polite live region announces fail state after async resolve (SC 4.1.3). *@
+    @if (isFail)
+    {
+        <span class="sf-visually-hidden" role="status" aria-live="polite">
+            @dimName: @L["sysreq.inline.requirement_not_met"]
+        </span>
+    }
 
     <details class="sf-inline-req @(isFail ? "sf-inline-req--fail" : "")"
              open="@isFail">
-        <summary class="sf-inline-req__summary">
+        @* A1: aria-describedby wires summary to the explanatory detail paragraph. *@
+        <summary class="sf-inline-req__summary" aria-describedby="@detailId">
             @dimName
+            @* C2: role="img" ensures aria-label is honoured on MacCatalyst WebKit (SC 1.1.1). *@
             @if (isFail)
             {
                 <span class="sf-inline-req__badge sf-inline-req__badge--fail"
+                      role="img"
                       aria-label="@L["sysreq.inline.requirement_not_met"]">
-                    !
+                    <span aria-hidden="true">!</span>
                 </span>
             }
         </summary>
-        <p class="sf-inline-req__detail">
+        <p id="@detailId" class="sf-inline-req__detail">
             @(_eval.Detail ?? (isFail
                 ? L["sysreq.inline.detail_fail_default"]
                 : L["sysreq.inline.detail_pass_default"]))
