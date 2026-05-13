@@ -3,8 +3,8 @@ sort_order: 67
 number: 59
 slug: crew-comms-anchor-mvp-demo-integration
 title: "**Crew Comms Anchor MVP Demo Integration** (`sunfish-feature-change` pipeline) — LAN-only mDNS demo path: `AddSunfishTransport()` wiring + `TeamMembershipCrewRoster` adapter + `CrewCommsListenerHostedService` + `SunfishChat` Blazor component in `blocks-crew-comms/` + Anchor `/chat` consumer page"
-status: "ready-to-build"
-status_cell: "`ready-to-build` (Stage 06 hand-off authored 2026-05-06; all hard prerequisites confirmed on origin/main; sunfish-PM may begin Phase 1 immediately — **CO directive 2026-05-06 — top priority this week, ahead of React adapters**)"
+status: "built"
+status_cell: "`built` — all 6 phases merged: P1 AddSunfishTransport #720, P2 TeamMembershipCrewRoster #721, P3 CrewCommsListenerHostedService #722, P4 SunfishChat.razor #723, P5+6 CrewChatPage+docs #724; P4.5 glare addendum #726 also merged"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/crew-comms-anchor-mvp-stage06-handoff.md` + `docs/adrs/0076-crew-comms-foundation-channels.md` (Accepted; A1+A2+A3 landed) + W#45 substrate (`packages/foundation-channels/` + `packages/blocks-crew-comms/` on origin/main) + W#30 transport (`packages/foundation-transport/` on origin/main with `AddSunfishTransport()`) + `accelerators/anchor/Services/QrOnboardingService.cs` (existing pairing flow, unchanged)"
