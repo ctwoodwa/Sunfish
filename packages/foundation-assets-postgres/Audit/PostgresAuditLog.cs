@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sunfish.Foundation.Assets.Audit;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.MultiTenancy;
 
 namespace Sunfish.Foundation.Assets.Postgres.Audit;
 
@@ -107,8 +108,18 @@ public sealed class PostgresAuditLog : IAuditLog
         }
         if (query.Actor is { } actor)
             q = q.Where(a => a.Actor == actor.Value);
-        if (query.Tenant is { } tenant)
+        if (query.Tenant is TenantSelection.ForSingle(var tenant))
             q = q.Where(a => a.Tenant == tenant.Value);
+        else if (query.Tenant is TenantSelection.ForMultiple { TenantIds: var tenants })
+        {
+            if (tenants.IsEmpty)
+                yield break;
+            var values = tenants.Select(t => t.Value).ToArray();
+            q = q.Where(a => values.Contains(a.Tenant));
+        }
+        else if (query.Tenant is TenantSelection.AllAccessible)
+            q = q.Where(a => !a.Tenant.StartsWith("__"));
+        // null → no tenant filter (system-scope; sentinels visible)
         if (query.Op is { } op)
             q = q.Where(a => a.Op == (int)op);
         if (query.FromInclusive is { } from)

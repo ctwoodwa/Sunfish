@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Assets.Versions;
+using Sunfish.Foundation.MultiTenancy;
 
 namespace Sunfish.Foundation.Assets.Entities;
 
@@ -382,7 +383,7 @@ public sealed class InMemoryEntityStore : IEntityStore
 
             if (query.Schema is { } schema && !string.Equals(record.Schema.Value, schema.Value, StringComparison.Ordinal))
                 continue;
-            if (query.Tenant is { } tenant && !string.Equals(record.Tenant.Value, tenant.Value, StringComparison.Ordinal))
+            if (query.Tenant is not null && !query.Tenant.Matches(record.Tenant))
                 continue;
 
             if (!query.IncludeDeleted)
