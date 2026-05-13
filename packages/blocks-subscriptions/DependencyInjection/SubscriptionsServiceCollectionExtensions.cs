@@ -13,7 +13,7 @@ namespace Sunfish.Blocks.Subscriptions.DependencyInjection;
 public static class SubscriptionsServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <see cref="ISubscriptionService"/> as a singleton backed by
+    /// Registers <see cref="ISubscriptionService"/> as a <b>scoped</b> service backed by
     /// <see cref="InMemorySubscriptionService"/> and contributes the block's
     /// <see cref="ISunfishEntityModule"/> (<see cref="SubscriptionsEntityModule"/>)
     /// so Bridge can apply the EF Core entity configurations. Also contributes
@@ -31,7 +31,7 @@ public static class SubscriptionsServiceCollectionExtensions
     public static IServiceCollection AddInMemorySubscriptions(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<ISubscriptionService, InMemorySubscriptionService>();
+        services.AddScoped<ISubscriptionService, InMemorySubscriptionService>();
         services.AddSingleton<ISunfishEntityModule, SubscriptionsEntityModule>();
         services.TryAdd(ServiceDescriptor.Singleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>)));
         return services;

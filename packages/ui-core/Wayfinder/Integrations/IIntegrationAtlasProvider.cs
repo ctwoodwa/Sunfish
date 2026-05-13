@@ -56,7 +56,7 @@ namespace Sunfish.UICore.Wayfinder.Integrations;
 /// <c>IntegrationCredentialUpdated</c> /
 /// <c>IntegrationValidationSucceeded</c> /
 /// <c>IntegrationValidationFailed</c> — all in
-/// <see cref="Sunfish.Kernel.Audit.AuditEventType"/>. Audit
+/// <c>Sunfish.Kernel.Audit.AuditEventType</c>. Audit
 /// payloads MUST NOT contain credential values per the §8
 /// redaction rule.
 /// </para>
