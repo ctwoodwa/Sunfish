@@ -93,15 +93,19 @@ public sealed class SystemRequirementsPreInstallFullPageA11yTests
 
     private static string LocateRazorSourceOrFail(string fileName)
     {
+        const int MaxDepth = 12;
+        var visited = new System.Collections.Generic.List<string>();
         var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
+        for (int depth = 0; depth < MaxDepth && current is not null; depth++)
         {
             var candidate = Path.Combine(
                 current.FullName, "accelerators", "anchor", "Components", "Pages", fileName);
             if (File.Exists(candidate)) return candidate;
+            visited.Add(current.FullName);
             current = current.Parent;
         }
         throw new InvalidOperationException(
-            $"Could not locate {fileName} walking up from '{AppContext.BaseDirectory}'.");
+            $"Could not locate {fileName} after walking {MaxDepth} levels up from " +
+            $"'{AppContext.BaseDirectory}'. Visited: {string.Join(", ", visited)}");
     }
 }

@@ -97,18 +97,21 @@ public sealed class SystemRequirementsRegressionBannerA11yTests
 
     private static string LocateBannerSourceOrFail()
     {
+        const int MaxDepth = 12;
+        var visited = new System.Collections.Generic.List<string>();
         var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
+        for (int depth = 0; depth < MaxDepth && current is not null; depth++)
         {
             var candidate = Path.Combine(
                 current.FullName,
                 "accelerators", "anchor", "Components",
                 "SystemRequirementsRegressionBanner.razor");
             if (File.Exists(candidate)) return candidate;
+            visited.Add(current.FullName);
             current = current.Parent;
         }
         throw new InvalidOperationException(
-            $"Could not locate SystemRequirementsRegressionBanner.razor walking up from " +
-            $"'{AppContext.BaseDirectory}'.");
+            $"Could not locate SystemRequirementsRegressionBanner.razor after walking {MaxDepth} " +
+            $"levels up from '{AppContext.BaseDirectory}'. Visited: {string.Join(", ", visited)}");
     }
 }

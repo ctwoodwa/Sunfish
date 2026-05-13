@@ -36,11 +36,19 @@ public sealed class SystemRequirementsInlinePanelA11yTests
         var source = LocateRazorSourceOrFail("SystemRequirementsInlinePanel.razor");
         var markup = File.ReadAllText(source);
 
+        // Verify the key appears within an aria-label attribute context (not merely in a comment).
+        // Razor attribute values can contain nested quotes: aria-label="@L["key"]", so we match
+        // aria-label followed (on the same or adjacent line) by the localization key.
+        // [^>]* stops at the element boundary; Singleline allows cross-line match within element.
         Assert.True(
-            markup.Contains("sysreq.inline.requirement_not_met"),
-            $"SystemRequirementsInlinePanel.razor must use the sysreq.inline.requirement_not_met " +
-            $"localization key as an aria-label on the fail badge per WCAG 2.2 SC 1.1.1 " +
-            $"(non-text characters need a text alternative). Source: {source}");
+            System.Text.RegularExpressions.Regex.IsMatch(
+                markup,
+                @"aria-label[^>]*sysreq\.inline\.requirement_not_met",
+                System.Text.RegularExpressions.RegexOptions.Singleline),
+            $"SystemRequirementsInlinePanel.razor must declare aria-label=\"@L[\"sysreq.inline." +
+            $"requirement_not_met\"]\" on the fail badge per WCAG 2.2 SC 1.1.1 " +
+            $"(non-text characters need a text alternative — key must appear in attribute " +
+            $"context, not only in a comment). Source: {source}");
     }
 
     // ── Test 2: panel has no assertive live region or role="alert" (liveRegion: Off) ──
@@ -87,15 +95,19 @@ public sealed class SystemRequirementsInlinePanelA11yTests
 
     private static string LocateRazorSourceOrFail(string fileName)
     {
+        const int MaxDepth = 12;
+        var visited = new System.Collections.Generic.List<string>();
         var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
+        for (int depth = 0; depth < MaxDepth && current is not null; depth++)
         {
             var candidate = Path.Combine(
                 current.FullName, "accelerators", "anchor", "Components", fileName);
             if (File.Exists(candidate)) return candidate;
+            visited.Add(current.FullName);
             current = current.Parent;
         }
         throw new InvalidOperationException(
-            $"Could not locate {fileName} walking up from '{AppContext.BaseDirectory}'.");
+            $"Could not locate {fileName} after walking {MaxDepth} levels up from " +
+            $"'{AppContext.BaseDirectory}'. Visited: {string.Join(", ", visited)}");
     }
 }
