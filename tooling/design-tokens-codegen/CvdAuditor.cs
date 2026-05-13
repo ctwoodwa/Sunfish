@@ -28,7 +28,7 @@ public static class CvdAuditor
 
     /// <summary>
     /// Compute pairwise ΔE2000 for all role-band color pairs under all CVD modes.
-    /// Uses the <em>light</em> variant (primary display context).
+    /// Audits both light and dark variants; reports the worst-case (lowest) ΔE2000 across both.
     /// </summary>
     public static IReadOnlyList<AuditRow> Audit(
         IReadOnlyList<ColorEntry> roleBand,
@@ -43,10 +43,23 @@ public static class CvdAuditor
             var a = bands[i];
             var b = bands[j];
 
-            double normal = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.None);
-            double pro    = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.Protanopia);
-            double deuter = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.Deuteranopia);
-            double tri    = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.Tritanopia);
+            // Light variant
+            double normalL = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.None);
+            double proL    = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.Protanopia);
+            double deuterL = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.Deuteranopia);
+            double triL    = CvdSimulation.DeltaE2000Under(a.Light, b.Light, CvdMode.Tritanopia);
+
+            // Dark variant
+            double normalD = CvdSimulation.DeltaE2000Under(a.Dark, b.Dark, CvdMode.None);
+            double proD    = CvdSimulation.DeltaE2000Under(a.Dark, b.Dark, CvdMode.Protanopia);
+            double deuterD = CvdSimulation.DeltaE2000Under(a.Dark, b.Dark, CvdMode.Deuteranopia);
+            double triD    = CvdSimulation.DeltaE2000Under(a.Dark, b.Dark, CvdMode.Tritanopia);
+
+            // Worst-case (minimum) across both variants
+            double normal = System.Math.Min(normalL, normalD);
+            double pro    = System.Math.Min(proL, proD);
+            double deuter = System.Math.Min(deuterL, deuterD);
+            double tri    = System.Math.Min(triL, triD);
             double min    = System.Math.Min(System.Math.Min(normal, pro), System.Math.Min(deuter, tri));
 
             rows.Add(new AuditRow

@@ -40,6 +40,11 @@ public static class CssGenerator
                 sb.AppendLine($"  /* {group} */");
                 lastGroup = group;
             }
+            // text.tertiary meets WCAG SC 1.4.3 at ≥3:1 (large text / non-text).
+            // DO NOT use for normal body text (< 18pt / 14pt-bold) — that requires ≥4.5:1.
+            if (c.CssVar.EndsWith("text-tertiary"))
+                sb.AppendLine(
+                    "  /* ⚠ large-text / non-text use only — ≥3:1 WCAG 1.4.3 (see tokens.md) */");
             sb.AppendLine($"  {c.CssVar}-light: {c.Light};");
             sb.AppendLine($"  {c.CssVar}-dark: {c.Dark};");
             sb.AppendLine($"  {c.CssVar}: var({c.CssVar}-light);");

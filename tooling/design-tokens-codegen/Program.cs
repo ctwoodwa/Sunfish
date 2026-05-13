@@ -10,6 +10,7 @@ using Sunfish.Tooling.DesignTokensCodegen;
 // --ci               quiet mode for CI (no ANSI, terse output)
 
 bool verifyContrast = false;
+bool verifyCvd = false;
 bool ci = false;
 double cvdThreshold = CvdAuditor.DefaultThreshold;
 string? tokensPath = null;
@@ -26,6 +27,7 @@ for (int i = 0; i < args.Length; i++)
         case "--out-tokens-md": outTokensMd   = args[++i]; break;
         case "--out-cvd-md":    outCvdMd      = args[++i]; break;
         case "--verify-contrast": verifyContrast = true;   break;
+        case "--verify-cvd":    verifyCvd = true;          break;
         case "--ci":            ci = true;                 break;
         case "--cvd-threshold": cvdThreshold  = double.Parse(args[++i]); break;
     }
@@ -47,7 +49,8 @@ int exitCode = 0;
 // ── CSS codegen ──────────────────────────────────────────────────────────────
 if (outCss != null)
 {
-    Directory.CreateDirectory(Path.GetDirectoryName(outCss)!);
+    var dir = Path.GetDirectoryName(outCss);
+    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
     File.WriteAllText(outCss, CssGenerator.Generate(catalog));
     if (!ci) Console.WriteLine($"  css    → {outCss}");
 }
@@ -82,18 +85,21 @@ foreach (var r in cvdRows)
     }
 }
 if (!cvdFail && !ci) Console.WriteLine($"  CVD ΔE2000 ✓ ({cvdRows.Count} pairs checked)");
+if (cvdFail && verifyCvd) exitCode = 1;
 
 // ── Markdown codegen ─────────────────────────────────────────────────────────
 if (outTokensMd != null)
 {
-    Directory.CreateDirectory(Path.GetDirectoryName(outTokensMd)!);
+    var dir = Path.GetDirectoryName(outTokensMd);
+    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
     File.WriteAllText(outTokensMd, MarkdownGenerator.GenerateTokensReference(catalog));
     if (!ci) Console.WriteLine($"  tokens.md → {outTokensMd}");
 }
 
 if (outCvdMd != null)
 {
-    Directory.CreateDirectory(Path.GetDirectoryName(outCvdMd)!);
+    var dir = Path.GetDirectoryName(outCvdMd);
+    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
     File.WriteAllText(outCvdMd, MarkdownGenerator.GenerateCvdReport(cvdRows, cvdThreshold));
     if (!ci) Console.WriteLine($"  cvd.md → {outCvdMd}");
 }

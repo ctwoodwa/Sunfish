@@ -12,33 +12,36 @@ Per [ADR 0036 CVD precedent](../../../docs/adrs/0036-syncstate-palette.md). Mini
 
 | Hue A | Hue B | Light A | Light B | Normal | Protanopia | Deuteranopia | Tritanopia | Min ΔE | Status |
 |---|---|---|---|---:|---:|---:|---:|---:|---|
-| captain | xo | `#7c3aed` | `#2563eb` | 15.1 | 4.8 | 0.5 | 18.9 | **0.5** | ⛔ |
-| captain | department-head | `#7c3aed` | `#0891b2` | 31.7 | 17.1 | 13.0 | 26.5 | **13.0** | ✅ |
-| captain | division-officer | `#7c3aed` | `#16a34a` | 57.5 | 61.2 | 55.8 | 30.5 | **30.5** | ✅ |
-| captain | idc | `#7c3aed` | `#ea580c` | 51.8 | 62.6 | 67.5 | 40.8 | **40.8** | ✅ |
-| captain | scribe | `#7c3aed` | `#9333ea` | 3.6 | 0.4 | 2.7 | 15.2 | **0.4** | ⛔ |
-| captain | watch | `#7c3aed` | `#dc2626` | 42.5 | 55.3 | 63.0 | 41.2 | **41.2** | ✅ |
-| xo | department-head | `#2563eb` | `#0891b2` | 22.8 | 15.1 | 12.8 | 11.3 | **11.3** | ✅ |
-| xo | division-officer | `#2563eb` | `#16a34a` | 56.0 | 58.1 | 55.4 | 17.8 | **17.8** | ✅ |
-| xo | idc | `#2563eb` | `#ea580c` | 51.9 | 60.0 | 67.1 | 65.8 | **51.9** | ✅ |
-| xo | scribe | `#2563eb` | `#9333ea` | 18.1 | 4.8 | 2.2 | 34.6 | **2.2** | ⛔ |
-| xo | watch | `#2563eb` | `#dc2626` | 45.8 | 53.8 | 62.6 | 65.5 | **45.8** | ✅ |
-| department-head | division-officer | `#0891b2` | `#16a34a` | 38.9 | 40.8 | 40.3 | 6.9 | **6.9** | ⛔ |
-| department-head | idc | `#0891b2` | `#ea580c` | 56.4 | 44.2 | 49.7 | 60.7 | **44.2** | ✅ |
-| department-head | scribe | `#0891b2` | `#9333ea` | 34.0 | 17.1 | 11.7 | 38.5 | **11.7** | ✅ |
-| department-head | watch | `#0891b2` | `#dc2626` | 61.4 | 42.2 | 46.6 | 60.0 | **42.2** | ✅ |
-| division-officer | idc | `#16a34a` | `#ea580c` | 62.2 | 12.6 | 11.2 | 66.5 | **11.2** | ✅ |
-| division-officer | scribe | `#16a34a` | `#9333ea` | 56.9 | 61.0 | 53.9 | 39.7 | **39.7** | ✅ |
-| division-officer | watch | `#16a34a` | `#dc2626` | 72.5 | 23.9 | 7.9 | 65.5 | **7.9** | ⛔ |
-| idc | scribe | `#ea580c` | `#9333ea` | 50.8 | 62.3 | 65.3 | 31.2 | **31.2** | ✅ |
-| idc | watch | `#ea580c` | `#dc2626` | 14.4 | 12.4 | 8.0 | 7.1 | **7.1** | ⛔ |
-| scribe | watch | `#9333ea` | `#dc2626` | 41.2 | 55.0 | 61.0 | 33.1 | **33.1** | ✅ |
+| captain | xo | `#7c3aed` | `#2563eb` | 15.1 | 4.2 | 0.3 | 18.9 | **0.3** | ⛔ |
+| captain | department-head | `#7c3aed` | `#0891b2` | 31.7 | 17.1 | 11.1 | 26.5 | **11.1** | ✅ |
+| captain | division-officer | `#7c3aed` | `#16a34a` | 52.3 | 53.8 | 48.2 | 28.3 | **28.3** | ✅ |
+| captain | idc | `#7c3aed` | `#ea580c` | 49.7 | 56.0 | 57.3 | 31.9 | **31.9** | ✅ |
+| captain | scribe | `#7c3aed` | `#9333ea` | 3.6 | 0.4 | 1.4 | 15.2 | **0.4** | ⛔ |
+| captain | watch | `#7c3aed` | `#dc2626` | 34.4 | 39.4 | 47.3 | 33.9 | **33.9** | ✅ |
+| xo | department-head | `#2563eb` | `#0891b2` | 22.4 | 13.4 | 10.9 | 10.8 | **10.8** | ⛔ |
+| xo | division-officer | `#2563eb` | `#16a34a` | 50.0 | 51.1 | 48.1 | 13.8 | **13.8** | ✅ |
+| xo | idc | `#2563eb` | `#ea580c` | 49.3 | 54.0 | 57.3 | 65.8 | **49.3** | ✅ |
+| xo | scribe | `#2563eb` | `#9333ea` | 18.1 | 4.7 | 1.2 | 34.6 | **1.2** | ⛔ |
+| xo | watch | `#2563eb` | `#dc2626` | 43.8 | 38.4 | 47.2 | 65.5 | **38.4** | ✅ |
+| department-head | division-officer | `#0891b2` | `#16a34a` | 34.4 | 39.1 | 39.4 | 5.6 | **5.6** | ⛔ |
+| department-head | idc | `#0891b2` | `#ea580c` | 49.7 | 44.0 | 48.2 | 60.7 | **44.0** | ✅ |
+| department-head | scribe | `#0891b2` | `#9333ea` | 34.0 | 17.1 | 9.8 | 38.5 | **9.8** | ⛔ |
+| department-head | watch | `#0891b2` | `#dc2626` | 61.4 | 33.1 | 39.7 | 60.0 | **33.1** | ✅ |
+| division-officer | idc | `#16a34a` | `#ea580c` | 53.0 | 12.6 | 10.4 | 64.6 | **10.4** | ⛔ |
+| division-officer | scribe | `#16a34a` | `#9333ea` | 53.1 | 54.2 | 47.6 | 39.7 | **39.7** | ✅ |
+| division-officer | watch | `#16a34a` | `#dc2626` | 71.5 | 22.7 | 6.9 | 65.5 | **6.9** | ⛔ |
+| idc | scribe | `#ea580c` | `#9333ea` | 50.0 | 56.3 | 56.8 | 21.8 | **21.8** | ✅ |
+| idc | watch | `#ea580c` | `#dc2626` | 14.4 | 12.4 | 8.0 | 6.2 | **6.2** | ⛔ |
+| scribe | watch | `#9333ea` | `#dc2626` | 32.5 | 39.6 | 46.9 | 23.5 | **23.5** | ✅ |
 
 ## Failing Pairs
 
-- **captain** × **xo**: min ΔE2000 = 0.5 (required ≥ 11)
+- **captain** × **xo**: min ΔE2000 = 0.3 (required ≥ 11)
 - **captain** × **scribe**: min ΔE2000 = 0.4 (required ≥ 11)
-- **xo** × **scribe**: min ΔE2000 = 2.2 (required ≥ 11)
-- **department-head** × **division-officer**: min ΔE2000 = 6.9 (required ≥ 11)
-- **division-officer** × **watch**: min ΔE2000 = 7.9 (required ≥ 11)
-- **idc** × **watch**: min ΔE2000 = 7.1 (required ≥ 11)
+- **xo** × **department-head**: min ΔE2000 = 10.8 (required ≥ 11)
+- **xo** × **scribe**: min ΔE2000 = 1.2 (required ≥ 11)
+- **department-head** × **division-officer**: min ΔE2000 = 5.6 (required ≥ 11)
+- **department-head** × **scribe**: min ΔE2000 = 9.8 (required ≥ 11)
+- **division-officer** × **idc**: min ΔE2000 = 10.4 (required ≥ 11)
+- **division-officer** × **watch**: min ΔE2000 = 6.9 (required ≥ 11)
+- **idc** × **watch**: min ΔE2000 = 6.2 (required ≥ 11)

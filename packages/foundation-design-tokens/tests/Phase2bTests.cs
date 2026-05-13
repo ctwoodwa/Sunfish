@@ -82,6 +82,30 @@ public class Phase2bGeneratedCssTests
     {
         Assert.Contains("@media (prefers-reduced-motion: reduce)", P2bHelpers.GeneratedCss());
     }
+
+    [Fact]
+    public void CommittedTokensCss_MatchesGeneratorOutput()
+    {
+        // Ensures the committed packages/ui-core/src/tokens.css is in sync with
+        // what the codegen tool would produce from the current tokens.json.
+        // Prevents drift when tokens.json is edited without re-running BeforeBuild.
+        var asmDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        var root = Path.GetFullPath(Path.Combine(asmDir, "../../../../../.."));
+        var committed = Path.Combine(root, "packages", "ui-core", "src", "tokens.css");
+
+        if (!File.Exists(committed))
+        {
+            Assert.Fail(
+                $"Committed tokens.css not found at '{committed}'. "
+                + "Run 'dotnet build packages/foundation-design-tokens/' to generate it, "
+                + "then commit the result.");
+            return;
+        }
+
+        var expected = CssGenerator.Generate(TokensReader.Read(P2bHelpers.EmbeddedJson()));
+        var actual   = File.ReadAllText(committed);
+        Assert.Equal(expected, actual);
+    }
 }
 
 public class Phase2bTokenJsonTests
@@ -127,14 +151,14 @@ internal static class P2bHelpers
     {
         var asmDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         // Walk up from bin/[config]/net11.0 to the repo root.
-        var root = Path.GetFullPath(Path.Combine(asmDir, "../../../../.."));
+        var root = Path.GetFullPath(Path.Combine(asmDir, "../../../../../.."));
         var path = Path.Combine(root, "packages", "ui-core", "src", "tokens.css");
         if (File.Exists(path))
             return File.ReadAllText(path);
 
-        // Fallback: generate in-memory from embedded JSON so tests pass even
-        // if the committed file isn't present (e.g., after a clean checkout
-        // before the BeforeBuild target has run).
+        // In-memory fallback: generate from embedded JSON so structural tests pass
+        // even on a clean checkout. CommittedTokensCss_MatchesGeneratorOutput enforces
+        // that the committed file exists and matches — don't remove that test.
         return CssGenerator.Generate(TokensReader.Read(EmbeddedJson()));
     }
 }

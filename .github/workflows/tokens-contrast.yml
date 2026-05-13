@@ -5,10 +5,12 @@ on:
     paths:
       - 'packages/foundation-design-tokens/**'
       - 'tooling/design-tokens-codegen/**'
+      - 'tooling/Sunfish.Tooling.ColorAudit/**'
   pull_request:
     paths:
       - 'packages/foundation-design-tokens/**'
       - 'tooling/design-tokens-codegen/**'
+      - 'tooling/Sunfish.Tooling.ColorAudit/**'
 
 jobs:
   contrast-gate:
@@ -26,9 +28,9 @@ jobs:
         run: |
           dotnet restore tooling/design-tokens-codegen/DesignTokensCodegenTool.csproj
 
-      - name: Run contrast verification
+      - name: Run contrast + CVD verification
         run: |
           dotnet run --project tooling/design-tokens-codegen/DesignTokensCodegenTool.csproj \
             --no-launch-profile -- \
             --tokens packages/foundation-design-tokens/tokens.json \
-            --verify-contrast --ci
+            --verify-contrast --verify-cvd --ci

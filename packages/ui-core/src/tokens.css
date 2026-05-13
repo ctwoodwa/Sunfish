@@ -23,6 +23,7 @@
   --sf-color-text-secondary-light: #404040;
   --sf-color-text-secondary-dark: #a3a3a3;
   --sf-color-text-secondary: var(--sf-color-text-secondary-light);
+  /* ⚠ large-text / non-text use only — ≥3:1 WCAG 1.4.3 (see tokens.md) */
   --sf-color-text-tertiary-light: #737373;
   --sf-color-text-tertiary-dark: #737373;
   --sf-color-text-tertiary: var(--sf-color-text-tertiary-light);
