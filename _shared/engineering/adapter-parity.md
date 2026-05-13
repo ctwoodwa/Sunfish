@@ -32,6 +32,7 @@ All current Blazor-only components are registered as bootstrap-phase exceptions 
 | Icon providers | `IIconProvider` | ✅ (Tabler, Legacy) | ❌ | Bootstrap-phase exception |
 | CSS providers | `ICssProvider` (pending) | ✅ (FluentUI, Bootstrap, Material) | ❌ | Providers are Blazor-specific by design; React will use its own styling stack |
 | `ISystemRequirementsRenderer` | `Sunfish.Foundation.MissionSpace.ISystemRequirementsRenderer` | ✅ consumer-tier (Anchor) — `accelerators/anchor/Components/Pages/SystemRequirements.razor` | ✅ `packages/ui-adapters-react/` — `SystemRequirements` component (W#56) | **substrate-parity**: both adapters consume the same `ISystemRequirementsRenderer` contract; per-adapter UX divergence intentional per ADR 0014 platform-conventional layout exemption. Blazor is consumer-tier (Anchor accelerator), not a `packages/ui-adapters-blazor/` component — this is NOT a parity gap. |
+| Identity Atlas pages (W#58) | `IIdentityAtlasSurface` (`packages/ui-core/Wayfinder/Identity/`) | ✅ 5 Blazor pages — `accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/` (W#58 Phase 2b) | ✅ 5 React components — `packages/ui-adapters-react/src/components/Identity/` (W#58 Phase 3) | Bridge JSON surface at `/api/v1/identity/*`; React components fetch and render. `activeTeamId` always null in Bridge posture (no `IActiveTeamAccessor`). WCAG/a11y council mandatory per ADR 0014. |
 
 (Refine per component as ui-core contracts get named explicitly.)
 

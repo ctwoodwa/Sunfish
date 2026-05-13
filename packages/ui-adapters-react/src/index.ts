@@ -53,6 +53,33 @@ export {
 export { useSystemRequirements } from './hooks/useSystemRequirements';
 export type { UseSystemRequirementsResult, UseSystemRequirementsOptions } from './hooks/useSystemRequirements';
 
+// Identity Atlas pages (ADR 0066 §Phase 3, W#58 Phase 3)
+export {
+  IdentityProfilePage,
+  type IdentityProfilePageProps,
+  KeyRotationPage,
+  type KeyRotationPageProps,
+  RecoveryContactsPage,
+  type RecoveryContactsPageProps,
+  HistoricalKeysPage,
+  type HistoricalKeysPageProps,
+  ActiveTeamOverviewPage,
+  type ActiveTeamOverviewPageProps,
+} from './components/Identity';
+
+// Identity Atlas contract types (ADR 0066 §Phase 3 wire format)
+export type {
+  SyncState,
+  IdentityProfileResponse,
+  KeyRotationResponse,
+  RecoveryContactResponse,
+  RecoveryContactsResponse,
+  HistoricalKeyEntryResponse,
+  HistoricalKeysResponse,
+  TeamMembershipResponse,
+  ActiveTeamOverviewResponse,
+} from './contracts/IdentityTypes';
+
 // SystemRequirements contract types and values (Phase 1 serialization contract)
 export type {
   SystemRequirementsResult,
