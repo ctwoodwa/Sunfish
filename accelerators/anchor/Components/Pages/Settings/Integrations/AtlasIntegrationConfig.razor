@@ -1,0 +1,143 @@
+@using Sunfish.UICore.Wayfinder.Integrations
+@using Sunfish.UICore.Primitives
+
+@if (_view is null)
+{
+    <p aria-live="polite" aria-busy="true" class="atlas-loading">Loading integrations…</p>
+}
+else
+{
+    <div class="atlas-integration-config">
+        @* WAI-ARIA APG Tabs: role="tablist" container *@
+        <div role="tablist"
+             aria-label="Integration categories"
+             class="atlas-tablist"
+             @onkeydown="HandleTabListKeyDown">
+
+            @for (int i = 0; i < _categories.Length; i++)
+            {
+                var idx = i;
+                var cat = _categories[i];
+                var tabId = $"atlas-tab-{cat}";
+                var panelId = $"atlas-panel-{cat}";
+                var isActive = _activeCategoryIndex == idx;
+                @* Roving tabindex: active tab tabindex="0", others "-1" *@
+                <button role="tab"
+                        id="@tabId"
+                        class="atlas-tab @(isActive ? "atlas-tab--active" : "")"
+                        aria-selected="@(isActive ? "true" : "false")"
+                        aria-controls="@panelId"
+                        tabindex="@(isActive ? "0" : "-1")"
+                        @ref="_tabRefs[idx]"
+                        @onclick="() => SelectTab(idx)">
+                    @CategoryLabel(cat)
+                </button>
+            }
+        </div>
+
+        @* Tab panels — hidden attribute keeps non-active panels out of tab order *@
+        @for (int i = 0; i < _categories.Length; i++)
+        {
+            var idx = i;
+            var cat = _categories[i];
+            var isActive = _activeCategoryIndex == idx;
+
+            _view.ActiveByCategory.TryGetValue(cat, out var activeProvider);
+            _view.StatusByCategory.TryGetValue(cat, out var status);
+            var schemasForCat = _allSchemas.Where(s => s.Category == cat).ToList();
+
+            if (isActive)
+            {
+                <AtlasIntegrationCategoryPanel Category="cat"
+                                               Schemas="schemasForCat"
+                                               ActiveProvider="activeProvider"
+                                               CurrentStatus="status"
+                                               Provider="Provider"
+                                               Ctx="Ctx"
+                                               LiveAnnouncer="LiveAnnouncer" />
+
+                @* Email routing panel — surfaced within TransactionalEmail tab *@
+                @if (cat == IntegrationCategory.TransactionalEmail && _allSchemas.Any(s =>
+                    s.Category == IntegrationCategory.TransactionalEmail ||
+                    s.Category == IntegrationCategory.MarketingEmail))
+                {
+                    <AtlasEmailRoutingPanel Schemas="_allSchemas"
+                                            CurrentRouting="_view.EmailRouting"
+                                            Provider="Provider"
+                                            Ctx="Ctx" />
+                }
+            }
+            else
+            {
+                @* hidden keeps out of tab sequence but preserved in DOM for ARIA *@
+                <div id="atlas-panel-@cat"
+                     role="tabpanel"
+                     aria-labelledby="atlas-tab-@cat"
+                     hidden />
+            }
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public IIntegrationAtlasProvider Provider { get; set; } = default!;
+    [Parameter, EditorRequired] public IIntegrationAtlasContext Ctx { get; set; } = default!;
+    [Parameter] public ILiveAnnouncer? LiveAnnouncer { get; set; }
+
+    private static readonly IntegrationCategory[] _categories = Enum.GetValues<IntegrationCategory>();
+    private readonly ElementReference[] _tabRefs = new ElementReference[6];
+    private int _activeCategoryIndex;
+    private IntegrationAtlasView? _view;
+    private IReadOnlyList<IntegrationProviderSchema> _allSchemas = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allSchemas = Provider.GetSchemas();
+        _view = await Provider.GetAtlasViewAsync();
+    }
+
+    private void SelectTab(int idx)
+    {
+        _activeCategoryIndex = idx;
+    }
+
+    private async Task HandleTabListKeyDown(KeyboardEventArgs e)
+    {
+        int newIdx = e.Key switch
+        {
+            "ArrowLeft" => (_activeCategoryIndex - 1 + _categories.Length) % _categories.Length,
+            "ArrowRight" => (_activeCategoryIndex + 1) % _categories.Length,
+            "Home" => 0,
+            "End" => _categories.Length - 1,
+            _ => -1,
+        };
+        if (newIdx >= 0)
+        {
+            _activeCategoryIndex = newIdx;
+            // Move focus to the newly activated tab (APG Tabs roving tabindex)
+            await _tabRefs[newIdx].FocusAsync();
+        }
+    }
+
+    private static string CategoryLabel(IntegrationCategory category) => category switch
+    {
+        IntegrationCategory.Payments => "Payments",
+        IntegrationCategory.TransactionalEmail => "Transactional Email",
+        IntegrationCategory.MarketingEmail => "Marketing Email",
+        IntegrationCategory.Messaging => "Messaging",
+        IntegrationCategory.MeshVpn => "Mesh VPN",
+        IntegrationCategory.Captcha => "CAPTCHA",
+        _ => category.ToString(),
+    };
+}
+
+<style>
+    .atlas-loading { color: #9ca3af; font-size: 0.875rem; font-style: italic; margin: 1rem 0; }
+    .atlas-integration-config { max-width: 760px; }
+    .atlas-tablist { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 0; overflow-x: auto; }
+    .atlas-tab { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; cursor: pointer; white-space: nowrap; transition: color 0.1s, border-color 0.1s; }
+    .atlas-tab:hover { color: #374151; }
+    .atlas-tab:focus { outline: 2px solid #2563eb; outline-offset: -1px; }
+    .atlas-tab--active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+    .atlas-tab[aria-selected="true"] { color: #2563eb; border-bottom-color: #2563eb; }
+</style>

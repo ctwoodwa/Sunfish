@@ -36,6 +36,10 @@
     <ProjectReference Include="..\..\..\packages\blocks-sick-bay\Sunfish.Blocks.SickBay.csproj" />
     <!-- W#23.2 P2 — Equipment Asset Photo handler (EventType.Asset dispatch). -->
     <ProjectReference Include="..\..\..\packages\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
+    <!-- W#48 Phase 4 — Integration Atlas config surface (ADR 0067) -->
+    <ProjectReference Include="..\..\..\packages\blocks-integrations\Sunfish.Blocks.Integrations.csproj" />
+    <ProjectReference Include="..\..\..\packages\providers-mesh-headscale\Sunfish.Providers.Mesh.Headscale.csproj" />
+    <ProjectReference Include="..\..\..\packages\providers-recaptcha\Sunfish.Providers.Recaptcha.csproj" />
   </ItemGroup>
 
   <ItemGroup>
