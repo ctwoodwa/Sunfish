@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.Integrations</PackageId>
+    <RootNamespace>Sunfish.Blocks.Integrations</RootNamespace>
+    <Description>
+      Reference implementations for the Atlas Integration-Config UI surface (ADR 0067).
+      Provides DefaultIntegrationAtlasProvider, InMemoryIntegrationAtlasProvider, audit
+      payload factories, and AddSunfishIntegrationAtlasDefaults() DI extension that wires
+      the full stack. Lives at the blocks-* tier so it can reference foundation-recovery
+      without forming a cycle through ui-core.
+    </Description>
+    <PackageTags>sunfish;blocks;integrations;atlas;adr-0067</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
+    <ProjectReference Include="..\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.Integrations.Tests" />
+  </ItemGroup>
+</Project>
