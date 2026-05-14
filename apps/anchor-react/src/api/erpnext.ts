@@ -162,3 +162,79 @@ export async function updateMaintenanceTicket(name: string, payload: UpdateMaint
     body: JSON.stringify(payload),
   })
 }
+
+// ── Phase 5: Reports ─────────────────────────────────────────────────────────
+
+export interface RentRollRow {
+  propertyId: string
+  propertyName: string
+  unit?: string
+  tenantName: string
+  leaseStart?: string
+  leaseEnd?: string
+  monthlyRent: number
+  lastPaymentDate?: string
+  balanceDue: number
+  status: 'Current' | 'Overdue' | 'Vacant'
+}
+
+export interface PLLineItem {
+  account: string
+  amount: number
+}
+
+export interface PLSummary {
+  period: string
+  propertyId?: string
+  income: number
+  expenses: number
+  net: number
+  incomeLines: PLLineItem[]
+  expenseLines: PLLineItem[]
+}
+
+export async function getRentRoll(): Promise<RentRollRow[]> {
+  const result = await apiFetch<{ data: RentRollRow[] }>('/api/v1/reports/rent-roll')
+  return result.data
+}
+
+export async function getProfitLoss(
+  propertyId?: string,
+  period?: string,
+  asOf?: string,
+): Promise<PLSummary> {
+  const params = new URLSearchParams()
+  if (propertyId) params.set('propertyId', propertyId)
+  if (period) params.set('period', period)
+  if (asOf) params.set('asOf', asOf)
+  const qs = params.size > 0 ? `?${params.toString()}` : ''
+  return apiFetch<PLSummary>(`/api/v1/reports/profit-loss${qs}`)
+}
+
+export async function exportProfitLoss(
+  propertyId?: string,
+  period?: string,
+  asOf?: string,
+): Promise<void> {
+  const params = new URLSearchParams({ format: 'csv' })
+  if (propertyId) params.set('propertyId', propertyId)
+  if (period) params.set('period', period)
+  if (asOf) params.set('asOf', asOf)
+
+  const resp = await fetch(`/api/v1/reports/profit-loss/export?${params.toString()}`, {
+    credentials: 'include',
+  })
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => resp.statusText)
+    throw new Error(`Export failed ${resp.status}: ${text}`)
+  }
+  const blob = await resp.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `profit-loss-${period ?? 'year'}.csv`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}

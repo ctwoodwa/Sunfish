@@ -9,6 +9,8 @@ import { RentCollectionPage } from '@/pages/RentCollectionPage'
 import { AccountingPage } from '@/pages/AccountingPage'
 import { CrewCommsPage } from '@/pages/CrewCommsPage'
 import { MaintenancePage } from '@/pages/MaintenancePage'
+import { RentRoll } from '@/pages/RentRoll'
+import { PLReport } from '@/pages/PLReport'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -130,6 +132,14 @@ function AppLayout() {
             >
               Maintenance
             </NavLink>
+            <NavLink
+              to="/reports/rent-roll"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Reports
+            </NavLink>
           </nav>
           <CompanySwitcher />
         </div>
@@ -144,6 +154,9 @@ function AppLayout() {
           <Route path="/accounting" element={<AccountingPage />} />
           <Route path="/comms" element={<CrewCommsPage />} />
           <Route path="/maintenance" element={<MaintenancePage />} />
+          <Route path="/reports" element={<Navigate to="/reports/rent-roll" replace />} />
+          <Route path="/reports/rent-roll" element={<RentRoll />} />
+          <Route path="/reports/profit-loss" element={<PLReport />} />
         </Routes>
       </main>
     </div>
