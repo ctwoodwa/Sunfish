@@ -1,0 +1,281 @@
+@using Sunfish.UICore.Wayfinder.Integrations
+@using Sunfish.UICore.Primitives
+@using System.Text.Json.Nodes
+
+@{
+    var panelId = $"atlas-panel-{Category}";
+    var tabId = $"atlas-tab-{Category}";
+    var statusRegionId = $"atlas-status-{Category}-{_instanceId}";
+    var validateLabel = _isValidating
+        ? $"Validating {_selectedSchema?.DisplayName ?? Category.ToString()}…"
+        : $"Validate {_selectedSchema?.DisplayName ?? Category.ToString()}";
+}
+
+<div id="@panelId"
+     role="tabpanel"
+     aria-labelledby="@tabId"
+     class="atlas-category-panel"
+     aria-busy="@(_isValidating ? "true" : null)">
+
+    @if (_schemas.Count == 0)
+    {
+        <p class="atlas-panel-empty">No providers registered for @CategoryLabel(Category).</p>
+    }
+    else
+    {
+        @* Provider selection dropdown *@
+        <div class="atlas-provider-row">
+            <label for="atlas-provider-select-@_instanceId" class="atlas-cred-label">
+                Active provider
+            </label>
+            <select id="atlas-provider-select-@_instanceId"
+                    class="atlas-email-select"
+                    aria-label="@($"Active provider for {CategoryLabel(Category)}")"
+                    value="@_selectedProviderId"
+                    @onchange="OnProviderChanged">
+                <option value="">— None —</option>
+                @foreach (var schema in _schemas)
+                {
+                    <option value="@schema.ProviderId">@schema.DisplayName</option>
+                }
+            </select>
+        </div>
+
+        @if (_selectedSchema is not null)
+        {
+            @* Credential fields *@
+            <fieldset class="atlas-credential-fieldset" aria-label="@($"Credentials for {_selectedSchema.DisplayName}")">
+                <legend class="atlas-fieldset-legend">@_selectedSchema.DisplayName credentials</legend>
+                @foreach (var field in _selectedSchema.CredentialFields)
+                {
+                    <AtlasCredentialField Field="field"
+                                         HasExistingValue="HasExistingValue(field.Key)"
+                                         OnSensitiveChanged="HandleSensitiveChanged"
+                                         OnNonSensitiveChanged="HandleNonSensitiveChanged" />
+                }
+            </fieldset>
+
+            @* Validate button — SC 4.1.2: aria-disabled instead of disabled so it stays focusable *@
+            <div class="atlas-panel-actions">
+                <button type="button"
+                        class="atlas-action-btn atlas-action-btn--primary @(_isValidating ? "atlas-action-btn--busy" : "")"
+                        aria-label="@validateLabel"
+                        aria-disabled="@(_isValidating ? "true" : null)"
+                        @onclick="ValidateAsync">
+                    @(_isValidating ? "Validating…" : "Validate")
+                </button>
+            </div>
+
+            @* SC 4.1.3: status live region — aria-atomic, content-only transitions *@
+            <div id="@statusRegionId" class="atlas-status-region"
+                 aria-atomic="true"
+                 aria-live="@(_lastStatus is ProviderValidationStatus.Invalid or ProviderValidationStatus.Unreachable ? null : "polite")"
+                 role="@(_lastStatus is ProviderValidationStatus.Invalid or ProviderValidationStatus.Unreachable ? "alert" : null)">
+                @StatusContent(_lastStatus, _lastResult)
+            </div>
+
+            @if (_selectedSchema.DocumentationUrl is { Length: > 0 })
+            {
+                <p class="atlas-doc-link-hint">
+                    <a href="@_selectedSchema.DocumentationUrl"
+                       class="atlas-doc-link"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="@($"Documentation for {_selectedSchema.DisplayName} (opens in new tab)")">
+                        Documentation ↗
+                    </a>
+                </p>
+            }
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IntegrationCategory Category { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<IntegrationProviderSchema> Schemas { get; set; } = [];
+    [Parameter, EditorRequired] public ActiveProviderSnapshot? ActiveProvider { get; set; }
+    [Parameter, EditorRequired] public ProviderValidationStatus CurrentStatus { get; set; }
+    [Parameter, EditorRequired] public IIntegrationAtlasProvider Provider { get; set; } = default!;
+    [Parameter, EditorRequired] public IIntegrationAtlasContext Ctx { get; set; } = default!;
+    [Parameter] public ILiveAnnouncer? LiveAnnouncer { get; set; }
+
+    private readonly string _instanceId = Guid.NewGuid().ToString("N")[..8];
+    private IReadOnlyList<IntegrationProviderSchema> _schemas = [];
+    private string? _selectedProviderId;
+    private IntegrationProviderSchema? _selectedSchema;
+    private bool _isValidating;
+    private ProviderValidationStatus? _lastStatus;
+    private IntegrationValidationResult? _lastResult;
+
+    // Pending credential edits — submitted with Validate
+    private readonly Dictionary<string, ReadOnlyMemory<byte>> _pendingSensitive = new();
+    private readonly Dictionary<string, JsonNode> _pendingNonSensitive = new();
+
+    protected override void OnParametersSet()
+    {
+        _schemas = Schemas.Where(s => s.Category == Category).ToList();
+        if (_selectedProviderId is null && ActiveProvider is not null)
+        {
+            _selectedProviderId = ActiveProvider.ProviderId;
+            _selectedSchema = _schemas.FirstOrDefault(s => s.ProviderId == _selectedProviderId);
+        }
+        if (_lastStatus is null)
+        {
+            // First-render Unknown: silent (empty region, no announcement)
+            _lastStatus = CurrentStatus == ProviderValidationStatus.Unknown ? null : CurrentStatus;
+        }
+    }
+
+    private bool HasExistingValue(string key) =>
+        ActiveProvider is not null;
+
+    private async Task OnProviderChanged(ChangeEventArgs e)
+    {
+        var providerId = e.Value?.ToString();
+        _selectedProviderId = string.IsNullOrEmpty(providerId) ? null : providerId;
+        _selectedSchema = _schemas.FirstOrDefault(s => s.ProviderId == _selectedProviderId);
+        _pendingSensitive.Clear();
+        _pendingNonSensitive.Clear();
+
+        if (_selectedProviderId is not null)
+        {
+            await Provider.IssueProviderChangeAsync(Category, _selectedProviderId, Ctx);
+            // Provider change clears previous validation status (SC 4.1.3: polite announcement)
+            _lastStatus = ProviderValidationStatus.Unknown;
+            _lastResult = null;
+            LiveAnnouncer?.Announce(
+                $"Provider changed to {_selectedSchema?.DisplayName ?? _selectedProviderId}. Validation status reset.",
+                LiveRegionPoliteness.Polite);
+        }
+    }
+
+    private Task HandleSensitiveChanged((string Key, ReadOnlyMemory<byte> Bytes) change)
+    {
+        _pendingSensitive[change.Key] = change.Bytes;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleNonSensitiveChanged((string Key, JsonNode Value) change)
+    {
+        _pendingNonSensitive[change.Key] = change.Value;
+        return Task.CompletedTask;
+    }
+
+    private async Task ValidateAsync()
+    {
+        if (_isValidating || _selectedProviderId is null) return;
+
+        // Issue pending credential updates before validating
+        foreach (var (key, bytes) in _pendingSensitive)
+            await Provider.IssueSensitiveCredentialAsync(Category, _selectedProviderId, key, bytes, Ctx);
+        foreach (var (key, node) in _pendingNonSensitive)
+            await Provider.IssueNonSensitiveCredentialAsync(Category, _selectedProviderId, key, node, Ctx);
+        _pendingSensitive.Clear();
+        _pendingNonSensitive.Clear();
+
+        _isValidating = true;
+        _lastStatus = null;
+        _lastResult = null;
+        try
+        {
+            var result = await Provider.ValidateProviderAsync(Category, Ctx);
+            _lastStatus = result.Status;
+            _lastResult = result;
+
+            // SC 4.1.3: announce validation outcome
+            var announcement = result.Status switch
+            {
+                ProviderValidationStatus.Valid => $"{_selectedSchema?.DisplayName ?? Category.ToString()} connected successfully.",
+                ProviderValidationStatus.Invalid => $"Validation failed: {result.ErrorMessage ?? result.ErrorCode ?? "invalid credentials."}",
+                ProviderValidationStatus.Unreachable => $"{_selectedSchema?.DisplayName ?? Category.ToString()} endpoint unreachable.",
+                _ => "Validation complete.",
+            };
+            var politeness = result.Status is ProviderValidationStatus.Valid or ProviderValidationStatus.Unknown
+                ? LiveRegionPoliteness.Polite
+                : LiveRegionPoliteness.Critical;
+            LiveAnnouncer?.Announce(announcement, politeness);
+        }
+        catch (Exception)
+        {
+            _lastStatus = ProviderValidationStatus.Unreachable;
+            LiveAnnouncer?.Announce("Validation failed due to an unexpected error.", LiveRegionPoliteness.Critical);
+        }
+        finally
+        {
+            _isValidating = false;
+        }
+    }
+
+    private static string CategoryLabel(IntegrationCategory category) => category switch
+    {
+        IntegrationCategory.Payments => "Payments",
+        IntegrationCategory.TransactionalEmail => "Transactional Email",
+        IntegrationCategory.MarketingEmail => "Marketing Email",
+        IntegrationCategory.Messaging => "Messaging",
+        IntegrationCategory.MeshVpn => "Mesh VPN",
+        IntegrationCategory.Captcha => "CAPTCHA",
+        _ => category.ToString(),
+    };
+
+    private static RenderFragment StatusContent(ProviderValidationStatus? status, IntegrationValidationResult? result) =>
+        @<text>
+            @if (status is null)
+            {
+                @* First-render Unknown: empty text node — not announced (SC 4.1.3) *@
+            }
+            else if (status == ProviderValidationStatus.Valid)
+            {
+                @* SC 1.4.1: shape-distinct icon (checkmark) + text, NOT color alone *@
+                <span class="atlas-status atlas-status--valid" aria-label="Connected">
+                    <span class="atlas-status-icon" aria-hidden="true">✓</span>
+                    <span class="atlas-status-text">Connected</span>
+                </span>
+            }
+            else if (status == ProviderValidationStatus.Invalid)
+            {
+                <span class="atlas-status atlas-status--invalid" aria-label="@($"Invalid: {result?.ErrorMessage ?? result?.ErrorCode ?? "check credentials"}")">
+                    <span class="atlas-status-icon" aria-hidden="true">✕</span>
+                    <span class="atlas-status-text">Invalid — @(result?.ErrorMessage ?? result?.ErrorCode ?? "check credentials")</span>
+                </span>
+            }
+            else if (status == ProviderValidationStatus.Unreachable)
+            {
+                <span class="atlas-status atlas-status--unreachable" aria-label="@($"Unreachable: {result?.ErrorMessage ?? "endpoint not reachable"}")">
+                    <span class="atlas-status-icon" aria-hidden="true">⚠</span>
+                    <span class="atlas-status-text">Unreachable — @(result?.ErrorMessage ?? "endpoint not reachable")</span>
+                </span>
+            }
+            else
+            {
+                <span class="atlas-status atlas-status--unknown" aria-label="Validation status unknown">
+                    <span class="atlas-status-icon" aria-hidden="true">○</span>
+                    <span class="atlas-status-text">Not validated</span>
+                </span>
+            }
+        </text>;
+}
+
+<style>
+    .atlas-category-panel { padding: 1.25rem 0; }
+    .atlas-panel-empty { color: #9ca3af; font-size: 0.875rem; font-style: italic; margin: 0; }
+    .atlas-provider-row { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem; }
+    .atlas-credential-fieldset { border: none; padding: 0; margin: 0 0 0.875rem; }
+    .atlas-fieldset-legend { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.75rem; padding: 0; }
+    .atlas-panel-actions { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .atlas-action-btn { padding: 0.5rem 1.25rem; border-radius: 5px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; }
+    .atlas-action-btn--primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .atlas-action-btn--primary:focus { outline: 2px solid #2563eb; outline-offset: 2px; }
+    .atlas-action-btn--primary:hover:not([aria-disabled="true"]) { background: #1d4ed8; }
+    .atlas-action-btn[aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; }
+    .atlas-action-btn--busy { opacity: 0.7; }
+    .atlas-status-region { min-height: 1.5rem; margin-top: 0.25rem; }
+    .atlas-status { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; border-radius: 4px; font-size: 0.8125rem; font-weight: 500; }
+    .atlas-status--valid { background: #d1fae5; color: #065f46; }
+    .atlas-status--invalid { background: #fee2e2; color: #7f1d1d; }
+    .atlas-status--unreachable { background: #fef3c7; color: #78350f; }
+    .atlas-status--unknown { background: #f3f4f6; color: #6b7280; }
+    .atlas-status-icon { font-size: 0.875rem; line-height: 1; }
+    .atlas-doc-link-hint { margin: 0.75rem 0 0; font-size: 0.8125rem; }
+    .atlas-doc-link { color: #2563eb; text-decoration: none; }
+    .atlas-doc-link:hover { text-decoration: underline; }
+</style>

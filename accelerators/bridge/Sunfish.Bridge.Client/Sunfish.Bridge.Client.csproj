@@ -23,6 +23,10 @@
     <ProjectReference Include="..\..\..\packages\blocks-subscriptions\Sunfish.Blocks.Subscriptions.csproj" />
     <ProjectReference Include="..\..\..\packages\blocks-tenant-admin\Sunfish.Blocks.TenantAdmin.csproj" />
     <ProjectReference Include="..\..\..\packages\blocks-businesscases\Sunfish.Blocks.BusinessCases.csproj" />
+    <!-- W#48 Phase 4 — Integration Atlas config surface (ADR 0067) -->
+    <ProjectReference Include="..\..\..\packages\blocks-integrations\Sunfish.Blocks.Integrations.csproj" />
+    <ProjectReference Include="..\..\..\packages\providers-mesh-headscale\Sunfish.Providers.Mesh.Headscale.csproj" />
+    <ProjectReference Include="..\..\..\packages\providers-recaptcha\Sunfish.Providers.Recaptcha.csproj" />
   </ItemGroup>
 
 </Project>

@@ -32,11 +32,19 @@ using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
 using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Bridge.Features.Identity;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Blocks.Integrations;
 using Sunfish.Blocks.ShipsOffice;
 using Sunfish.Blocks.SickBay;
+using Sunfish.Bridge.Features.Integrations;
 using Sunfish.Foundation.ShipsOffice;
 using Sunfish.Foundation.SickBay;
+using Sunfish.Providers.Mesh.Headscale.Integration;
+using Sunfish.Providers.Recaptcha.Integration;
+using Sunfish.UIAdapters.Blazor.A11y;
+using Sunfish.UICore.Primitives;
 using Sunfish.UICore.Wayfinder;
+using Sunfish.UICore.Wayfinder.Integrations;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -322,6 +330,21 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // W#23.2 P2 — InMemory equipment repository (H2: EFCore adapter deferred to follow-up;
     // dev/staging uses InMemory for now; Production will Replace with EFCore impl).
     builder.Services.AddInMemoryPropertyEquipment();
+
+    // W#48 Phase 4 — Integration Atlas config surface (ADR 0067).
+    // Bridge uses InMemoryIntegrationAtlasProvider (IDecryptCapabilityProvider not yet
+    // registered in Bridge; full DefaultIntegrationAtlasProvider deferred to W#32 wiring).
+    builder.Services.AddHeadscaleIntegration();
+    builder.Services.AddRecaptchaV3Integration();
+    builder.Services.TryAddSingleton<IValidationStatusStore, InMemoryValidationStatusStore>();
+    builder.Services.TryAddSingleton<IIntegrationAtlasProvider>(sp =>
+    {
+        var schemaProviders = sp.GetServices<IIntegrationSchemaProvider>();
+        var schemas = schemaProviders.SelectMany(p => p.GetSchemas());
+        return new InMemoryIntegrationAtlasProvider(schemas);
+    });
+    builder.Services.AddScoped<IIntegrationAtlasContext, BridgeIntegrationAtlasContext>();
+    builder.Services.TryAddSingleton<ILiveAnnouncer, BlazorLiveAnnouncer>();
 
     // W#56 Phase 1 — SystemRequirements resolver + force-install surface + server-level envelope.
     builder.Services.AddBridgeSystemRequirements();

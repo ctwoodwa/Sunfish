@@ -24,6 +24,7 @@ using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.Providers.Bootstrap.Extensions;
 using Microsoft.Maui.Storage;
 using Sunfish.Blocks.EngineRoom;
+using Sunfish.Blocks.Integrations;
 using Sunfish.Blocks.Quarterdeck;
 using Sunfish.Blocks.ShipsOffice;
 using Sunfish.Blocks.SickBay;
@@ -32,6 +33,10 @@ using Sunfish.Foundation.Ship.Common;
 using Sunfish.Foundation.ShipsOffice;
 using Sunfish.Foundation.SickBay;
 using Sunfish.Foundation.Wayfinder;
+using Sunfish.Providers.Mesh.Headscale.Integration;
+using Sunfish.Providers.Recaptcha.Integration;
+using Sunfish.UICore.Primitives;
+using Sunfish.UICore.Wayfinder.Integrations;
 
 namespace Sunfish.Anchor;
 
@@ -371,6 +376,26 @@ public static class MauiProgram
 			opts.RegisterPurpose("dob", "Date of Birth");
 			opts.FallbackPollingInterval = TimeSpan.FromSeconds(60);
 		});
+
+		// W#48 Phase 4 — Integration Atlas config surface (ADR 0067).
+		//
+		// Anchor uses InMemoryIntegrationAtlasProvider (no encryption stack
+		// wired; full DefaultIntegrationAtlasProvider requires IDecryptCapabilityProvider
+		// from AddSunfishRecoveryCoordinator, which is not yet wired in Anchor).
+		// Provider adapters (Headscale + reCAPTCHA) register IIntegrationSchemaProvider
+		// + IIntegrationProviderValidator; the factory resolves them to seed schemas.
+		// IValidationStatusStore is the in-memory variant (thread-safe per ADR 0067 §7.2).
+		builder.Services.AddHeadscaleIntegration();
+		builder.Services.AddRecaptchaV3Integration();
+		builder.Services.TryAddSingleton<IValidationStatusStore, InMemoryValidationStatusStore>();
+		builder.Services.TryAddSingleton<IIntegrationAtlasProvider>(sp =>
+		{
+			var schemaProviders = sp.GetServices<IIntegrationSchemaProvider>();
+			var schemas = schemaProviders.SelectMany(p => p.GetSchemas());
+			return new InMemoryIntegrationAtlasProvider(schemas);
+		});
+		builder.Services.AddSingleton<IIntegrationAtlasContext, AnchorIntegrationAtlasContext>();
+		builder.Services.TryAddSingleton<ILiveAnnouncer, Sunfish.UIAdapters.Blazor.Maui.MauiLiveAnnouncer>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

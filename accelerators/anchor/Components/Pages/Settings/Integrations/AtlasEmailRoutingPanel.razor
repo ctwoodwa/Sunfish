@@ -1,0 +1,132 @@
+@using Sunfish.UICore.Wayfinder.Integrations
+@using Sunfish.Foundation.Assets.Common
+
+@{
+    var transactionalSchemas = Schemas
+        .Where(s => s.Category == IntegrationCategory.TransactionalEmail)
+        .ToList();
+    var marketingSchemas = Schemas
+        .Where(s => s.Category == IntegrationCategory.MarketingEmail)
+        .ToList();
+}
+
+<section class="atlas-email-routing" aria-labelledby="atlas-email-routing-heading">
+    <h3 id="atlas-email-routing-heading" class="atlas-panel-subheading">Email Routing</h3>
+    <p class="atlas-email-routing-desc">
+        Select which provider handles each outbound email type. Changes take effect on the next send.
+    </p>
+
+    <div class="atlas-email-routing-fields">
+        <div class="atlas-email-routing-field">
+            <label for="atlas-email-transactional" class="atlas-cred-label">
+                Transactional provider
+            </label>
+            <select id="atlas-email-transactional"
+                    class="atlas-email-select"
+                    aria-label="Active provider for transactional email"
+                    value="@_transactionalProvider"
+                    @onchange="OnTransactionalChanged">
+                <option value="">— Not configured —</option>
+                @foreach (var schema in transactionalSchemas)
+                {
+                    <option value="@schema.ProviderId">@schema.DisplayName</option>
+                }
+            </select>
+        </div>
+
+        <div class="atlas-email-routing-field">
+            <label for="atlas-email-marketing" class="atlas-cred-label">
+                Marketing provider
+            </label>
+            <select id="atlas-email-marketing"
+                    class="atlas-email-select"
+                    aria-label="Active provider for marketing email"
+                    value="@_marketingProvider"
+                    @onchange="OnMarketingChanged">
+                <option value="">— Not configured —</option>
+                @foreach (var schema in marketingSchemas)
+                {
+                    <option value="@schema.ProviderId">@schema.DisplayName</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="atlas-email-routing-actions">
+        <button type="button"
+                class="atlas-action-btn atlas-action-btn--primary"
+                aria-label="Save email routing"
+                aria-disabled="@(_isSaving ? "true" : null)"
+                @onclick="SaveRouting">
+            @(_isSaving ? "Saving…" : "Save routing")
+        </button>
+    </div>
+
+    @if (_saveMessage is not null)
+    {
+        <p role="status" aria-live="polite" class="atlas-email-routing-status">@_saveMessage</p>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<IntegrationProviderSchema> Schemas { get; set; } = [];
+    [Parameter, EditorRequired] public IntegrationEmailRouting? CurrentRouting { get; set; }
+    [Parameter, EditorRequired] public IIntegrationAtlasProvider Provider { get; set; } = default!;
+    [Parameter, EditorRequired] public IIntegrationAtlasContext Ctx { get; set; } = default!;
+
+    private string? _transactionalProvider;
+    private string? _marketingProvider;
+    private bool _isSaving;
+    private string? _saveMessage;
+
+    protected override void OnParametersSet()
+    {
+        _transactionalProvider = CurrentRouting?.TransactionalProvider;
+        _marketingProvider = CurrentRouting?.MarketingProvider;
+    }
+
+    private void OnTransactionalChanged(ChangeEventArgs e)
+    {
+        var v = e.Value?.ToString();
+        _transactionalProvider = string.IsNullOrEmpty(v) ? null : v;
+    }
+
+    private void OnMarketingChanged(ChangeEventArgs e)
+    {
+        var v = e.Value?.ToString();
+        _marketingProvider = string.IsNullOrEmpty(v) ? null : v;
+    }
+
+    private async Task SaveRouting()
+    {
+        if (_isSaving) return;
+        _isSaving = true;
+        _saveMessage = null;
+        try
+        {
+            var routing = new IntegrationEmailRouting(_transactionalProvider, _marketingProvider);
+            await Provider.IssueRoutingAsync(routing, Ctx);
+            _saveMessage = "Email routing saved.";
+        }
+        catch (Exception)
+        {
+            _saveMessage = "Failed to save email routing. Please try again.";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}
+
+<style>
+    .atlas-email-routing { margin-top: 1.25rem; }
+    .atlas-panel-subheading { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.375rem; }
+    .atlas-email-routing-desc { font-size: 0.8125rem; color: #666; margin: 0 0 1rem; }
+    .atlas-email-routing-fields { display: flex; flex-direction: column; gap: 0.75rem; }
+    .atlas-email-routing-field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .atlas-email-select { padding: 0.5rem 0.625rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: 0.875rem; background: #fff; cursor: pointer; }
+    .atlas-email-select:focus { outline: 2px solid #2563eb; outline-offset: 1px; }
+    .atlas-email-routing-actions { margin-top: 0.875rem; }
+    .atlas-email-routing-status { font-size: 0.8125rem; color: #374151; margin: 0.5rem 0 0; }
+</style>

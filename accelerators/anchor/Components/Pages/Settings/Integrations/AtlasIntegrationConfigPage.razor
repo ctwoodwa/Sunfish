@@ -1,0 +1,38 @@
+@page "/settings/integrations"
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Integrations
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UICore.Primitives
+@using Sunfish.UICore.Wayfinder.Integrations
+@inject AnchorSessionService Session
+@inject IActiveTeamAccessor ActiveTeam
+@inject IIntegrationAtlasProvider IntegrationAtlas
+@inject IIntegrationAtlasContext IntegrationCtx
+@inject ILiveAnnouncer LiveAnnouncer
+
+<PageTitle>Sunfish Anchor — Integrations</PageTitle>
+
+<main role="main" class="atlas-integration-page" aria-labelledby="atlas-integrations-heading">
+    <h1 id="atlas-integrations-heading">Integrations</h1>
+    <p class="atlas-integrations-desc">
+        Configure third-party service providers for payments, email, messaging, VPN, and CAPTCHA.
+    </p>
+
+    @if (!Session.IsOnboarded || ActiveTeam.Active is null)
+    {
+        <p class="atlas-muted">Complete onboarding to configure integrations.</p>
+    }
+    else
+    {
+        <AtlasIntegrationConfig Provider="IntegrationAtlas"
+                                Ctx="IntegrationCtx"
+                                LiveAnnouncer="LiveAnnouncer" />
+    }
+</main>
+
+<style>
+    .atlas-integration-page { max-width: 820px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .atlas-integration-page h1 { font-size: 1.625rem; margin: 0 0 0.375rem; letter-spacing: -0.01em; }
+    .atlas-integrations-desc { font-size: 0.9375rem; color: #6b7280; margin: 0 0 1.5rem; }
+    .atlas-muted { color: #666; font-size: 0.875rem; line-height: 1.5; margin: 0; }
+</style>

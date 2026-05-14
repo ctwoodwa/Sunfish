@@ -82,6 +82,31 @@ export type {
   PendingDiffPreview,
 } from './contracts/IdentityTypes';
 
+// Integration Atlas components + contracts (ADR 0067, W#48 Phase 4)
+export {
+  AtlasIntegrationConfig,
+  type AtlasIntegrationConfigProps,
+  AtlasIntegrationCategoryPanel,
+  type AtlasIntegrationCategoryPanelProps,
+  AtlasCredentialField,
+  type AtlasCredentialFieldProps,
+} from './components/Integrations';
+export type {
+  IntegrationProviderSchema,
+  CredentialFieldSpec,
+  IntegrationAtlasView,
+  IntegrationValidationResult,
+  ActiveProviderSnapshot,
+  IntegrationEmailRouting,
+  ReactIntegrationAtlasProvider,
+} from './contracts/Integrations';
+export {
+  IntegrationCategory,
+  CredentialFieldKind,
+  CredentialAutocompleteHint,
+  ProviderValidationStatus,
+} from './contracts/Integrations';
+
 // SystemRequirements contract types and values (Phase 1 serialization contract)
 export type {
   SystemRequirementsResult,

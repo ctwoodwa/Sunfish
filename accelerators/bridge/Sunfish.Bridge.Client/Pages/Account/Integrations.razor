@@ -1,15 +1,29 @@
 @page "/account/integrations"
 @layout AccountLayout
+@using Sunfish.Bridge.Client.Components.Settings.Integrations
+@using Sunfish.Bridge.Client.Services
+@using Sunfish.UICore.Primitives
+@using Sunfish.UICore.Wayfinder.Integrations
+@inject IBridgeRequestContext RequestContext
+@inject IIntegrationAtlasProvider IntegrationAtlas
+@inject IIntegrationAtlasContext IntegrationCtx
+@inject ILiveAnnouncer LiveAnnouncer
 
 <PageTitle>Integrations · Sunfish PM</PageTitle>
 
 <SettingsPageHeader Title="Integrations"
-                    Description="Connect external tools and services." />
+                    Description="Configure third-party providers for payments, email, messaging, VPN, and CAPTCHA." />
 
-<SettingsSection Title="Available integrations">
-    <SettingsCard>
-        <p style="color:var(--marilo-color-text-muted,#6b7280);font-size:14px;margin:0;padding:12px 0;">
-            Integrations coming soon.
-        </p>
-    </SettingsCard>
-</SettingsSection>
+@if (!RequestContext.IsResolved)
+{
+    <p role="status" aria-live="polite">Loading…</p>
+}
+else
+{
+    <AtlasIntegrationConfig Provider="IntegrationAtlas"
+                            Ctx="IntegrationCtx"
+                            LiveAnnouncer="LiveAnnouncer" />
+}
+
+@code {
+}
