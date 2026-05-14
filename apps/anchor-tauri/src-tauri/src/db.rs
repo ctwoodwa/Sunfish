@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS sync_metadata (
     last_synced  TEXT NOT NULL,
     record_count INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS write_queue (
+    id           TEXT PRIMARY KEY,
+    doctype      TEXT NOT NULL,
+    op_type      TEXT NOT NULL,
+    doc_name     TEXT,
+    payload_json TEXT NOT NULL,
+    created_at   TEXT NOT NULL,
+    synced_at    TEXT,
+    error        TEXT
+);
 "#;
 
 pub async fn open(data_dir: &Path) -> anyhow::Result<SqlitePool> {

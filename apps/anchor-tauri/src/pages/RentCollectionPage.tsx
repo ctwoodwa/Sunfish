@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLeases } from '@/hooks/useLeases'
 import { recordPayment } from '@/api/erpnext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useSyncStore } from '@/stores/syncStore'
 
 const PAYMENT_METHODS = ['ACH', 'Check', 'Cash', 'Card'] as const
 
@@ -12,6 +13,8 @@ export function RentCollectionPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: leases, isPending: leasesPending } = useLeases()
+  const syncState = useSyncStore((s) => s.syncState)
+  const isOffline = syncState === 'offline'
 
   const [selectedLease, setSelectedLease] = useState(searchParams.get('lease') ?? '')
   const [amount, setAmount] = useState('')
@@ -168,13 +171,19 @@ export function RentCollectionPage() {
               </div>
             )}
 
+            {isOffline && (
+              <p className="text-sm text-amber-600">
+                Rent payments require a live connection to ERPNext to maintain ledger integrity.
+              </p>
+            )}
+
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || isOffline}
                 className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                {mutation.isPending ? 'Recording…' : 'Record payment'}
+                {mutation.isPending ? 'Recording…' : isOffline ? 'Network required for payments' : 'Record payment'}
               </button>
               <button
                 type="button"
