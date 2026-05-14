@@ -10,6 +10,10 @@ on:
       - 'apps/anchor-tauri/**'
       - '.github/workflows/tauri-build.yml'
 
+concurrency:
+  group: tauri-build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
@@ -79,6 +83,7 @@ jobs:
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: anchor-tauri-${{ matrix.target }}
           path: |
