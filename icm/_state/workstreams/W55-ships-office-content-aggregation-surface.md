@@ -3,8 +3,8 @@ sort_order: 58
 number: 55
 slug: ships-office-content-aggregation-surface
 title: "**Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline)"
-status: "building"
-status_cell: "`building` — **Phase 1–4 MERGED 2026-05-13** (PR #624 + #711 + #753 + #756 + #759 + #762 P1–P3; PR #787 P4 Anchor+Bridge wiring+apps/docs; `blocks-ships-office` + `foundation-ships-office` + 5 Razor components + 59 tests + ShipsOfficePage Anchor consumer + Bridge DI); **Phase 5 gated on ADR 0055 Accepted** (H4 gate — ADR 0055 currently Proposed); Phase 6 ledger flip pending"
+status: "built"
+status_cell: "`built` (5/6 phases shipped — Phase 5 deferred pending ADR 0055 Accepted; PRs #624+#711+#753+#756+#759+#762+#787; `foundation-ships-office` + `blocks-ships-office` + 5 Razor UI components + 59 tests + SUNFISH_SHIPSOFFICE_PERM001 analyzer + ShipsOfficePage Anchor consumer + Bridge DI wiring; W#35 cohort final follow-on — **all 7 W#35 follow-ons built**: W#46/49/50/51/52/54/55)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md`"
@@ -63,7 +63,13 @@ cardinality test updated to assert the 4 new entries; net cardinality = 13).
   cleared.
 - **Phase 6** (~30min): ledger flip + close cohort follow-on row.
 
-**W#35 Ship Architecture cohort substrate complete on origin/main:**
-W#46 P1 ✓ (foundation-ship-common) + W#49 P1+P2+P2-amend+P3 ✓
-(foundation-wayfinder OOD watch) + W#55 P1 ✓ (foundation-ships-office;
-this PR). Phases 2+ for each cohort workstream remain.
+**W#55 BUILT 2026-05-13.** Phases 1–4 + Phase 6 complete. Phase 5
+(DynamicTemplate kind + IFormSchemaStore) deferred pending ADR 0055
+Accepted (currently Proposed). When ADR 0055 flips, open a follow-on
+workstream or amendment PR to add the `DynamicTemplate` kind.
+
+**W#35 Ship Architecture cohort COMPLETE 2026-05-13.** All 7 follow-on
+Stage 06 builds shipped: W#46 (Shared Design System) + W#49 (OOD Watch
+Rotation) + W#50 (Engine Room Observability) + W#51 (Quarterdeck
+Entry-Point) + W#52 (Tactical Anomaly Detection) + W#54 (Sick Bay) +
+W#55 (Ship's Office). Pipeline closed.
