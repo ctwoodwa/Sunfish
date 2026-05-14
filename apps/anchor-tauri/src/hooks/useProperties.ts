@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { invoke } from '@tauri-apps/api/core'
-import { getProperties } from '@/api/erpnext'
+import { getProperties, type Property } from '@/api/erpnext'
 import { useCompanyStore } from '@/stores/companyStore'
 import { useSyncStore } from '@/stores/syncStore'
 import { isTauri } from '@/utils/isTauri'
@@ -22,7 +22,7 @@ export function useProperties() {
           return live
         } catch {
           setSyncState('offline')
-          return invoke<unknown[]>('get_cached_properties')
+          return invoke<Property[]>('get_cached_properties')
         }
       }
       return getProperties()

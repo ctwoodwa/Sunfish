@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { invoke } from '@tauri-apps/api/core'
-import { getLeases, getLease, getPayments } from '@/api/erpnext'
+import { getLeases, getLease, getPayments, type Lease, type Payment } from '@/api/erpnext'
 import { useCompanyStore } from '@/stores/companyStore'
 import { useSyncStore } from '@/stores/syncStore'
 import { isTauri } from '@/utils/isTauri'
@@ -17,7 +17,7 @@ export function useLeases() {
           return await getLeases()
         } catch {
           setSyncState('offline')
-          return invoke<unknown[]>('get_cached_leases')
+          return invoke<Lease[]>('get_cached_leases')
         }
       }
       return getLeases()
@@ -48,7 +48,7 @@ export function usePayments() {
           return await getPayments()
         } catch {
           setSyncState('offline')
-          return invoke<unknown[]>('get_cached_payments')
+          return invoke<Payment[]>('get_cached_payments')
         }
       }
       return getPayments()
