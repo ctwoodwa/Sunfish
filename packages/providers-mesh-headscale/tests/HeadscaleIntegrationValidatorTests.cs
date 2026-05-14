@@ -16,11 +16,13 @@ namespace Sunfish.Providers.Mesh.Headscale.Tests;
 /// <summary>
 /// W#48 Phase 3b — HeadscaleIntegrationValidator unit tests.
 /// Verifies schema drift-protection, credential-leak containment,
-/// and fail-closed probe behaviour per ADR 0067 §6.2 + §Trust.
+/// fail-closed probe behaviour, and scheme-validation per ADR 0067 §6.2 + §Trust.
 /// </summary>
 public sealed class HeadscaleIntegrationValidatorTests
 {
-    private static readonly Uri BaseUri = new("http://headscale.test/");
+    // B2: test URIs use HTTPS (HTTP is only allowed for loopback)
+    private static readonly Uri BaseUri = new("https://headscale.test/");
+    private static readonly Uri LoopbackUri = new("http://127.0.0.1:8080/");
     private const string ValidApiKey = "hskey-test-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
     private static IReadOnlyDictionary<string, ReadOnlyMemory<byte>> SensitiveCreds(string apiKey = ValidApiKey)
@@ -29,11 +31,11 @@ public sealed class HeadscaleIntegrationValidatorTests
             ["api-key"] = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(apiKey)),
         };
 
-    private static IReadOnlyDictionary<string, JsonNode> NonSensitiveCreds(string? user = null)
+    private static IReadOnlyDictionary<string, JsonNode> NonSensitiveCreds(Uri? baseUri = null, string? user = null)
     {
         var d = new Dictionary<string, JsonNode>
         {
-            ["base-url"] = JsonValue.Create(BaseUri.ToString())!,
+            ["base-url"] = JsonValue.Create((baseUri ?? BaseUri).ToString())!,
         };
         if (user is not null) d["user"] = JsonValue.Create(user)!;
         return d;
@@ -53,20 +55,18 @@ public sealed class HeadscaleIntegrationValidatorTests
     }
 
     [Fact]
-    public void SchemaProvider_CredentialFields_MatchValidatorKeys()
+    public void SchemaProvider_CredentialFields_ExactlyMatchValidatorKeys()
     {
-        // Verifies no schema-drift: the field keys declared in the schema
-        // must exactly match what the validator reads from the dictionaries.
-        var provider = new HeadscaleIntegrationSchemaProvider();
-        var schema = provider.GetSchemas()[0];
+        // M5: set-equality — detects both missing keys and unexpected extras
+        var schema = new HeadscaleIntegrationSchemaProvider().GetSchemas()[0];
         var fieldKeys = new HashSet<string>(StringComparer.Ordinal);
         foreach (var field in schema.CredentialFields)
         {
             fieldKeys.Add(field.Key);
         }
-        Assert.Contains("base-url", fieldKeys);
-        Assert.Contains("api-key", fieldKeys);
-        Assert.Contains("user", fieldKeys);
+        Assert.Equal(
+            new HashSet<string>(StringComparer.Ordinal) { "base-url", "api-key", "user" },
+            fieldKeys);
     }
 
     [Fact]
@@ -184,6 +184,97 @@ public sealed class HeadscaleIntegrationValidatorTests
                 .ValidateAsync(SensitiveCreds(), NonSensitiveCreds(), cts.Token));
     }
 
+    // ── m1: 5xx / 429 → Unreachable ─────────────────────────────────────
+
+    [Fact]
+    public async Task Validator_503_ReturnsUnreachable()
+    {
+        using var handler = new SuccessHandler(HttpStatusCode.ServiceUnavailable, string.Empty);
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new HeadscaleIntegrationValidator(factory)
+            .ValidateAsync(SensitiveCreds(), NonSensitiveCreds(), CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Unreachable, result.Status);
+    }
+
+    [Fact]
+    public async Task Validator_429_ReturnsUnreachable()
+    {
+        using var handler = new SuccessHandler(HttpStatusCode.TooManyRequests, string.Empty);
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new HeadscaleIntegrationValidator(factory)
+            .ValidateAsync(SensitiveCreds(), NonSensitiveCreds(), CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Unreachable, result.Status);
+    }
+
+    // ── B2: scheme validation ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task Validator_HttpBaseUrl_ReturnsInvalidInsecureScheme()
+    {
+        // B2: plaintext HTTP to a non-loopback host must be rejected before
+        // making any network call — prevents API-key leak to attacker infrastructure.
+        var factory = Substitute.For<IHttpClientFactory>();
+        var creds = new Dictionary<string, JsonNode>
+        {
+            ["base-url"] = JsonValue.Create("http://attacker.example/")!,
+        };
+
+        var result = await new HeadscaleIntegrationValidator(factory)
+            .ValidateAsync(SensitiveCreds(), creds, CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Invalid, result.Status);
+        Assert.Equal("insecure-base-url", result.ErrorCode);
+        // Verify no HTTP call was made
+        factory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task Validator_LoopbackHttpBaseUrl_IsAllowed()
+    {
+        // B2: loopback addresses are permitted over HTTP (local dev / integration tests)
+        using var handler = new SuccessHandler(HttpStatusCode.OK, "{}");
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new HeadscaleIntegrationValidator(factory)
+            .ValidateAsync(SensitiveCreds(), NonSensitiveCreds(LoopbackUri), CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Valid, result.Status);
+    }
+
+    // ── M3: HttpClient internal timeout → Unreachable ────────────────────
+
+    [Fact]
+    public async Task Validator_Timeout_ReturnsUnreachable()
+    {
+        // M3: HttpClient's internal timeout raises OperationCanceledException whose
+        // token differs from the caller's ct — after amendment, this returns Unreachable
+        // instead of propagating to the caller.
+        using var internalCts = new CancellationTokenSource();
+        await internalCts.CancelAsync();
+        using var handler = new CancelWithInternalTokenHandler(internalCts.Token);
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new HeadscaleIntegrationValidator(factory)
+            .ValidateAsync(
+                SensitiveCreds(),
+                NonSensitiveCreds(),
+                CancellationToken.None); // caller's token is NOT cancelled
+
+        Assert.Equal(ProviderValidationStatus.Unreachable, result.Status);
+    }
+
     // ── Marker-credential leak ────────────────────────────────────────────
 
     [Fact]
@@ -221,7 +312,6 @@ public sealed class HeadscaleIntegrationValidatorTests
         var factory = Substitute.For<IHttpClientFactory>();
         factory.CreateClient().Returns(client);
 
-        // No HeadscaleMeshAdapter or HeadscaleClient passed — must succeed
         var validator = new HeadscaleIntegrationValidator(factory);
         var result = await validator.ValidateAsync(
             SensitiveCreds(), NonSensitiveCreds(), CancellationToken.None);
@@ -253,5 +343,16 @@ public sealed class HeadscaleIntegrationValidatorTests
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken ct) =>
             Task.FromCanceled<HttpResponseMessage>(ct);
+    }
+
+    /// <summary>
+    /// Simulates HttpClient internal timeout: cancels with an internal token
+    /// distinct from the caller's ct, so ct.IsCancellationRequested remains false.
+    /// </summary>
+    private sealed class CancelWithInternalTokenHandler(CancellationToken internalToken) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken ct) =>
+            Task.FromCanceled<HttpResponseMessage>(internalToken);
     }
 }

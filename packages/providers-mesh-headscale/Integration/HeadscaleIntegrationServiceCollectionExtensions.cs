@@ -18,6 +18,8 @@ public static class HeadscaleIntegrationServiceCollectionExtensions
     public static IServiceCollection AddHeadscaleIntegration(
         this IServiceCollection services)
     {
+        // M4: IHttpClientFactory must be registered so HeadscaleIntegrationValidator can resolve it
+        services.AddHttpClient();
         services.AddSingleton<IIntegrationSchemaProvider, HeadscaleIntegrationSchemaProvider>();
         services.AddSingleton<IIntegrationProviderValidator, HeadscaleIntegrationValidator>();
         return services;

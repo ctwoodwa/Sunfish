@@ -16,7 +16,7 @@ namespace Sunfish.Providers.Recaptcha.Tests;
 /// <summary>
 /// W#48 Phase 3b — RecaptchaV3IntegrationValidator unit tests.
 /// Verifies schema drift-protection, marker-credential leak containment,
-/// and probe-based credential validation per ADR 0067 §6.2 + §Trust.
+/// scheme-validation, and probe-based credential validation per ADR 0067 §6.2 + §Trust.
 /// </summary>
 public sealed class RecaptchaV3IntegrationValidatorTests
 {
@@ -55,14 +55,15 @@ public sealed class RecaptchaV3IntegrationValidatorTests
     }
 
     [Fact]
-    public void SchemaProvider_CredentialFields_MatchValidatorKeys()
+    public void SchemaProvider_CredentialFields_ExactlyMatchValidatorKeys()
     {
+        // M5: set-equality — detects both missing keys and unexpected extras
         var schema = new RecaptchaV3IntegrationSchemaProvider().GetSchemas()[0];
         var keys = new HashSet<string>(StringComparer.Ordinal);
         foreach (var f in schema.CredentialFields) keys.Add(f.Key);
-        Assert.Contains("site-key", keys);
-        Assert.Contains("secret-key", keys);
-        Assert.Contains("verify-endpoint", keys);
+        Assert.Equal(
+            new HashSet<string>(StringComparer.Ordinal) { "site-key", "secret-key", "verify-endpoint" },
+            keys);
     }
 
     [Fact]
@@ -184,7 +185,8 @@ public sealed class RecaptchaV3IntegrationValidatorTests
     [Fact]
     public async Task Validator_UsesCustomEndpoint_WhenProvided()
     {
-        const string customEndpoint = "http://recaptcha.test/verify";
+        // B2: custom endpoint uses https:// — http:// would be rejected before calling
+        const string customEndpoint = "https://recaptcha.test/verify";
         var body = """{"success":false,"error-codes":["invalid-input-response"]}""";
         string? capturedUrl = null;
         using var handler = new CapturingHandler(HttpStatusCode.OK, body, url => capturedUrl = url);
@@ -211,6 +213,96 @@ public sealed class RecaptchaV3IntegrationValidatorTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             new RecaptchaV3IntegrationValidator(factory)
                 .ValidateAsync(SensitiveCreds(), NonSensitiveCreds(), cts.Token));
+    }
+
+    // ── B2: scheme validation ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task Validator_HttpVerifyEndpoint_ReturnsInvalidInsecureScheme()
+    {
+        // B2: plaintext HTTP endpoint must be rejected before making any network
+        // call — prevents secret-key POST to attacker-controlled infrastructure.
+        var factory = Substitute.For<IHttpClientFactory>();
+
+        var result = await new RecaptchaV3IntegrationValidator(factory)
+            .ValidateAsync(
+                SensitiveCreds(),
+                NonSensitiveCreds("http://attacker.example/verify"),
+                CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Invalid, result.Status);
+        Assert.Equal("insecure-verify-endpoint", result.ErrorCode);
+        factory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task Validator_LoopbackHttpEndpoint_IsAllowed()
+    {
+        // B2: loopback HTTP is permitted (local dev / integration tests)
+        var body = """{"success":false,"error-codes":["invalid-input-response"]}""";
+        using var handler = new SuccessHandler(HttpStatusCode.OK, body);
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new RecaptchaV3IntegrationValidator(factory)
+            .ValidateAsync(
+                SensitiveCreds(),
+                NonSensitiveCreds("http://127.0.0.1:9000/verify"),
+                CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Valid, result.Status);
+    }
+
+    // ── M3: HttpClient internal timeout → Unreachable ────────────────────
+
+    [Fact]
+    public async Task Validator_Timeout_ReturnsUnreachable()
+    {
+        // M3: HttpClient's internal timeout raises OperationCanceledException whose
+        // token differs from the caller's ct — after amendment, this returns Unreachable
+        // instead of propagating to the caller.
+        using var internalCts = new CancellationTokenSource();
+        await internalCts.CancelAsync();
+        using var handler = new CancelWithInternalTokenHandler(internalCts.Token);
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new RecaptchaV3IntegrationValidator(factory)
+            .ValidateAsync(
+                SensitiveCreds(),
+                NonSensitiveCreds(),
+                CancellationToken.None); // caller's token is NOT cancelled
+
+        Assert.Equal(ProviderValidationStatus.Unreachable, result.Status);
+    }
+
+    // ── B1: transport-exception marker-leak ───────────────────────────────
+
+    [Fact]
+    public async Task Validator_TransportError_DoesNotLeakSecretInMessage()
+    {
+        // B1: ex.Message from TLS errors can embed raw credential bytes.
+        // Verify the error message returned by Unreachable() never contains the key.
+        const string markerKey = "MARKER_RECAPTCHA_SECRET_IN_TRANSPORT_ERROR_54321";
+        using var handler = new ThrowingHandler(markerKey);
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient().Returns(client);
+
+        var result = await new RecaptchaV3IntegrationValidator(factory)
+            .ValidateAsync(
+                new Dictionary<string, ReadOnlyMemory<byte>>
+                {
+                    ["secret-key"] = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(markerKey)),
+                },
+                NonSensitiveCreds(),
+                CancellationToken.None);
+
+        Assert.Equal(ProviderValidationStatus.Unreachable, result.Status);
+        Assert.DoesNotContain(markerKey, result.ErrorMessage ?? string.Empty, StringComparison.Ordinal);
+        Assert.DoesNotContain(markerKey, result.ErrorCode ?? string.Empty, StringComparison.Ordinal);
     }
 
     // ── Marker-credential leak ────────────────────────────────────────────
@@ -282,12 +374,12 @@ public sealed class RecaptchaV3IntegrationValidatorTests
         }
     }
 
-    private sealed class ThrowingHandler : HttpMessageHandler
+    private sealed class ThrowingHandler(string? messageToInclude = null) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken ct) =>
             Task.FromException<HttpResponseMessage>(
-                new HttpRequestException("simulated network failure"));
+                new HttpRequestException($"simulated network failure {messageToInclude}"));
     }
 
     private sealed class CancellingHandler : HttpMessageHandler
@@ -295,5 +387,16 @@ public sealed class RecaptchaV3IntegrationValidatorTests
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken ct) =>
             Task.FromCanceled<HttpResponseMessage>(ct);
+    }
+
+    /// <summary>
+    /// Simulates HttpClient internal timeout: cancels with an internal token
+    /// distinct from the caller's ct, so ct.IsCancellationRequested remains false.
+    /// </summary>
+    private sealed class CancelWithInternalTokenHandler(CancellationToken internalToken) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken ct) =>
+            Task.FromCanceled<HttpResponseMessage>(internalToken);
     }
 }

@@ -18,19 +18,16 @@ namespace Sunfish.Providers.Mesh.Headscale.Integration;
 /// endpoint — to verify both reachability and API-key validity.
 /// </summary>
 /// <remarks>
-/// <para>
 /// The validator deliberately does NOT exercise <see cref="HeadscaleMeshAdapter"/>
 /// — it issues its own probe so validation logic stays independent of the
 /// runtime transport layer.
-/// </para>
-/// <para>
+///
 /// Credential key conventions (matches <see cref="HeadscaleIntegrationSchemaProvider"/>):
 /// <list type="bullet">
 /// <item><c>api-key</c> — sensitive (UTF-8 encoded); passed as Bearer token.</item>
-/// <item><c>base-url</c> — non-sensitive JSON string.</item>
+/// <item><c>base-url</c> — non-sensitive JSON string; must be HTTPS or loopback.</item>
 /// <item><c>user</c> — non-sensitive JSON string, optional.</item>
 /// </list>
-/// </para>
 /// </remarks>
 internal sealed class HeadscaleIntegrationValidator : IIntegrationProviderValidator
 {
@@ -55,11 +52,19 @@ internal sealed class HeadscaleIntegrationValidator : IIntegrationProviderValida
             return Fail("missing-api-key", "api-key credential is required.");
         }
 
-        if (!nonSensitiveCredentials.TryGetValue("base-url", out var baseUrlNode) ||
-            baseUrlNode?.GetValue<string>() is not { Length: > 0 } baseUrlStr ||
-            !Uri.TryCreate(baseUrlStr, UriKind.Absolute, out var baseUri))
+        // M1: GetString() avoids InvalidOperationException on wrong-typed JSON nodes
+        var baseUrlStr = GetString(nonSensitiveCredentials.TryGetValue("base-url", out var baseUrlNode)
+            ? baseUrlNode : null);
+        if (string.IsNullOrEmpty(baseUrlStr) || !Uri.TryCreate(baseUrlStr, UriKind.Absolute, out var baseUri))
         {
-            return Fail("missing-base-url", "base-url credential is required and must be a valid absolute URI.");
+            return Fail("missing-base-url", "base-url is required and must be a valid absolute URI.");
+        }
+
+        // B2: reject plaintext HTTP endpoints — prevents API-key leak over unencrypted transport
+        if (!IsAllowedScheme(baseUri))
+        {
+            return Fail("insecure-base-url",
+                "base-url must use HTTPS (HTTP is only permitted for loopback addresses).");
         }
 
         var apiKey = Encoding.UTF8.GetString(apiKeyBytes.Span);
@@ -71,39 +76,55 @@ internal sealed class HeadscaleIntegrationValidator : IIntegrationProviderValida
             http.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", apiKey);
 
-            var user = nonSensitiveCredentials.TryGetValue("user", out var userNode)
-                ? userNode?.GetValue<string>()
-                : null;
+            // M1: GetString() is safe on wrong-typed or missing nodes
+            var user = GetString(nonSensitiveCredentials.TryGetValue("user", out var userNode)
+                ? userNode : null);
             var path = string.IsNullOrEmpty(user)
                 ? "api/v1/node"
                 : $"api/v1/node?user={Uri.EscapeDataString(user)}";
 
             using var response = await http.GetAsync(path, ct).ConfigureAwait(false);
 
-            return response.StatusCode switch
+            // m1: 5xx / 429 are server-side unavailability → Unreachable, not Invalid
+            var statusInt = (int)response.StatusCode;
+            return statusInt switch
             {
-                HttpStatusCode.OK => Valid(),
-                HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden =>
-                    Fail("headscale-auth-failure", "The Headscale API key was rejected. Verify the key has node-read access."),
-                _ => Fail("headscale-probe-failed", $"Headscale returned unexpected status {(int)response.StatusCode}.")
+                200 => Valid(),
+                401 or 403 => Fail("headscale-auth-failure",
+                    "The Headscale API key was rejected. Verify the key has node-read access."),
+                429 or >= 500 => Unreachable($"Headscale returned HTTP {statusInt}."),
+                _ => Fail("headscale-probe-failed",
+                    $"Headscale returned unexpected status {statusInt}."),
             };
         }
-        catch (OperationCanceledException) { throw; }
-        catch (HttpRequestException ex)
+        // M3: distinguish HttpClient internal timeout from caller's CancellationToken;
+        //     both throw OperationCanceledException but with different tokens.
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException)
         {
-            return Unreachable($"Could not reach Headscale at {baseUri}: {ex.Message}");
+            return Unreachable("Headscale probe timed out.");
         }
-        catch
+        // M2: narrow catch — only transport failures; programmer errors propagate
+        catch (HttpRequestException)
         {
-            return Unreachable($"Could not reach Headscale at {baseUri}.");
-        }
-        finally
-        {
-            // Zero the decrypted key bytes; they were passed as a ReadOnlyMemory slice
-            // so we cannot zero the underlying buffer here — responsibility lies with
-            // DefaultIntegrationAtlasProvider's finally block per ADR 0067 §Trust.
+            // B2 Note: do NOT include ex.Message — it can embed raw bytes from the error
+            return Unreachable($"Could not reach Headscale at {baseUri.Host}.");
         }
     }
+
+    /// <summary>Safe JSON string extraction — returns null for non-string nodes (M1).</summary>
+    private static string? GetString(JsonNode? node) =>
+        node is JsonValue jv && jv.TryGetValue<string>(out var s) ? s : null;
+
+    /// <summary>B2: HTTPS always allowed; HTTP only for loopback addresses.</summary>
+    private static bool IsAllowedScheme(Uri uri) =>
+        uri.Scheme == Uri.UriSchemeHttps ||
+        (uri.Scheme == Uri.UriSchemeHttp && IsLoopback(uri.Host));
+
+    private static bool IsLoopback(string host) =>
+        string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase) ||
+        host == "127.0.0.1" ||
+        host == "::1";
 
     private static IntegrationValidationResult Valid() =>
         new(ProviderValidationStatus.Valid, DateTimeOffset.UtcNow, null, null);

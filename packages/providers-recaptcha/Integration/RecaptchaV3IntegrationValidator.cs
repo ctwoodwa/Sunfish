@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -16,7 +17,6 @@ namespace Sunfish.Providers.Recaptcha.Integration;
 /// captcha adapter per ADR 0067 §6.2 / W#48 Phase 3b.
 /// </summary>
 /// <remarks>
-/// <para>
 /// Validation strategy: POST an intentionally-invalid token to the verify
 /// endpoint and inspect the error-codes array.
 /// <list type="bullet">
@@ -31,19 +31,16 @@ namespace Sunfish.Providers.Recaptcha.Integration;
 ///   revoked. Returns <see cref="ProviderValidationStatus.Invalid"/>.
 /// </item>
 /// <item>
-///   Network/transport errors return
-///   <see cref="ProviderValidationStatus.Unreachable"/>.
+///   Network/transport errors return <see cref="ProviderValidationStatus.Unreachable"/>.
 /// </item>
 /// </list>
-/// </para>
-/// <para>
+///
 /// Credential key conventions (matches <see cref="RecaptchaV3IntegrationSchemaProvider"/>):
 /// <list type="bullet">
 /// <item><c>secret-key</c> — sensitive (UTF-8 encoded).</item>
 /// <item><c>site-key</c> — non-sensitive JSON string.</item>
-/// <item><c>verify-endpoint</c> — non-sensitive JSON string, optional.</item>
+/// <item><c>verify-endpoint</c> — non-sensitive JSON string, optional; must be HTTPS or loopback.</item>
 /// </list>
-/// </para>
 /// </remarks>
 internal sealed class RecaptchaV3IntegrationValidator : IIntegrationProviderValidator
 {
@@ -68,35 +65,41 @@ internal sealed class RecaptchaV3IntegrationValidator : IIntegrationProviderVali
             return Fail("missing-secret-key", "secret-key credential is required.");
         }
 
-        var secretKey = Encoding.UTF8.GetString(secretKeyBytes.Span);
-        var verifyEndpoint = nonSensitiveCredentials.TryGetValue("verify-endpoint", out var epNode)
-            ? epNode?.GetValue<string>()
-            : null;
-        if (string.IsNullOrWhiteSpace(verifyEndpoint))
+        // M1: GetString() avoids InvalidOperationException on wrong-typed JSON nodes
+        var endpointStr = GetString(nonSensitiveCredentials.TryGetValue("verify-endpoint", out var epNode)
+            ? epNode : null);
+        if (string.IsNullOrWhiteSpace(endpointStr))
         {
-            verifyEndpoint = RecaptchaV3Config.DefaultVerifyEndpoint;
+            endpointStr = RecaptchaV3Config.DefaultVerifyEndpoint;
         }
 
+        // B2: reject plaintext HTTP endpoints — prevents secret-key POST over unencrypted transport
+        if (!Uri.TryCreate(endpointStr, UriKind.Absolute, out var endpointUri) || !IsAllowedScheme(endpointUri))
+        {
+            return Fail("insecure-verify-endpoint",
+                "verify-endpoint must use HTTPS (HTTP is only permitted for loopback addresses).");
+        }
+
+        var secretKey = Encoding.UTF8.GetString(secretKeyBytes.Span);
         try
         {
             using var http = _httpFactory.CreateClient();
             http.Timeout = TimeSpan.FromSeconds(5);
 
-            // POST with a deliberately invalid token — Google's documented
-            // probe pattern for key validation. A valid secret key will
-            // produce error-codes: ["invalid-input-response"]; an invalid
-            // secret key produces error-codes: ["invalid-input-secret"].
+            // POST with a deliberately invalid token — Google's documented probe pattern for
+            // key validation. A valid secret key produces error-codes: ["invalid-input-response"];
+            // an invalid key produces error-codes: ["invalid-input-secret"].
             var form = new Dictionary<string, string>
             {
                 ["secret"] = secretKey,
                 ["response"] = "integration-validator-probe",
             };
             using var content = new FormUrlEncodedContent(form);
-            using var response = await http.PostAsync(verifyEndpoint, content, ct).ConfigureAwait(false);
+            using var response = await http.PostAsync(endpointStr, content, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
-                return Unreachable($"reCAPTCHA verify endpoint returned {(int)response.StatusCode}.");
+                return Unreachable($"reCAPTCHA verify endpoint returned HTTP {(int)response.StatusCode}.");
             }
 
             var body = await response.Content
@@ -109,26 +112,47 @@ internal sealed class RecaptchaV3IntegrationValidator : IIntegrationProviderVali
                 {
                     if (string.Equals(code, "invalid-input-secret", StringComparison.OrdinalIgnoreCase))
                     {
-                        return Fail("recaptcha-invalid-secret", "The reCAPTCHA v3 secret key is invalid or revoked.");
+                        return Fail("recaptcha-invalid-secret",
+                            "The reCAPTCHA v3 secret key is invalid or revoked.");
                     }
                 }
-                // "invalid-input-response" without "invalid-input-secret" → key is valid
-                return Valid();
             }
-
-            // No error-codes and success=true is unexpected for a dummy token, but treat as valid
+            // "invalid-input-response" without "invalid-input-secret" → key is valid;
+            // success=true with no error-codes is also treated as valid.
             return Valid();
         }
-        catch (OperationCanceledException) { throw; }
-        catch (HttpRequestException ex)
+        // M3: distinguish HttpClient internal timeout from caller's CancellationToken;
+        //     both throw OperationCanceledException but with different tokens.
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException)
         {
-            return Unreachable($"Could not reach reCAPTCHA verify endpoint: {ex.Message}");
+            return Unreachable("reCAPTCHA verify endpoint timed out.");
         }
-        catch
+        // M2: narrow catch — only transport and JSON parse failures; programmer errors propagate
+        catch (HttpRequestException)
         {
+            // B1: do NOT include ex.Message — TLS errors can embed raw bytes from the secret key
             return Unreachable("Could not reach reCAPTCHA verify endpoint.");
         }
+        catch (JsonException)
+        {
+            return Unreachable("reCAPTCHA verify endpoint returned a malformed response.");
+        }
     }
+
+    /// <summary>Safe JSON string extraction — returns null for non-string nodes (M1).</summary>
+    private static string? GetString(JsonNode? node) =>
+        node is JsonValue jv && jv.TryGetValue<string>(out var s) ? s : null;
+
+    /// <summary>B2: HTTPS always allowed; HTTP only for loopback addresses.</summary>
+    private static bool IsAllowedScheme(Uri uri) =>
+        uri.Scheme == Uri.UriSchemeHttps ||
+        (uri.Scheme == Uri.UriSchemeHttp && IsLoopback(uri.Host));
+
+    private static bool IsLoopback(string host) =>
+        string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase) ||
+        host == "127.0.0.1" ||
+        host == "::1";
 
     private static IntegrationValidationResult Valid() =>
         new(ProviderValidationStatus.Valid, DateTimeOffset.UtcNow, null, null);
