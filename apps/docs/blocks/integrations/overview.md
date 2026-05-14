@@ -36,11 +36,16 @@ The block ships:
 - **`AddSunfishIntegrationAtlasDefaults()`** — DI extension that registers
   `DefaultIntegrationAtlasProvider` as `IIntegrationAtlasProvider`.
 
-The UI components (`AtlasIntegrationConfig`, `AtlasIntegrationCategoryPanel`,
-`AtlasCredentialField`, `AtlasEmailRoutingPanel`) ship in the accelerator projects:
-Blazor components in `accelerators/anchor/Components/Pages/Settings/Integrations/` and
-`accelerators/bridge/Sunfish.Bridge.Client/Components/Settings/Integrations/`; React parity
-components in `packages/ui-adapters-react/src/components/Integrations/`.
+The UI components ship in the accelerator projects:
+
+- **Anchor Blazor** — `AtlasIntegrationConfig`, `AtlasIntegrationCategoryPanel`,
+  `AtlasCredentialField`, `AtlasEmailRoutingPanel` in
+  `accelerators/anchor/Components/Pages/Settings/Integrations/`
+- **Bridge Blazor** — `AtlasIntegrationConfig`, `AtlasIntegrationCategoryPanel`,
+  `AtlasCredentialField` in `accelerators/bridge/Sunfish.Bridge.Client/Components/Settings/Integrations/`
+  (`AtlasEmailRoutingPanel` Bridge parity is a W#48 follow-on)
+- **React** — `AtlasIntegrationConfig`, `AtlasIntegrationCategoryPanel`, `AtlasCredentialField`
+  in `packages/ui-adapters-react/src/components/Integrations/`
 
 ## Package
 
