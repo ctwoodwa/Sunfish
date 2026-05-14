@@ -2,6 +2,8 @@ pub mod commands;
 pub mod db;
 pub mod sync;
 
+use tauri::Manager;
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
