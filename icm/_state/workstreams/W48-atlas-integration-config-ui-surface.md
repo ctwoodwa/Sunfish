@@ -91,3 +91,10 @@ Verified providers on origin/main after PR #829:
 **Phase 3b scope** (2 providers ready): `HeadscaleMeshVpnSchemaProvider` +
 `HeadscaleMeshVpnValidator` in `providers-mesh-headscale`; `RecaptchaV3SchemaProvider`
 + `RecaptchaV3IntegrationValidator` in `providers-recaptcha`.
+
+**Phase 3b BUILDING** — PR open; 32 headscale + 26 recaptcha tests;
+`HeadscaleIntegrationSchemaProvider` + `HeadscaleIntegrationValidator` +
+`AddHeadscaleIntegration()` in `providers-mesh-headscale/Integration/`;
+`RecaptchaV3IntegrationSchemaProvider` + `RecaptchaV3IntegrationValidator` +
+`AddRecaptchaV3Integration()` in `providers-recaptcha/Integration/`;
+council pending.

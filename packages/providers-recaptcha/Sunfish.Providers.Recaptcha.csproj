@@ -14,6 +14,10 @@
     <InternalsVisibleTo Include="Sunfish.Providers.Recaptcha.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
   </ItemGroup>
 </Project>
