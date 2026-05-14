@@ -304,3 +304,4 @@ public static class ServiceCollectionExtensions
 - [testing-strategy.md](testing-strategy.md) — test-file style and assertion patterns.
 - [naming.md](../product/naming.md) — identifier conventions (types, keys, JSON property names).
 - `packages/foundation-multitenancy/` — a clean recent example in the shipped style.
+- [blocks/integrations/overview.md](../../apps/docs/blocks/integrations/overview.md) — Atlas Integration-Config UI surface: provider schema authoring, credential field kinds, validator implementation guide, WCAG 2.2 AA contract (ADR 0067).

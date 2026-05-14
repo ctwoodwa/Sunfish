@@ -23,6 +23,8 @@
   <ItemGroup>
     <!-- W#46 Phase 5 — Shared Design System meta-extension -->
     <ProjectReference Include="..\..\packages\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <!-- W#48 Phase 5 — Integration Atlas demo surface (ADR 0067) -->
+    <ProjectReference Include="..\..\packages\blocks-integrations\Sunfish.Blocks.Integrations.csproj" />
     <ProjectReference Include="..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
     <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\FluentUI\Sunfish.Providers.FluentUI.csproj" />
     <!-- Conditional: only if Phase 3c/Bootstrap provider exists -->
