@@ -7,7 +7,7 @@ import {
   type MaintenanceTicket,
   type CreateMaintenanceInput,
 } from '@/api/erpnext'
-import { AuthAuthRoleGate } from '@/components/AuthAuthRoleGate'
+import { AuthRoleGate } from '@/components/AuthRoleGate'
 
 const PRIORITY_COLORS: Record<string, string> = {
   Critical: 'bg-red-100 text-red-700',
