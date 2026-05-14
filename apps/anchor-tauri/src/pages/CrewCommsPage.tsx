@@ -48,6 +48,7 @@ export function CrewCommsPage() {
       conn.invoke('LeaveThread', activeThread).catch(() => {})
       conn.stop().catch(() => {})
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
