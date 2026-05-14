@@ -159,6 +159,10 @@
     <Project Path="packages/blocks-inspections/Sunfish.Blocks.Inspections.csproj" />
     <Project Path="packages/blocks-inspections/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/integrations/">
+    <Project Path="packages/blocks-integrations/Sunfish.Blocks.Integrations.csproj" />
+    <Project Path="packages/blocks-integrations/tests/Sunfish.Blocks.Integrations.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/maintenance/">
     <Project Path="packages/blocks-maintenance/Sunfish.Blocks.Maintenance.csproj" />
     <Project Path="packages/blocks-maintenance/tests/tests.csproj" />
