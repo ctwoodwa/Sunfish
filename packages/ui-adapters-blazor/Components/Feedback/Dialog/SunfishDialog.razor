@@ -217,24 +217,24 @@
                             @switch (Buttons)
                             {
                                 case DialogButtons.Ok:
-                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Primary, ButtonSize.Medium, false, false)" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
                                     break;
                                 case DialogButtons.OkCancel:
-                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
-                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Medium, true, false)" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Primary, ButtonSize.Medium, false, false)" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
                                     break;
                                 case DialogButtons.YesNo:
-                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
-                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Medium, true, false)" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Primary, ButtonSize.Medium, false, false)" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
                                     break;
                                 case DialogButtons.YesNoCancel:
-                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
-                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
-                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Medium, true, false)" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Medium, true, false)" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Primary, ButtonSize.Medium, false, false)" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
                                     break;
                                 case DialogButtons.RetryCancel:
-                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
-                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Retry)">Retry</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Medium, true, false)" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                                    <button class="@CssProvider.ButtonClass(ButtonVariant.Primary, ButtonSize.Medium, false, false)" @onclick="() => HandleButtonClick(DialogResult.Retry)">Retry</button>
                                     break;
                             }
                         </div>
