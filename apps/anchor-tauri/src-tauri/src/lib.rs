@@ -9,8 +9,15 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(
             tauri_plugin_stronghold::Builder::new(|password| {
-                // Phase 3: stronghold key derivation from device identifier
-                // Phase 4: integrate OS keychain here
+                #[cfg(not(debug_assertions))]
+                compile_error!(
+                    "Phase 3 stronghold KDF stub must not ship in release builds. \
+                     Replace with OS-keychain-backed derivation before enabling release. \
+                     See Phase 4 hand-off: icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md"
+                );
+                // PHASE 3 DEV STUB — CO-only, debug builds only.
+                // PHASE 4 TODO: replace with OS keychain (Keychain macOS, DPAPI Windows,
+                // libsecret Linux) per Phase 4 hand-off.
                 password.as_bytes().to_vec()
             })
             .build(),
@@ -23,6 +30,32 @@ pub fn run() {
             let bridge_url = std::env::var("BRIDGE_URL")
                 .unwrap_or_else(|_| "http://localhost:7080".to_string());
             let auth_token = std::env::var("BRIDGE_TOKEN").unwrap_or_default();
+
+            // Validate BRIDGE_URL: scheme must be http/https; host must be loopback
+            // unless ANCHOR_BRIDGE_ALLOW_REMOTE=1 is set (for future remote deployments).
+            {
+                let parsed = url::Url::parse(&bridge_url)
+                    .map_err(|e| format!("BRIDGE_URL parse error: {e}"))?;
+                match parsed.scheme() {
+                    "http" | "https" => {}
+                    s => return Err(format!("BRIDGE_URL scheme must be http or https, got {s}").into()),
+                }
+                if let Some(host) = parsed.host_str() {
+                    let loopback =
+                        host == "localhost" || host == "127.0.0.1" || host == "::1";
+                    let allow_remote = std::env::var("ANCHOR_BRIDGE_ALLOW_REMOTE")
+                        .ok()
+                        .as_deref()
+                        == Some("1");
+                    if !loopback && !allow_remote {
+                        return Err(format!(
+                            "BRIDGE_URL host {host} is non-loopback; \
+                             set ANCHOR_BRIDGE_ALLOW_REMOTE=1 to override"
+                        )
+                        .into());
+                    }
+                }
+            }
 
             // Background pull sync on startup
             let pool_clone = pool.clone();

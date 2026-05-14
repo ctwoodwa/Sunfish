@@ -63,6 +63,12 @@ async fn sync_one_entry(
         }
         ("Maintenance Note", "update") => {
             let name = doc_name.context("doc_name required for update")?;
+            if name.is_empty()
+                || name.len() > 140
+                || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+            {
+                anyhow::bail!("invalid doc_name: {name}");
+            }
             format!("{bridge_base_url}/api/v1/erpnext/maintenance/{name}")
         }
         _ => anyhow::bail!("unknown doctype/op_type: {doctype}/{op_type}"),

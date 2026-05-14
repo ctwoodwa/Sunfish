@@ -2,6 +2,16 @@ use sqlx::SqlitePool;
 use tauri::State;
 use uuid::Uuid;
 
+fn validate_doc_name(name: &str) -> Result<(), String> {
+    if name.is_empty()
+        || name.len() > 140
+        || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err(format!("invalid doc_name: {name}"));
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn enqueue_write(
     pool: State<'_, SqlitePool>,
@@ -10,6 +20,9 @@ pub async fn enqueue_write(
     doc_name: Option<String>,
     payload_json: String,
 ) -> Result<String, String> {
+    if let Some(ref name) = doc_name {
+        validate_doc_name(name)?;
+    }
     let id = Uuid::new_v4().to_string();
     sqlx::query(
         "INSERT INTO write_queue (id, doctype, op_type, doc_name, payload_json, created_at)
