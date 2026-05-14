@@ -10,6 +10,8 @@
   href: forms/
 - name: Inspections
   href: inspections/
+- name: Integration Config
+  href: integrations/
 - name: Leases
   href: leases/
 - name: Maintenance

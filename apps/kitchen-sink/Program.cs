@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
+using Sunfish.Blocks.Integrations;
 using Sunfish.UICore.Contracts;
+using Sunfish.UICore.Wayfinder.Integrations;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Foundation.Localization;
 using Sunfish.Foundation.Ship.Common;
@@ -87,6 +89,44 @@ builder.Services.AddScoped<ISunfishIconProvider>(sp => sp.GetRequiredService<Pro
 builder.Services.AddScoped<ISunfishJsInterop>(sp => sp.GetRequiredService<ProviderSwitcher>());
 
 builder.Services.AddScoped<FavoritesService>();
+
+// W#48 Phase 5 — Integration Atlas demo (ADR 0067).
+// InMemoryIntegrationAtlasProvider seeded with Payments (Stripe) + Messaging (Twilio) schemas.
+builder.Services.TryAddSingleton<IIntegrationAtlasContext, Sunfish.KitchenSink.Services.DemoIntegrationAtlasContext>();
+builder.Services.TryAddSingleton<IIntegrationAtlasProvider>(_ =>
+{
+    var payments = new IntegrationProviderSchema(
+        ProviderId: "stripe",
+        DisplayName: "Stripe",
+        Category: IntegrationCategory.Payments,
+        CredentialFields: [
+            new CredentialFieldSpec("publishable-key", "Publishable key", CredentialFieldKind.Text, CredentialAutocompleteHint.None, IsRequired: true, "Starts with pk_live_ or pk_test_", null),
+            new CredentialFieldSpec("secret-key", "Secret key", CredentialFieldKind.Secret, CredentialAutocompleteHint.CurrentPassword, IsRequired: true, "Starts with sk_live_ or sk_test_", null),
+        ],
+        HelpText: "Demo: Stripe Payments.",
+        DocumentationUrl: null);
+
+    var messaging = new IntegrationProviderSchema(
+        ProviderId: "twilio",
+        DisplayName: "Twilio",
+        Category: IntegrationCategory.Messaging,
+        CredentialFields: [
+            new CredentialFieldSpec("account-sid", "Account SID", CredentialFieldKind.Text, CredentialAutocompleteHint.None, IsRequired: true, "Starts with AC", null),
+            new CredentialFieldSpec("auth-token", "Auth token", CredentialFieldKind.Secret, CredentialAutocompleteHint.CurrentPassword, IsRequired: true, null, null),
+        ],
+        HelpText: "Demo: Twilio Messaging (unvalidated).",
+        DocumentationUrl: null);
+
+    var provider = new InMemoryIntegrationAtlasProvider([payments, messaging]);
+    // Seed Stripe as active + pre-validated Connected
+    provider.SetActiveProvider(IntegrationCategory.Payments, new ActiveProviderSnapshot(
+        ProviderId: payments.ProviderId,
+        ActivatedAt: DateTimeOffset.UtcNow.AddDays(-3),
+        ActivatedBy: new Sunfish.Foundation.Assets.Common.ActorId("demo-actor"),
+        ActivationOrderId: new Sunfish.Foundation.Assets.Common.StandingOrderId(Guid.Empty)));
+    provider.SetValidationStatus(IntegrationCategory.Payments, ProviderValidationStatus.Valid);
+    return provider;
+});
 
 // SunfishTeamSwitcher demo (Wave 6.6 deferred deliverable) — register in-memory
 // fakes for the kernel-runtime multi-team services so the showcase page can

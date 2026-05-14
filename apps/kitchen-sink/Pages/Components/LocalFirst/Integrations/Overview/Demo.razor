@@ -1,0 +1,244 @@
+@page "/components/local-first/integrations"
+@page "/components/local-first/integrations/overview"
+@layout MainLayout
+@implements IDisposable
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UICore.Wayfinder.Integrations
+@inject IIntegrationAtlasProvider AtlasProvider
+@inject IIntegrationAtlasContext AtlasCtx
+
+<PageTitle>Integration Atlas — Provider Config Demo</PageTitle>
+
+<SunfishExamplePanel Title="Integration Atlas — Provider Config"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/LocalFirst/Integrations/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>IIntegrationAtlasProvider</code> is the Atlas Integration-Config read + write
+            surface per <strong>ADR 0067</strong>. This demo uses
+            <code>InMemoryIntegrationAtlasProvider</code> seeded with two provider schemas — one
+            Payments provider (Stripe, pre-validated) and one Messaging provider (Twilio,
+            unvalidated) — to show the atlas projection and mutation API without a live network or
+            credential-encryption stack.
+        </p>
+        <p>
+            The full <code>AtlasIntegrationConfig</code> Blazor component (WAI-ARIA APG Tabs,
+            roving tabindex, WCAG 2.2 AA) ships in the accelerator projects:
+            <code>accelerators/anchor/</code> and <code>accelerators/bridge/</code>.
+            React parity ships in <code>packages/ui-adapters-react/src/components/Integrations/</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-atlas">
+
+            <div class="demo-atlas__header">
+                <strong>Atlas view</strong>
+                <span class="demo-atlas__tenant">tenant: @AtlasCtx.CurrentTenantId.Value · actor: @AtlasCtx.CurrentActorId.Value</span>
+                <button type="button" class="demo-atlas__refresh" @onclick="RefreshViewAsync">↻ Refresh</button>
+            </div>
+
+            @if (_view is null)
+            {
+                <p aria-live="polite" aria-busy="true">Loading atlas…</p>
+            }
+            else
+            {
+                <div class="demo-atlas__grid">
+                    @foreach (var schema in AtlasProvider.GetSchemas())
+                    {
+                        var cat = schema.Category;
+                        _view.StatusByCategory.TryGetValue(cat, out var status);
+                        _view.ActiveByCategory.TryGetValue(cat, out var active);
+                        <div class="demo-atlas__card">
+                            <div class="demo-atlas__card-header">
+                                <span class="demo-atlas__cat">@cat</span>
+                                <span class="demo-atlas__status demo-atlas__status--@status.ToString().ToLowerInvariant()"
+                                      role="img"
+                                      aria-label="Status: @status">
+                                    @StatusIcon(status)
+                                </span>
+                            </div>
+                            <div class="demo-atlas__provider">
+                                @if (active is not null)
+                                {
+                                    <span class="demo-atlas__active-label">@schema.DisplayName</span>
+                                }
+                                else
+                                {
+                                    <span class="demo-atlas__none">No active provider</span>
+                                }
+                            </div>
+                            <div class="demo-atlas__fields">
+                                @foreach (var field in schema.CredentialFields)
+                                {
+                                    <div class="demo-atlas__field">
+                                        <span class="demo-atlas__field-label">@field.DisplayLabel</span>
+                                        <span class="demo-atlas__field-kind">@field.Kind</span>
+                                        @if (field.IsRequired)
+                                        {
+                                            <span class="demo-atlas__required" aria-hidden="true"> *</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="demo-atlas__log-panel">
+                    <div class="demo-atlas__log-header">
+                        <strong>Event log</strong>
+                        <button type="button" class="demo-atlas__log-clear" @onclick="ClearLog">clear</button>
+                    </div>
+                    @if (_log.Count == 0)
+                    {
+                        <p class="demo-atlas__log-empty">
+                            Click <em>Validate Stripe</em> or <em>Validate Twilio</em> above to log events here.
+                        </p>
+                    }
+                    else
+                    {
+                        <pre class="demo-atlas__log-body">@string.Join("\n", _log)</pre>
+                    }
+                </div>
+            }
+
+            <div class="demo-atlas__actions">
+                <button type="button" class="demo-atlas__btn" @onclick="() => ValidateAsync(IntegrationCategory.Payments)">
+                    Validate Stripe (Payments)
+                </button>
+                <button type="button" class="demo-atlas__btn" @onclick="() => ValidateAsync(IntegrationCategory.Messaging)">
+                    Validate Twilio (Messaging)
+                </button>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+<style>
+    .demo-atlas { display: flex; flex-direction: column; gap: 1rem; }
+
+    .demo-atlas__header {
+        display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+        padding: .5rem .75rem;
+        background: var(--sunfish-card-bg, #f9fafb);
+        border: 1px solid var(--sunfish-border, #e5e7eb);
+        border-radius: .375rem;
+        font-size: .85rem;
+    }
+    .demo-atlas__tenant { color: var(--sunfish-muted, #6b7280); flex: 1; }
+    .demo-atlas__refresh {
+        background: transparent; border: 1px solid var(--sunfish-border, #d1d5db);
+        padding: .2rem .6rem; border-radius: .25rem; cursor: pointer; font-size: .8rem;
+    }
+    .demo-atlas__refresh:hover { border-color: var(--sunfish-accent, #2563eb); }
+
+    .demo-atlas__grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;
+    }
+
+    .demo-atlas__card {
+        border: 1px solid var(--sunfish-border, #e5e7eb);
+        border-radius: .5rem; padding: .875rem 1rem;
+        background: var(--sunfish-card-bg, #fff);
+        display: flex; flex-direction: column; gap: .5rem;
+    }
+
+    .demo-atlas__card-header { display: flex; justify-content: space-between; align-items: center; }
+    .demo-atlas__cat { font-weight: 600; font-size: .9rem; }
+    .demo-atlas__status { font-size: 1rem; }
+    .demo-atlas__status--valid { color: #16a34a; }
+    .demo-atlas__status--invalid { color: #dc2626; }
+    .demo-atlas__status--unreachable { color: #d97706; }
+    .demo-atlas__status--unknown { color: var(--sunfish-muted, #9ca3af); }
+
+    .demo-atlas__provider { font-size: .82rem; }
+    .demo-atlas__active-label { font-style: italic; }
+    .demo-atlas__none { color: var(--sunfish-muted, #9ca3af); }
+
+    .demo-atlas__fields { display: flex; flex-direction: column; gap: .25rem; }
+    .demo-atlas__field { display: flex; align-items: baseline; gap: .35rem; font-size: .78rem; }
+    .demo-atlas__field-label { color: var(--sunfish-fg, #374151); }
+    .demo-atlas__field-kind {
+        background: #f3f4f6; color: #6b7280; border-radius: .2rem;
+        padding: 0 .3rem; font-size: .7rem;
+    }
+    .demo-atlas__required { color: #dc2626; font-size: .78rem; }
+
+    .demo-atlas__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .demo-atlas__btn {
+        padding: .5rem 1rem; border-radius: .375rem; border: 1px solid var(--sunfish-accent, #2563eb);
+        background: var(--sunfish-accent, #2563eb); color: #fff;
+        font-size: .85rem; cursor: pointer; transition: opacity .12s;
+    }
+    .demo-atlas__btn:hover { opacity: .88; }
+
+    .demo-atlas__log-panel {
+        border: 1px solid var(--sunfish-border, #e5e7eb);
+        border-radius: .375rem; background: #0f1115; color: #e6e6e6;
+        min-height: 120px; display: flex; flex-direction: column;
+    }
+    .demo-atlas__log-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .4rem .75rem; border-bottom: 1px solid #2a2d33; font-size: .8rem;
+    }
+    .demo-atlas__log-clear {
+        background: transparent; border: 1px solid #3a3d44; color: #c0c0c0;
+        font-size: .72rem; padding: .1rem .4rem; border-radius: .2rem; cursor: pointer;
+    }
+    .demo-atlas__log-empty { padding: .75rem; color: #9aa0a6; font-size: .8rem; margin: 0; }
+    .demo-atlas__log-body {
+        flex: 1; overflow-y: auto; margin: 0; padding: .5rem .75rem;
+        font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .76rem;
+        line-height: 1.5; white-space: pre-wrap;
+    }
+</style>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Local-First", "Integrations", "Overview"];
+
+    private IntegrationAtlasView? _view;
+    private readonly List<string> _log = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _view = await AtlasProvider.GetAtlasViewAsync();
+    }
+
+    private async Task RefreshViewAsync()
+    {
+        _view = await AtlasProvider.GetAtlasViewAsync();
+    }
+
+    private async Task ValidateAsync(IntegrationCategory category)
+    {
+        _log.Insert(0, $"{DateTime.UtcNow:HH:mm:ss.fff}  ValidateAsync({category}) — demo (InMemory always returns Valid)");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+
+        // InMemoryIntegrationAtlasProvider.ValidateAsync always resolves Valid since no
+        // real probe endpoint is called. A production DefaultIntegrationAtlasProvider would
+        // call the IIntegrationProviderValidator registered for this category.
+        await AtlasProvider.ValidateProviderAsync(category, AtlasCtx);
+        _view = await AtlasProvider.GetAtlasViewAsync();
+
+        _view.StatusByCategory.TryGetValue(category, out var newStatus);
+        _log.Insert(0, $"  → new status: {newStatus}");
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private static string StatusIcon(ProviderValidationStatus status) => status switch
+    {
+        ProviderValidationStatus.Valid       => "✓",
+        ProviderValidationStatus.Invalid     => "✕",
+        ProviderValidationStatus.Unreachable => "⚠",
+        _                                   => "○",
+    };
+
+    public void Dispose() { }
+}
