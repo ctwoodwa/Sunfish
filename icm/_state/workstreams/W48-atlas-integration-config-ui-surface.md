@@ -4,7 +4,7 @@ number: 48
 slug: atlas-integration-config-ui-surface
 title: "**Atlas Integration-Config UI Surface** (ADR 0067; W#34 follow-on; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1a shipped 2026-05-06 PR #640; P1.5 PR1 StandingOrderId shipped PR #641; P1.5 PR2 IDecryptCapability shipped PR #642; **Phase 1b shipped 2026-05-06 PR #660** — IIntegrationAtlasProvider + IntegrationAtlasView + ActiveProviderSnapshot + IDecryptCapabilityProvider + AddSunfishIntegrationAtlas() + 4 AuditEventType + ContractSurfaceTests; NOTE: IssueXxxAsync returns Task<StandingOrderId> (ui-core cycle constraint); **Phase 2 FULLY UNBLOCKED** — IActorPrincipalResolver shipped PR #678; read `atlas-integration-config-p2-blocks-integrations-addendum.md` before starting; Phases 2-5 pending)"
+status_cell: "`building` (Phase 1a shipped 2026-05-06 PR #640; P1.5 PR1 StandingOrderId shipped PR #641; P1.5 PR2 IDecryptCapability shipped PR #642; **Phase 1b shipped 2026-05-06 PR #660** — IIntegrationAtlasProvider + IntegrationAtlasView + ActiveProviderSnapshot + IDecryptCapabilityProvider + AddSunfishIntegrationAtlas() + 4 AuditEventType + ContractSurfaceTests; NOTE: IssueXxxAsync returns Task<StandingOrderId> (ui-core cycle constraint); **Phase 2 SHIPPED 2026-05-13 PR #829** — DefaultIntegrationAtlasProvider + InMemoryIntegrationAtlasProvider + AddSunfishIntegrationAtlasDefaults() + SUNFISH_INTEGRATION_AUDIT001 analyzer + 25 tests; security council CONDITIONAL-PASS; decrypt-fail-closed fix applied; **Phase 3a next** — provider availability gate)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` + `icm/_state/handoffs/atlas-integration-config-p2-blocks-integrations-addendum.md` (XO ruling: Phase 2 impl → `blocks-integrations` package) + `docs/adrs/0067-atlas-integration-config-surface.md` (PR #539 merged)"
@@ -65,3 +65,29 @@ dependency cycles block some Phase 1 types. New sequence:
 5 build phases: P1a/1.5/1b → P2 reference impl + audit +
 SUNFISH_INTEGRATION_AUDIT001 analyzer; P3a/3b; P4 Anchor+Bridge; P5 docs.
 ~26-38h / ~7-10 PRs.
+
+**Phase 2 SHIPPED 2026-05-13 PR #829.** `packages/blocks-integrations/`:
+`DefaultIntegrationAtlasProvider` + `InMemoryIntegrationAtlasProvider` +
+`AddSunfishIntegrationAtlasDefaults()` DI extension + `SUNFISH_INTEGRATION_AUDIT001`
+Roslyn analyzer in `foundation-wayfinder-analyzers`. 25/25 tests pass. Security
+council CONDITIONAL-PASS; one High gap (decrypt-failure fail-open) applied before
+merge. Medium gaps deferred to follow-ups.
+
+**Phase 3a — Provider availability gate (2026-05-13).**
+Verified providers on origin/main after PR #829:
+
+| Provider pkg | IntegrationCategory | Available? | Notes |
+|---|---|---|---|
+| `providers-mesh-headscale` | `MeshVpn` | ✓ | `HeadscaleAdapter` + audit-emission tests |
+| `providers-recaptcha` | `Captcha` | ✓ | `RecaptchaV3CaptchaVerifier` + config |
+| `providers-stripe` | `Payments` | ✗ | W#5 commercial Phase 2 — not yet built |
+| `providers-square` | `Payments` | ✗ | W#5 — not yet built |
+| `providers-sendgrid` | `TransactionalEmail` | ✗ | W#22 leasing-pipeline Phase 2+ |
+| `providers-postmark` | `TransactionalEmail` | ✗ | W#22 — not yet built |
+| `providers-mailchimp` | `MarketingEmail` | ✗ | W#22 — not yet built |
+| `providers-twilio` | `Messaging` | ✗ | W#5/W#22 — not yet built |
+| `providers-hcaptcha` | `Captcha` | ✗ | Not separate pkg; hCaptcha not yet built |
+
+**Phase 3b scope** (2 providers ready): `HeadscaleMeshVpnSchemaProvider` +
+`HeadscaleMeshVpnValidator` in `providers-mesh-headscale`; `RecaptchaV3SchemaProvider`
++ `RecaptchaV3IntegrationValidator` in `providers-recaptcha`.
