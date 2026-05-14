@@ -1,12 +1,27 @@
 import { useQuery } from '@tanstack/react-query'
-import { getLeases, getLease, getPayments } from '@/api/erpnext'
+import { invoke } from '@tauri-apps/api/core'
+import { getLeases, getLease, getPayments, type Lease, type Payment } from '@/api/erpnext'
 import { useCompanyStore } from '@/stores/companyStore'
+import { useSyncStore } from '@/stores/syncStore'
+import { isTauri } from '@/utils/isTauri'
 
 export function useLeases() {
   const activeCompany = useCompanyStore((s) => s.activeCompany)
+  const setSyncState = useSyncStore((s) => s.setSyncState)
+
   return useQuery({
     queryKey: ['leases', activeCompany],
-    queryFn: getLeases,
+    queryFn: async () => {
+      if (isTauri()) {
+        try {
+          return await getLeases()
+        } catch {
+          setSyncState('offline')
+          return invoke<Lease[]>('get_cached_leases')
+        }
+      }
+      return getLeases()
+    },
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   })
@@ -23,9 +38,21 @@ export function useLease(name: string) {
 
 export function usePayments() {
   const activeCompany = useCompanyStore((s) => s.activeCompany)
+  const setSyncState = useSyncStore((s) => s.setSyncState)
+
   return useQuery({
     queryKey: ['payments', activeCompany],
-    queryFn: getPayments,
+    queryFn: async () => {
+      if (isTauri()) {
+        try {
+          return await getPayments()
+        } catch {
+          setSyncState('offline')
+          return invoke<Payment[]>('get_cached_payments')
+        }
+      }
+      return getPayments()
+    },
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   })

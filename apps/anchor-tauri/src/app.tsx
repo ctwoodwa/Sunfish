@@ -9,10 +9,12 @@ import { RentCollectionPage } from '@/pages/RentCollectionPage'
 import { AccountingPage } from '@/pages/AccountingPage'
 import { CrewCommsPage } from '@/pages/CrewCommsPage'
 import { MaintenancePage } from '@/pages/MaintenancePage'
+import { SyncStateBadge } from '@sunfish/ui-react'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
 import { useAuthStore } from '@/stores/authStore'
+import { useSyncStore } from '@/stores/syncStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +63,7 @@ function AppLayout() {
   const setActiveCompany = useCompanyStore((s) => s.setActiveCompany)
   const setAvailableCompanies = useCompanyStore((s) => s.setAvailableCompanies)
   const setAuth = useAuthStore((s) => s.setAuth)
+  const syncState = useSyncStore((s) => s.syncState)
 
   useEffect(() => {
     fetch('/api/v1/whoami', { credentials: 'include' })
@@ -131,7 +134,10 @@ function AppLayout() {
               Maintenance
             </NavLink>
           </nav>
-          <CompanySwitcher />
+          <div className="flex items-center gap-3">
+            <SyncStateBadge state={syncState} />
+            <CompanySwitcher />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8">

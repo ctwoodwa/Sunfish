@@ -56,6 +56,9 @@ jobs:
         with:
           workspaces: apps/anchor-tauri/src-tauri
 
+      - name: Refresh Rust toolchain after cache restore
+        run: rustup update stable --no-self-update && rustup target add ${{ matrix.target }}
+
       - name: Install Linux system dependencies
         if: matrix.os == 'ubuntu-22.04'
         run: |
