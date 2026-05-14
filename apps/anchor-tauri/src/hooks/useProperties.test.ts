@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createElement } from 'react'
 import { useProperties } from './useProperties'
 
+const { mockIsTauri } = vi.hoisted(() => ({ mockIsTauri: vi.fn() }))
+
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }))
@@ -22,7 +24,6 @@ vi.mock('@/stores/syncStore', () => ({
     sel({ setSyncState: vi.fn(), setLastSyncedAt: vi.fn() }),
 }))
 
-const mockIsTauri = vi.fn()
 vi.mock('@/utils/isTauri', () => ({
   isTauri: mockIsTauri,
 }))
