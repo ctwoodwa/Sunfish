@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation-transport\Sunfish.Foundation.Transport.csproj" />
     <ProjectReference Include="..\federation-common\Sunfish.Federation.Common.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />

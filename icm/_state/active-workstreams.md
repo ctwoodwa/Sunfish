@@ -254,7 +254,14 @@ Verified providers on origin/main after PR #829:
 
 **Phase 3b scope** (2 providers ready): `HeadscaleMeshVpnSchemaProvider` +
 `HeadscaleMeshVpnValidator` in `providers-mesh-headscale`; `RecaptchaV3SchemaProvider`
-+ `RecaptchaV3IntegrationValidator` in `providers-recaptcha`. |
++ `RecaptchaV3IntegrationValidator` in `providers-recaptcha`.
+
+**Phase 3b BUILDING** — PR open; 32 headscale + 26 recaptcha tests;
+`HeadscaleIntegrationSchemaProvider` + `HeadscaleIntegrationValidator` +
+`AddHeadscaleIntegration()` in `providers-mesh-headscale/Integration/`;
+`RecaptchaV3IntegrationSchemaProvider` + `RecaptchaV3IntegrationValidator` +
+`AddRecaptchaV3Integration()` in `providers-recaptcha/Integration/`;
+council pending. |
 | 49 | **OOD Watch Rotation** (ADR 0078; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `built` (Phases 1-3 complete + P2 amendment 2026-05-06) | sunfish-PM | `docs/adrs/0078-ood-watch-rotation.md` (PR #571 merged) + `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` + `icm/_state/handoffs/ood-watch-rotation-stage06-p2-amendment-addendum.md` + `apps/docs/foundation/wayfinder/ood-watch.md` | **Phases 1-3 built + P2 amendment 2026-05-06.** PRs:
 
 - **P1 #610** — substrate types + audit constants + StandingOrder extension; council 2 Major
