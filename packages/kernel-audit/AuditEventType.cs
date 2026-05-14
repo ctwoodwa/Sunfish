@@ -732,6 +732,17 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An <c>IIntegrationProviderValidator</c> returned a non-<c>Valid</c> status (Invalid / Unreachable / Unknown) for a provider's current credential set. Emitted by <c>IIntegrationAtlasProvider.ValidateProviderAsync</c> on validator failure or capability-acquisition failure. Carries a discriminating <c>errorCode</c> + <c>errorMessage</c> in the payload (e.g., <c>"no-decrypt-capability"</c>, <c>"no-validator-registered"</c>, validator-supplied codes). Per ADR 0067 §5.3.1.</summary>
     public static readonly AuditEventType IntegrationValidationFailed = new("IntegrationValidationFailed");
 
+    // ===== W#60 Phase 5 — ERPNext reporting surface =====
+
+    /// <summary>A user viewed the rent roll report (all properties × units × payment status). Emitted by the Bridge Reports endpoint on GET /api/v1/reports/rent-roll.</summary>
+    public static readonly AuditEventType RentRollViewed = new("RentRollViewed");
+
+    /// <summary>A user viewed the Profit &amp; Loss report for a property or company. Emitted by the Bridge Reports endpoint on GET /api/v1/reports/profit-loss.</summary>
+    public static readonly AuditEventType PLReportViewed = new("PLReportViewed");
+
+    /// <summary>A user exported the Profit &amp; Loss report as CSV or JSON. Emitted by the Bridge Reports endpoint on GET /api/v1/reports/profit-loss/export.</summary>
+    public static readonly AuditEventType PLReportExported = new("PLReportExported");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

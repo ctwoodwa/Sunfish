@@ -31,6 +31,7 @@ using Sunfish.Blocks.PublicListings.DependencyInjection;
 using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
 using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
+using Sunfish.Bridge.Reports;
 using Sunfish.Bridge.Features.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.Integrations;
@@ -177,6 +178,9 @@ app.MapIdentityEndpoints();
 
 // W#60 Phase 2 — ERPNext proxy (GET /api/v1/erpnext/properties, more in later phases).
 app.MapERPNextProxy();
+
+// W#60 Phase 5 — reporting surface (rent roll + P&L + CSV export).
+app.MapReportsEndpoints();
 
 // W#60 Phase 2 — caller-identity endpoint consumed by the React SPA.
 // Phase 1 returns a dev stub; Phase 2 wires real OIDC claims via UserService.
