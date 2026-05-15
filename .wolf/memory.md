@@ -5558,3 +5558,1538 @@
 | 06:21 | Edited ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/HistoricalKeysPage.razor | keys() → history() | ~39 |
 | 06:24 | Edited icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | inline fix | ~58 |
 | 06:24 | W#58 Phase 1b: 5 Anchor Blazor identity pages (PR #764 open, auto-merge enabled) | accelerators/anchor/Components/Pages/Identity/ + NavMenu.razor | WCAG council PASS-WITH-AMENDMENTS; B1–B4 applied; CI running | ~8k |
+| 06:26 | Edited icm/_state/workstreams/W59-crew-comms-anchor-mvp-demo-integration.md | 2→2 lines | ~69 |
+
+## Session: 2026-05-13 06:32
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 06:35 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Sunfish.Anchor.csproj | 3→6 lines | ~152 |
+| 06:35 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Resources/Localization/SharedResource.resx | expanded (+106 lines) | ~2005 |
+| 06:35 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Services/SystemRequirementsViewHelpers.cs | — | ~532 |
+| 06:36 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/SystemRequirementsDimensionRow.razor | — | ~522 |
+| 06:36 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/SystemRequirementsDimensionRow.razor.css | — | ~583 |
+| 06:36 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor | — | ~1237 |
+| 06:36 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor.css | — | ~543 |
+| 06:36 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/tests/tests.csproj | 3→5 lines | ~106 |
+| 06:36 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/tests/tests.csproj | 1→3 lines | ~92 |
+| 06:37 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/tests/SystemRequirementsTests.cs | — | ~2140 |
+| 06:38 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/tests/SystemRequirementsTests.cs | 3→4 lines | ~36 |
+| 06:39 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/SystemRequirementsDimensionRow.razor | 3→4 lines | ~42 |
+| 06:39 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor | 3→4 lines | ~40 |
+| 06:41 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor | — | ~1375 |
+| 06:42 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/SystemRequirementsDimensionRow.razor | — | ~1000 |
+| 06:42 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor | expanded (+7 lines) | ~226 |
+| 06:47 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Resources/Localization/SharedResource.resx | expanded (+18 lines) | ~435 |
+| 06:48 | Created ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor | — | ~1801 |
+| 06:48 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor.css | 3→4 lines | ~106 |
+| 06:48 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor.css | modified not() | ~84 |
+| 06:48 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/SystemRequirementsDimensionRow.razor.css | 1→3 lines | ~53 |
+| 06:49 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Resources/Localization/SharedResource.resx | inline fix | ~72 |
+| 06:50 | Edited ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/SystemRequirements.razor | 3→5 lines | ~115 |
+| 10:52 | W#47 Phase 1 build complete — SystemRequirements PreInstallFullPage (W#42 follow-on P1) | accelerators/anchor/Components/Pages/SystemRequirements.razor + DimensionRow + CSS + ViewHelpers + 26+4 RESX keys | PR #765 open; auto-merge enabled; CI in progress | ~2800 |
+| 06:52 | Edited icm/_state/workstreams/W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md | 2→2 lines | ~58 |
+| 06:53 | Edited icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | inline fix | ~62 |
+
+## Session: 2026-05-13 07:00
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:07 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 3→5 lines | ~109 |
+| 07:07 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Services/IBridgeRequestContext.cs | — | ~220 |
+| 07:07 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Features/Identity/BridgeRequestContext.cs | — | ~354 |
+| 07:07 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Features/Identity/BridgeIdentityAtlasSurface.cs | — | ~1392 |
+| 07:09 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→3 lines | ~30 |
+| 07:09 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→6 lines | ~107 |
+| 07:09 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/IdentityProfileEditPage.razor | — | ~400 |
+| 07:09 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/KeyRotationPage.razor | — | ~518 |
+| 07:10 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | — | ~649 |
+| 07:10 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/HistoricalKeysPage.razor | — | ~574 |
+| 07:10 | Created ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/ActiveTeamOverviewPage.razor | — | ~684 |
+| 07:11 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | 6→6 lines | ~86 |
+| 07:11 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | 6→3 lines | ~46 |
+| 07:11 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/ActiveTeamOverviewPage.razor | inline fix | ~5 |
+| 07:11 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/HistoricalKeysPage.razor | added optional chaining | ~33 |
+| 07:11 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Layout/MainLayout.razor | expanded (+15 lines) | ~253 |
+| 07:13 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/ActiveTeamOverviewPage.razor | modified foreach() | ~354 |
+| 07:14 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Features/Identity/BridgeIdentityAtlasSurface.cs | modified GetActiveTeamOverviewAsync() | ~283 |
+| 07:16 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/ActiveTeamOverviewPage.razor | 3→3 lines | ~52 |
+| 07:16 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/ActiveTeamOverviewPage.razor | 7→8 lines | ~101 |
+| 07:16 | Edited ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/ActiveTeamOverviewPage.razor | 2→2 lines | ~35 |
+| 07:19 | Edited icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | inline fix | ~99 |
+
+## Session: 2026-05-13 07:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:32 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/IAnchorSystemRequirementsSurface.cs | — | ~395 |
+| 07:33 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/AnchorMauiSystemRequirementsSurface.cs | — | ~544 |
+| 07:33 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/AnchorMauiSystemRequirementsRenderer.cs | — | ~1115 |
+| 07:33 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Components/SystemRequirementsInlinePanel.razor | — | ~701 |
+| 07:34 | Edited ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Resources/Localization/SharedResource.resx | expanded (+14 lines) | ~290 |
+| 07:34 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/tests/SystemRequirementsRendererDispatchTests.cs | — | ~1727 |
+| 07:34 | Edited ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/tests/tests.csproj | 2→5 lines | ~150 |
+| 07:36 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/AnchorMauiSystemRequirementsRenderer.cs | — | ~1216 |
+| 07:37 | Edited ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/AnchorMauiSystemRequirementsRenderer.cs | modified foreach() | ~282 |
+| 07:40 | Edited ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Components/SystemRequirementsInlinePanel.razor | 6→9 lines | ~115 |
+| 07:43 | Edited ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/AnchorMauiSystemRequirementsSurface.cs | 4→4 lines | ~48 |
+| 07:46 | Edited ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Components/SystemRequirementsInlinePanel.razor | added 1 condition(s) | ~405 |
+| 07:46 | Created ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Components/SystemRequirementsInlinePanel.razor.css | — | ~409 |
+| 07:49 | Edited icm/_state/workstreams/W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md | inline fix | ~87 |
+| 11:49 | W#47 Phase 2 complete — PR #768 auto-merge | accelerators/anchor/Services/{IAnchorSystemRequirementsSurface,AnchorMauiSystemRequirements*.cs}, Components/SystemRequirementsInlinePanel.razor | PASS-WITH-AMENDMENTS C1+C2+A1+A2 applied; 125/125 pass | ~1800 |
+
+## Session: 2026-05-13 07:55
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:01 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Services/SystemRequirementsRegressionObserver.cs | — | ~812 |
+| 08:01 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Services/IAnchorSystemRequirementsSurface.cs | expanded (+10 lines) | ~202 |
+| 08:01 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Services/AnchorMauiSystemRequirementsSurface.cs | 8→10 lines | ~182 |
+| 08:01 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Services/AnchorMauiSystemRequirementsSurface.cs | 5→8 lines | ~66 |
+| 08:02 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Services/AnchorMauiSystemRequirementsRenderer.cs | — | ~1854 |
+| 08:02 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/SystemRequirementsRegressionBanner.razor | — | ~560 |
+| 08:02 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/SystemRequirementsRegressionBanner.razor.css | — | ~240 |
+| 08:02 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Resources/Localization/SharedResource.resx | 5→10 lines | ~142 |
+| 08:03 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/Layout/MainLayout.razor | 17→21 lines | ~150 |
+| 08:03 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/MauiProgram.cs | expanded (+11 lines) | ~294 |
+| 08:03 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/tests/tests.csproj | 3→6 lines | ~176 |
+| 08:03 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/tests/SystemRequirementsRendererDispatchTests.cs | 11→12 lines | ~135 |
+| 08:03 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/tests/SystemRequirementsRegressionObserverTests.cs | — | ~2278 |
+| 08:06 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/tests/SystemRequirementsRegressionObserverTests.cs | — | ~2679 |
+| 08:13 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/SystemRequirementsRegressionBanner.razor.css | — | ~288 |
+| 08:14 | Created ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/SystemRequirementsRegressionBanner.razor | — | ~883 |
+| 08:14 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Resources/Localization/SharedResource.resx | 6→10 lines | ~146 |
+| 08:14 | Edited ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/tests/SystemRequirementsRegressionObserverTests.cs | modified RegressionBanner_SourceMarkup_HasAlertRoleForAssertiveAnnouncement() | ~208 |
+| 08:20 | Edited icm/_state/workstreams/W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md | inline fix | ~83 |
+| 08:20 | W#47 Phase 3 — SystemRequirementsRegressionObserver + banner + MauiProgram DI; PR #769 auto-merge | accelerators/anchor/{Services,Components,MauiProgram,tests} | 130/130 pass; WCAG council PASS-WITH-AMENDMENTS C1-C5 | ~8k |
+
+## Session: 2026-05-13 08:23
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:28 | Created ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/Services/AnchorMauiServiceCollectionExtensions.cs | — | ~646 |
+| 08:28 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/MauiProgram.cs | reduced (-7 lines) | ~61 |
+| 08:28 | Created ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsPreInstallFullPageA11yTests.cs | — | ~1168 |
+| 08:29 | Created ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsInlinePanelA11yTests.cs | — | ~1020 |
+| 08:29 | Created ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs | — | ~1094 |
+| 08:29 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/tests.csproj | 4→6 lines | ~90 |
+| 08:30 | Edited ../../../../../private/tmp/wt-w47-p4/apps/docs/foundation/wayfinder/wcag.md | expanded (+32 lines) | ~896 |
+| 08:35 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs | 4→5 lines | ~32 |
+| 08:35 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs | modified RegressionBanner_NoRedundantAriaLiveAssertive() | ~231 |
+| 08:39 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs | modified RegressionBanner_NoRedundantAriaLiveAssertive() | ~360 |
+| 08:39 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsInlinePanelA11yTests.cs | modified InlinePanel_HasNoAssertiveLiveRegion() | ~316 |
+| 08:39 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/Services/AnchorMauiServiceCollectionExtensions.cs | 4→9 lines | ~198 |
+| 08:39 | Edited ../../../../../private/tmp/wt-w47-p4/apps/docs/foundation/wayfinder/wcag.md | 7→7 lines | ~319 |
+| 08:42 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsPreInstallFullPageA11yTests.cs | modified LocateRazorSourceOrFail() | ~223 |
+| 08:42 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsInlinePanelA11yTests.cs | modified InlinePanel_FailBadgeHasAccessibleLabel() | ~290 |
+| 08:42 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsInlinePanelA11yTests.cs | modified LocateRazorSourceOrFail() | ~221 |
+| 08:42 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsRegressionBannerA11yTests.cs | modified LocateBannerSourceOrFail() | ~243 |
+| 08:44 | Edited ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/SystemRequirementsInlinePanelA11yTests.cs | 11→13 lines | ~260 |
+| 08:45 | Edited icm/_state/workstreams/W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md | 2→2 lines | ~108 |
+| 08:46 | Edited icm/_state/active-workstreams.md | inline fix | ~153 |
+| 08:46 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_47_anchor_maui_renderer_built.md | — | ~629 |
+| 08:46 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 1→2 lines | ~103 |
+| 08:46 | W#47 P4 COMPLETE: AnchorMauiServiceCollectionExtensions + 9 a11y harness tests + wcag.md per-adapter conformance section | accelerators/anchor/Services/AnchorMauiServiceCollectionExtensions.cs + tests/A11y/ + apps/docs/foundation/wayfinder/wcag.md | PR #770 auto-merge enabled; 139/139 tests pass; ledger + memory updated | ~2800 |
+| 08:49 | Edited packages/foundation-transport/tests/MdnsPeerTransportTests.cs | 8→8 lines | ~101 |
+
+## Session: 2026-05-13 08:52
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:54 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 2→2 lines | ~102 |
+| 08:55 | Edited ../../../../../tmp/wt-design-tokens-fix/packages/foundation-transport/tests/MdnsPeerTransportTests.cs | modified TODO() | ~229 |
+
+## Session: 2026-05-13 08:56
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:00 | Created icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md | — | ~6316 |
+| 13:00 | Authored W#60 Phase 3 hand-off (Tauri scaffold + SQLite cache + Loro CRDT, 3 PRs) | icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md | success |
+| 13:00 | Dispatched ADR 0086 council review (background Opus agent) | docs/adrs/0086-anchor-tauri-react-product-surface.md | running |
+| 09:00 | Created ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.strings.ts | — | ~401 |
+| 09:00 | Created ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsDimensionRow.tsx | — | ~684 |
+| 09:00 | Created ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | — | ~1072 |
+| 09:00 | Created ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/index.ts | — | ~86 |
+| 09:00 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | "icm/_state/handoffs/w60-e" → "Phase 2: " | ~61 |
+| 09:00 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~105 |
+| 09:01 | Created ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.test.tsx | — | ~1376 |
+| 09:01 | Edited icm/_state/active-workstreams.md | inline fix | ~22 |
+| 09:01 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/index.ts | expanded (+30 lines) | ~246 |
+| 09:01 | Edited icm/_state/active-workstreams.md | inline fix | ~7 |
+| 09:01 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~83 |
+| 09:01 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~85 |
+| 09:01 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | "Phase 2: " → "P2: " | ~57 |
+| 09:02 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/index.ts | types() → values() | ~135 |
+| 09:03 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | CSS: B2 | ~212 |
+| 09:03 | Created icm/07_review/output/council-review-adr-0086-tauri-react-surface-2026-05-13.md | — | ~2253 |
+| 09:03 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | CSS: W2 | ~251 |
+| 09:03 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | "main" → "sf-sysreq-fullpage" | ~21 |
+| 09:03 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | inline fix | ~4 |
+| 09:03 | Edited docs/adrs/0086-anchor-tauri-react-product-surface.md | inline fix | ~146 |
+| 09:04 | Edited docs/adrs/0086-anchor-tauri-react-product-surface.md | inline fix | ~147 |
+| 09:04 | Edited docs/adrs/0086-anchor-tauri-react-product-surface.md | 1→3 lines | ~135 |
+| 09:04 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsDimensionRow.tsx | modified StatusIcon() | ~684 |
+| 09:04 | Edited docs/adrs/0086-anchor-tauri-react-product-surface.md | 4→5 lines | ~202 |
+| 09:04 | Edited docs/adrs/0086-anchor-tauri-react-product-surface.md | 1→2 lines | ~33 |
+| 09:04 | Edited docs/adrs/0086-anchor-tauri-react-product-surface.md | expanded (+16 lines) | ~336 |
+| 09:04 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.test.tsx | added optional chaining | ~342 |
+| 09:04 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.test.tsx | added optional chaining | ~94 |
+| 09:06 | Created ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | — | ~1296 |
+| 09:06 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | 8→7 lines | ~156 |
+| 09:07 | Edited ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.test.tsx | expanded (+37 lines) | ~450 |
+| 13:10 | ADR 0086 council review ACCEPT WITH AMENDMENTS — 4 blocking applied + pushed to PR #737 | docs/adrs/0086-anchor-tauri-react-product-surface.md | d79591fe |
+| 13:10 | W#47 P4 PR #770 + transport-fix PR #771 both merged (auto-merge); buglog bug-972 logged (FakeTimeProvider missing in TCP test) | packages/foundation-transport | merged |
+| 13:12 | W#56 P1 PR #773 pushed + open (auto-merge) — serialization contract + Bridge endpoint; 4 C# + 10 TS tests | accelerators/bridge + ui-adapters-react | open |
+| 13:12 | W#56 P2 PR #774 pushed + open (auto-merge) — PreInstallFullPage component + 9 new tests; WCAG B1-B3 + 4-perspective B-API-1/B-ARCH-1 applied | ui-adapters-react | open |
+| 09:10 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsInlinePanel.tsx | — | ~320 |
+| 09:10 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsRegressionBanner.tsx | — | ~728 |
+| 09:10 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/hooks/useSystemRequirements.ts | — | ~454 |
+
+## Session: 2026-05-13 09:10
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:10 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.tsx | — | ~1481 |
+| 09:11 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/index.ts | 3→5 lines | ~160 |
+| 09:11 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/index.ts | expanded (+6 lines) | ~142 |
+| 09:11 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsPhase3.test.tsx | — | ~1044 |
+| 09:12 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsPhase3.test.tsx | 10→11 lines | ~154 |
+| 09:12 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.test.tsx | 12→15 lines | ~152 |
+| 09:13 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.strings.ts | 11→15 lines | ~134 |
+| 09:13 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsRegressionBanner.tsx | CSS: F1, F2, F3 | ~307 |
+| 09:14 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsPhase3.test.tsx | CSS: F1 | ~236 |
+
+## Session: 2026-05-13 09:17
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:17 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/hooks/useSystemRequirements.ts | — | ~774 |
+| 09:17 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirementsPhase3.test.tsx | expanded (+9 lines) | ~306 |
+| 09:18 | Created ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/hooks/useSystemRequirements.test.ts | — | ~903 |
+| 09:18 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/index.ts | 2→2 lines | ~52 |
+| 09:21 | Created ../../../../../private/tmp/wt-w56-p4/packages/ui-adapters-react/src/components/SystemRequirements/SystemRequirements.stories.tsx | — | ~1578 |
+| 09:22 | Edited ../../../../../private/tmp/wt-w56-p4/apps/docs/foundation/wayfinder/wcag.md | expanded (+42 lines) | ~873 |
+| 09:22 | Edited ../../../../../private/tmp/wt-w56-p4/packages/ui-adapters-react/README.md | expanded (+12 lines) | ~273 |
+| 09:25 | Edited ../../../../../private/tmp/wt-w56-p5/_shared/engineering/adapter-parity.md | 19→22 lines | ~510 |
+| 09:25 | Edited ../../../../../private/tmp/wt-w56-p5/icm/_state/workstreams/W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md | 2→2 lines | ~83 |
+| 09:25 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_56_bridge_react_renderer_built.md | — | ~730 |
+| 09:25 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 1→5 lines | ~74 |
+| 09:33 | Edited ../../../../../private/tmp/wt-wsb/icm/_state/workstreams/W01-multi-tenancy-type-surface-convention.md | 4→2 lines | ~36 |
+| 09:33 | Edited ../../../../../tmp/wt-nu1510/packages/federation-blob-replication/Sunfish.Federation.BlobReplication.csproj | 4→2 lines | ~37 |
+| 09:35 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Events/EventQueueService.swift | modified markFailed() | ~161 |
+| 09:35 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Events/EventQueueService.swift | added nullish coalescing | ~514 |
+| 09:35 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/QueueStatusRow.swift | — | ~983 |
+| 09:35 | Flipped draft PRs #737+#741+#743+#746+#748 to open (CI green; ADR 0086+0048-A3+0061-A10+0087+W60-foss) | PRs | complete | ~120 |
+| 09:35 | Created PR #778 (W60 Phase 3 handoff: Tauri+SQLite+Loro; gated on ADR 0086 Accepted) + auto-merge | icm/handoffs/ | complete | ~85 |
+| 09:35 | Fixed NU1510 build blocker in federation-blob-replication (PR #780 auto-merge); unblocks W#56 P2+P4 | packages/federation-blob-replication/*.csproj | complete | ~90 |
+
+## Session: 2026-05-13 09:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:38 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | — | ~1093 |
+| 09:39 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/SettingsView.swift | — | ~1721 |
+| 09:39 | Edited ../../../../../private/tmp/wt-w23-p6/packages/kernel-audit/AuditEventType.cs | 2→5 lines | ~152 |
+| 09:39 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | 4→5 lines | ~68 |
+| 09:39 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | modified HandleFieldUnpairAsync() | ~404 |
+| 09:39 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/ContentView.swift | modified appendAsync() | ~423 |
+| 09:41 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/QueueStatusRow.swift | 13→13 lines | ~157 |
+| 09:41 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/QueueStatusRow.swift | 7→9 lines | ~52 |
+| 09:42 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/QueueStatusRow.swift | 23→25 lines | ~213 |
+| 09:42 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/QueueStatusRow.swift | 10→9 lines | ~52 |
+| 09:42 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | inline fix | ~28 |
+| 09:42 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | QueueStatus() → QueueStatusSnapshot() | ~47 |
+| 09:42 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | added 1 import(s) | ~12 |
+| 09:42 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | modified ToolbarItem() | ~79 |
+| 09:43 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/SettingsView.swift | added 1 import(s) | ~12 |
+| 09:43 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/SettingsView.swift | modified ToolbarItem() | ~42 |
+| 09:43 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/SettingsView.swift | modified load() | ~128 |
+| 09:43 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/SettingsView.swift | modified loadDeviceId() | ~43 |
+| 09:43 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/SettingsView.swift | clearKeychain() → clear() | ~38 |
+| 09:47 | Edited ../../../../../tmp/wt-ledger-sync/icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | inline fix | ~108 |
+| 09:47 | Edited ../../../../../tmp/wt-ledger-sync/icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | 2→2 lines | ~135 |
+| 09:47 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/QueueStatusRow.swift | — | ~1614 |
+| LOOP | PR #781: bulk NU1510 fix — 8 more csproj files (Bridge.Data, Bridge.Tests, local-node-host, kernel-crdt/lease/ledger/runtime/signatures/sync); auto-merge | packages/ | complete | ~110 |
+| LOOP | PR #782: ledger sync W#55 (P3 merged, P4 ready) + W#58 (P2 merged, P3 ready); auto-merge | icm/_state/workstreams/ | complete | ~90 |
+| LOOP | PR #773 W#56 P1 merge conflict in pnpm-lock.yaml + .husky/pre-commit — COB rebase needed | w56/phase1 branch | blocked | ~60 |
+| 09:48 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | 5→10 lines | ~90 |
+| 09:48 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | expanded (+6 lines) | ~180 |
+| 09:48 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | added 2 condition(s) | ~818 |
+| 09:48 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/Tests/SunfishFieldHomeTests/QueueStatusSnapshotTests.swift | — | ~737 |
+| 09:49 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/Package.swift | 7→12 lines | ~92 |
+| 09:50 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/FieldUnpairEndpointTests.cs | — | ~1433 |
+| 09:51 | Created ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/FieldUnpairEndpointTests.cs | — | ~1499 |
+| 09:52 | Edited ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/FieldUnpairEndpointTests.cs | inline fix | ~8 |
+| 13:55 | W#23 Phase 6 complete — HomeView + QueueStatusRow + SettingsView + unpair endpoint + 18 tests | PR #783 auto-merge | ~12000 |
+| 09:59 | Edited ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/index.ts | 29→26 lines | ~235 |
+| 10:00 | Edited ../../../../../private/tmp/wt-w56-p4/apps/docs/foundation/wayfinder/wcag.md | 35→34 lines | ~843 |
+
+## Session: 2026-05-13 10:04
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:04 | Edited ../../../../../private/tmp/wt-w56-p4/apps/docs/foundation/wayfinder/wcag.md | 5→2 lines | ~77 |
+| 10:04 | Edited ../../../../../private/tmp/wt-w56-p4/apps/docs/foundation/wayfinder/wcag.md | removed 4 lines | ~7 |
+| 10:09 | Edited ../../../../../tmp/wt-adr0086-accept/docs/adrs/0086-anchor-tauri-react-product-surface.md | inline fix | ~5 |
+| 10:09 | Edited ../../../../../tmp/wt-adr0086-accept/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~92 |
+| 10:10 | Edited ../../../../../tmp/wt-adr0086-accept/icm/_state/workstreams/W23-ios-field-capture-app-substrate-v1.md | "ready-to-build" → "building" | ~44 |
+| 10:10 | Edited ../../../../../tmp/wt-adr0086-accept/icm/_state/workstreams/W23-ios-field-capture-app-substrate-v1.md | "ready-to-build" → "building" | ~5 |
+| LOOP | ADR 0086 merged (PR #737) but still Proposed; created flip PR #784 (Proposed→Accepted) + W#60 P3 ready-to-build + W#23 P6 merged update | docs/adrs/0086*, W60/W23 workstreams | complete | ~130 |
+| LOOP | W#56 P3 (#775) rebased onto main by COB + auto-merge enabled (BLOCKED on CI); W#56 P1+P4 closed — COB restructuring chain | w56 PRs | monitoring | ~60 |
+| 10:12 | Created ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Capture/Asset/AssetCapturePayload.swift | — | ~240 |
+| 10:13 | Created ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Capture/Asset/AssetCaptureView.swift | — | ~1770 |
+| 10:13 | Created ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Capture/Asset/AssetCaptureView.swift | — | ~1467 |
+| 10:13 | Edited ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | modified Section() | ~482 |
+| 10:13 | Edited ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Home/HomeView.swift | expanded (+6 lines) | ~224 |
+| 10:14 | Created ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/ContentView.swift | — | ~492 |
+| 10:14 | Created ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/Tests/SunfishFieldCaptureTests/AssetCapturePayloadTests.swift | — | ~554 |
+| 10:14 | Edited ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/Package.swift | 7→12 lines | ~93 |
+| 10:16 | Edited ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/Tests/SunfishFieldCaptureTests/AssetCapturePayloadTests.swift | inline fix | ~26 |
+| 10:21 | Created ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Capture/Asset/AssetCaptureView.swift | — | ~1986 |
+| 10:21 | Edited ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/ContentView.swift | added nullish coalescing | ~246 |
+
+## Session: 2026-05-13 10:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:32 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/Sunfish.Anchor.csproj | 3→5 lines | ~134 |
+| 10:32 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/MauiProgram.cs | 3→6 lines | ~93 |
+| 10:32 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/MauiProgram.cs | 2→3 lines | ~30 |
+| 10:32 | Created ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Pages/ShipsOfficePage.razor | — | ~31 |
+| 10:32 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+6 lines) | ~214 |
+| 10:32 | Edited ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 2→4 lines | ~101 |
+| 10:33 | Edited ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+11 lines) | ~190 |
+| 10:33 | Edited ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→2 lines | ~20 |
+| 10:33 | Created ../../../../../tmp/wt-w55-p4/apps/docs/blocks/ships-office/overview.md | — | ~605 |
+| 10:34 | Created ../../../../../tmp/wt-w55-p4/apps/docs/foundation/ships-office/overview.md | — | ~514 |
+| 10:34 | Created ../../../../../tmp/wt-w55-p4/apps/docs/design-system/ships-office-wcag.md | — | ~615 |
+
+## Session: 2026-05-13 10:34
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:35 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/tests/tests.csproj | 2→4 lines | ~104 |
+| 10:35 | Created ../../../../../tmp/wt-w55-p4/accelerators/anchor/tests/ShipsOfficeDiResolutionTests.cs | — | ~1104 |
+| 10:37 | Created ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Pages/ShipsOfficePage.razor | — | ~194 |
+| 10:37 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Layout/NavMenu.razor | 6→10 lines | ~176 |
+| 10:38 | Edited ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | 10→14 lines | ~248 |
+| 10:38 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/MauiProgram.cs | expanded (+9 lines) | ~157 |
+| 10:38 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/MauiProgram.cs | 1→2 lines | ~19 |
+| 10:38 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/MauiProgram.cs | 6→6 lines | ~54 |
+| 10:38 | Edited ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→2 lines | ~19 |
+| 10:38 | Edited ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | 5→5 lines | ~42 |
+| 10:40 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 2→4 lines | ~107 |
+| 10:40 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→6 lines | ~102 |
+| 10:40 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→2 lines | ~31 |
+| 10:40 | Created ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/AssetCapturePayload.cs | — | ~132 |
+
+## Session: 2026-05-13 10:43
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:43 | Edited ../../../../../tmp/wt-w23-2-p2/packages/kernel-audit/AuditEventType.cs | expanded (+7 lines) | ~244 |
+| 10:43 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | 5→6 lines | ~76 |
+| 10:44 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | added 1 condition(s) | ~283 |
+| 10:44 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | inline fix | ~13 |
+| 10:44 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | 10→11 lines | ~107 |
+| 10:44 | Created ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/AssetEventHandler.cs | — | ~1217 |
+| 10:45 | XO loop: fixed PR #784 ledger CI (render-ledger.py); rebased #784 onto main (W55/W58 unified); enabled auto-merge #784/#777; closed #788 (superseded); verified ADR 0086 council amendments all applied | icm/_state/active-workstreams.md, xo/adr-0086-accepted-flip | multiple PRs progressed | ~8000 |
+| 10:46 | Created ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | — | ~1212 |
+| 10:47 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | removed 19 lines | ~1 |
+| 10:47 | Created ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEventEnvelope.cs | — | ~218 |
+| 10:48 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/AssetEventHandler.cs | 2→3 lines | ~27 |
+| 10:49 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | inline fix | ~26 |
+| 10:49 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | 2→3 lines | ~36 |
+| 10:49 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | 4→3 lines | ~36 |
+| 10:51 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | 7→7 lines | ~53 |
+| 10:51 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | NotNull() → Equal() | ~55 |
+| 10:51 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | 2→2 lines | ~40 |
+| 10:51 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | inline fix | ~29 |
+| 10:52 | Edited ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Pages/ShipsOfficePage.razor | added nullish coalescing | ~300 |
+| 10:53 | Fixed PR #787 RZ2012: wired Tenant+Actor params to ShipsOfficeBlock + IActiveTeamAccessor inject (bug-996); rebased #784 onto main unified all ledger changes; #785 merged; #786 merged; #777 auto-merge enabled | ShipsOfficePage.razor, buglog.json | PR #787 CI restarted | ~3000 |
+| 10:56 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/FieldEndpoints.cs | added 1 condition(s) | ~446 |
+| 10:56 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/AssetEventHandler.cs | added 2 condition(s) | ~582 |
+| 10:56 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/AssetEventHandler.cs | added 2 condition(s) | ~147 |
+| 10:56 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | modified HandleAsync_MalformedBlobRef_Returns400() | ~206 |
+| 10:57 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | "aabbccdd11223344556677889" → "aabbccdd11223344556677889" | ~31 |
+| 10:57 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/AssetEventHandlerTests.cs | inline fix | ~22 |
+| 10:58 | Edited ../../../../../tmp/wt-w23-2-p2/icm/_state/workstreams/W23-ios-field-capture-app-substrate-v1.md | 1→3 lines | ~182 |
+| 10:59 | W#23.2 P2+P3 complete — AssetEventHandler + 4 tests + council amendments (H1 blobRef validation, H2 cache-write defer, M1 ordinal dispatch, M2 equipmentId format) — PR #789 auto-merge | /tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/ | 179/179 tests pass | ~850 |
+| 11:01 | Edited ../../../../../tmp/wt-w23-2-p2/icm/_state/workstreams/W23-ios-field-capture-app-substrate-v1.md | inline fix | ~72 |
+
+## Session: 2026-05-13 11:05
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-13 11:06
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:09 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 20→18 lines | ~301 |
+| 11:09 | Edited ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 7→4 lines | ~102 |
+| 11:16 | Edited ../../../../../tmp/wt-w59-flip/icm/_state/workstreams/W59-crew-comms-anchor-mvp-demo-integration.md | 2→2 lines | ~35 |
+| 11:16 | Edited ../../../../../tmp/wt-w55-status/icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | inline fix | ~105 |
+| 11:17 | Edited ../../../../../tmp/wt-w55-status/icm/_state/workstreams/W50-engine-room-observability-surface.md | inline fix | ~80 |
+| 11:18 | Edited ../../../../../tmp/wt-w59-flip/icm/_state/workstreams/W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md | 2→2 lines | ~30 |
+| 11:21 | Edited ../../../../../tmp/wt-w59-flip/icm/_state/workstreams/W50-engine-room-observability-surface.md | inline fix | ~67 |
+| 11:22 | Edited ../../../../../tmp/wt-w59-flip/icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | inline fix | ~80 |
+| 15:10 | PR #789 rebase onto main (W55+W23 conflict resolve: Program.cs + csproj) | accelerators/bridge/Sunfish.Bridge/Program.cs | resolved |
+| 15:17 | W55+W50 status cells updated after Phase 4+2b merges; PR #792 created | W55/W50 workstream files + active-workstreams.md | pending CI |
+| 15:25 | Dependabot PRs #754+#766 admin-squash merged; W#56+W#59+W#23.2+W#50 all built/shipped | multiple | complete |
+| 11:22 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_56_bridge_react_renderer_built.md | 5→5 lines | ~84 |
+| 11:22 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_55_ships_office.md | 12→13 lines | ~180 |
+| 11:22 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_55_ships_office.md | 6→3 lines | ~44 |
+| 11:22 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_50_engine_room_observability.md | 10→10 lines | ~149 |
+| 11:22 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_50_engine_room_observability.md | 4→4 lines | ~79 |
+| 11:22 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_59_crew_comms_anchor_mvp_built.md | — | ~346 |
+
+## Session: 2026-05-13 11:25
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 1→2 lines | ~122 |
+| 11:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 2→1 lines | ~54 |
+| 11:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~66 |
+| 11:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~41 |
+| 11:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~63 |
+
+## Session: 2026-05-13 11:27
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:28 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w45_crew_comms_mvp_priority_week.md | modified react() | ~207 |
+| 11:29 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~51 |
+| 11:29 | XO loop: closed dangerous PR #794 (revert of W#47/W#56/W#59 built flips); updated MEMORY.md (W#59 added, W#55/W#50/W#45 entries refreshed); PR queue clean (#755+#748 await CO) | MEMORY.md, coordination/inbox | clean | ~1.2k |
+| 11:33 | Created ../../../../../tmp/wt-w58-p3/accelerators/bridge/Sunfish.Bridge/Features/Identity/IdentityEndpoints.cs | — | ~2291 |
+| 11:33 | Edited ../../../../../tmp/wt-w58-p3/accelerators/bridge/Sunfish.Bridge/Features/Identity/IdentityEndpoints.cs | 4→5 lines | ~37 |
+| 11:33 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/contracts/IdentityTypes.ts | — | ~944 |
+| 11:34 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/IdentityProfilePage.tsx | — | ~605 |
+| 11:34 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/KeyRotationPage.tsx | — | ~776 |
+| 11:34 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/RecoveryContactsPage.tsx | — | ~930 |
+| 11:34 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/HistoricalKeysPage.tsx | — | ~948 |
+| 11:34 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/ActiveTeamOverviewPage.tsx | — | ~1114 |
+| 11:35 | Edited ../../../../../tmp/wt-w58-p3/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→6 lines | ~86 |
+| 11:35 | Edited ../../../../../tmp/wt-w58-p3/_shared/engineering/adapter-parity.md | 3→4 lines | ~300 |
+| 11:37 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/index.ts | — | ~131 |
+| 11:37 | Edited ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/index.ts | expanded (+14 lines) | ~259 |
+| 11:37 | Edited ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/index.ts | expanded (+13 lines) | ~122 |
+| 11:41 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/IdentityProfilePage.tsx | — | ~658 |
+| 11:42 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/KeyRotationPage.tsx | — | ~831 |
+| 11:42 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/RecoveryContactsPage.tsx | — | ~1055 |
+| 11:42 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/HistoricalKeysPage.tsx | — | ~1096 |
+| 11:42 | Created ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/ActiveTeamOverviewPage.tsx | — | ~1252 |
+| 11:43 | W#58 P3: IdentityEndpoints.cs (5 Bridge JSON endpoints) + IdentityTypes.ts + index.ts barrel + Program.cs registration | IdentityEndpoints.cs, Program.cs, index.ts, IdentityTypes.ts | built |
+| 11:43 | W#58 P3: WCAG council MECHANICAL-AMENDMENTS-ONLY; applied M1-M9; PR #795 open+auto-merge+squash | Identity/*.tsx | ~1200 |
+| 11:47 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj | — | ~550 |
+| 11:48 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/_Imports.razor | — | ~80 |
+| 11:48 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/EngineRoomHealthBanner.razor | — | ~1799 |
+
+## Session: 2026-05-13 11:51
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:51 | Edited ../../../../../tmp/wt-w58-status/icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | inline fix | ~116 |
+| 11:52 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | 10→10 lines | ~159 |
+| 11:52 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | 5→5 lines | ~111 |
+| 11:52 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~61 |
+| 11:52 | XO loop: W#58 Phase 3 PR #795 merged; created PR #796 to update W#58 status_cell + regen ledger; updated W#58 memory | W58 source, active-workstreams.md, W#58 memory | PR #796 auto-merge | ~1.1k |
+| 11:53 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/MainPropulsionPanel.razor | — | ~2557 |
+| 11:54 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/ElectricalPanel.razor | — | ~2772 |
+| 11:56 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/tests/EngineRoomPanelDataContractTests.cs | — | ~1947 |
+| 11:57 | Edited ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/tests/EngineRoomPanelDataContractTests.cs | 8→6 lines | ~53 |
+| 11:57 | Edited ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/tests/EngineRoomPanelDataContractTests.cs | 3→2 lines | ~7 |
+| 12:05 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/EngineRoomHealthBanner.razor | — | ~2044 |
+| 12:06 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/MainPropulsionPanel.razor | — | ~2618 |
+| 12:06 | Created ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/ElectricalPanel.razor | — | ~2912 |
+
+## Session: 2026-05-13 12:09
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 12:09 | Continued W#50 Phase 3a from prior session — wrote MainPropulsionPanel.razor + ElectricalPanel.razor | blocks-engine-room/ | Initial files created | ~3k |
+| 12:10 | Build verified — 0 errors, 8 pre-existing NETSDK1206 warnings | blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj | Build succeeded | ~200 |
+| 12:10 | Wrote EngineRoomPanelDataContractTests.cs — 9 new data-contract tests | blocks-engine-room/tests/ | 40/40 passing | ~1.9k |
+| 12:11 | SKIP_COMMITLINT=1 git commit + push — created draft PR #797 | w50/phase3a-engine-room-panels | PR #797 draft, auto-merge squash | ~200 |
+| 12:12 | WCAG/a11y council + pre-merge council launched in parallel | 3 Razor files | Both returned NEEDS-AMENDMENT-MECHANICAL-ONLY | ~88k |
+| 12:12 | Applied 6 BLOCKING amendments: M1 live-region hoist, M2 icon aria-hidden, M3 rowgroup, M4 hidden attr, C1 SeverityRank Unknown fix, C2 IDisposable+CancellationToken | 3 Razor files | Build + 40 tests clean | ~8k |
+| 12:14 | Committed amendments, pushed, flipped PR #797 to ready, auto-merge enabled | PR #797 | Awaiting CI | ~300 |
+| 16:08 | W#50 Phase 3a summary: 3 Blazor panels + 9 tests, 6 council amendments, PR #797 auto-merge. W#58 Ph4 is next | — | — | ~1k |
+| 12:13 | Edited ../../../../../tmp/wt-w50-status/icm/_state/workstreams/W50-engine-room-observability-surface.md | inline fix | ~91 |
+| 12:14 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_50_engine_room_observability.md | 10→10 lines | ~143 |
+| 12:14 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~67 |
+| 12:15 | XO loop: W#50 Phase 3a PR #797 merged (read-only Engine Room panels); created PR #798 W#50 status update + auto-merge; updated W#50 memory | W50 source, active-workstreams.md, W#50 memory | PR #798 auto-merge | ~0.9k |
+
+## Session: 2026-05-13 12:18
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/IdentityProfileEditPage.razor | added optional chaining | ~1403 |
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | 8→9 lines | ~84 |
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | added optional chaining | ~457 |
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | expanded (+8 lines) | ~215 |
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | 8→9 lines | ~85 |
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | added optional chaining | ~525 |
+| 12:24 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | expanded (+8 lines) | ~238 |
+| 12:25 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/IdentityProfileEditPage.razor | added optional chaining | ~804 |
+| 12:25 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/KeyRotationPage.razor | 5→6 lines | ~57 |
+| 12:25 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/KeyRotationPage.razor | added optional chaining | ~475 |
+| 12:25 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | 5→6 lines | ~58 |
+| 12:25 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | added optional chaining | ~672 |
+| 12:26 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/contracts/IdentityTypes.ts | expanded (+23 lines) | ~281 |
+| 12:26 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/IdentityProfilePage.tsx | CSS: Expanded | ~1123 |
+| 12:26 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/KeyRotationPage.tsx | 7→12 lines | ~144 |
+| 12:26 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/KeyRotationPage.tsx | modified KeyRotationPage() | ~103 |
+| 12:26 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/KeyRotationPage.tsx | added nullish coalescing | ~398 |
+| 12:27 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/RecoveryContactsPage.tsx | 7→12 lines | ~148 |
+| 12:27 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/RecoveryContactsPage.tsx | modified RecoveryContactsPage() | ~97 |
+| 12:27 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/RecoveryContactsPage.tsx | added nullish coalescing | ~759 |
+| 12:27 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/index.ts | 12→14 lines | ~115 |
+| 12:28 | Created ../../../../../tmp/wt-w58-p4/apps/docs/wcag/identity-atlas.md | — | ~1444 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/IdentityProfileEditPage.razor | modified if() | ~298 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/IdentityProfileEditPage.razor | modified NewGuid() | ~62 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/IdentityProfileEditPage.razor | inline fix | ~19 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | modified if() | ~253 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | modified NewGuid() | ~60 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/KeyRotationPage.razor | inline fix | ~19 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | modified if() | ~252 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | modified NewGuid() | ~62 |
+| 12:34 | Edited ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/RecoveryContactsPage.razor | inline fix | ~19 |
+| 12:35 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/IdentityProfileEditPage.razor | modified if() | ~249 |
+| 12:35 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/IdentityProfileEditPage.razor | modified NewGuid() | ~325 |
+| 12:35 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/KeyRotationPage.razor | modified if() | ~251 |
+| 12:35 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/KeyRotationPage.razor | modified NewGuid() | ~323 |
+| 12:35 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | modified if() | ~250 |
+| 12:35 | Edited ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/RecoveryContactsPage.razor | modified NewGuid() | ~326 |
+| 12:36 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/IdentityProfilePage.tsx | 26→30 lines | ~340 |
+| 12:36 | XO loop: queue clean (#755+#748 CO-pending); W#58 P4 committed in workspace (d62336f6) — not yet PR'd; watching for push | workspace | idle | ~0.3k |
+| 12:36 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/KeyRotationPage.tsx | 26→30 lines | ~342 |
+| 12:36 | Edited ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/RecoveryContactsPage.tsx | 26→30 lines | ~341 |
+| 12:36 | Edited ../../../../../tmp/wt-w58-p4/apps/docs/wcag/identity-atlas.md | modified NewGuid() | ~331 |
+| 12:38 | Edited ../../../../../tmp/wt-w58-p4/icm/_state/active-workstreams.md | inline fix | ~190 |
+| 12:41 | Edited ../../../../../tmp/wt-w58-p4/icm/_state/workstreams/W58-identity-atlas-implementations-anchor-bridge.md | 2→2 lines | ~116 |
+| 12:42 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | "building" → "built" | ~40 |
+| 12:42 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | inline fix | ~46 |
+| 12:42 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~63 |
+| 12:42 | XO loop: PR #799 W#58 P4 blocked — Verify-ledger-regen-matches FAIL (COB edited active-workstreams.md directly); XO fixed W58 source file (status→built) + regen + force-pushed to PR branch | W58 source, active-workstreams.md | PR #799 CI re-running | ~0.9k |
+
+## Session: 2026-05-13 12:43
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 12:47 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 2→3 lines | ~185 |
+| 12:47 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~39 |
+| 12:47 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | 3→3 lines | ~83 |
+| 12:47 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_58_identity_atlas_implementations.md | inline fix | ~17 |
+| 12:48 | XO loop: W#58 BUILT — PR #799 merged (ledger fix resolved Verify-ledger-regen-matches); updated W#58 memory to built; moved to Built section in MEMORY.md | W#58 memory, MEMORY.md, cerebrum.md | clean | ~0.7k |
+| 12:50 | Created ../../../../../tmp/wt-w50-p3b/packages/blocks-engine-room/DamageControlPanel.razor | — | ~4730 |
+| 12:50 | Created ../../../../../tmp/wt-w50-p3b/packages/blocks-engine-room/QaWorkshopPanel.razor | — | ~135 |
+| 12:57 | Created ../../../../../tmp/wt-w50-p3b/packages/blocks-engine-room/DamageControlPanel.razor | — | ~5551 |
+| 12:59 | Edited ../../../../../tmp/wt-w50-p3b/packages/blocks-engine-room/Sunfish.Blocks.EngineRoom.csproj | inline fix | ~178 |
+
+## Session: 2026-05-13 13:06
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:09 | Edited ../../../../../tmp/wt-w50-p3b/icm/_state/workstreams/W50-engine-room-observability-surface.md | inline fix | ~84 |
+| 13:10 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_50_engine_room_observability.md | inline fix | ~35 |
+| 13:10 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~66 |
+| 13:10 | XO loop: W#50 Phase 3b PR #800 merged (DamageControlPanel+QaWorkshopPanel); created PR #801 status update auto-merge; updated W#50 memory | W50 source, active-workstreams.md, W#50 memory | PR #801 auto-merge | ~0.8k |
+| 13:18 | Created ../../../../../tmp/wt-w50-p4/accelerators/anchor/Services/AnchorGrantAllPermissionResolver.cs | — | ~398 |
+| 13:18 | Created ../../../../../tmp/wt-w50-p4/accelerators/anchor/Services/AnchorNoOpOodWatchService.cs | — | ~507 |
+| 13:18 | Edited ../../../../../tmp/wt-w50-p4/accelerators/anchor/Sunfish.Anchor.csproj | 3→5 lines | ~106 |
+| 13:19 | Created ../../../../../tmp/wt-w50-p4/accelerators/anchor/Components/Pages/EngineRoomPage.razor | — | ~419 |
+| 13:19 | Edited ../../../../../tmp/wt-w50-p4/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+9 lines) | ~317 |
+| 13:19 | Edited ../../../../../tmp/wt-w50-p4/accelerators/anchor/MauiProgram.cs | 2→6 lines | ~57 |
+| 13:19 | Edited ../../../../../tmp/wt-w50-p4/accelerators/anchor/MauiProgram.cs | modified seams() | ~523 |
+| 13:20 | Created ../../../../../tmp/wt-w50-p4/apps/docs/foundation/engine-room/overview.md | — | ~1396 |
+| 13:23 | Created ../../../../../tmp/wt-w50-p4/accelerators/anchor/Services/AnchorGrantAllPermissionResolver.cs | — | ~432 |
+| 13:23 | Edited ../../../../../tmp/wt-w50-p4/accelerators/anchor/MauiProgram.cs | 6→5 lines | ~48 |
+| 13:23 | Edited ../../../../../tmp/wt-w50-p4/accelerators/anchor/MauiProgram.cs | 8→8 lines | ~141 |
+| 13:32 | Edited ../../../../../tmp/wt-w50-p4/CHANGELOG.md | 3→6 lines | ~401 |
+
+## Session: 2026-05-13 13:32
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:32 | Edited ../../../../../tmp/wt-w50-p4/icm/_state/workstreams/W50-engine-room-observability-surface.md | 2→2 lines | ~54 |
+| 13:35 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_phase1_pass_confirmed.md | 9→9 lines | ~152 |
+| 13:35 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_erpnext_pivot_stack.md | 5→5 lines | ~228 |
+| 13:35 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 2→2 lines | ~112 |
+
+## Session: 2026-05-13 13:35
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:36 | XO loop wakeup — PRs #756+#758 confirmed in main; W#55+W#60 ledger verified current; W#60 memories updated P2→P3; queue dry, 2 PRs await CO manual merge (#755/#748) | memory/ | complete | ~60 |
+
+## Session: 2026-05-13 17:36 (COB)
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 17:36 | Resumed W#50 Phase 4 post-compaction; commit blocked (commitlint not in worktree node_modules; SKIP_COMMITLINT=1 used) | wt-w50-p4/* | commit 0c73d4be | ~20 |
+| 17:38 | Pushed branch + created PR #802 (W#50 Phase 4 Anchor wiring + docs + ledger); auto-merge squash enabled | PR #802 | CI queued | ~15 |
+
+## Session: 2026-05-13 13:54
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:58 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_50_engine_room_observability.md | — | ~304 |
+| 13:58 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 5→6 lines | ~259 |
+| 13:58 | Loop wakeup — PR #802 W#50 Phase 4 BUILT + PR #803 W#1 WS-B BUILT + #755/#748 CO-merged; zero open PRs; W#50 memory flipped to built | memory/ | complete | ~65 |
+| 14:08 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/Sunfish.Blocks.Quarterdeck.csproj | — | ~476 |
+| 14:08 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/_Imports.razor | — | ~81 |
+| 14:09 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | — | ~2755 |
+| 14:09 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | — | ~1779 |
+| 14:10 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/KpiCardGrid.razor | — | ~614 |
+| 14:10 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/tests/Sunfish.Blocks.Quarterdeck.Tests.csproj | — | ~332 |
+| 14:11 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/tests/QuarterdeckPanelDataContractTests.cs | — | ~2572 |
+| 14:11 | Edited ../../../../../tmp/wt-w51-p3a/Sunfish.slnx | 4→8 lines | ~120 |
+| 14:13 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/tests/QuarterdeckPanelDataContractTests.cs | inline fix | ~11 |
+| 14:16 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | — | ~3116 |
+| 14:16 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | — | ~1932 |
+| 14:17 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/KpiCardGrid.razor | — | ~810 |
+| 14:20 | Edited ../../../../../tmp/wt-w60-p3-addendum/icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md | modified gate() | ~98 |
+| 14:20 | Created ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | — | ~3452 |
+| 14:20 | Edited ../../../../../tmp/wt-w60-p3-addendum/icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md | expanded (+91 lines) | ~878 |
+| 14:20 | Edited ../../../../../tmp/wt-w60-p3-addendum/icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md | 3→3 lines | ~79 |
+| 14:21 | XO ruling actioned — W#60 P3 Tauri cross-build addendum PR #804 created + auto-merge; ruling beacon archived | icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md | complete | ~75 |
+
+## Session: 2026-05-13 14:23
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:23 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | 6→10 lines | ~114 |
+| 14:23 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | added 1 condition(s) | ~285 |
+| 14:23 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | modified Dispose() | ~26 |
+| 14:23 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/tests/QuarterdeckPanelDataContractTests.cs | removed 24 lines | ~44 |
+| 14:26 | Edited ../../../../../tmp/wt-w51-p3a/icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | inline fix | ~108 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | 2→2 lines | ~18 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | 2→6 lines | ~114 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | inline fix | ~13 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | 5→4 lines | ~66 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/AlertTickerPanel.razor | Dispose() → DisposeAsync() | ~40 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | 3→8 lines | ~159 |
+| 14:29 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | 2→2 lines | ~26 |
+| 14:30 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | inline fix | ~33 |
+| 14:30 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | 6→8 lines | ~117 |
+| 14:30 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | 5→9 lines | ~182 |
+| 14:30 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | added 1 condition(s) | ~289 |
+| 14:30 | Edited ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/WatchStatusPanel.razor | 2→3 lines | ~77 |
+| 14:33 | W#51 Phase 3a — blocks-quarterdeck panels (WatchStatusPanel/AlertTickerPanel/KpiCardGrid) PR #805 open+auto-merge; WCAG A1-A10 + 4-perspective + security councils all applied | packages/blocks-quarterdeck/ | 0 errors, 11/11 tests, auto-merge armed | ~45k |
+| 14:40 | Created ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | — | ~914 |
+| 14:41 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | 10→13 lines | ~171 |
+| 14:41 | Created ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | — | ~1580 |
+| 14:41 | Created ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/QuarterdeckSearchResult.cs | — | ~278 |
+| 14:42 | Created ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/RecentOrdersPanel.razor | — | ~518 |
+| 14:42 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/RecentOrdersPanel.razor | 2→2 lines | ~35 |
+| 14:42 | Created ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/MissionEnvelopePanel.razor | — | ~676 |
+| 14:42 | Edited ../../../../../tmp/wt-check2/icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | inline fix | ~74 |
+| 14:43 | PR #805 W#51 Phase 3a merged; W#51 status updated Phase 3b next; PR #806 created + auto-merge | W51-quarterdeck-entry-point-surface.md | complete | ~55 |
+| 14:43 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_51_quarterdeck_entry_point.md | 16→15 lines | ~243 |
+| 14:43 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | 7→6 lines | ~70 |
+| 14:43 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 2→2 lines | ~107 |
+| 14:43 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | modified DisposeAsync() | ~45 |
+| 14:43 | W#51 memory + MEMORY.md index updated — Phase 3a MERGED; Phase 3b next | memory/ | complete | ~40 |
+| 14:46 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | modified NewGuid() | ~169 |
+| 14:46 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | 4→6 lines | ~78 |
+| 14:46 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | 5→7 lines | ~98 |
+| 14:47 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | modified if() | ~420 |
+| 14:47 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | modified SuppressActivation() | ~59 |
+| 14:47 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/MissionEnvelopePanel.razor | inline fix | ~18 |
+| 14:47 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/MissionEnvelopePanel.razor | 3→6 lines | ~102 |
+| 14:47 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/RecentOrdersPanel.razor | 11→12 lines | ~215 |
+| 14:47 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | 7→5 lines | ~78 |
+
+## Session: 2026-05-13 14:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:50 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | 8→8 lines | ~58 |
+| 14:50 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | 6→6 lines | ~54 |
+| 14:57 | Created ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/SearchPanel.razor | — | ~2091 |
+| 14:58 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | 5→7 lines | ~181 |
+| 14:58 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | added 1 condition(s) | ~131 |
+| 14:58 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/DepartmentNavPanel.razor | expanded (+7 lines) | ~146 |
+| 14:58 | Edited ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/MissionEnvelopePanel.razor | refresh() → A12() | ~532 |
+| 15:01 | Edited icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | 2→2 lines | ~152 |
+| 15:02 | W#51 Phase 3b council amendments applied (A9-A14), PR #807 auto-merge pending | SearchPanel.razor DepartmentNavPanel.razor MissionEnvelopePanel.razor RecentOrdersPanel.razor QuarterdeckSearchResult.cs | build green 11/11 tests | ~5k |
+| 15:04 | Edited ../../../../../tmp/wt-w51-3b/icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | inline fix | ~77 |
+| 15:04 | PR #807 W#51 Phase 3b MERGED; status update PR #808 created+auto-merge; W#51 Phase 4 next | W51 source | complete | ~40 |
+| 15:04 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_51_quarterdeck_entry_point.md | 15→16 lines | ~246 |
+| 15:05 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~60 |
+| 15:07 | Edited ../../../../../tmp/wt-w51-p4/accelerators/anchor/Sunfish.Anchor.csproj | 3→5 lines | ~108 |
+| 15:08 | Edited ../../../../../tmp/wt-w51-p4/accelerators/anchor/MauiProgram.cs | modified seams() | ~492 |
+| 15:08 | Created ../../../../../tmp/wt-w51-p4/accelerators/anchor/Components/Pages/QuarterdeckPage.razor | — | ~808 |
+| 15:08 | Edited ../../../../../tmp/wt-w51-p4/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+8 lines) | ~139 |
+| 15:09 | Edited ../../../../../tmp/wt-w51-p4/accelerators/anchor/Components/Pages/QuarterdeckPage.razor | 9→9 lines | ~152 |
+| 15:10 | Edited ../../../../../tmp/wt-w51-p4/accelerators/anchor/MauiProgram.cs | 2→4 lines | ~37 |
+| 15:12 | Created ../../../../../tmp/wt-w51-p4/apps/docs/foundation/quarterdeck/overview.md | — | ~1954 |
+| 15:13 | Edited ../../../../../tmp/wt-w51-p4/CHANGELOG.md | 3→6 lines | ~430 |
+| 15:14 | Edited ../../../../../tmp/wt-w51-p4/icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | 2→2 lines | ~86 |
+
+## Session: 2026-05-13 15:19
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 15:29 | Created ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/SickBayDataProvider.cs | — | ~2817 |
+| 15:29 | Edited ../../../../../tmp/wt-w54-p2b/packages/foundation-sick-bay/SickBayOptions.cs | expanded (+10 lines) | ~245 |
+| 15:30 | Created ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/SickBayServiceCollectionExtensions.cs | — | ~832 |
+| 15:31 | Created ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | — | ~4764 |
+| 15:32 | Created ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayServiceCollectionExtensionsTests.cs | — | ~786 |
+| 15:33 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | 13→14 lines | ~102 |
+| 15:34 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified SubscribeSnapshotAsync_ReEmitsOnObserverChange() | ~788 |
+| 15:34 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | 2→1 lines | ~4 |
+| 15:35 | Edited ../../../../../tmp/wt-w54-p2b/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~106 |
+| 15:35 | Edited ../../../../../tmp/wt-w51-done/icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | inline fix | ~81 |
+| 15:36 | W#51 Phase 4 PR #809 merged (BUILT); fixed stale ledger + wrong PR ref via PR #810 | W51 source + ledger | complete | ~45 |
+| 15:36 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_51_quarterdeck_entry_point.md | 17→15 lines | ~222 |
+| 15:36 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~55 |
+
+## Session: 2026-05-13 15:39
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 15:41 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/SickBayServiceCollectionExtensions.cs | added 1 condition(s) | ~400 |
+| 15:41 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/SickBayDataProvider.cs | modified SubscribeSnapshotAsync() | ~716 |
+| 15:42 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified SubscribeSnapshotAsync_ReEmitsOnObserverChange() | ~763 |
+| 15:42 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | modified GetSnapshotAsync_WithWarningAndOneCritical_ReturnsOrange() | ~474 |
+| 15:43 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayServiceCollectionExtensionsTests.cs | 3→5 lines | ~39 |
+| 15:43 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayServiceCollectionExtensionsTests.cs | modified AddSunfishSickBayDefaults_Configure_PropagatesFallbackPollingIntervalToIOptions() | ~222 |
+| 15:43 | Edited ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/SickBayDataProviderTests.cs | 2→2 lines | ~46 |
+| 19:47 | W#54 Phase 2b: council amendments applied (B1 IOptions binding + B2 Subscribe race fix + 10 Major); 39/39 tests pass; PR #811 auto-merge | blocks-sick-bay/SickBayDataProvider.cs + SickBayServiceCollectionExtensions.cs + tests | committed + pushed; ledger regen pushed; CI running | ~4500 |
+| 15:47 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | 6→6 lines | ~81 |
+| 15:47 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | modified deliverables() | ~220 |
+| 15:49 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/package.json | — | ~472 |
+| 15:49 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/vite.config.ts | — | ~289 |
+| 15:50 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/Cargo.toml | — | ~163 |
+| 15:50 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/build.rs | — | ~11 |
+| 15:50 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/src/main.rs | — | ~30 |
+| 15:50 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/src/lib.rs | — | ~149 |
+| 15:50 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/tauri.conf.json | — | ~252 |
+| 15:50 | Created ../../../../../tmp/wt-w60-p3-pr1/.github/workflows/tauri-build.yml | — | ~626 |
+| 15:53 | Edited ../../../../../tmp/wt-w60-p3-pr1/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~88 |
+| 20:01 | W#60 P3 PR1: Tauri v2 shell scaffold complete; 7/7 vitest tests; CI build matrix (5 targets); PR #812 draft (needs CO Surface Pro PASS) | apps/anchor-tauri/ + .github/workflows/tauri-build.yml | pushed + force-pushed after rebase fix | ~3200 |
+| 20:03 | Ledger check lesson: CI uses merge commit (PR branch + latest main) for check; must rebase before push OR ensure active-workstreams.md regenerated on top of latest main | icm/_state/active-workstreams.md | fixed by rebase + re-regen pattern | ~100 |
+| 15:59 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/CrewCommsPage.tsx | CSS: intentional | ~20 |
+| 15:59 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src/pages/CrewCommsPage.tsx | CSS: intentional | ~20 |
+| 16:00 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/MaintenancePage.tsx | "@/components/AuthAuthRole" → "@/components/AuthRoleGate" | ~16 |
+| 16:00 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src/pages/MaintenancePage.tsx | "@/components/AuthAuthRole" → "@/components/AuthRoleGate" | ~16 |
+| 20:15 | Fixed ESLint errors in anchor-react+tauri: invalid react-hooks disable comment + wrong AuthAuthRoleGate import; CI lint was clean | apps/anchor-react/src/pages/CrewCommsPage.tsx + MaintenancePage.tsx | pushed to PR #812 | ~200 |
+
+## Session: 2026-05-13 16:03
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:04 | Edited ../../../../../tmp/wt-w54-status/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~95 |
+| 16:05 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | 11→11 lines | ~122 |
+| 16:05 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~62 |
+| 16:07 | W#54 Phase 2b MERGED PR #811 — status cell + ledger updated; PR #813 auto-merge | W54 source + active-workstreams.md | PR #813 open, CI green | ~280 |
+| 16:08 | W#54 memory updated to Phase 2b MERGED; Phase 3a next | project_workstream_54_sick_bay.md + MEMORY.md | memories current | ~110 |
+| 16:06 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_46_shared_design_system.md | 14→11 lines | ~172 |
+| 16:07 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~66 |
+| 16:07 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~72 |
+| 16:07 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/tsconfig.app.json | 3→4 lines | ~30 |
+| 16:08 | Edited ../../../../../tmp/wt-w53-flip/icm/_state/workstreams/W53-helm-identity-atlas-surface-stage-06-build-of-load-bearing-p.md | 2→2 lines | ~66 |
+| 16:09 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~54 |
+| 16:14 | W#46 memory + MEMORY.md updated to BUILT (all 8 PRs merged; W#52 P3a unblocked) | project_workstream_46_shared_design_system.md | memory current | ~85 |
+| 16:15 | W#52 MEMORY.md index updated — Phase 2 all merged; Phase 3a UNBLOCKED | MEMORY.md | memory current | ~55 |
+| 16:16 | W#53 ledger flip to built (Phases 3+ done via W#58); PR #814 auto-merge | W53 source + active-workstreams.md + MEMORY.md | PR #814 open CI running | ~290 |
+| 16:17 | Loop state: PRs #810+#814 auto-merge in queue; #812 draft COB building Tauri; inbox empty | — | all clear | ~120 |
+
+## Session: 2026-05-13 16:10
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:10 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/tsconfig.app.json | — | ~214 |
+| 16:20 | Fixed @sunfish/ui-react typecheck path in anchor-tauri tsconfig.app.json; pushed to PR #812 | apps/anchor-tauri/tsconfig.app.json | bb6adcf9 pushed; 17 CI checks pending | ~85 |
+| 16:15 | Edited ../../../../../tmp/wt-w51-refix/icm/_state/workstreams/W51-quarterdeck-entry-point-surface.md | inline fix | ~81 |
+| 16:20 | PR #810 had stale ledger (W#53+W#54); created #815 from current main; closed #810 | W51 source + active-workstreams.md | PR #815 auto-merge | ~280 |
+| 16:18 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/tsconfig.app.json | — | ~197 |
+| 16:18 | Created ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/tsconfig.app.json | — | ~197 |
+| 16:19 | Created ../../../../../tmp/wt-w60-p3-pr1/.github/workflows/anchor-react-ci.yml | — | ~208 |
+| 16:19 | Created ../../../../../tmp/wt-w60-p3-pr1/.github/workflows/tauri-build.yml | — | ~662 |
+| 16:25 | Reverted @sunfish/ui-react path-alias from both tsconfigs; added ui-react build step to anchor-react-ci.yml + tauri-build.yml | 4 files | 3ab64e3c pushed; CI retriggered | ~120 |
+| 16:23 | Edited ../../../../../tmp/wt-w56-flip/icm/_state/workstreams/W46-shared-design-system-load-bearing-w-35-ship-architecture-fol.md | 2→2 lines | ~71 |
+| 16:27 | W#46 source file stuck at 'building'; flipped to built (all 8 PRs); PR #816 auto-merge | W46 source + active-workstreams.md | PR #816 created, CI running | ~250 |
+| 16:25 | Edited ../../../../../tmp/wt-w60-p3-pr1/packages/ui-react/package.json | 8→8 lines | ~76 |
+| 16:32 | Loop idle — ledger clean; COB on PR #812 draft (Tauri); W#52/W#54/W#48 ready for next pick | — | queue depth 3 healthy | ~80 |
+| 16:33 | Created ../../../../../tmp/wt-w60-p3-pr1/.github/workflows/anchor-react-ci.yml | — | ~231 |
+| 16:34 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/package.json | inline fix | ~22 |
+| 16:35 | Fixed React 19 type mismatch in ui-react; dropped ESLint v9 deprecated --ext flag; updated CI trigger paths; all pushed to PR #812 | packages/ui-react/package.json + apps/anchor-react/package.json + anchor-react-ci.yml | f3691669 pushed | ~90 |
+| 16:42 | Edited ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/package.json | inline fix | ~22 |
+| 16:43 | Created ../../../../../tmp/wt-w60-p3-pr1/.github/workflows/anchor-react-ci.yml | — | ~268 |
+| 16:50 | Fixed Tauri icon files (RGB→RGBA PNGs, empty icns, 16x16 ico); new Tauri build queued for 03b7a1cc | apps/anchor-tauri/src-tauri/icons/ | 25825596577 queued | ~75 |
+| 17:10 | PR #812 Tauri CI: 4/5 targets passed (Linux+macOS-ARM+Win-x86+Win-ARM); macOS-13 stuck queued 20min | — | not blocking; Surface Pro gate PASSED | ~80 |
+
+## Session: 2026-05-13 17:12
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:13 | Loop: PR #812 macOS-13 still queued (GH Actions backlog); COB beacon archived — acceptance gate for CO: install MSI on Surface Pro from run 25825596577, approve PR #812; W#52 Phase 3a + W#54 Phase 3a both UNBLOCKED for COB pickup | icm/_state/workstreams/ | monitoring | ~400 |
+
+## Session: 2026-05-13 17:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 17:22 | Edited ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/Sunfish.Blocks.SickBay.csproj | DefaultFirstAidSurface() → NoopKeyRotationScheduler() | ~463 |
+| 17:22 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/_Imports.razor | — | ~59 |
+| 17:22 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/SickBayBlock.razor | — | ~1068 |
+| 17:22 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/PharmacyTabContent.razor | — | ~1046 |
+| 17:22 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/LabTabContent.razor | — | ~430 |
+| 17:23 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/AtmosphereTabContent.razor | — | ~910 |
+| 17:23 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/MedevacDialog.razor | — | ~1191 |
+| 17:23 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/KeyFingerprintDisplay.razor | — | ~678 |
+| 17:24 | Edited ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/tests/Sunfish.Blocks.SickBay.Tests.csproj | 27→26 lines | ~232 |
+| 17:25 | Created ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/tests/Phase3aTests.cs | — | ~3257 |
+| 17:26 | Edited ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/LabTabContent.razor | inline fix | ~29 |
+| 17:26 | Edited ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/tests/Phase3aTests.cs | 2→2 lines | ~37 |
+| 17:26 | Edited ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/tests/Phase3aTests.cs | 9→11 lines | ~82 |
+| 17:31 | Edited ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/MedevacDialog.razor | added 3 condition(s) | ~535 |
+| 21:20 | W#54 Phase 3a: WCAG/a11y council FAIL → fix MedevacDialog (initial focus + Tab-trap) | MedevacDialog.razor | ~535 |
+| 21:25 | Architecture + Security councils both PASS on PR #817 | blocks-sick-bay/ | ~125k tok total |
+| 21:30 | PR #817 pushed + WCAG fix commit; auto-merge enabled; CI in-flight | PR #817 | — |
+| 21:34 | PR #812 macOS x86 still QUEUED (4/5 green); draft pending CO test on Surface Pro | PR #812 | — |
+| 17:35 | Created ../coordination/inbox/cob-status-2026-05-13T21-34Z-w54-p3a-pr817-open.md | — | ~158 |
+| 17:35 | Edited icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~82 |
+
+## Session: 2026-05-13 17:38
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 17:40 | Edited ../../../../../tmp/wt-w54-p3a/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~127 |
+| 17:40 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | modified deliverables() | ~227 |
+| 17:40 | Edited icm/_state/workstreams/W01-multi-tenancy-type-surface-convention.md | 4→2 lines | ~86 |
+| 17:40 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~65 |
+| 17:40 | Edited icm/_state/workstreams/W01-multi-tenancy-type-surface-convention.md | 7→6 lines | ~118 |
+| 21:39 | W#54 Phase 3a PR #817 MERGED; updated source file + ledger; PR #818 auto-merge; memory updated | W54 source, MEMORY.md | done | ~600 |
+| 17:45 | Created ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/SickBayCommandService.cs | — | ~739 |
+| 17:46 | Created ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/SickBayCommandService.cs | — | ~1050 |
+| 17:46 | Created ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | — | ~2107 |
+| 17:47 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/SickBayServiceCollectionExtensions.cs | modified convention() | ~526 |
+| 17:47 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/SickBayServiceCollectionExtensions.cs | modified if() | ~239 |
+| 17:48 | Created ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/tests/Phase3bTests.cs | — | ~2214 |
+| 17:49 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | inline fix | ~10 |
+| 17:49 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | inline fix | ~10 |
+| 17:49 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | inline fix | ~9 |
+| 17:49 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | 2→2 lines | ~27 |
+| 17:50 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | 2→2 lines | ~32 |
+| 17:50 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/tests/Phase3bTests.cs | inline fix | ~12 |
+| 17:51 | Created ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/tests/Phase3bTests.cs | — | ~2257 |
+| 17:52 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/tests/Phase3bTests.cs | inline fix | ~26 |
+| 17:55 | Created ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | — | ~2612 |
+| 17:55 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | modified CancelAsync() | ~105 |
+| 17:55 | Edited ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/MedevacServiceImpl.cs | 7→6 lines | ~90 |
+| 17:58 | Edited icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | flight() → enabled() | ~104 |
+| 22:00 | W#1 WS-B: discovered already merged as PR #739; flipped ledger to built | W01-multi-tenancy-type-surface-convention.md | complete |  ~2k |
+| 22:05 | W#54 P3a merged (PR #817); built Phase 3b SickBayCommandService + MedevacServiceImpl | blocks-sick-bay/SickBayCommandService.cs + MedevacServiceImpl.cs | PR #819 OPEN auto-merge | ~18k |
+| 22:10 | Security council: 2 Blocking fixed (per-tenant SemaphoreSlim concurrency fix); PASS | MedevacServiceImpl.cs | amended + committed | ~8k |
+| 17:59 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | modified deliverables() | ~375 |
+
+## Session: 2026-05-13 18:01
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 18:06 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/SickBayPage.razor | — | ~335 |
+| 18:06 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+8 lines) | ~269 |
+| 18:06 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/MauiProgram.cs | 7→9 lines | ~84 |
+| 18:06 | Edited ../../../../../tmp/wt-w54-p3b/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~91 |
+| 18:06 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/MauiProgram.cs | expanded (+18 lines) | ~244 |
+| 18:06 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/Sunfish.Anchor.csproj | 3→5 lines | ~107 |
+| 18:07 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→4 lines | ~36 |
+| 18:07 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | 2→2 lines | ~45 |
+| 18:07 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~53 |
+| 22:06 | W#54 Phase 3b PR #819 MERGED; PR #820 auto-merge for ledger flip; memory updated; Phase 4 (Anchor+Bridge) next | W54 source, MEMORY.md | done | ~500 |
+| 18:07 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+11 lines) | ~393 |
+| 18:07 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 2→4 lines | ~93 |
+| 18:08 | Created ../../../../../tmp/wt-w54-p4/apps/docs/blocks/sick-bay/overview.md | — | ~640 |
+| 18:08 | Created ../../../../../tmp/wt-w54-p4/apps/docs/foundation/sick-bay/overview.md | — | ~895 |
+| 18:08 | Created ../../../../../tmp/wt-w54-p4/apps/docs/design-system/sick-bay-wcag.md | — | ~753 |
+| 18:09 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/SickBayDiResolutionTests.cs | — | ~1016 |
+| 18:09 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/tests.csproj | 3→7 lines | ~147 |
+| 18:12 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/ShipsOfficeDiResolutionTests.cs | 2→3 lines | ~30 |
+| 18:13 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/tests.csproj | 2→3 lines | ~79 |
+| 18:15 | Edited ../../../../../tmp/wt-w54-p4/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | 2→2 lines | ~65 |
+| 18:16 | Edited ../../../../../tmp/wt-w54-p4/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~63 |
+| 22:16 | W#54 Phase 4 complete — Anchor+Bridge wiring + apps/docs + 3 DI tests | accelerators/anchor/,accelerators/bridge/,apps/docs/ | PR #821 OPEN auto-merge | ~6000 |
+| 18:16 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | modified deliverables() | ~310 |
+| 18:17 | Created ../coordination/inbox/cob-status-2026-05-13T22-16Z-w54-p4-pr821-open.md | — | ~100 |
+
+## Session: 2026-05-13 18:19
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 18:20 | Edited ../../../../../tmp/wt-w54-p4/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | 5→1 lines | ~60 |
+| 18:25 | Edited ../../../../../tmp/wt-w54-p5/icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | 2→2 lines | ~60 |
+| 18:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | 5→5 lines | ~67 |
+| 18:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 1→2 lines | ~115 |
+| 18:26 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~69 |
+| 18:29 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/Sunfish.Blocks.Tactical.csproj | — | ~388 |
+| 18:29 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/_Imports.razor | — | ~49 |
+| 18:29 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/SonarRoomPanel.razor | — | ~1157 |
+| 18:30 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/LookoutPanel.razor | — | ~1501 |
+| 18:30 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/Sunfish.Blocks.Tactical.Tests.csproj | — | ~203 |
+| 18:30 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/SonarRoomPanelTests.cs | — | ~762 |
+| 18:31 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/LookoutPanelTests.cs | — | ~1779 |
+| 18:33 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/LookoutPanelTests.cs | — | ~1571 |
+| 22:33 | W#54 BUILT confirmed on origin/main (PR #821+#822); W#52 Phase 3a is next COB item; W#35 cohort 6/7 done | origin/main | monitoring | ~300 |
+| 18:34 | Edited ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/Sunfish.Blocks.Tactical.Tests.csproj | 3→5 lines | ~53 |
+| 18:34 | Edited ../../../../../tmp/wt-w52-p3a/icm/_state/workstreams/W52-tactical-anomaly-detection-threat-trigger-surface.md | inline fix | ~68 |
+| 18:40 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/SonarRoomPanel.razor | — | ~1726 |
+| 18:40 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/SonarRoomPanel.razor.css | — | ~309 |
+| 18:41 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/LookoutPanel.razor | — | ~2890 |
+| 18:41 | Edited ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/LookoutPanel.razor | 9→9 lines | ~152 |
+| 18:41 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/LookoutPanel.razor.css | — | ~418 |
+| 18:42 | Created ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/LookoutPanelTests.cs | — | ~1968 |
+
+## Session: 2026-05-13 18:45
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 18:47 | Edited ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/SonarRoomPanel.razor | inline fix | ~14 |
+| 18:49 | Edited ../../../../../tmp/wt-w52-p3a/icm/_state/workstreams/W52-tactical-anomaly-detection-threat-trigger-surface.md | inline fix | ~70 |
+| 18:49 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_54_sick_bay.md | 11→11 lines | ~144 |
+| 18:50 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~71 |
+| 18:50 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~50 |
+
+## Session: 2026-05-13 22:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:50 | W#54 P5 ledger flip PR #822 confirmed MERGED; pipeline closed | W54-sick-bay-*.md | Built | 200 |
+| 22:50 | Applied 7 WCAG/a11y council amendments to W#52 P3a; 11/11 tests pass | SonarRoomPanel.razor, LookoutPanel.razor, *.razor.css, LookoutPanelTests.cs | Committed + pushed | 3000 |
+| 22:50 | PR #823 flipped draft→open, auto-merge enabled | feat/w52-p3a-blocks-tactical-ui | BLOCKED pending CI | 200 |
+| 18:54 | Edited ../../../../../tmp/wt-w52-p3a/icm/_state/workstreams/W52-tactical-anomaly-detection-threat-trigger-surface.md | inline fix | ~96 |
+| 18:55 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_52_tactical_anomaly_detection.md | 2→2 lines | ~56 |
+| 18:55 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~67 |
+| 22:54 | W#52 Phase 3a PR #823 MERGED; PR #824 ledger update auto-merge; memory updated; Phase 3b next | W52 source, MEMORY.md | done | ~500 |
+| 18:59 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/FireControlPanel.razor | — | ~1571 |
+| 18:59 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/EmergencyStandingOrderDialog.razor | — | ~1674 |
+| 19:00 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/FireControlPanelTests.cs | — | ~1466 |
+| 19:01 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/EmergencyStandingOrderDialogTests.cs | — | ~2117 |
+| 19:06 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/FireControlPanelTests.cs | SetParametersAndRender() → Render() | ~41 |
+| 19:08 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/FireControlPanelTests.cs | 4→5 lines | ~74 |
+| 19:09 | Edited ../../../../../tmp/wt-w52-p3b/icm/_state/workstreams/W52-tactical-anomaly-detection-threat-trigger-surface.md | inline fix | ~90 |
+
+## Session: 2026-05-13 19:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 19:16 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/EmergencyStandingOrderDialog.razor | — | ~2340 |
+| 19:17 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/EmergencyStandingOrderDialogTests.cs | — | ~2524 |
+| 19:22 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/Sunfish.Blocks.Tactical.csproj | inline fix | ~67 |
+| 19:22 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/Sunfish.Blocks.Tactical.csproj | 2→3 lines | ~76 |
+| 19:22 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/LookoutQuarterdeckAlertSource.cs | — | ~1962 |
+| 19:23 | Created ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/LookoutQuarterdeckAlertSourceTests.cs | — | ~2048 |
+| 19:24 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/LookoutQuarterdeckAlertSource.cs | inline fix | ~15 |
+| 19:24 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/LookoutQuarterdeckAlertSource.cs | inline fix | ~24 |
+| 19:24 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/LookoutQuarterdeckAlertSourceTests.cs | "Test Tenant" → "test-tenant" | ~15 |
+| 19:25 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/LookoutQuarterdeckAlertSource.cs | 4→4 lines | ~79 |
+| 19:26 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/LookoutQuarterdeckAlertSourceTests.cs | inline fix | ~18 |
+| 19:26 | Edited ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/LookoutQuarterdeckAlertSourceTests.cs | "Test Tenant" → "test-tenant" | ~21 |
+| 23:26 | PR #825 W#52 Phase 3b: CONFLICTING (merge conflict with main — W52 source file conflict vs PR #824); COB must rebase/merge main; auto-merge blocked | PR #825 | watching | ~300 |
+| 19:27 | Edited ../../../../../tmp/wt-w52-p3b/packages/foundation-tactical/ITacticalRule.cs | 7→10 lines | ~143 |
+| 19:28 | Created ../../../../../tmp/wt-w52-p3b/apps/docs/blocks/tactical/overview.md | — | ~1076 |
+| 19:28 | Edited ../../../../../tmp/wt-w52-p3b/icm/_state/workstreams/W52-tactical-anomaly-detection-threat-trigger-surface.md | 2→2 lines | ~114 |
+| 19:29 | W#52 Phase 3b council amendments applied + Phase 4 (LookoutQuarterdeckAlertSource+docs+ledger) committed; PR #825 open auto-merge 28/28 tests | feat/w52-p3b-fire-control-ui | complete | ~800 |
+| 19:30 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_52_tactical_anomaly_detection.md | — | ~664 |
+| 23:31 | PR #825 W#52 P3b+P4 still CONFLICTING; posted PR comment for COB with merge resolution steps | PR #825 comment | waiting | ~250 |
+| 23:41 | PR #825 W#52 P3b+P4 conflict resolved: merged main→branch, took COB's built status, regen ledger, pushed; full CI suite now running; 2 "untracked" files already on main (gitbutler artifact) | PR #825, feat/w52-p3b-fire-control-ui | done | ~400 |
+| 19:44 | Edited ../../../../../tmp/wt-w52-flip/icm/_state/workstreams/W52-tactical-anomaly-detection-threat-trigger-surface.md | 2→2 lines | ~106 |
+
+## Session: 2026-05-13 19:45
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 19:46 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_52_tactical_anomaly_detection.md | — | ~780 |
+| 19:47 | Created ../../../../../tmp/wt-docs-tactical-toc/apps/docs/blocks/tactical/toc.yml | — | ~11 |
+| 19:48 | Edited ../../../../../tmp/wt-docs-tactical-toc/apps/docs/blocks/toc.yml | 2→4 lines | ~18 |
+| 23:47 | PR #826 merged — W#52 flip to built corrects conflict-resolution error from PR #825 | icm/_state/workstreams/W52-*.md + active-workstreams.md | origin/main W#52=built; 28/28 tests; pipeline closed | ~900 |
+| 23:48 | PR #812 conflict resolved — took --theirs (origin/main) for active-workstreams.md; pushed merge commit to w60/phase3-pr1-tauri-scaffold | icm/_state/active-workstreams.md | PR #812 now MERGEABLE, DRAFT (CO acceptance gate pending) | ~600 |
+
+## Session: 2026-05-13 19:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 19:55 | Edited ../../../../../tmp/wt-w55-p6/icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | 2→2 lines | ~110 |
+| 19:55 | Edited ../../../../../tmp/wt-w55-p6/icm/_state/workstreams/W55-ships-office-content-aggregation-surface.md | expanded (+6 lines) | ~155 |
+| 19:56 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_55_ships_office_built.md | — | ~411 |
+| 19:56 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 1→3 lines | ~176 |
+| 20:00 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/Sunfish.Blocks.Integrations.csproj | — | ~419 |
+| 20:01 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | — | ~5310 |
+| 20:03 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | — | ~5358 |
+| 20:04 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DuplicateValidatorRegistrationException.cs | — | ~307 |
+| 20:04 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/InMemoryIntegrationAtlasProvider.cs | — | ~1571 |
+| 20:07 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/IntegrationAuditPayloads.cs | — | ~1410 |
+| 20:07 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | 16→16 lines | ~141 |
+| 20:07 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | modified amendment() | ~656 |
+| 20:07 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | 4→5 lines | ~40 |
+| 20:08 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | 10→8 lines | ~98 |
+| 20:08 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | RecordAsync() → AppendAuditAsync() | ~129 |
+| 20:08 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | RecordAsync() → AppendAuditAsync() | ~129 |
+| 20:08 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | added 1 condition(s) | ~490 |
+
+## Session: 2026-05-14 20:10
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 20:12 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DependencyInjection/ServiceCollectionExtensions.cs | — | ~492 |
+| 20:12 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/Sunfish.Blocks.Integrations.Tests.csproj | — | ~344 |
+| 20:14 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | — | ~4931 |
+| 20:14 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/SensitiveCredentialOrderingTests.cs | — | ~1265 |
+| 20:15 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/SensitiveCredentialOrderingTests.cs | inline fix | ~42 |
+| 20:15 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/ValidationCapabilityFailClosedTests.cs | — | ~1517 |
+| 20:15 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/IntegrationAuditRedactionTests.cs | — | ~1611 |
+| 20:16 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/ValidatorIsolationTests.cs | — | ~2479 |
+| 20:16 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/IFieldDecryptorScopeIsolationTests.cs | — | ~659 |
+| 20:17 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/InMemoryIntegrationAtlasProvider.cs | modified IssueSensitiveCredentialAsync() | ~294 |
+| 20:17 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/InMemoryIntegrationAtlasProvider.cs | 4→4 lines | ~35 |
+| 20:17 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | modified StandingOrderId() | ~44 |
+| 20:17 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | 1→2 lines | ~21 |
+| 00:24 | Fixed PR #812 ledger CI failure — root cause: forgot to git-add regenerated file after render-ledger; three merge commits to w60/phase3-pr1-tauri-scaffold | icm/_state/active-workstreams.md | Verify ledger regen now PASS; Lint PR commits PASS; others pending | ~700 |
+| 20:20 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | — | ~3912 |
+| 20:20 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/SensitiveCredentialOrderingTests.cs | — | ~1283 |
+| 20:20 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/ValidationCapabilityFailClosedTests.cs | — | ~1465 |
+| 20:21 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/IntegrationAuditRedactionTests.cs | — | ~1342 |
+| 20:21 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/ValidatorIsolationTests.cs | — | ~2347 |
+| 20:22 | Created ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/IFieldDecryptorScopeIsolationTests.cs | — | ~588 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/Sunfish.Blocks.Integrations.Tests.csproj | 7→8 lines | ~94 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | "noreply@example.com" → "sendgrid" | ~20 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/Sunfish.Blocks.Integrations.Tests.csproj | 2→2 lines | ~9 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | 9→9 lines | ~97 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | 6→6 lines | ~68 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | 9→9 lines | ~83 |
+| 20:23 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/DefaultIntegrationAtlasProviderTests.cs | 3→3 lines | ~59 |
+| 20:25 | Created ../../../../../tmp/wt-w48-p2/packages/foundation-wayfinder-analyzers/IntegrationAuditAnalyzer.cs | — | ~1293 |
+| 20:25 | Edited ../../../../../tmp/wt-w48-p2/Sunfish.slnx | 4→8 lines | ~119 |
+| 20:28 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DefaultIntegrationAtlasProvider.cs | added 1 condition(s) | ~845 |
+| 20:29 | Edited ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/ValidationCapabilityFailClosedTests.cs | modified AcquireAsync_Cancellation_IsPropagated() | ~1506 |
+
+## Session: 2026-05-14 20:34
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 20:34 | Edited icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | inline fix | ~196 |
+| 20:37 | Edited icm/_state/workstreams/W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md | 2→2 lines | ~60 |
+| 20:37 | Edited icm/_state/workstreams/W54-sick-bay-aggregation-surface.md | inline fix | ~102 |
+| 20:41 | Edited ../../../../../tmp/wt-w48-p3/icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | inline fix | ~204 |
+| 20:41 | Edited ../../../../../tmp/wt-w48-p3/icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | expanded (+26 lines) | ~453 |
+| 20:44 | Created ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Integration/HeadscaleIntegrationSchemaProvider.cs | — | ~664 |
+| 20:45 | Created ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Integration/HeadscaleIntegrationValidator.cs | — | ~1287 |
+| 20:45 | Created ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Integration/HeadscaleIntegrationServiceCollectionExtensions.cs | — | ~264 |
+| 20:45 | Created ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/Integration/RecaptchaV3IntegrationSchemaProvider.cs | — | ~694 |
+| 20:46 | Created ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/Integration/RecaptchaV3IntegrationValidator.cs | — | ~1587 |
+| 20:46 | Created ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/Integration/RecaptchaV3IntegrationServiceCollectionExtensions.cs | — | ~276 |
+| 20:46 | Edited ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Sunfish.Providers.Mesh.Headscale.csproj | 4→5 lines | ~75 |
+| 20:46 | Edited ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/Sunfish.Providers.Recaptcha.csproj | 3→7 lines | ~77 |
+| 20:48 | Created ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/tests/HeadscaleIntegrationValidatorTests.cs | — | ~2755 |
+| 20:48 | Created ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/tests/RecaptchaV3IntegrationValidatorTests.cs | — | ~3254 |
+| 20:48 | Edited ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/tests/Sunfish.Providers.Recaptcha.Tests.csproj | 4→5 lines | ~70 |
+| 20:50 | Edited ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/tests/HeadscaleIntegrationValidatorTests.cs | added 1 condition(s) | ~88 |
+| 20:51 | Edited ../../../../../tmp/wt-w48-p3/icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | expanded (+7 lines) | ~160 |
+| 20:52 | Edited ../../../../../tmp/wt-w48-p3a/icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | inline fix | ~72 |
+| 20:53 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_48_atlas_integration_config.md | — | ~630 |
+| 00:53 | W#48 Phase 2 shipped (PR #829); Phase 3a gate complete; flipped status_cell to Phase 3b next via PR #830 auto-merge | W48 source + active-workstreams.md | PR #830 created + auto-merge; W#48 memory updated | ~500 |
+| 20:53 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~55 |
+
+## Session: 2026-05-14 20:56
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 20:59 | Created ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Integration/HeadscaleIntegrationValidator.cs | — | ~1642 |
+| 21:00 | Created ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/Integration/RecaptchaV3IntegrationValidator.cs | — | ~2015 |
+| 21:00 | Edited ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Integration/HeadscaleIntegrationServiceCollectionExtensions.cs | modified AddHeadscaleIntegration() | ~125 |
+| 21:01 | Created ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/tests/HeadscaleIntegrationValidatorTests.cs | — | ~3927 |
+| 21:02 | Created ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/tests/RecaptchaV3IntegrationValidatorTests.cs | — | ~4530 |
+| 01:00 | W#48 P3b council amendments applied: B1/B2/M1-M5/m1 (scheme validation, timeout, leak containment) | HeadscaleIntegrationValidator.cs + RecaptchaV3IntegrationValidator.cs + tests | 37+30 all pass |
+| 01:05 | PR #831 opened + auto-merge armed; CI running | w48/phase3b-integration-schema-validators | pending |
+| 21:10 | Edited icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | inline fix | ~281 |
+
+## Session: 2026-05-14 21:16
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-14 21:18
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:19 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_48_atlas_integration_config.md | modified SHIPPED() | ~706 |
+| 21:19 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~66 |
+
+## Session: 2026-05-14 (XO loop continuation)
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| loop | Verified PR #831 (W#48 P3b) merged; PR #830 merged; ADR 0086 Accepted on main | origin/main | W#48 Phase 4 unblocked | ~300 |
+| loop | Updated W#48 auto-memory: Phase 3b SHIPPED (67 tests, 8 amendments); Phase 4 Anchor+Bridge UI next | memory/project_workstream_48_atlas_integration_config.md | memory current | ~200 |
+| loop | Updated MEMORY.md W#48 index line | MEMORY.md | current | ~50 |
+| loop | Verified: W#52 built ✓ W#56 built ✓ on origin/main; local reads were from GitButler workspace branch | — | no action needed | ~150 |
+| loop | Checked ADR 0068 (Proposed) + ADR 0055 (Proposed) — CO flip pending; ADR 0086 Accepted ✓ | — | W#37 still gated on CO | ~100 |
+| loop | Verified W#60 P2 fully merged (PRs #731+#732+#751+#752+#757+#758); PR #812 DRAFT awaiting CO Surface Pro test | — | COB queue: W#48 P4 + W#23 P6 | ~150 |
+| 21:27 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/Settings/Integrations/AtlasCredentialField.razor | — | ~1880 |
+| 21:28 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/Settings/Integrations/AtlasEmailRoutingPanel.razor | — | ~1390 |
+| 21:28 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/Settings/Integrations/AtlasIntegrationCategoryPanel.razor | — | ~3646 |
+| 21:29 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/Settings/Integrations/AtlasIntegrationConfig.razor | — | ~1640 |
+| 21:29 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/Settings/Integrations/AtlasIntegrationConfigPage.razor | — | ~427 |
+| 21:29 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/Services/AnchorIntegrationAtlasContext.cs | — | ~289 |
+| 21:29 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+6 lines) | ~148 |
+| 21:30 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/MauiProgram.cs | 9→14 lines | ~141 |
+| 21:30 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/MauiProgram.cs | expanded (+20 lines) | ~552 |
+| 21:30 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/MauiProgram.cs | inline fix | ~28 |
+| 21:30 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/Sunfish.Anchor.csproj | 3→7 lines | ~166 |
+| 21:31 | Created ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Components/Settings/Integrations/AtlasCredentialField.razor | — | ~1274 |
+| 21:31 | Created ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Components/Settings/Integrations/AtlasIntegrationCategoryPanel.razor | — | ~2607 |
+| 21:32 | Created ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Components/Settings/Integrations/AtlasIntegrationConfig.razor | — | ~1095 |
+| 21:32 | Created ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Account/Integrations.razor | — | ~237 |
+| 21:32 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Account/Integrations.razor | modified if() | ~179 |
+| 21:33 | Created ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Services/BridgeIntegrationAtlasContext.cs | — | ~212 |
+| 21:33 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+7 lines) | ~122 |
+| 21:33 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+15 lines) | ~281 |
+
+## Session: 2026-05-14 21:36
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:36 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 3→7 lines | ~166 |
+| 21:36 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Sunfish.Bridge.Client.csproj | 4→8 lines | ~145 |
+| 21:38 | Created ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/contracts/Integrations.ts | — | ~986 |
+| 21:39 | Created ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/AtlasCredentialField.tsx | — | ~1356 |
+| 21:39 | Created ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/AtlasIntegrationCategoryPanel.tsx | — | ~2601 |
+| 21:40 | Created ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/AtlasIntegrationConfig.tsx | — | ~1214 |
+| 21:41 | Created ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/AtlasIntegration.test.tsx | — | ~4485 |
+| 21:41 | Created ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/index.ts | — | ~93 |
+| 21:41 | Edited ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/index.ts | expanded (+25 lines) | ~224 |
+| 21:46 | Edited ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/AtlasIntegration.test.tsx | inline fix | ~26 |
+| 21:46 | Edited ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/AtlasIntegration.test.tsx | CSS: selector | ~71 |
+| 21:48 | Created ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/A11y/AtlasIntegrationConfigA11yTests.cs | — | ~3460 |
+| 21:51 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Account/Integrations.razor | 3→4 lines | ~48 |
+| 21:52 | Created ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Features/Integrations/BridgeIntegrationAtlasContext.cs | — | ~223 |
+| 21:52 | Edited ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Program.cs | 5→6 lines | ~64 |
+| 21:59 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/A11y/AtlasIntegrationConfigA11yTests.cs | modified IntegrationConfig_TabsHaveRovingTabindex() | ~191 |
+| 21:59 | Edited ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/A11y/AtlasIntegrationConfigA11yTests.cs | modified CategoryPanel_InvalidStatusUsesAlertRole() | ~307 |
+| 22:04 | W#48 Phase 4 committed + PR #832 (draft→ready) — 25 files, 2721 insertions; council H9 PASS | worktree w48/phase4-anchor-bridge-ui | ~4500 |
+| 22:05 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_48_atlas_integration_config.md | — | ~689 |
+
+## Session: 2026-05-14 22:08
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:11 | Edited ../../../../../tmp/wt-w48-p4-flip/icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | inline fix | ~365 |
+| 22:12 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~66 |
+| loop | PR #832 (W#48 P4) auto-merged 02:07; created PR #833 (W#48 P4 status flip) + auto-merge | W48 source + ledger | Phase 5 (docs+ledger) is last step | ~300 |
+| 22:15 | Created ../../../../../tmp/wt-w48-p5/apps/docs/blocks/integrations/overview.md | — | ~2562 |
+| 22:15 | Created ../../../../../tmp/wt-w48-p5/apps/docs/blocks/integrations/toc.yml | — | ~11 |
+| 22:15 | Edited ../../../../../tmp/wt-w48-p5/apps/docs/blocks/toc.yml | 3→5 lines | ~30 |
+| 22:15 | Created ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Services/DemoIntegrationAtlasContext.cs | — | ~139 |
+| 22:16 | Created ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Pages/Components/LocalFirst/Integrations/Overview/Demo.razor | — | ~2963 |
+| 22:17 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Pages/Components/LocalFirst/Integrations/Overview/Demo.razor | inline fix | ~19 |
+| 22:17 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Sunfish.KitchenSink.csproj | 3→5 lines | ~97 |
+| 22:17 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Program.cs | 3→5 lines | ~57 |
+| 22:17 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Program.cs | expanded (+36 lines) | ~629 |
+| 22:17 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Program.cs | 4→6 lines | ~111 |
+| 22:19 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Pages/Components/LocalFirst/Integrations/Overview/Demo.razor | 8→8 lines | ~88 |
+| 22:19 | Edited ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Pages/Components/LocalFirst/Integrations/Overview/Demo.razor | modified Dispose() | ~9 |
+| 22:21 | Edited ../../../../../tmp/wt-w48-p5/_shared/engineering/coding-standards.md | 6→7 lines | ~180 |
+| 22:22 | Created ../../../../../tmp/wt-w48-p5/icm/_state/workstreams/W48-atlas-integration-config-ui-surface.md | — | ~1127 |
+| 22:28 | Edited ../../../../../tmp/wt-w48-p5/apps/docs/blocks/integrations/overview.md | 5→10 lines | ~176 |
+| 22:30 | W#48 Phase 5 shipped — docs + kitchen-sink demo + ledger flip | apps/docs/blocks/integrations/ + kitchen-sink + active-workstreams.md | PR #834 auto-merge enabled; W#48 → built | ~500 |
+| 22:29 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_workstream_48_atlas_integration_config.md | — | ~708 |
+
+## Session: 2026-05-14 22:32
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:41 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/.github/workflows/tauri-build.yml | 14→18 lines | ~94 |
+| 22:41 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/.github/workflows/tauri-build.yml | 7→8 lines | ~92 |
+| 22:41 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | inline fix | ~56 |
+| 02:42 | W#48 P5 — rebased PR #834 onto main (active-workstreams + W48 source conflict); CI restarted | /tmp/wt-w48-p5/* | PENDING auto-merge | ~2k |
+| 02:43 | W#60 P3 PR1 — fixed tauri-build.yml: concurrency cancel + continue-on-error on artifact upload | /tmp/wt-w60-p3-pr1/.github/workflows/tauri-build.yml | pushed; new CI running | ~500 |
+| 22:45 | Created icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md | — | ~3239 |
+
+## Session: 2026-05-14 22:47
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:48 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/db.rs | — | ~333 |
+| 22:48 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/commands/cache.rs | — | ~896 |
+| 22:49 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/commands/mod.rs | — | ~4 |
+| 22:49 | Edited ../../../../../tmp/wt-w60-p4-handoff/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 4→4 lines | ~228 |
+| 22:49 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/sync/pull.rs | — | ~571 |
+| 22:49 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/sync/mod.rs | — | ~4 |
+| 22:49 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/lib.rs | — | ~437 |
+| 22:49 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/Cargo.toml | expanded (+6 lines) | ~135 |
+| 22:49 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/stores/syncStore.ts | — | ~134 |
+| 02:49 | W#60 P4 hand-off authored + PR #835 auto-merge | icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md | PR opened; awaiting CI | ~800 |
+| 22:49 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useProperties.ts | — | ~307 |
+| 22:50 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useLeases.ts | — | ~483 |
+| 22:50 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/app.tsx | added 2 import(s) | ~94 |
+| 22:50 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/app.tsx | modified AppLayout() | ~79 |
+| 22:50 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/app.tsx | 3→6 lines | ~52 |
+| 22:50 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useProperties.test.ts | — | ~738 |
+| 22:51 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useMaintenance.ts | — | ~240 |
+
+## Session: 2026-05-14 22:54
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 22:55 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/utils/isTauri.ts | — | ~18 |
+| 22:55 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useProperties.ts | added 1 import(s) | ~180 |
+| 22:55 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useLeases.ts | added 1 import(s) | ~164 |
+| 22:55 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useLeases.ts | 3→3 lines | ~21 |
+| 22:55 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useMaintenance.ts | added 1 import(s) | ~140 |
+| 22:55 | Created ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useProperties.test.ts | — | ~856 |
+| 22:57 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 5→1 lines | ~113 |
+| 23:00 | W#60 P3 PR2 created #836 (draft) — SQLite offline read cache; isTauri() utility; syncStore; 3 hooks; SyncStateBadge; 3 Vitest tests | /tmp/wt-w60-p3-pr2/ | committed + pushed | ~900 |
+| 23:00 | PR #812 rebased onto origin/main (W#48-P5 + W#60-P4-handoff conflict); PR #812 CI restarted; PR #836 rebased + cherry-pick recovered after dropped commit | icm/_state/ | CI in progress | ~300 |
+| 23:06 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/CrewCommsPage.tsx | removed 3 lines | ~4 |
+| 23:06 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/MaintenancePage.tsx | removed 3 lines | ~1 |
+| 23:07 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/MaintenancePage.tsx | added 1 import(s) | ~30 |
+| 23:11 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_erpnext_pivot_stack.md | inline fix | ~174 |
+| 02:52 | W#60 P3 PR2 (#836 DRAFT) noted; memory updated; queue healthy | project_w60_erpnext_pivot_stack.md | updated | ~200 |
+| 23:14 | Edited ../../../../../private/tmp/wt-w60-p3-pr1/apps/anchor-tauri/src/pages/MaintenancePage.tsx | "@/components/AuthAuthRole" → "@/components/AuthRoleGate" | ~16 |
+| 23:29 | PR #812 MERGED to main (W#60 P3 PR1 — Tauri v2 shell scaffold); PR #836 rebased to main (squash-merge cherry-pick); CI restarted on #836 | apps/anchor-tauri/ | #836 CI in progress | ~200 |
+| 23:32 | Edited ../../../../../tmp/wt-w60-p3-status/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~121 |
+| 03:33 | W#60 P3 PR1 #812 merged — status flip PR #837 auto-merge | W60-erpnext-composition-pivot-react-ui.md | PR opened | ~300 |
+| 23:33 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_erpnext_pivot_stack.md | inline fix | ~88 |
+| 23:37 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useLeases.ts | inline fix | ~26 |
+| 23:37 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useLeases.ts | inline fix | ~16 |
+| 23:37 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useLeases.ts | inline fix | ~17 |
+| 23:37 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useProperties.ts | inline fix | ~18 |
+| 23:37 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/useProperties.ts | inline fix | ~18 |
+| 23:42 | Edited ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/lib.rs | added 1 import(s) | ~22 |
+
+## Session: 2026-05-14 23:51
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:54 | Edited ../../../../../tmp/wt-w60-p3-pr2/.github/workflows/tauri-build.yml | 6→9 lines | ~96 |
+| 23:58 | Applied rustup cache fix to tauri-build.yml — `rustup update stable --no-self-update` after rust-cache | .github/workflows/tauri-build.yml | PR #836 re-running | ~200 |
+| 00:25 | Edited ../../../../../tmp/wt-w60-status-836/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~130 |
+| 00:27 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/Cargo.toml | 1→2 lines | ~26 |
+| 00:27 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/db.rs | expanded (+11 lines) | ~117 |
+| 00:27 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/sync/push.rs | — | ~1365 |
+| 00:27 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/sync/mod.rs | 1→2 lines | ~8 |
+| 00:28 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/commands/write_queue.rs | — | ~658 |
+| 00:28 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/commands/mod.rs | 1→2 lines | ~10 |
+| 00:28 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/lib.rs | expanded (+15 lines) | ~307 |
+| 00:28 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/lib.rs | 6→7 lines | ~86 |
+| 00:28 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/lib/loro.ts | — | ~169 |
+| 00:28 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/useMaintenanceNoteOffline.ts | — | ~280 |
+| 00:29 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/pages/RentCollectionPage.tsx | modified RentCollectionPage() | ~222 |
+| 00:29 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/pages/RentCollectionPage.tsx | expanded (+6 lines) | ~187 |
+| 00:29 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-react/RETIRED.md | — | ~74 |
+| 00:29 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/useMaintenanceNoteOffline.test.ts | — | ~682 |
+| 00:30 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/useMaintenanceNoteOffline.test.ts | — | ~657 |
+| 00:31 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/useMaintenanceNoteOffline.test.ts | — | ~643 |
+| 00:31 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/pages/RentCollectionPage.test.tsx | — | ~535 |
+| 00:32 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/useProperties.test.ts | — | ~868 |
+| 00:32 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/useMaintenanceNoteOffline.test.ts | — | ~683 |
+| 00:32 | Created ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/pages/RentCollectionPage.test.tsx | — | ~557 |
+| 00:33 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/commands/write_queue.rs | modified test_pool() | ~594 |
+| 00:33 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/sync/push.rs | 24→24 lines | ~237 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/sync/push.rs | expanded (+6 lines) | ~120 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/commands/write_queue.rs | modified validate_doc_name() | ~176 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/lib.rs | expanded (+7 lines) | ~204 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/lib.rs | modified scheme() | ~390 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/Cargo.toml | 1→2 lines | ~15 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/lib/loro.ts | 3→6 lines | ~90 |
+| 00:37 | Edited ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/lib/loro.ts | modified importUpdate() | ~60 |
+| 00:38 | W#60 P3 PR3 committed + pushed (90ec2ef6); security council PASS-WITH-AMENDMENTS; amendments applied (5daae1e6); PR #839 ready + auto-merge | apps/anchor-tauri/src-tauri/src/{sync/push.rs,commands/write_queue.rs,lib.rs}, src/lib/loro.ts | CI running | ~800 |
+| 00:47 | Edited ../../../../../tmp/wt-w60-p3pr3/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~132 |
+| 00:49 | W#60 P3 PR3 #839 merged — status flip PR #840 auto-merge | W60-erpnext-composition-pivot-react-ui.md | PR opened | ~300 |
+| 00:56 | Edited ../../../../../tmp/wt-w60-p3-built/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 2→2 lines | ~112 |
+
+## Session: 2026-05-14 01:00
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 01:08 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_erpnext_pivot_stack.md | inline fix | ~121 |
+| 01:10 | W#60 P3 CODE-COMPLETE — beacon archived; PASS gate = CO Surface Pro acceptance | project_w60_erpnext_pivot_stack.md | memory updated | ~250 |
+| 01:10 | Created ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/AccountingPage.test.tsx | — | ~950 |
+| 01:11 | Created ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/MaintenancePage.test.tsx | — | ~1228 |
+| 01:11 | Created ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/LeaseDetailPage.test.tsx | — | ~1203 |
+| 01:12 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/LeaseDetailPage.test.tsx | 4→4 lines | ~81 |
+| 01:12 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/LeaseDetailPage.test.tsx | 19→19 lines | ~205 |
+| 01:13 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/AccountingPage.test.tsx | 2→1 lines | ~33 |
+| 01:13 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/LeaseDetailPage.test.tsx | 4→4 lines | ~81 |
+| 01:13 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/LeaseDetailPage.test.tsx | 3→3 lines | ~61 |
+| 01:13 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/MaintenancePage.test.tsx | 8→4 lines | ~73 |
+| 01:14 | Edited ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/MaintenancePage.test.tsx | CSS: AuthRoleGate | ~73 |
+| 01:14 | Added 16 Vitest tests for AccountingPage, MaintenancePage, LeaseDetailPage (PR #842, auto-merge) | apps/anchor-tauri/src/pages/*.test.tsx | rung-4 coverage; all 16 pass | ~700 |
+| 01:15 | Created ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/components/OfflineBanner.test.tsx | — | ~473 |
+| 01:16 | Created ../coordination/inbox/cob-idle-2026-05-14T05-16Z-w60-p4-gated.md | — | ~129 |
+| 01:40 | Created ../coordination/inbox/xo-directive-2026-05-14T05-22Z-fallback-rungs.md | — | ~140 |
+| 01:42 | Created icm/_state/handoffs/w60-reporting-contracts-phase5-stage06-handoff.md | — | ~2279 |
+| 01:43 | Edited ../../../../../tmp/wt-w60-p5/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 4→4 lines | ~241 |
+| 01:45 | W#60 P5 hand-off authored + PR #843 auto-merge; directive updated for COB | w60-reporting-contracts-phase5-stage06-handoff.md | PR opened | ~500 |
+| 01:44 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_erpnext_pivot_stack.md | inline fix | ~131 |
+| 01:50 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/package.json | — | ~224 |
+| 01:50 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/tsconfig.json | — | ~114 |
+| 01:50 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/property.ts | — | ~405 |
+| 01:50 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/accounting.ts | — | ~491 |
+| 01:50 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/tenant.ts | — | ~323 |
+| 01:51 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/sync.ts | — | ~308 |
+| 01:51 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/index.ts | — | ~308 |
+
+## Session: 2026-05-14 01:55
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 01:55 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/integrations.ts | — | ~1019 |
+| 01:55 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/system-requirements.ts | — | ~1567 |
+| 01:56 | Edited ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/index.ts | 5→4 lines | ~70 |
+| 01:56 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/__tests__/index.test.ts | — | ~1538 |
+| 01:57 | Created ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/.gitignore | — | ~6 |
+| 01:59 | W#60 P5 PR 1 committed + pushed — `@sunfish/contracts` pkg, 13 tests pass, PR #844 auto-merge | packages/contracts/ | PASS |
+| 02:04 | Edited ../../../../../tmp/wt-w60-p5-reporting/packages/kernel-audit/AuditEventType.cs | expanded (+11 lines) | ~242 |
+| 02:05 | Created ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/Sunfish.Bridge/Reports/ReportsEndpoints.cs | — | ~3375 |
+| 02:05 | Edited ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→5 lines | ~55 |
+| 02:05 | Edited ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→3 lines | ~27 |
+| 02:05 | Created ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Reports/ReportsEndpointsTests.cs | — | ~1412 |
+| 02:06 | Edited ../../../../../tmp/wt-w60-p5pr1/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | "icm/_state/handoffs/w60-r" → "@sunfish/contracts" | ~34 |
+| 02:06 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/api/erpnext.ts | added nullish coalescing | ~684 |
+| 02:06 | Created ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/RentRoll.tsx | — | ~1118 |
+| 02:10 | W#60 P5 PR1 #844 merged — @sunfish/contracts; status flip PR #846 auto-merge; PR #845 Vite 5→8 CI still pending | W60-erpnext-composition-pivot-react-ui.md | PR opened | ~250 |
+| 02:06 | Created ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/PLReport.tsx | — | ~1910 |
+| 02:07 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/app.tsx | added 2 import(s) | ~59 |
+| 02:07 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/app.tsx | expanded (+8 lines) | ~159 |
+| 02:07 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/app.tsx | 3→6 lines | ~109 |
+| 02:07 | Created ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/RentRoll.test.tsx | — | ~931 |
+| 02:07 | Created ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/PLReport.test.tsx | — | ~1080 |
+| 02:08 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/PLReport.test.tsx | 8→9 lines | ~149 |
+| 02:08 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/PLReport.test.tsx | 4→4 lines | ~68 |
+| 02:08 | Edited ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/PLReport.test.tsx | 4→4 lines | ~75 |
+| 02:10 | Edited ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Reports/ReportsEndpointsTests.cs | 4→5 lines | ~77 |
+| 02:11 | Edited ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Reports/ReportsEndpointsTests.cs | 4→6 lines | ~98 |
+| 02:14 | Created ../../../../../tmp/wt-w60-p5-docs/apps/docs/blocks/erpnext-stack/overview.md | — | ~1251 |
+| 02:14 | Created ../../../../../tmp/wt-w60-p5-docs/apps/docs/blocks/erpnext-stack/toc.yml | — | ~11 |
+| 02:14 | Edited ../../../../../tmp/wt-w60-p5-docs/apps/docs/blocks/toc.yml | 2→4 lines | ~21 |
+| 02:14 | Edited ../../../../../tmp/wt-w60-p5-docs/icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | 2→2 lines | ~121 |
+| 02:15 | W#60 P5 PR 2 committed + pushed — rent roll + P&L reporting, 14 tests, PR #847 auto-merge | accelerators/bridge/Reports/ + apps/anchor-react/pages/ | PASS |
+| 02:16 | W#60 P5 PR 3 committed + pushed — ledger flip built + ERPNext stack docs, PR #848 auto-merge | icm/ + apps/docs/ | PASS |
+| 02:16 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w60_erpnext_pivot_stack.md | 5→5 lines | ~265 |
+
+## Session: 2026-05-14 02:23
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:23 | Created ../coordination/inbox/cob-idle-2026-05-14T02-16Z-w60-p5-complete.md | — | ~170 |
+| 02:29 | Created ../coordination/inbox/xo-directive-2026-05-14T06-30Z-style-audit.md | — | ~160 |
+| 02:29 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 3→4 lines | ~158 |
+
+## Session: 2026-05-14 02:31
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:32 | XO loop: PR #848 CI in-progress; PR #845 Vite lint-fail→skip; queue dry; COB on rung-3 audit; next wake 1800s | coordination/inbox | monitoring | ~200 |
+| 02:58 | Edited ../../../../../tmp/wt-style-dialog/packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishDialog.razor | modified switch() | ~702 |
+| 03:03 | PR #848 MERGED (W#60 fully built); COB opened PR #849 DRAFT style audit rung-3 (dialog CssProvider); PR #845 Vite lint-fail still open (skip); queue dry; next wake 1800s | main | monitoring | ~150 |
+| 03:34 | XO loop: PR #849 DRAFT CI all green (COB holding DRAFT); PR #845 lint-fail skip; queue dry; idle at 1800s | - | monitoring | ~100 |
+| 04:05 | XO loop: idle — PR #849 still DRAFT; no new activity; 1800s wakeup | - | monitoring | ~80 |
+| 04:36 | XO loop: idle tick — no change; PR #849 DRAFT unchanged; 1800s | - | monitoring | ~60 |
+| 05:07 | XO loop: idle tick #5 — no change; PR #849 DRAFT; 1800s | - | monitoring | ~50 |
+| 05:38 | XO loop: idle tick #6 — no change; PR #849 DRAFT; 1800s | - | monitoring | ~50 |
+| 06:09 | XO loop: idle tick #7 — PR #849 DRAFT unchanged; 1800s | - | monitoring | ~50 |
+| 06:40 | XO loop: idle tick #8 — no change; 1800s | - | monitoring | ~50 |
+| 07:11 | XO loop: idle tick #9 — no change; 1800s | - | monitoring | ~50 |
+| 07:42 | XO loop: idle tick #10 — PR #849 DRAFT (last updated 07:00Z); no new activity; 1800s | - | monitoring | ~60 |
+| 08:13 | XO loop: idle tick #11 — no change; 1800s | - | monitoring | ~50 |
+| 08:44 | XO loop: idle tick #12 — no change; 1800s | - | monitoring | ~50 |
+| 09:15 | XO loop: idle tick #13 — no change; 1800s | - | monitoring | ~50 |
+| 09:46 | XO loop: idle tick #14 — no change; 1800s | - | monitoring | ~50 |
+| 10:17 | XO loop: idle tick #15 — PR #849 DRAFT 7+ hrs (CI green); COB likely offline; next wake 1800s | - | monitoring | ~60 |
+| 10:48 | XO loop: idle tick #16 — PR #849 DRAFT 8+ hrs; COB offline; 1800s | - | monitoring | ~50 |
+| 11:19 | XO loop: idle tick #17 — no change; 1800s | - | monitoring | ~50 |
+| 11:50 | XO loop: idle tick #18 — no change; 1800s | - | monitoring | ~50 |
+| 12:21 | XO loop: idle tick #19 — no change; 1800s | - | monitoring | ~50 |
+| 12:40 | Edited accelerators/anchor/README.md | 5→5 lines | ~70 |
+| 12:41 | Edited accelerators/anchor/README.md | expanded (+11 lines) | ~823 |
+| 12:41 | Edited accelerators/anchor/README.md | expanded (+9 lines) | ~243 |
+| 12:41 | Updated accelerators/anchor/README.md — status badge, net10→net11, checklist (7 items now checked), Running-it-today commands | accelerators/anchor/README.md | done | ~1k |
+| 12:52 | XO loop: idle tick #20 — no change; 1800s | - | monitoring | ~50 |
+| 13:23 | XO loop: idle tick #21 — no change; 1800s | - | monitoring | ~50 |
+| 13:54 | XO loop: idle tick #22 — no change; 1800s | - | monitoring | ~50 |
+| 14:25 | XO loop: idle tick #23 — no change; 1800s | - | monitoring | ~50 |
+| 14:56 | XO loop: idle tick #24 — no change; 1800s | - | monitoring | ~50 |
+| 15:27 | XO loop: idle tick #25 — no change; 1800s | - | monitoring | ~50 |
+| 15:58 | XO loop: idle tick #26 — no change; 1800s | - | monitoring | ~50 |
+| 16:29 | XO loop: idle tick #27 — no change; 1800s | - | monitoring | ~50 |
+| 16:59 | XO loop: idle tick #28 — no change; 1800s | - | monitoring | ~50 |
+| 17:30 | XO loop: idle tick #29 — no change; 1800s | - | monitoring | ~50 |
+| 18:01 | XO loop: idle tick #30 — PR #849 DRAFT 15+ hrs; no change; 1800s | - | monitoring | ~50 |
+| 18:32 | XO loop: idle tick #31 — no change; 1800s | - | monitoring | ~50 |
+| 19:03 | XO loop: idle tick #32 — no change; 1800s | - | monitoring | ~50 |
+| 19:34 | XO loop: idle tick #33 — no change; 1800s | - | monitoring | ~50 |
+| 20:05 | XO loop: idle tick #34 — no change; 1800s | - | monitoring | ~50 |
+
+## Session: 2026-05-15 20:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 20:37 | idle tick #35 — main fd06e842 unchanged; #849 DRAFT CI-green (COB offline); #845 lint-fail skip; inbox empty | — | no change | ~800 |
+| 21:08 | idle tick #36 — main fd06e842 unchanged; #849 DRAFT CI-green (COB offline); #845 lint-fail skip; inbox empty | — | no change | ~800 |
+| 21:39 | idle tick #37 — main fd06e842 unchanged; #849 DRAFT CI-green; #845 lint-fail skip; inbox empty | — | no change | ~800 |
+| 22:10 | idle tick #38 — main fd06e842 unchanged; #849 DRAFT CI-green; #845 lint-fail skip; inbox empty | — | no change | ~800 |
+| 22:41 | PR #849 MERGED — style(dialog) CssProvider routing on main 64eb6153; rung-3 next: DataGrid×BS5 (S) + Dialog×BS5-structural (M); inbox empty | .wolf/memory.md | PR merged | ~1000 |
+| 23:12 | idle tick #39 — main 64eb6153 unchanged; #845 lint-fail skip; inbox empty; COB offline | — | no change | ~800 |
+| 23:43 | idle tick #40 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 00:14 | idle tick #41 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 00:45 | idle tick #42 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 01:16 | idle tick #43 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 01:47 | idle tick #44 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 02:18 | idle tick #45 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 02:49 | idle tick #46 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 03:20 | idle tick #47 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 03:51 | idle tick #48 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 04:22 | idle tick #49 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 04:53 | idle tick #50 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 05:24 | idle tick #51 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 05:55 | idle tick #52 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 06:26 | idle tick #53 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 06:57 | idle tick #54 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 07:28 | idle tick #55 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 07:59 | idle tick #56 — main 64eb6153 unchanged; only #845 lint-fail open; inbox empty | — | no change | ~800 |
+| 08:07 | XO loop closed by CO — 56 idle ticks; last main 64eb6153 (#849); queue dry (all CO-gated) | — | loop stopped | ~500 |
+| 08:30 | Created ../.claude/agents/dev.md | — | ~2803 |
+| 08:10 | PR #850 MERGED by CO — fix(anchor-tauri): TS errors + loro-crdt exportSnapshot API; Tauri CI native builds still failing (infra); CO actively doing P3 acceptance | .wolf/memory.md | noted | ~1200 |
+| 08:31 | Edited ../coordination/README.md | 14→15 lines | ~345 |
+| 08:32 | Edited CLAUDE.md | 6→7 lines | ~247 |
+| 08:32 | Edited CLAUDE.md | inline fix | ~48 |
+| 08:32 | Edited CLAUDE.md | inline fix | ~146 |
+| 08:51 | idle tick — main 4df0ec5b (#850); no new PRs; inbox empty; CO P3 acceptance in progress | — | no change | ~800 |
+| 09:12 | idle tick — main 4df0ec5b unchanged; only #845 open; inbox empty; watching for P3 PASS | — | no change | ~800 |
+| 09:33 | idle tick — main 4df0ec5b unchanged; only #845 open; inbox empty | — | no change | ~800 |
+| 09:54 | idle tick — main 4df0ec5b unchanged; only #845 open; inbox empty | — | no change | ~800 |
+| 10:25 | idle tick — main 4df0ec5b unchanged; only #845 open; inbox empty | — | no change | ~800 |
+| 10:56 | idle tick — main 4df0ec5b unchanged; only #845 open; inbox empty | — | no change | ~800 |
+
+## Session: 2026-05-15 11:10
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-15 11:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | 10→9 lines | ~71 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | 18→17 lines | ~379 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | modified triggers() | ~220 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~100 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | "data model coming with B." → "production.json" | ~119 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~68 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | 10→15 lines | ~142 |
+| 11:16 | Edited ../galley/docs/architecture/galley-production-graph.md | "s content at commit time." → "s content per version rec" | ~149 |
+| 11:17 | Edited ../galley/docs/architecture/galley-production-graph.md | modified anchoring() | ~255 |
+| 11:17 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~36 |
+| 11:17 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+15 lines) | ~871 |
+| 11:17 | Applied council amendments G1–G6 to galley-production-graph.md | galley/docs/architecture/galley-production-graph.md | 6 gaps resolved; spec council-amended 2026-05-15 | ~3500 |
+| 11:28 | Edited ../galley/docs/architecture/galley-production-graph.md | modified lifecycle() | ~240 |
+| 11:28 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~114 |
+| 11:28 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~50 |
+| 11:28 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~34 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~143 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~26 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | modified detection() | ~166 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | 7→10 lines | ~183 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→4 lines | ~33 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+9 lines) | ~225 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | 6→9 lines | ~236 |
+| 11:29 | Edited ../galley/docs/architecture/galley-production-graph.md | 8→9 lines | ~186 |
+| 11:30 | Edited ../galley/docs/architecture/galley-production-graph.md | 4→7 lines | ~110 |
+| 11:30 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~47 |
+| 11:30 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~106 |
+| 11:30 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+15 lines) | ~1171 |
+| 11:31 | Applied N1–N10 council amendments to galley-production-graph.md | galley/docs/architecture/galley-production-graph.md | All 10 second-pass gaps resolved | ~4200 |
+| 11:31 | Created ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w23_apple_developer_constraint.md | — | ~325 |
+| 11:31 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/MEMORY.md | 1→5 lines | ~76 |
+| 11:33 | Edited ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/project_w23_apple_developer_constraint.md | modified decision() | ~172 |
+| 11:57 | Edited ../galley/docs/architecture/galley-production-graph.md | modified lifecycle() | ~99 |
+| 11:57 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~68 |
+| 11:57 | Edited ../galley/docs/architecture/galley-production-graph.md | 2→2 lines | ~36 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | modified detection() | ~211 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | removed 7 lines | ~16 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→7 lines | ~54 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→5 lines | ~316 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~145 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+8 lines) | ~360 |
+| 11:58 | Edited ../galley/docs/architecture/galley-production-graph.md | approval() → revision() | ~368 |
+| 11:59 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→3 lines | ~11 |
+| 11:59 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~106 |
+| 11:59 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+35 lines) | ~644 |
+| 11:59 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~140 |
+| 11:59 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→2 lines | ~178 |
+| 11:59 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~108 |
+| 12:00 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+18 lines) | ~1188 |
+| 12:00 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~40 |
+| 12:00 | Applied P1–P8 + sub-gaps (third council pass) to galley-production-graph.md | galley/docs/architecture/galley-production-graph.md | Spec grade A-; 29 total amendments across 3 passes | ~5100 |
+
+## Session: 2026-05-15 13:05
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:05 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | inline fix | ~108 |
+| 13:05 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | inline fix | ~61 |
+| 13:05 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | modified expires() | ~560 |
+| 13:05 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | "dev.sunfish.field" → "BGTaskScheduler" | ~100 |
+| 13:05 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | inline fix | ~22 |
+| 13:06 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | "Hello" → "xcodebuild archive" | ~78 |
+| 13:06 | Edited icm/_state/handoffs/property-ios-field-app-stage06-handoff.md | inline fix | ~12 |
+| 13:06 | W#23 P7 hand-off updated — TestFlight → IPA sideload via Xcode (xcodebuild archive + exportArchive); CO installs direct; Apple enterprise-ID constraint applied | property-ios-field-app-stage06-handoff.md | updated 6 locations | ~400 |
+| 14:10 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~39 |
+| 14:10 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~279 |
+| 14:10 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~139 |
+| 14:10 | Edited ../galley/docs/architecture/galley-production-graph.md | 6→5 lines | ~85 |
+| 14:10 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~115 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | modified anchoring() | ~398 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~338 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→3 lines | ~44 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~157 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~62 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~119 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~200 |
+| 14:11 | Edited ../galley/docs/architecture/galley-production-graph.md | 1→3 lines | ~160 |
+| 14:12 | Edited ../galley/docs/architecture/galley-production-graph.md | 2→3 lines | ~50 |
+| 14:12 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+15 lines) | ~387 |
+| 14:12 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+15 lines) | ~1207 |
+
+## Session: 2026-05-15 14:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:19 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+18 lines) | ~890 |
+| 14:19 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+7 lines) | ~410 |
+| 14:20 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+6 lines) | ~362 |
+| 14:20 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~371 |
+| 14:20 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~492 |
+| 14:20 | Edited ../galley/docs/architecture/galley-production-graph.md | modified 1() | ~563 |
+| 14:20 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~40 |
+| 14:21 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+11 lines) | ~1111 |
+| 14:24 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~516 |
+| 14:24 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~129 |
+| 14:24 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~282 |
+| 14:24 | Edited ../galley/docs/architecture/galley-production-graph.md | modified 1() | ~380 |
+| 14:24 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~39 |
+| 14:25 | Edited ../galley/docs/architecture/galley-production-graph.md | expanded (+9 lines) | ~1020 |
+| 14:28 | Edited ../galley/docs/architecture/galley-production-graph.md | 4→6 lines | ~348 |
+| 14:28 | Edited ../galley/docs/architecture/galley-production-graph.md | modified anchoring() | ~556 |
+| 14:28 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→4 lines | ~119 |
+| 14:28 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~231 |
+| 14:29 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~40 |
+| 14:32 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~562 |
+| 14:32 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~227 |
+| 14:32 | Edited ../galley/docs/architecture/galley-production-graph.md | 3→5 lines | ~370 |
+| 14:32 | Edited ../galley/docs/architecture/galley-production-graph.md | inline fix | ~40 |
+| 14:33 | galley-production-graph.md: 5-loop council+UPF cycle complete — 8 passes total, 30+ amendments, grade A+, implementation-ready | galley/docs/architecture/galley-production-graph.md | done | ~25k |
+| 14:40 | galley-production-graph.md: CO approved; handed to DEV for B.1 implementation | galley/docs/architecture/galley-production-graph.md | approved | ~1k |
+
+## Session: 2026-05-15 14:47
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:53 | Created icm/_state/handoffs/property-owner-cockpit-stage06-handoff.md | — | ~2969 |
+| 14:53 | Edited icm/_state/workstreams/W29-owner-web-cockpit.md | modified 1() | ~281 |
+| 14:54 | Regenerated active-workstreams.md via render-ledger.py | icm/_state/active-workstreams.md | W#29 now shows ready-to-build in ledger | ~50 |
+| 14:54 | W#29 design-in-flight → ready-to-build; Phase 1 hand-off covers built cluster modules; OQ1 multi-actor permissions matrix resolved | W29-owner-web-cockpit.md + property-owner-cockpit-stage06-handoff.md | Queue depth +1; 2 unblocked ready-to-build items now | ~100 |
+| 14:55 | Edited icm/_state/workstreams/W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md | 2→2 lines | ~57 |

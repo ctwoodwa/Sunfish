@@ -3,8 +3,8 @@ sort_order: 65
 number: 56
 slug: w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface
 title: "**W#42 follow-on — Bridge React `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; ships TypeScript projection contract + Bridge JSON endpoint + React renderer in `packages/ui-adapters-react/`; sibling to W#47 Anchor MAUI"
-status: "ready-to-build"
-status_cell: "`ready-to-build` (W#42 substrate built 2026-05-04 across PRs #503/#504/#505/#510/#513/#514; W#47 Anchor MAUI sibling hand-off authored 2026-05-04 as PR #555; Stage 06 hand-off authored 2026-05-05; sunfish-PM may begin Phase 1 once a COB capacity slot opens)"
+status: "built"
+status_cell: "`built` — all 5 phases shipped 2026-05-13 (PRs #736/#774/+3 more; PR #777 ledger-flip merged); 46 tests; WCAG 2.2 AA baseline; React adapter status updated to Active; pipeline closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/foundation-wayfinder-bridge-react-renderer-stage06-handoff.md` + sibling `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` (W#47) + `docs/adrs/0063-mission-space-requirements.md` (substrate spec) + `docs/adrs/0065-wayfinder-system-and-standing-order-contract.md` §Decision §7 (WCAG mandate) + `docs/adrs/0030-react-adapter-scaffolding.md` (React adapter) + `docs/adrs/0014-adapter-parity-policy.md` (parity) + `docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md` (Bridge Zone C)"

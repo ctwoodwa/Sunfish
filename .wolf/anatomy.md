@@ -1,11 +1,380 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-11T20:43:35.936Z
-> Files: 3120 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T18:55:15.604Z
+> Files: 3834 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../../../../private/tmp/wt-coordination-move/icm/_state/
 
 - `active-workstreams.md` — Active Workstreams Ledger (~40554 tok)
+
+## ../../../../../private/tmp/wt-listings-test-fix/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Listings/
+
+- `ListingsEndpointsTests.cs` — Class: ListingsEndpointsTests (~4534 tok)
+
+## ../../../../../private/tmp/wt-slnx-hygiene/
+
+- `Sunfish.slnx` (~6452 tok)
+
+## ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/
+
+- `Package.swift` — swift-tools-version:5.9 (~777 tok)
+
+## ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/
+
+- `ContentView.swift` — / Root routing view. Phase 5 (pairing flow) owns the `isPaired` gate; (~682 tok)
+
+## ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Capture/Asset/
+
+- `AssetCapturePayload.swift` — / Canonical-JSON-encoded payload for an `EventType.Asset` envelope. (~240 tok)
+- `AssetCaptureView.swift` — / Lightweight display-only projection of an equipment record for v1. (~1986 tok)
+
+## ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/SunfishField/Home/
+
+- `HomeView.swift` — / Main home scene shown after the device is paired. Per W#23 Phase 6 (~1490 tok)
+
+## ../../../../../private/tmp/wt-w23-2-p1/accelerators/anchor-mobile-ios/Tests/SunfishFieldCaptureTests/
+
+- `AssetCapturePayloadTests.swift` — Struct: AssetCapturePayloadTests (~554 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/
+
+- `Package.swift` — swift-tools-version:5.9 (~731 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/
+
+- `ContentView.swift` — / Root routing view. Phase 5 (pairing flow) owns the `isPaired` gate; (~423 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Events/
+
+- `EventQueueService.swift` — / Outbound event-queue service surface. Per W#23 hand-off Phase 3. (~1537 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/SunfishField/Home/
+
+- `HomeView.swift` — / Main home scene shown after the device is paired. Per W#23 Phase 6 (~1183 tok)
+- `QueueStatusRow.swift` — / Queue-status summary row shown at the bottom of `HomeView`. (~1614 tok)
+- `SettingsView.swift` — / Minimal settings sheet: device identity, paired tenant, unpair action, (~1662 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/anchor-mobile-ios/Tests/SunfishFieldHomeTests/
+
+- `QueueStatusSnapshotTests.swift` — Struct: QueueStatusSnapshotTests (~737 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/Sunfish.Bridge/Field/
+
+- `FieldEndpoints.cs` — Bridge route family for the W#23 iOS Field-Capture App per the W#23 P4 + P4.5 unblock addenda. Hosts (~4518 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/
+
+- `FieldUnpairEndpointTests.cs` — Contract tests for <c>POST /api/v1/field/unpair</c>. Council Test-Coverage-B2 (2026-05-13): new endp (~1501 tok)
+
+## ../../../../../private/tmp/wt-w23-p6/packages/kernel-audit/
+
+- `AuditEventType.cs` — Discriminator for the kind of event captured in an <see cref="AuditRecord"/>. (~14004 tok)
+
+## ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/
+
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~2653 tok)
+
+## ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/
+
+- `SystemRequirementsDimensionRow.razor` (~1000 tok)
+- `SystemRequirementsDimensionRow.razor.css` — Styles: 22 rules (~615 tok)
+
+## ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Components/Pages/
+
+- `SystemRequirements.razor` — Declares value (~1850 tok)
+- `SystemRequirements.razor.css` — Styles: 18 rules, 3 vars (~611 tok)
+
+## ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Resources/Localization/
+
+- `SharedResource.resx` — Declares name (~3560 tok)
+
+## ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/Services/
+
+- `SystemRequirementsViewHelpers.cs` — ADR 0063-A1.1 platform-key and dimension-key helpers for the Anchor MAUI ISystemRequirementsRenderer (~532 tok)
+
+## ../../../../../private/tmp/wt-w47-p1/accelerators/anchor/tests/
+
+- `SystemRequirementsTests.cs` — W#47 Phase 1 — SystemRequirements PreInstallFullPage component + view-helper contract tests. <para> (~2148 tok)
+- `tests.csproj` (~1532 tok)
+
+## ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Components/
+
+- `SystemRequirementsInlinePanel.razor` (~914 tok)
+- `SystemRequirementsInlinePanel.razor.css` — Styles: 8 rules (~409 tok)
+
+## ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Resources/Localization/
+
+- `SharedResource.resx` — Declares name (~3778 tok)
+
+## ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/Services/
+
+- `AnchorMauiSystemRequirementsRenderer.cs` — Anchor MAUI concrete <see cref="ISystemRequirementsRenderer"/> per ADR 0063-A1.1 + W#47 Phase 2. <li (~1286 tok)
+- `AnchorMauiSystemRequirementsSurface.cs` — Anchor MAUI concrete <see cref="Sunfish.Foundation.MissionSpace.ISystemRequirementsSurface"/> per AD (~545 tok)
+- `IAnchorSystemRequirementsSurface.cs` — Anchor-MAUI-specific extension of <see cref="ISystemRequirementsSurface"/> that the <see cref="Ancho (~395 tok)
+
+## ../../../../../private/tmp/wt-w47-p2/accelerators/anchor/tests/
+
+- `SystemRequirementsRendererDispatchTests.cs` — W#47 Phase 2 — AnchorMauiSystemRequirementsRenderer dispatch tests. Compiled directly (renderer + IA (~1727 tok)
+- `tests.csproj` — Declares are (~1627 tok)
+
+## ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~4372 tok)
+
+## ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/
+
+- `SystemRequirementsRegressionBanner.razor` (~883 tok)
+- `SystemRequirementsRegressionBanner.razor.css` — Styles: 5 rules (~288 tok)
+
+## ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Components/Layout/
+
+- `MainLayout.razor` (~151 tok)
+
+## ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Resources/Localization/
+
+- `SharedResource.resx` — Declares name (~3921 tok)
+
+## ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/Services/
+
+- `AnchorMauiSystemRequirementsRenderer.cs` — Anchor MAUI concrete <see cref="ISystemRequirementsRenderer"/> per ADR 0063-A1.1 + W#47 Phase 2+3. < (~1854 tok)
+- `AnchorMauiSystemRequirementsSurface.cs` — Anchor MAUI concrete <see cref="Sunfish.Foundation.MissionSpace.ISystemRequirementsSurface"/> per AD (~620 tok)
+- `IAnchorSystemRequirementsSurface.cs` — Anchor-MAUI-specific extension of <see cref="ISystemRequirementsSurface"/> that the <see cref="Ancho (~549 tok)
+- `SystemRequirementsRegressionObserver.cs` — Singleton that subscribes to <see cref="IMissionEnvelopeProvider"/> and publishes <see cref="Dimensi (~812 tok)
+
+## ../../../../../private/tmp/wt-w47-p3/accelerators/anchor/tests/
+
+- `SystemRequirementsRegressionObserverTests.cs` — W#47 Phase 3 — SystemRequirementsRegressionObserver + regression banner contract tests. The observer (~2751 tok)
+- `SystemRequirementsRendererDispatchTests.cs` — W#47 Phase 2 — AnchorMauiSystemRequirementsRenderer dispatch tests. Compiled directly (renderer + IA (~1746 tok)
+- `tests.csproj` — Declares are (~1707 tok)
+
+## ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~4241 tok)
+
+## ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/Services/
+
+- `AnchorMauiServiceCollectionExtensions.cs` — DI registration for the Anchor MAUI system-requirements renderer surface per ADR 0063-A1.1 + W#47. P (~765 tok)
+
+## ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/
+
+- `tests.csproj` — Declares are (~1763 tok)
+
+## ../../../../../private/tmp/wt-w47-p4/accelerators/anchor/tests/A11y/
+
+- `SystemRequirementsInlinePanelA11yTests.cs` — W#47 Phase 4 — WCAG 2.2 AA + EN 301 549 v3.2.1 structural a11y assertions for <c>SystemRequirementsI (~1395 tok)
+- `SystemRequirementsPreInstallFullPageA11yTests.cs` — W#47 Phase 4 — WCAG 2.2 AA + EN 301 549 v3.2.1 structural a11y assertions for <c>SystemRequirements. (~1239 tok)
+- `SystemRequirementsRegressionBannerA11yTests.cs` — W#47 Phase 4 — WCAG 2.2 AA + EN 301 549 v3.2.1 structural a11y assertions for <c>SystemRequirementsR (~1366 tok)
+
+## ../../../../../private/tmp/wt-w47-p4/apps/docs/foundation/wayfinder/
+
+- `wcag.md` — Wayfinder — WCAG 2.2 AA + EN 301 549 v3.2.1 conformance baseline (~3120 tok)
+
+## ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/
+
+- `ShipsOfficeDataProvider.cs` — Reference <see cref="IShipsOfficeDataProvider"/> per ADR 0083 §1+§2 + W#55 Phase 2b. Projects a tena (~3293 tok)
+- `ShipsOfficeServiceCollectionExtensions.cs` — DI registration for the block-tier Ship's Office reference implementations per W#55 Phase 2b. Per co (~508 tok)
+- `Sunfish.Blocks.ShipsOffice.csproj` — /*.cs" /> (~496 tok)
+
+## ../../../../../private/tmp/wt-w55-p2b/packages/blocks-ships-office/tests/
+
+- `ShipsOfficeProviderTests.cs` — Class: ShipsOfficeProviderTests (~5731 tok)
+- `Sunfish.Blocks.ShipsOffice.Tests.csproj` (~429 tok)
+
+## ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/
+
+- `ShipsOfficeCommandService.cs` — Reference <see cref="IShipsOfficeCommandService"/> per ADR 0083 §2 + §5 + W#55 Phase 2c. Implements (~3053 tok)
+- `ShipsOfficeServiceCollectionExtensions.cs` — DI registration for the block-tier Ship's Office reference implementations per W#55 Phase 2c. Per co (~589 tok)
+- `Sunfish.Blocks.ShipsOffice.csproj` — /*.cs" /> (~431 tok)
+
+## ../../../../../private/tmp/wt-w55-p2c/packages/blocks-ships-office/tests/
+
+- `ShipsOfficeCommandServiceTests.cs` — Class: ShipsOfficeCommandServiceTests (~4537 tok)
+- `Sunfish.Blocks.ShipsOffice.Tests.csproj` (~328 tok)
+
+## ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/
+
+- `IDocumentDiffService.cs` — Computes an accessible diff between two versions of a Ship's Office document. Per ADR 0083 §3 tier-d (~628 tok)
+- `ShipsOfficeServiceCollectionExtensions.cs` — DI registration for the block-tier Ship's Office reference implementations per W#55 Phase 2c. Per co (~553 tok)
+- `Sunfish.Blocks.ShipsOffice.csproj` — /*.cs" /> (~546 tok)
+
+## ../../../../../private/tmp/wt-w55-p2d/packages/blocks-ships-office/tests/
+
+- `DocumentDiffServiceTests.cs` — Class: DocumentDiffServiceTests (~575 tok)
+- `Sunfish.Blocks.ShipsOffice.Tests.csproj` (~497 tok)
+
+## ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/
+
+- `AnalyzerReleases.Shipped.md` (~39 tok)
+- `AnalyzerReleases.Unshipped.md` (~102 tok)
+- `Diagnostics.cs` — Class: Diagnostics (~339 tok)
+- `ShipsOfficePermissionAnalyzer.cs` — SUNFISH_SHIPSOFFICE_PERM001 — emits a Warning on calls to <c>IShipsOfficeDataProvider.GetSnapshotAsy (~1308 tok)
+- `Sunfish.Foundation.ShipsOffice.Analyzers.csproj` — /*.cs" /> (~622 tok)
+
+## ../../../../../private/tmp/wt-w55-p2d/packages/foundation-ships-office.analyzers/tests/
+
+- `ShipsOfficePermissionAnalyzerTests.cs` — Tests for <see cref="ShipsOfficePermissionAnalyzer"/>. Per ADR 0083 §2 / W#55 Phase 2d: positive (ca (~1086 tok)
+- `Sunfish.Foundation.ShipsOffice.Analyzers.Tests.csproj` (~407 tok)
+
+## ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/
+
+- `_Imports.razor` (~71 tok)
+- `DocumentDetailDrawer.razor` (~918 tok)
+- `DocumentDiffPanel.razor` (~693 tok)
+- `DocumentListItem.razor` (~903 tok)
+- `ShipsOfficeBlock.razor` (~1889 tok)
+- `ShipsOfficeSearchBar.razor` (~1298 tok)
+- `Sunfish.Blocks.ShipsOffice.csproj` — /*.cs" /> (~561 tok)
+
+## ../../../../../private/tmp/wt-w55-p3/packages/blocks-ships-office/tests/
+
+- `_Imports.razor` (~71 tok)
+- `DocumentDiffPanelTests.cs` — Class: DocumentDiffPanelTests (~635 tok)
+- `DocumentListItemTests.cs` — Class: DocumentListItemTests (~695 tok)
+- `LiveRegionTests.cs` — Class: LiveRegionTests (~1601 tok)
+- `ShipsOfficeBlockTests.cs` — Class: ShipsOfficeBlockTests (~2211 tok)
+- `ShipsOfficeSearchBarTests.cs` — Class: ShipsOfficeSearchBarTests (~364 tok)
+- `Sunfish.Blocks.ShipsOffice.Tests.csproj` (~559 tok)
+
+## ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/
+
+- `index.ts` — Contracts (~469 tok)
+
+## ../../../../../private/tmp/wt-w56-p2/packages/ui-adapters-react/src/components/SystemRequirements/
+
+- `index.ts` — Declares SystemRequirementsProps (~86 tok)
+- `SystemRequirements.strings.ts` — Exports STRINGS (~401 tok)
+- `SystemRequirements.test.tsx` — wrap (~1808 tok)
+- `SystemRequirements.tsx` — VerdictBanner (~1279 tok)
+- `SystemRequirementsDimensionRow.tsx` — resolveStatusLabel (~896 tok)
+
+## ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/
+
+- `index.ts` — Contracts (~563 tok)
+
+## ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/components/SystemRequirements/
+
+- `index.ts` — Declares SystemRequirementsProps (~160 tok)
+- `SystemRequirements.strings.ts` — Exports STRINGS (~467 tok)
+- `SystemRequirements.test.tsx` — wrap (~1876 tok)
+- `SystemRequirements.tsx` — Required for PostInstallRegressionBanner mode; ignored for other modes. (~1481 tok)
+- `SystemRequirementsInlinePanel.tsx` — SystemRequirementsInlinePanel (~320 tok)
+- `SystemRequirementsPhase3.test.tsx` — EVALUATED_AT (~1247 tok)
+- `SystemRequirementsRegressionBanner.tsx` — hasRequiredRegression (~803 tok)
+
+## ../../../../../private/tmp/wt-w56-p3/packages/ui-adapters-react/src/hooks/
+
+- `useSystemRequirements.test.ts` — VALID_RESULT: makeFetch (~903 tok)
+- `useSystemRequirements.ts` — Base URL for the system-requirements API endpoint. Defaults to '/api/system-requirements'. (~774 tok)
+
+## ../../../../../private/tmp/wt-w56-p4/apps/docs/foundation/wayfinder/
+
+- `wcag.md` — Wayfinder — WCAG 2.2 AA + EN 301 549 v3.2.1 conformance baseline (~3899 tok)
+
+## ../../../../../private/tmp/wt-w56-p4/packages/ui-adapters-react/
+
+- `README.md` — Project documentation (~864 tok)
+
+## ../../../../../private/tmp/wt-w56-p4/packages/ui-adapters-react/src/components/SystemRequirements/
+
+- `SystemRequirements.stories.tsx` — EVALUATED_AT (~1578 tok)
+
+## ../../../../../private/tmp/wt-w56-p5/_shared/engineering/
+
+- `adapter-parity.md` — UI Adapter Parity Matrix (~1137 tok)
+
+## ../../../../../private/tmp/wt-w56-p5/icm/_state/workstreams/
+
+- `W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md` — Notes (~997 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/
+
+- `Sunfish.slnx` (~6515 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~4180 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~2568 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/Services/
+
+- `AnchorIdentityAtlasSurface.cs` — Anchor implementation of <see cref="IIdentityAtlasSurface"/> per ADR 0066 §Phase 3. Assembles view-m (~1474 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/accelerators/anchor/tests/
+
+- `AnchorIdentityAtlasSurfaceTests.cs` — Class: AnchorIdentityAtlasSurfaceTests (~1666 tok)
+- `tests.csproj` (~1418 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/
+
+- `IdentityAtlasServiceCollectionExtensions.cs` — DI registration helpers for the Identity Atlas foundation contracts. (~309 tok)
+- `IdentityProfile.cs` — Read-side identity profile for an actor per ADR 0066 §Phase 3. Plain-text fields only — no field dec (~186 tok)
+- `IKeyStore.cs` — Read-side access to actor identity profiles and key metadata per ADR 0066 §Phase 3. Implementations (~349 tok)
+- `ITeamRegistry.cs` — Read-side access to all team memberships for an actor per ADR 0066 §Phase 3. Distinct from <c>IActiv (~243 tok)
+- `ITrusteeRegistry.cs` — Read-side access to recovery trustee policy and enrolled trustees per ADR 0066 §Phase 3. Real implem (~306 tok)
+- `KeyInfo.cs` — Current key-pair metadata for an actor per ADR 0066 §Phase 3 / ADR 0087. Raw public key bytes used b (~228 tok)
+- `NullKeyStore.cs` — Null-object <see cref="IKeyStore"/> that returns null for all queries. Default registration until a (~296 tok)
+- `NullTeamRegistry.cs` — Null-object <see cref="ITeamRegistry"/> that returns an empty membership list for all queries. Defau (~255 tok)
+- `NullTrusteeRegistry.cs` — Null-object <see cref="ITrusteeRegistry"/> that returns a zero-max policy and empty trustee list for (~344 tok)
+- `Sunfish.Foundation.IdentityAtlas.csproj` — /*.cs" /> (~296 tok)
+- `TeamMembership.cs` — Team membership record returned by <see cref="ITeamRegistry"/> per ADR 0066 §Phase 3. <see cref="Tea (~314 tok)
+- `Trustee.cs` — An enrolled recovery trustee per ADR 0066 §Phase 3. (~286 tok)
+- `TrusteePolicy.cs` — Recovery trustee policy for a tenant per ADR 0066 §Phase 3. Governs the maximum number of enrolled t (~92 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/packages/foundation-identity-atlas/tests/
+
+- `GlobalUsings.cs` — Class: GlobalUsings (~18 tok)
+- `IdentityAtlasServiceCollectionExtensionsTests.cs` — Class: IdentityAtlasServiceCollectionExtensionsTests (~585 tok)
+- `NullKeyStoreTests.cs` — Class: NullKeyStoreTests (~197 tok)
+- `NullTeamRegistryTests.cs` — Class: NullTeamRegistryTests (~176 tok)
+- `NullTrusteeRegistryTests.cs` — Class: NullTrusteeRegistryTests (~247 tok)
+- `tests.csproj` (~225 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/packages/foundation/Crypto/
+
+- `KeyFingerprint.cs` — Canonical display form for a cryptographic key fingerprint per ADR 0066 §5 (OQ-6 council disposition (~1239 tok)
+
+## ../../../../../private/tmp/wt-w58-p1a/packages/foundation/tests/Crypto/
+
+- `KeyFingerprintTests.cs` — Class: KeyFingerprintTests (~1174 tok)
+
+## ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Layout/
+
+- `NavMenu.razor` (~936 tok)
+- `NavMenu.razor.css` — Styles: 15 rules (~1028 tok)
+
+## ../../../../../private/tmp/wt-w58-p1b/accelerators/anchor/Components/Pages/Identity/
+
+- `ActiveTeamOverviewPage.razor` (~1121 tok)
+- `HistoricalKeysPage.razor` (~1044 tok)
+- `IdentityProfileEditPage.razor` (~748 tok)
+- `KeyRotationPage.razor` (~1092 tok)
+- `RecoveryContactsPage.razor` (~1457 tok)
+
+## ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Layout/
+
+- `MainLayout.razor` (~3102 tok)
+
+## ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/
+
+- `ActiveTeamOverviewPage.razor` (~751 tok)
+- `HistoricalKeysPage.razor` (~576 tok)
+- `IdentityProfileEditPage.razor` (~400 tok)
+- `KeyRotationPage.razor` (~518 tok)
+- `RecoveryContactsPage.razor` (~612 tok)
+
+## ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge.Client/Services/
+
+- `IBridgeRequestContext.cs` — Captured per-circuit identity context for InteractiveServer Blazor components. Populated during the (~220 tok)
+
+## ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~5619 tok)
+- `Sunfish.Bridge.csproj` (~960 tok)
+
+## ../../../../../private/tmp/wt-w58-p2/accelerators/bridge/Sunfish.Bridge/Features/Identity/
+
+- `BridgeIdentityAtlasSurface.cs` — Bridge implementation of <see cref="IIdentityAtlasSurface"/> per ADR 0066 §Phase 3. Assembles view-m (~1547 tok)
+- `BridgeRequestContext.cs` — Captures TenantId and ActorId from the initial HTTP connection (when <see cref="IBrowserTenantContex (~354 tok)
 
 ## ../../../../../private/tmp/wt-w59-handoff/icm/_state/
 
@@ -19,6 +388,309 @@
 
 - `_preamble.md` — Active Workstreams Ledger (~345 tok)
 - `W59-crew-comms-anchor-mvp-demo-integration.md` — Notes (~660 tok)
+
+## ../../../../../private/tmp/wt-w60-p3-pr1/.github/workflows/
+
+- `tauri-build.yml` — CI: Tauri cross-platform build (~694 tok)
+
+## ../../../../../private/tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/
+
+- `CrewCommsPage.tsx` — THREADS (~1661 tok)
+- `MaintenancePage.tsx` — PRIORITY_COLORS — renders form, table (~2090 tok)
+
+## ../../../../../private/tmp/wt-w60-p3-pr1/apps/anchor-tauri/src/pages/
+
+- `MaintenancePage.tsx` — PRIORITY_COLORS — renders form, table (~2090 tok)
+
+## ../../../../../private/tmp/wt-w60-p3-pr1/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~970 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/accelerators/bridge/Sunfish.Bridge/Proxy/
+
+- `ERPNextProxy.cs` — Bridge route family for the W#60 ERPNext proxy surface. Phase 1 ships only GET /api/v1/erpnext/prope (~1262 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/
+
+- `ERPNextProxyTests.cs` — Class: ERPNextProxyTests (~1660 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/
+
+- `eslint.config.js` — /*.{ts,tsx}'], (~103 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/
+
+- `app.tsx` — queryClient (~1301 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/api/
+
+- `erpnext.ts` — Exports Property, getProperties, Lease, Payment + 5 more (~638 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/hooks/
+
+- `useLeases.ts` — Exports useLeases, useLease, usePayments (~273 tok)
+
+## ../../../../../private/tmp/wt-w60-p3/apps/anchor-react/src/pages/
+
+- `LeaseDetailPage.tsx` — LeaseDetailPage — renders table (~1341 tok)
+- `LeasesPage.test.tsx` — wrapper (~931 tok)
+- `LeasesPage.tsx` — daysUntilExpiry — renders table (~1406 tok)
+- `RentCollectionPage.tsx` — PAYMENT_METHODS — renders form (~2099 tok)
+
+## ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Hubs/
+
+- `BridgeHub.cs` — Class: BridgeHub (~378 tok)
+- `IBridgeHubClient.cs` — Class: IBridgeHubClient (~65 tok)
+
+## ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/Sunfish.Bridge/Proxy/
+
+- `ERPNextHttpClient.cs` — Class: ERPNextHttpClient (~1479 tok)
+- `ERPNextProxy.cs` — Bridge route family for the W#60 ERPNext proxy surface. Phase 1 ships only GET /api/v1/erpnext/prope (~2056 tok)
+- `IERPNextClient.cs` — GET /api/resource/{doctype} with explicit field selection. Needed for accounting endpoints where ERP (~270 tok)
+
+## ../../../../../private/tmp/wt-w60-p4/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/
+
+- `ERPNextProxyTests.cs` — Class: ERPNextProxyTests (~1750 tok)
+
+## ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/
+
+- `app.tsx` — queryClient (~1518 tok)
+
+## ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/api/
+
+- `erpnext.ts` — Exports Property, getProperties, Lease, Payment + 9 more (~866 tok)
+
+## ../../../../../private/tmp/wt-w60-p4/apps/anchor-react/src/pages/
+
+- `AccountingPage.tsx` — formatCurrency — renders table (~1520 tok)
+- `CrewCommsPage.tsx` — THREADS (~1678 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/
+
+- `CONTRIBUTING-REACT.md` — Contributing — Bridge ERPNext Proxy + React UI (W#60 Phase 2) (~1409 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/Sunfish.Bridge/Proxy/
+
+- `ERPNextHttpClient.cs` — Class: ERPNextHttpClient (~1728 tok)
+- `ERPNextProxy.cs` — Bridge route family for the W#60 ERPNext proxy surface. Phase 1 ships only GET /api/v1/erpnext/prope (~2690 tok)
+- `IERPNextClient.cs` — GET /api/resource/{doctype} with explicit field selection. Needed for accounting endpoints where ERP (~391 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/
+
+- `ERPNextProxyTests.cs` — Class: ERPNextProxyTests (~2942 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/
+
+- `package.json` — Node.js package manifest (~402 tok)
+- `vite.config.ts` (~170 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/
+
+- `app.tsx` — queryClient (~1686 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/api/
+
+- `erpnext.ts` — Exports Property, getProperties, Lease, Payment + 15 more (~1287 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/components/
+
+- `AuthRoleGate.tsx` — App-level role gate. Reads the current user's role from authStore (populated (~236 tok)
+- `RoleGate.tsx` — RoleGate (~132 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/pages/
+
+- `MaintenancePage.tsx` — PRIORITY_COLORS — renders form, table (~2093 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/apps/anchor-react/src/stores/
+
+- `authStore.ts` — Exports useAuthStore (~92 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/packages/ui-react/
+
+- `package.json` — Node.js package manifest (~381 tok)
+- `tsconfig.build.json` (~85 tok)
+- `tsconfig.json` — TypeScript configuration (~201 tok)
+- `vite.config.ts` (~262 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/
+
+- `index.ts` — Declares SyncStateBadgeProps (~124 tok)
+
+## ../../../../../private/tmp/wt-w60-p5/packages/ui-react/src/components/
+
+- `FreshnessBadge.tsx` — formatRelative (~379 tok)
+- `OfflineIndicator.tsx` — OfflineIndicator (~390 tok)
+- `PropertyCard.tsx` — STATUS_STYLES (~436 tok)
+- `RoleGate.tsx` — RoleGate (~92 tok)
+- `SyncStateBadge.tsx` — STATE_STYLES (~274 tok)
+
+## ../../../../../private/tmp/wt-wsb/icm/_state/workstreams/
+
+- `W01-multi-tenancy-type-surface-convention.md` — Notes (~401 tok)
+
+## ../../../../../tmp/
+
+- `commit-msg-w58-council.txt` (~182 tok)
+- `commit-msg-w58-p1a2.txt` (~192 tok)
+- `commit-msg-w58.txt` (~158 tok)
+
+## ../../../../../tmp/wt-adr0086-accept/docs/adrs/
+
+- `0086-anchor-tauri-react-product-surface.md` — ADR 0086 — Anchor Tauri-React Product Surface (~4420 tok)
+
+## ../../../../../tmp/wt-adr0086-accept/icm/_state/workstreams/
+
+- `W23-ios-field-capture-app-substrate-v1.md` — Notes (~900 tok)
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~933 tok)
+
+## ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/components/
+
+- `OfflineBanner.test.tsx` — originalOnline (~473 tok)
+
+## ../../../../../tmp/wt-anchor-tests/apps/anchor-tauri/src/pages/
+
+- `AccountingPage.test.tsx` — wrapper (~935 tok)
+- `LeaseDetailPage.test.tsx` — wrapper (~1201 tok)
+- `MaintenancePage.test.tsx` — wrapper (~1138 tok)
+
+## ../../../../../tmp/wt-check2/icm/_state/workstreams/
+
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~446 tok)
+
+## ../../../../../tmp/wt-design-tokens-fix/packages/foundation-transport/tests/
+
+- `MdnsPeerTransportTests.cs` — Local-LAN end-to-end smoke test per ADR 0061 P3 acceptance gate. Two <see cref="MdnsPeerTransport"/> (~2370 tok)
+
+## ../../../../../tmp/wt-docs-tactical-toc/apps/docs/blocks/
+
+- `toc.yml` (~248 tok)
+
+## ../../../../../tmp/wt-docs-tactical-toc/apps/docs/blocks/tactical/
+
+- `toc.yml` (~11 tok)
+
+## ../../../../../tmp/wt-inmem-chore/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~5030 tok)
+
+## ../../../../../tmp/wt-inmem-chore/packages/blocks-subscriptions/DependencyInjection/
+
+- `SubscriptionsServiceCollectionExtensions.cs` — DI extension methods for registering Sunfish subscription-management services. (~558 tok)
+
+## ../../../../../tmp/wt-inmem-chore/packages/foundation/
+
+- `Sunfish.Foundation.csproj` — /*.cs" /> (~584 tok)
+
+## ../../../../../tmp/wt-inmem-chore/packages/ui-core/Wayfinder/Integrations/
+
+- `IIntegrationAtlasProvider.cs` — Atlas integration-config provider per ADR 0067 §3 + §6. Read + write surface for tenant-scoped third (~1906 tok)
+
+## ../../../../../tmp/wt-ledger-sync/icm/_state/workstreams/
+
+- `W55-ships-office-content-aggregation-surface.md` — Notes (~1018 tok)
+- `W58-identity-atlas-implementations-anchor-bridge.md` — Notes (~789 tok)
+
+## ../../../../../tmp/wt-nu1510-b2/packages/kernel-audit/
+
+- `Sunfish.Kernel.Audit.csproj` — /*.cs" /> (~345 tok)
+
+## ../../../../../tmp/wt-nu1510-b2/packages/kernel-event-bus/
+
+- `Sunfish.Kernel.EventBus.csproj` — /*.cs" /> (~261 tok)
+
+## ../../../../../tmp/wt-nu1510-b2/packages/ui-core/
+
+- `Sunfish.UICore.csproj` — /*.cs" /> (~694 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/federation-common/
+
+- `Sunfish.Federation.Common.csproj` — /*.cs" /> (~228 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation-localfirst/
+
+- `Sunfish.Foundation.LocalFirst.csproj` — /*.cs" /> (~323 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation-localfirst/tests/
+
+- `tests.csproj` (~213 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation-rule-engine-event-bridge/
+
+- `Sunfish.Foundation.RuleEngine.EventBridge.csproj` — /*.cs" /> (~256 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation-rule-engine-event-bridge/tests/
+
+- `tests.csproj` (~298 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation-wayfinder/
+
+- `Sunfish.Foundation.Wayfinder.csproj` — /*.cs" /> (~534 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation/
+
+- `Sunfish.Foundation.csproj` — /*.cs" /> (~562 tok)
+
+## ../../../../../tmp/wt-nu1510-fix/packages/foundation/tests/
+
+- `tests.csproj` (~207 tok)
+
+## ../../../../../tmp/wt-nu1510/packages/federation-blob-replication/
+
+- `Sunfish.Federation.BlobReplication.csproj` — /*.cs" /> (~273 tok)
+
+## ../../../../../tmp/wt-style-dialog/packages/ui-adapters-blazor/Components/Feedback/Dialog/
+
+- `SunfishDialog.razor` — Declares string (~3245 tok)
+
+## ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/
+
+- `PostgresAuditLog.cs` — EF Core + PostgreSQL <see cref="IAuditLog"/>. (~2045 tok)
+
+## ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Entities/
+
+- `PostgresEntityStore.cs` — EF Core + PostgreSQL <see cref="IEntityStore"/>. (~4961 tok)
+
+## ../../../../../tmp/wt-w1-wsb/packages/foundation-localfirst/
+
+- `DataExport.cs` — Lifecycle state of an export job. (~854 tok)
+
+## ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Audit/
+
+- `AuditQuery.cs` — Filter criteria for <see cref="IAuditLog.QueryAsync"/>. (~150 tok)
+- `InMemoryAuditLog.cs` — Zero-dependency in-memory <see cref="IAuditLog"/>. (~1079 tok)
+
+## ../../../../../tmp/wt-w1-wsb/packages/foundation/Assets/Entities/
+
+- `EntityQuery.cs` — Filter criteria for <see cref="IEntityStore.QueryAsync"/>. (~135 tok)
+- `InMemoryEntityStore.cs` — Zero-dependency in-memory <see cref="IEntityStore"/>. (~5287 tok)
+
+## ../../../../../tmp/wt-w1-wsb/packages/foundation/tests/Assets/
+
+- `TenantSelectionQueryTests.cs` — ADR 0085: TenantSelection integration tests for InMemoryAuditLog + InMemoryEntityStore. Verifies For (~1162 tok)
+
+## ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~5955 tok)
+- `Sunfish.Bridge.csproj` (~1063 tok)
+
+## ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/Sunfish.Bridge/Field/
+
+- `AssetCapturePayload.cs` — Canonical-JSON-decoded payload for an <c>EventType.Asset</c> event envelope. Mirrors <c>AssetCapture (~132 tok)
+- `AssetEventHandler.cs` — Handles <c>EventType == "Asset"</c> field-event envelopes. Resolves the equipment referenced in the (~1718 tok)
+- `FieldEndpoints.cs` — Bridge route family for the W#23 iOS Field-Capture App per the W#23 P4 + P4.5 unblock addenda. Hosts (~4674 tok)
+- `FieldEventEnvelope.cs` — Wire-format envelope as parsed off the request body. (~218 tok)
+
+## ../../../../../tmp/wt-w23-2-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Field/
+
+- `AssetEventHandlerTests.cs` — Class: AssetEventHandlerTests (~1480 tok)
+
+## ../../../../../tmp/wt-w23-2-p2/icm/_state/workstreams/
+
+- `W23-ios-field-capture-app-substrate-v1.md` — Notes (~1087 tok)
+
+## ../../../../../tmp/wt-w23-2-p2/packages/kernel-audit/
+
+- `AuditEventType.cs` — Discriminator for the kind of event captured in an <see cref="AuditRecord"/>. (~14159 tok)
 
 ## ../../../../../tmp/wt-w45-p45-pr1/apps/docs/blocks/crew-comms/
 
@@ -58,6 +730,402 @@
 
 - `GlareResolutionTests.cs` — W#45 P4.5 PR 3 — glare-resolution wiring on <see cref="NativeChannelProvider"/>. Per the addendum (i (~3772 tok)
 
+## ../../../../../tmp/wt-w46-p2b/
+
+- `Sunfish.slnx` (~4802 tok)
+
+## ../../../../../tmp/wt-w46-p2b/.github/workflows/
+
+- `tokens-contrast.yml` — CI: Design Token Contrast Verification (~299 tok)
+
+## ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/
+
+- `Sunfish.Foundation.DesignTokens.csproj` — /*.cs" /> (~895 tok)
+
+## ../../../../../tmp/wt-w46-p2b/packages/foundation-design-tokens/tests/
+
+- `Phase2bTests.cs` — Phase 2b: codegen pipeline + WCAG contrast gate + CVD ΔE2000 audit. (~1631 tok)
+- `Sunfish.Foundation.DesignTokens.Tests.csproj` (~273 tok)
+
+## ../../../../../tmp/wt-w46-p2b/tooling/design-tokens-codegen/
+
+- `ContrastVerifier.cs` — WCAG 1.4.3 / 1.4.11 contrast ratio verification. Normal text: ≥4.5:1. Large text / non-text: ≥3:1. (~733 tok)
+- `CssGenerator.cs` — Generates <c>tokens.css</c> CSS custom properties from a <see cref="TokenCatalog"/>. Color tokens em (~2841 tok)
+- `CvdAuditor.cs` — CVD ΔE2000 pairwise audit for role-band hues. Minimum ΔE2000 ≥ <see cref="DefaultThreshold"/> under (~986 tok)
+- `DesignTokensCodegenTool.csproj` (~149 tok)
+- `MarkdownGenerator.cs` — Generates <c>tokens.md</c> and <c>role-band-cvd.md</c> from a <see cref="TokenCatalog"/>. (~1649 tok)
+- `Program.cs` — Class: Program (~1010 tok)
+- `TokensModel.cs` — Parsed representation of a W3C Design Tokens <c>tokens.json</c> file. Only the Sunfish token groups (~2351 tok)
+
+## ../../../../../tmp/wt-w46-p4/
+
+- `Directory.Build.props` (~2460 tok)
+
+## ../../../../../tmp/wt-w46-p4/.github/workflows/
+
+- `a11y-bindings.yml` — CI: A11y Primitive Bindings (~752 tok)
+- `conformance-coverage.yml` — CI: Conformance Coverage Gate (~405 tok)
+
+## ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor-a11y/
+
+- `SunfishA11yAssertions.cs` — Sunfish-specific accessibility assertions executed against a Playwright-hosted page. Layered on top (~2939 tok)
+- `SunfishA11yContract.cs` — Strongly-typed projection of the <c>parameters.a11y.sunfish</c> contract block declared per-componen (~1388 tok)
+
+## ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/A11y/
+
+- `BlazorA11yServiceExtensions.cs` — DI registration for Blazor a11y primitives per ADR 0077 §4 + §6 + §7. (~270 tok)
+- `BlazorFirstAidRenderer.razor` (~183 tok)
+- `BlazorFirstAidRenderer.razor.cs` — Code-behind for <c>BlazorFirstAidRenderer.razor</c>. Accepts an <see cref="IFirstAidContract"/> plus (~517 tok)
+- `BlazorFocusTrap.cs` — Blazor adapter for <see cref="IFocusTrap"/> per ADR 0077 §4 + WCAG 2.2 SC 2.4.3 (Focus Order) + SC 2 (~808 tok)
+- `BlazorLiveAnnouncer.cs` — Blazor adapter for <see cref="ILiveAnnouncer"/> per ADR 0077 §4 + §6. Bridges to the browser <c>aria (~828 tok)
+- `DefaultConformanceRegistry.cs` — Thread-safe in-process <see cref="IConformanceRegistry"/> implementation per ADR 0077 §7. Registered (~390 tok)
+
+## ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/Maui/
+
+- `MauiFirstAidRenderer.cs` — MAUI First-Aid renderer per ADR 0077 §4. Anchor is a MAUI Blazor Hybrid app — its interactive surfac (~510 tok)
+- `MauiFocusTrap.cs` — MAUI adapter for <see cref="IFocusTrap"/> per ADR 0077 §4 + WCAG 2.2 SC 2.4.3 (Focus Order) + SC 2.1 (~1107 tok)
+- `MauiLiveAnnouncer.cs` — MAUI adapter for <see cref="ILiveAnnouncer"/> per ADR 0077 §4 + §6. Windows: <c>AutomationNotificati (~1158 tok)
+
+## ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/tests/
+
+- `Phase4Tests.cs` — W#46 Phase 4 — 6 cross-adapter integration tests per the Stage 06 hand-off. Tests 1–3: Blazor JS int (~2551 tok)
+
+## ../../../../../tmp/wt-w46-p4/packages/ui-adapters-blazor/wwwroot/js/
+
+- `sunfish-a11y.js` — Queues a screen-reader announcement. (~1816 tok)
+
+## ../../../../../tmp/wt-w46-p4/packages/ui-adapters-react/src/a11y/
+
+- `ConformanceRegistry.ts` — React-side IConformanceRegistry implementation per ADR 0077 §7. (~472 tok)
+- `FirstAidRenderer.tsx` — Mirror of IFirstAidContract for the React adapter layer. (~494 tok)
+- `FocusTrap.tsx` — Whether the focus trap is currently active. (~866 tok)
+- `index.ts` (~185 tok)
+- `LiveAnnouncer.test.ts` — Declares region (~374 tok)
+- `LiveAnnouncer.tsx` — React live-region announcer per ADR 0077 §4 + §6 + WCAG 2.2 SC 4.1.3. (~771 tok)
+
+## ../../../../../tmp/wt-w46-p5/
+
+- `Directory.Build.props` (~2460 tok)
+
+## ../../../../../tmp/wt-w46-p5/apps/docs/design-system/
+
+- `conformance-baseline.md` — Conformance Baseline — Sunfish Shared Design System (~744 tok)
+- `platform-a11y-bindings.md` — Platform A11y Bindings — Sunfish Shared Design System (~1095 tok)
+- `README.md` — Project documentation (~504 tok)
+- `role-band-cvd.md` — Role-Band CVD Audit Report (~398 tok)
+- `tokens.md` — Design Token Reference (~584 tok)
+
+## ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/
+
+- `Program.cs` — Class: Program (~1420 tok)
+- `Sunfish.KitchenSink.csproj` (~724 tok)
+
+## ../../../../../tmp/wt-w46-p5/apps/kitchen-sink/Pages/
+
+- `DesignSystem.razor` (~852 tok)
+
+## ../../../../../tmp/wt-w46-p5/packages/foundation-ship-common/
+
+- `DefaultDeckRegistry.cs` — Thread-safe in-memory <see cref="IDeckRegistry"/> per ADR 0077 §3. Registered by <c>AddSunfishShared (~380 tok)
+- `DefaultShipRoleRegistry.cs` — Thread-safe in-memory <see cref="IShipRoleRegistry"/> per ADR 0077 §1.1. Registered by <c>AddSunfish (~345 tok)
+- `ShipDesignSystemServiceExtensions.cs` — DI registration for the Sunfish Shared Design System per ADR 0077. Combines Phase 1 (ship-common sub (~593 tok)
+- `Sunfish.Foundation.Ship.Common.csproj` — /*.cs" /> (~508 tok)
+
+## ../../../../../tmp/wt-w46-p5/packages/ui-core/Conformance/
+
+- `DefaultConformanceRegistry.cs` — Thread-safe in-memory <see cref="IConformanceRegistry"/> per ADR 0077 §7. Registered by <c>AddSunfis (~310 tok)
+
+## ../../../../../tmp/wt-w48-p2/
+
+- `Sunfish.slnx` (~6640 tok)
+
+## ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/
+
+- `DefaultIntegrationAtlasProvider.cs` — Reference implementation of <see cref="IIntegrationAtlasProvider"/> per ADR 0067 §7.1. Persists inte (~6159 tok)
+- `DuplicateValidatorRegistrationException.cs` — Thrown when two <see cref="IIntegrationProviderValidator"/> instances share the same <c>(SupportedCa (~307 tok)
+- `InMemoryIntegrationAtlasProvider.cs` — In-memory <see cref="IIntegrationAtlasProvider"/> for consumer package tests per ADR 0067 §7.2. Stat (~1559 tok)
+- `IntegrationAuditPayloads.cs` — Typed audit payload factories for ADR 0067 §8 events. Creates <see cref="AuditPayload"/> bodies with (~1410 tok)
+- `Sunfish.Blocks.Integrations.csproj` — /*.cs" /> (~419 tok)
+
+## ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/DependencyInjection/
+
+- `ServiceCollectionExtensions.cs` — DI extension methods for registering the full integration-atlas stack (ADR 0067 §6.1). (~492 tok)
+
+## ../../../../../tmp/wt-w48-p2/packages/blocks-integrations/tests/
+
+- `DefaultIntegrationAtlasProviderTests.cs` — Class: DefaultIntegrationAtlasProviderTests (~3911 tok)
+- `IFieldDecryptorScopeIsolationTests.cs` — ADR 0067 §6.1.1 — IFieldDecryptor must NOT be resolvable from a container built via <c>AddSunfishInt (~588 tok)
+- `IntegrationAuditRedactionTests.cs` — ADR 0067 §8 redaction rule: credential values must NEVER appear in audit payloads. Tests the <see cr (~1342 tok)
+- `SensitiveCredentialOrderingTests.cs` — Verifies ADR 0067 §7.1 encrypt-before-issue ordering invariant. (~1283 tok)
+- `Sunfish.Blocks.Integrations.Tests.csproj` (~352 tok)
+- `ValidationCapabilityFailClosedTests.cs` — ADR 0067 §5.3.1 — 3 fail-closed failure modes for capability acquisition. (~2766 tok)
+- `ValidatorIsolationTests.cs` — ADR 0067 §6.2 — validator isolation: ValidateProviderAsync passes only decrypted byte collections an (~2347 tok)
+
+## ../../../../../tmp/wt-w48-p2/packages/foundation-wayfinder-analyzers/
+
+- `IntegrationAuditAnalyzer.cs` — SUNFISH_INTEGRATION_AUDIT001 — flags direct <c>new AuditPayload(...)</c> construction in code that h (~1293 tok)
+
+## ../../../../../tmp/wt-w48-p3/icm/_state/workstreams/
+
+- `W48-atlas-integration-config-ui-surface.md` — Notes (~1609 tok)
+
+## ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/
+
+- `Sunfish.Providers.Mesh.Headscale.csproj` — /*.cs" /> (~374 tok)
+
+## ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/Integration/
+
+- `HeadscaleIntegrationSchemaProvider.cs` — <see cref="IIntegrationSchemaProvider"/> for the Headscale mesh-VPN adapter per ADR 0067 §6.2 / W#48 (~664 tok)
+- `HeadscaleIntegrationServiceCollectionExtensions.cs` — DI registration for the Headscale integration-config surface per ADR 0067 §6.2 / W#48 Phase 3b. (~300 tok)
+- `HeadscaleIntegrationValidator.cs` — <see cref="IIntegrationProviderValidator"/> for the Headscale mesh-VPN adapter per ADR 0067 §6.2 / W (~1642 tok)
+
+## ../../../../../tmp/wt-w48-p3/packages/providers-mesh-headscale/tests/
+
+- `HeadscaleIntegrationValidatorTests.cs` — W#48 Phase 3b — HeadscaleIntegrationValidator unit tests. Verifies schema drift-protection, credenti (~3927 tok)
+
+## ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/
+
+- `Sunfish.Providers.Recaptcha.csproj` — /*.cs" /> (~291 tok)
+
+## ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/Integration/
+
+- `RecaptchaV3IntegrationSchemaProvider.cs` — <see cref="IIntegrationSchemaProvider"/> for the Google reCAPTCHA v3 captcha adapter per ADR 0067 §6 (~694 tok)
+- `RecaptchaV3IntegrationServiceCollectionExtensions.cs` — DI registration for the reCAPTCHA v3 integration-config surface per ADR 0067 §6.2 / W#48 Phase 3b. (~276 tok)
+- `RecaptchaV3IntegrationValidator.cs` — <see cref="IIntegrationProviderValidator"/> for the Google reCAPTCHA v3 captcha adapter per ADR 0067 (~2015 tok)
+
+## ../../../../../tmp/wt-w48-p3/packages/providers-recaptcha/tests/
+
+- `RecaptchaV3IntegrationValidatorTests.cs` — W#48 Phase 3b — RecaptchaV3IntegrationValidator unit tests. Verifies schema drift-protection, marker (~4530 tok)
+- `Sunfish.Providers.Recaptcha.Tests.csproj` (~203 tok)
+
+## ../../../../../tmp/wt-w48-p3a/icm/_state/workstreams/
+
+- `W48-atlas-integration-config-ui-surface.md` — Notes (~1570 tok)
+
+## ../../../../../tmp/wt-w48-p4-flip/icm/_state/workstreams/
+
+- `W48-atlas-integration-config-ui-surface.md` — Notes (~1279 tok)
+
+## ../../../../../tmp/wt-w48-p5/_shared/engineering/
+
+- `coding-standards.md` — Coding Standards (~3820 tok)
+
+## ../../../../../tmp/wt-w48-p5/apps/docs/blocks/
+
+- `toc.yml` (~262 tok)
+
+## ../../../../../tmp/wt-w48-p5/apps/docs/blocks/integrations/
+
+- `overview.md` — Integration Config — Overview (~2463 tok)
+- `toc.yml` (~11 tok)
+
+## ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/
+
+- `Program.cs` — Class: Program (~2042 tok)
+- `Sunfish.KitchenSink.csproj` (~771 tok)
+
+## ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Pages/Components/LocalFirst/Integrations/Overview/
+
+- `Demo.razor` (~2940 tok)
+
+## ../../../../../tmp/wt-w48-p5/apps/kitchen-sink/Services/
+
+- `DemoIntegrationAtlasContext.cs` — Demo-only IIntegrationAtlasContext for the kitchen-sink integration atlas showcase. Returns fixed de (~139 tok)
+
+## ../../../../../tmp/wt-w48-p5/icm/_state/workstreams/
+
+- `W48-atlas-integration-config-ui-surface.md` — Notes (~1057 tok)
+
+## ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/
+
+- `DefaultEngineRoomCommandService.cs` — Reference <see cref="IEngineRoomCommandService"/> per ADR 0079 §2 + W#50 Phase 2b. Implements the §T (~4066 tok)
+- `EngineRoomServiceCollectionExtensions.cs` — DI registration for the block-tier Engine Room reference implementations per W#50 Phase 2a + Phase 2 (~539 tok)
+- `Sunfish.Blocks.EngineRoom.csproj` — /*.cs" /> (~455 tok)
+
+## ../../../../../tmp/wt-w50-p2b/packages/blocks-engine-room/tests/
+
+- `DefaultEngineRoomCommandServiceTests.cs` — W#50 Phase 2b — coverage for <see cref="DefaultEngineRoomCommandService"/> per ADR 0079 §2 + §Trust (~6602 tok)
+- `Sunfish.Blocks.EngineRoom.Tests.csproj` (~352 tok)
+
+## ../../../../../tmp/wt-w50-p2b/packages/foundation-engine-room/
+
+- `EngineRoomServiceCollectionExtensions.cs` — DI registration for the foundation-tier Engine Room substrate (ADR 0079). Per cohort <c>AddSunfishX( (~683 tok)
+- `IDocumentQuarantineStore.cs` — Persistence seam for Engine Room quarantine operations per ADR 0079 §2. Implementations are provided (~351 tok)
+
+## ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/
+
+- `_Imports.razor` — Namespace imports for blocks-engine-room Razor components (~80 tok)
+- `ElectricalPanel.razor` — W#50 Phase 3a. CRDT growth gauge + sr-only table (clip technique); SubsystemStatus via GetHealthSummaryAsync; IDisposable+CancellationToken; SeverityRank guard; two sibling aria-live regions always in DOM (~2912 tok)
+- `EngineRoomHealthBanner.razor` — W#50 Phase 3a. Aggregate health + EOOW badge; SeverityRank WorstStatus; assertive/polite aria-live outside @if; IDisposable+CancellationToken; subsystem tiles icon aria-hidden (~2044 tok)
+- `MainPropulsionPanel.razor` — W#50 Phase 3a. SyncDaemon metrics in role=grid+rowgroup+aria-rowcount; trace timeline sr-only table (clip); chart toggled via hidden+aria-hidden; IDisposable+CancellationToken (~2618 tok)
+- `Sunfish.Blocks.EngineRoom.csproj` — SDK=Microsoft.NET.Sdk.Razor; AspNetCore.App FrameworkReference; ui-core + ui-adapters-blazor refs (~550 tok)
+
+## ../../../../../tmp/wt-w50-p3a/packages/blocks-engine-room/tests/
+
+- `EngineRoomPanelDataContractTests.cs` — W#50 Phase 3a — data-contract coverage for provider shapes consumed by EngineRoomHealthBanner, MainP (~1917 tok)
+
+## ../../../../../tmp/wt-w50-p3b/icm/_state/workstreams/
+
+- `W50-engine-room-observability-surface.md` — Notes (~990 tok)
+
+## ../../../../../tmp/wt-w50-p3b/packages/blocks-engine-room/
+
+- `DamageControlPanel.razor` — Declares DcAction (~5551 tok)
+- `QaWorkshopPanel.razor` (~135 tok)
+- `Sunfish.Blocks.EngineRoom.csproj` — /*.cs" /> (~580 tok)
+
+## ../../../../../tmp/wt-w50-p4/
+
+- `CHANGELOG.md` — Changelog (~1980 tok)
+
+## ../../../../../tmp/wt-w50-p4/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~4911 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~2754 tok)
+
+## ../../../../../tmp/wt-w50-p4/accelerators/anchor/Components/Layout/
+
+- `NavMenu.razor` (~1253 tok)
+
+## ../../../../../tmp/wt-w50-p4/accelerators/anchor/Components/Pages/
+
+- `EngineRoomPage.razor` (~419 tok)
+
+## ../../../../../tmp/wt-w50-p4/accelerators/anchor/Services/
+
+- `AnchorGrantAllPermissionResolver.cs` — Anchor-specific <see cref="IPermissionResolver"/> stub that grants every action to every principal a (~432 tok)
+- `AnchorNoOpOodWatchService.cs` — Anchor-specific <see cref="IOodWatchService"/> stub. <see cref="GetActiveWatchAsync"/> always return (~507 tok)
+
+## ../../../../../tmp/wt-w50-p4/apps/docs/foundation/engine-room/
+
+- `overview.md` — Engine Room — Foundation Contracts + Block Implementations (~1308 tok)
+
+## ../../../../../tmp/wt-w50-p4/icm/_state/workstreams/
+
+- `W50-engine-room-observability-surface.md` — Notes (~956 tok)
+
+## ../../../../../tmp/wt-w50-status/icm/_state/workstreams/
+
+- `W50-engine-room-observability-surface.md` — Notes (~996 tok)
+
+## ../../../../../tmp/wt-w51-3b/icm/_state/workstreams/
+
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~450 tok)
+
+## ../../../../../tmp/wt-w51-done/icm/_state/workstreams/
+
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~453 tok)
+
+## ../../../../../tmp/wt-w51-p3a/
+
+- `Sunfish.slnx` (~6577 tok)
+
+## ../../../../../tmp/wt-w51-p3a/icm/_state/workstreams/
+
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~478 tok)
+
+## ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/
+
+- `_Imports.razor` (~81 tok)
+- `AlertTickerPanel.razor` (~2108 tok)
+- `KpiCardGrid.razor` (~810 tok)
+- `Sunfish.Blocks.Quarterdeck.csproj` — /*.cs" /> (~476 tok)
+- `WatchStatusPanel.razor` (~3738 tok)
+
+## ../../../../../tmp/wt-w51-p3a/packages/blocks-quarterdeck/tests/
+
+- `QuarterdeckPanelDataContractTests.cs` — W#51 Phase 3a — data-contract coverage for provider shapes consumed by WatchStatusPanel, AlertTicker (~2355 tok)
+- `Sunfish.Blocks.Quarterdeck.Tests.csproj` (~332 tok)
+
+## ../../../../../tmp/wt-w51-p3b/packages/blocks-quarterdeck/
+
+- `DepartmentNavPanel.razor` — Quarterdeck department nav landmark; skip-link, aria-disabled denied items, RenderMainLandmark param. W#51 Phase 3b PR #807. (~1600 tok)
+- `MissionEnvelopePanel.razor` — Mission-envelope status badge (always-in-DOM live region A12); VersionLabel + LastEvaluatedAt + detail link. W#51 Phase 3b PR #807. (~900 tok)
+- `QuarterdeckSearchResult.cs` — DTO record (StableKey/Label/TargetHref?) for SearchPanel combobox results. W#51 Phase 3b PR #807. (~278 tok)
+- `RecentOrdersPanel.razor` — Last 5 StandingOrderSummary items; full-row link wrap (SC 2.4.4), timezone in time display. W#51 Phase 3b PR #807. (~600 tok)
+- `SearchPanel.razor` — ARIA 1.2 combobox, ISearchAsYouType<QuarterdeckSearchResult>, polite result-count live region, CTS local-capture (A9), form/type=text (A10), query cap 256 (A14). W#51 Phase 3b PR #807. (~2300 tok)
+
+## ../../../../../tmp/wt-w51-p4/
+
+- `CHANGELOG.md` — Changelog (~2361 tok)
+
+## ../../../../../tmp/wt-w51-p4/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~4949 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~2805 tok)
+
+## ../../../../../tmp/wt-w51-p4/accelerators/anchor/Components/Layout/
+
+- `NavMenu.razor` (~1372 tok)
+
+## ../../../../../tmp/wt-w51-p4/accelerators/anchor/Components/Pages/
+
+- `QuarterdeckPage.razor` — Declares AnchorNoOpSearchProvider (~811 tok)
+
+## ../../../../../tmp/wt-w51-p4/apps/docs/foundation/quarterdeck/
+
+- `overview.md` — Quarterdeck — Foundation Contracts + Block Implementations (~1832 tok)
+
+## ../../../../../tmp/wt-w51-p4/icm/_state/workstreams/
+
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~453 tok)
+
+## ../../../../../tmp/wt-w51-refix/icm/_state/workstreams/
+
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~453 tok)
+
+## ../../../../../tmp/wt-w52-flip/icm/_state/workstreams/
+
+- `W52-tactical-anomaly-detection-threat-trigger-surface.md` — Notes (~452 tok)
+
+## ../../../../../tmp/wt-w52-p3a/icm/_state/workstreams/
+
+- `W52-tactical-anomaly-detection-threat-trigger-surface.md` — Notes (~448 tok)
+
+## ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/
+
+- `_Imports.razor` (~49 tok)
+- `LookoutPanel.razor` (~2889 tok)
+- `LookoutPanel.razor.css` — Styles: 11 rules (~418 tok)
+- `SonarRoomPanel.razor` (~1720 tok)
+- `SonarRoomPanel.razor.css` — Styles: 8 rules (~309 tok)
+- `Sunfish.Blocks.Tactical.csproj` — /*.cs" /> (~388 tok)
+
+## ../../../../../tmp/wt-w52-p3a/packages/blocks-tactical/tests/
+
+- `LookoutPanelTests.cs` — W#52 Phase 3a — LookoutPanel bUnit tests per ADR 0081 §7.3 + hand-off acceptance gate. WCAG/a11y cou (~1968 tok)
+- `SonarRoomPanelTests.cs` — W#52 Phase 3a — SonarRoomPanel bUnit tests per ADR 0081 §7.3 + hand-off acceptance gate. WCAG/a11y s (~762 tok)
+- `Sunfish.Blocks.Tactical.Tests.csproj` (~231 tok)
+
+## ../../../../../tmp/wt-w52-p3b/apps/docs/blocks/tactical/
+
+- `overview.md` — Tactical — Overview (~1008 tok)
+
+## ../../../../../tmp/wt-w52-p3b/icm/_state/workstreams/
+
+- `W52-tactical-anomaly-detection-threat-trigger-surface.md` — Notes (~459 tok)
+
+## ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/
+
+- `EmergencyStandingOrderDialog.razor` (~2340 tok)
+- `FireControlPanel.razor` (~1571 tok)
+- `LookoutQuarterdeckAlertSource.cs` — <see cref="IQuarterdeckAlertSource"/> implementation that surfaces Tactical Lookout alerts onto the (~1956 tok)
+- `Sunfish.Blocks.Tactical.csproj` — /*.cs" /> (~397 tok)
+
+## ../../../../../tmp/wt-w52-p3b/packages/blocks-tactical/tests/
+
+- `EmergencyStandingOrderDialogTests.cs` — W#52 Phase 3b — EmergencyStandingOrderDialog bUnit tests per ADR 0081 §7.6 + hand-off acceptance gat (~2524 tok)
+- `FireControlPanelTests.cs` — W#52 Phase 3b — FireControlPanel bUnit tests per ADR 0081 §7.3 + hand-off acceptance gate. WCAG/a11y (~1503 tok)
+- `LookoutQuarterdeckAlertSourceTests.cs` — W#52 Phase 4 — LookoutQuarterdeckAlertSource unit tests per ADR 0081 §7.2 + hand-off. (~2044 tok)
+
+## ../../../../../tmp/wt-w52-p3b/packages/foundation-tactical/
+
+- `ITacticalRule.cs` — A rule that evaluates incoming <see cref="TacticalSignal"/> values and emits a <see cref="TacticalAl (~651 tok)
+
+## ../../../../../tmp/wt-w53-flip/icm/_state/workstreams/
+
+- `W53-helm-identity-atlas-surface-stage-06-build-of-load-bearing-p.md` — Notes (~1219 tok)
+
 ## ../../../../../tmp/wt-w53-p2-react/packages/ui-adapters-react/src/
 
 - `index.ts` — Contracts (~503 tok)
@@ -79,6 +1147,319 @@
 - `HelmWidgetViewState.ts` — Materialized view-state for a Helm widget per ADR 0066 §1.1. Mirrors (~125 tok)
 - `index.ts` (~98 tok)
 - `SyncState.ts` — Canonical sync-state per ADR 0036 §A1.1 — five-value set, lowercase (~132 tok)
+
+## ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/
+
+- `index.ts` — Contracts (~376 tok)
+
+## ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/components/HelmRenderer/
+
+- `HelmRenderer.test.tsx` — Full set of 6 canonical widgets per ADR 0066 §1.4. (~5952 tok)
+- `HelmRenderer.tsx` — The Helm widget registry to render. Required for output. (~2284 tok)
+- `index.ts` — Declares HelmRendererProps (~21 tok)
+
+## ../../../../../tmp/wt-w53-p2c-react/packages/ui-adapters-react/src/contracts/
+
+- `HelmTypes.ts` — TypeScript projections of the `Sunfish.UICore.Wayfinder` Helm contract (~848 tok)
+
+## ../../../../../tmp/wt-w54-p2b/icm/_state/workstreams/
+
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1350 tok)
+
+## ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/
+
+- `SickBayDataProvider.cs` — Reference <see cref="ISickBayDataProvider"/> per ADR 0082 §1+§2 + W#54 Phase 2 + Phase 2b. Materiali (~3017 tok)
+- `SickBayServiceCollectionExtensions.cs` — DI registration for the block-tier Sick Bay reference implementations per W#54 Phase 2 + Phase 2b. P (~964 tok)
+
+## ../../../../../tmp/wt-w54-p2b/packages/blocks-sick-bay/tests/
+
+- `SickBayDataProviderTests.cs` — W#54 Phase 2 H4 (load-bearing) — <see cref="SickBayDataProvider"/> MUST NOT depend on <c>Sunfish.Fou (~5162 tok)
+- `SickBayServiceCollectionExtensionsTests.cs` — Class: SickBayServiceCollectionExtensionsTests (~996 tok)
+- `Sunfish.Blocks.SickBay.Tests.csproj` (~301 tok)
+
+## ../../../../../tmp/wt-w54-p2b/packages/foundation-sick-bay/
+
+- `SickBayOptions.cs` — Host-configurable Sick Bay tunables per ADR 0082 §7. (~532 tok)
+
+## ../../../../../tmp/wt-w54-p3a/icm/_state/workstreams/
+
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1370 tok)
+
+## ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/
+
+- `_Imports.razor` (~59 tok)
+- `AtmosphereTabContent.razor` (~910 tok)
+- `KeyFingerprintDisplay.razor` — Declares int (~678 tok)
+- `LabTabContent.razor` — Declares names (~428 tok)
+- `MedevacDialog.razor` (~1437 tok)
+- `PharmacyTabContent.razor` (~1046 tok)
+- `SickBayBlock.razor` — Declares Tab (~1068 tok)
+- `Sunfish.Blocks.SickBay.csproj` — /*.cs" /> (~509 tok)
+
+## ../../../../../tmp/wt-w54-p3a/packages/blocks-sick-bay/tests/
+
+- `Phase3aTests.cs` — W#54 Phase 3a — Blazor UI component tests per ADR 0082 §8 + hand-off acceptance gate. WCAG/a11y suba (~3273 tok)
+- `Sunfish.Blocks.SickBay.Tests.csproj` (~232 tok)
+
+## ../../../../../tmp/wt-w54-p3b/icm/_state/workstreams/
+
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1337 tok)
+
+## ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/
+
+- `MedevacServiceImpl.cs` — Reference <see cref="IMedevacService"/> per ADR 0082 §2 / W#54 Phase 3b. In-process, per-tenant stat (~2631 tok)
+- `SickBayCommandService.cs` — Reference implementation of <see cref="ISickBayCommandService"/> per ADR 0082 §2 / W#54 Phase 3b. (~1050 tok)
+- `SickBayServiceCollectionExtensions.cs` — DI registration for the block-tier Sick Bay reference implementations per W#54 Phase 2, Phase 2b, an (~1131 tok)
+
+## ../../../../../tmp/wt-w54-p3b/packages/blocks-sick-bay/tests/
+
+- `Phase3bTests.cs` — Class: TestHelpers (~2256 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~5574 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~2966 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Layout/
+
+- `NavMenu.razor` (~1583 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/
+
+- `SickBayPage.razor` (~335 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/Components/Pages/Settings/Integrations/
+
+- `AtlasCredentialField.razor` — Declares to (~1880 tok)
+- `AtlasEmailRoutingPanel.razor` (~1390 tok)
+- `AtlasIntegrationCategoryPanel.razor` (~3646 tok)
+- `AtlasIntegrationConfig.razor` (~1640 tok)
+- `AtlasIntegrationConfigPage.razor` (~427 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/Services/
+
+- `AnchorIntegrationAtlasContext.cs` — Anchor implementation of <see cref="IIntegrationAtlasContext"/> per ADR 0067 §6. Resolves tenant + a (~289 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/
+
+- `ShipsOfficeDiResolutionTests.cs` — W#55 Phase 4 — DI registration smoke tests for <see cref="ShipsOfficeServiceCollectionExtensions.Add (~1115 tok)
+- `SickBayDiResolutionTests.cs` — W#54 Phase 4 — DI registration smoke tests for <see cref="SickBayServiceCollectionExtensions.AddSunf (~1016 tok)
+- `tests.csproj` — Declares are (~1936 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/anchor/tests/A11y/
+
+- `AtlasIntegrationConfigA11yTests.cs` — W#48 Phase 4 — WCAG 2.2 AA + EN 301 549 v3.2.1 structural a11y assertions for the Atlas Integration- (~3560 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/
+
+- `Sunfish.Bridge.Client.csproj` (~521 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Components/Settings/Integrations/
+
+- `AtlasCredentialField.razor` (~1274 tok)
+- `AtlasIntegrationCategoryPanel.razor` (~2607 tok)
+- `AtlasIntegrationConfig.razor` (~1095 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Account/
+
+- `Integrations.razor` (~240 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge.Client/Services/
+
+- `BridgeIntegrationAtlasContext.cs` — Bridge implementation of <see cref="IIntegrationAtlasContext"/> per ADR 0067 §6. Resolves tenant + a (~212 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~6516 tok)
+- `Sunfish.Bridge.csproj` (~1216 tok)
+
+## ../../../../../tmp/wt-w54-p4/accelerators/bridge/Sunfish.Bridge/Features/Integrations/
+
+- `BridgeIntegrationAtlasContext.cs` — Bridge implementation of <see cref="IIntegrationAtlasContext"/> per ADR 0067 §6. Resolves tenant + a (~223 tok)
+
+## ../../../../../tmp/wt-w54-p4/apps/docs/blocks/sick-bay/
+
+- `overview.md` — Sick Bay (~600 tok)
+
+## ../../../../../tmp/wt-w54-p4/apps/docs/design-system/
+
+- `sick-bay-wcag.md` — Sick Bay — WCAG 2.2 AA Declaration (~706 tok)
+
+## ../../../../../tmp/wt-w54-p4/apps/docs/foundation/sick-bay/
+
+- `overview.md` — Sick Bay — Foundation Contracts (~839 tok)
+
+## ../../../../../tmp/wt-w54-p4/icm/_state/workstreams/
+
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1308 tok)
+
+## ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/
+
+- `index.ts` — Contracts (~1086 tok)
+
+## ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/components/Integrations/
+
+- `AtlasCredentialField.tsx` — Per-credential form field for the Atlas Integration-Config UI surface. (~1356 tok)
+- `AtlasIntegration.test.tsx` — makeSchema (~4498 tok)
+- `AtlasIntegrationCategoryPanel.tsx` — Per-category tab-panel for the Atlas Integration-Config surface. (~2601 tok)
+- `AtlasIntegrationConfig.tsx` — Optional live-region announcer — host provides if needed. (~1214 tok)
+- `index.ts` — Declares AtlasIntegrationConfigProps (~93 tok)
+
+## ../../../../../tmp/wt-w54-p4/packages/ui-adapters-react/src/contracts/
+
+- `Integrations.ts` — TypeScript projection of the Integration Atlas contract types (~986 tok)
+
+## ../../../../../tmp/wt-w54-p5/icm/_state/workstreams/
+
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1303 tok)
+
+## ../../../../../tmp/wt-w54-status/icm/_state/workstreams/
+
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1340 tok)
+
+## ../../../../../tmp/wt-w55-p4/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~4409 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~2702 tok)
+
+## ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Layout/
+
+- `NavMenu.razor` (~1111 tok)
+
+## ../../../../../tmp/wt-w55-p4/accelerators/anchor/Components/Pages/
+
+- `ShipsOfficePage.razor` (~301 tok)
+
+## ../../../../../tmp/wt-w55-p4/accelerators/anchor/tests/
+
+- `ShipsOfficeDiResolutionTests.cs` — W#55 Phase 4 — DI registration smoke tests for <see cref="ShipsOfficeServiceCollectionExtensions.Add (~1104 tok)
+- `tests.csproj` — Declares are (~1811 tok)
+
+## ../../../../../tmp/wt-w55-p4/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~5878 tok)
+- `Sunfish.Bridge.csproj` (~1009 tok)
+
+## ../../../../../tmp/wt-w55-p4/apps/docs/blocks/ships-office/
+
+- `overview.md` — Ship's Office (~567 tok)
+
+## ../../../../../tmp/wt-w55-p4/apps/docs/design-system/
+
+- `ships-office-wcag.md` — Ship's Office — WCAG 2.2 AA Conformance Declaration (~577 tok)
+
+## ../../../../../tmp/wt-w55-p4/apps/docs/foundation/ships-office/
+
+- `overview.md` — Ship's Office — Foundation Contracts (~481 tok)
+
+## ../../../../../tmp/wt-w55-p6/icm/_state/workstreams/
+
+- `W55-ships-office-content-aggregation-surface.md` — Notes (~1096 tok)
+
+## ../../../../../tmp/wt-w55-status/icm/_state/workstreams/
+
+- `W50-engine-room-observability-surface.md` — Notes (~986 tok)
+- `W55-ships-office-content-aggregation-surface.md` — Notes (~1015 tok)
+
+## ../../../../../tmp/wt-w56-flip/icm/_state/workstreams/
+
+- `W46-shared-design-system-load-bearing-w-35-ship-architecture-fol.md` — Notes (~1253 tok)
+
+## ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~5157 tok)
+- `Sunfish.Bridge.csproj` (~908 tok)
+
+## ../../../../../tmp/wt-w56-p1/accelerators/bridge/Sunfish.Bridge/SystemRequirements/
+
+- `SystemRequirementsEndpoints.cs` — Bridge route family for the W#56 Phase 1 system-requirements surface (ADR 0063-A1.1). Exposes <c>IMi (~1963 tok)
+
+## ../../../../../tmp/wt-w56-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SystemRequirements/
+
+- `SystemRequirementsEndpointsTests.cs` — Class: SystemRequirementsEndpointsTests (~1982 tok)
+
+## ../../../../../tmp/wt-w56-p1/packages/ui-adapters-react/src/contracts/
+
+- `SystemRequirements.test.ts` — Declares DimensionEvaluation (~1418 tok)
+- `SystemRequirements.ts` — TypeScript projection of the `SystemRequirementsResult` wire format produced (~1597 tok)
+
+## ../../../../../tmp/wt-w58-p3/_shared/engineering/
+
+- `adapter-parity.md` — UI Adapter Parity Matrix (~1258 tok)
+
+## ../../../../../tmp/wt-w58-p3/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~6011 tok)
+
+## ../../../../../tmp/wt-w58-p3/accelerators/bridge/Sunfish.Bridge/Features/Identity/
+
+- `IdentityEndpoints.cs` — Bridge route family for the W#58 Phase 3 Identity Atlas JSON surface (ADR 0066 §Phase 3). Exposes <s (~2296 tok)
+
+## ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/
+
+- `index.ts` — Contracts (~869 tok)
+
+## ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/components/Identity/
+
+- `ActiveTeamOverviewPage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~1252 tok)
+- `HistoricalKeysPage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~1096 tok)
+- `IdentityProfilePage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~658 tok)
+- `index.ts` — Declares IdentityProfilePageProps (~131 tok)
+- `KeyRotationPage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~831 tok)
+- `RecoveryContactsPage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~1055 tok)
+
+## ../../../../../tmp/wt-w58-p3/packages/ui-adapters-react/src/contracts/
+
+- `IdentityTypes.ts` — TypeScript projection of the Identity Atlas JSON wire format produced by (~944 tok)
+
+## ../../../../../tmp/wt-w58-p4/accelerators/anchor/Components/Pages/Identity/
+
+- `IdentityProfileEditPage.razor` (~1481 tok)
+- `KeyRotationPage.razor` (~1780 tok)
+- `RecoveryContactsPage.razor` (~2144 tok)
+
+## ../../../../../tmp/wt-w58-p4/accelerators/bridge/Sunfish.Bridge.Client/Pages/Identity/
+
+- `IdentityProfileEditPage.razor` (~1077 tok)
+- `KeyRotationPage.razor` (~1196 tok)
+- `RecoveryContactsPage.razor` (~1284 tok)
+
+## ../../../../../tmp/wt-w58-p4/apps/docs/wcag/
+
+- `identity-atlas.md` — Identity Atlas — WCAG 2.2 AA Conformance (~1478 tok)
+
+## ../../../../../tmp/wt-w58-p4/icm/_state/
+
+- `active-workstreams.md` — Active Workstreams Ledger (~42306 tok)
+
+## ../../../../../tmp/wt-w58-p4/icm/_state/workstreams/
+
+- `W58-identity-atlas-implementations-anchor-bridge.md` — Notes (~771 tok)
+
+## ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/
+
+- `index.ts` — Contracts (~885 tok)
+
+## ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/components/Identity/
+
+- `IdentityProfilePage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~1171 tok)
+- `KeyRotationPage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~1279 tok)
+- `RecoveryContactsPage.tsx` — Base URL prefix for Bridge API calls. Defaults to `''` (same-origin). (~1504 tok)
+
+## ../../../../../tmp/wt-w58-p4/packages/ui-adapters-react/src/contracts/
+
+- `IdentityTypes.ts` — TypeScript projection of the Identity Atlas JSON wire format produced by (~1140 tok)
+
+## ../../../../../tmp/wt-w58-status/icm/_state/workstreams/
+
+- `W58-identity-atlas-implementations-anchor-bridge.md` — Notes (~777 tok)
+
+## ../../../../../tmp/wt-w59-flip/icm/_state/workstreams/
+
+- `W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md` — Notes (~654 tok)
+- `W50-engine-room-observability-surface.md` — Notes (~973 tok)
+- `W55-ships-office-content-aggregation-surface.md` — Notes (~992 tok)
+- `W59-crew-comms-anchor-mvp-demo-integration.md` — Notes (~626 tok)
 
 ## ../../../../../tmp/wt-w59-p1/accelerators/anchor/
 
@@ -144,6 +1525,302 @@
 
 - `anchor-mvp-walkthrough.md` — Crew Comms — Anchor MVP walkthrough (W#59) (~1467 tok)
 - `toc.yml` (~32 tok)
+
+## ../../../../../tmp/wt-w60-p1/.github/workflows/
+
+- `anchor-react-ci.yml` — CI: anchor-react CI (~173 tok)
+
+## ../../../../../tmp/wt-w60-p1/accelerators/bridge/
+
+- `CONTRIBUTING-REACT.md` — Contributing — Bridge ERPNext Proxy + React UI (W#60 Phase 2) (~1120 tok)
+
+## ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/
+
+- `appsettings.Development.json.example` (~87 tok)
+- `appsettings.json` (~438 tok)
+- `Program.cs` — Class: Program (~5534 tok)
+
+## ../../../../../tmp/wt-w60-p1/accelerators/bridge/Sunfish.Bridge/Proxy/
+
+- `ERPNextHttpClient.cs` — Class: ERPNextHttpClient (~1248 tok)
+- `ERPNextOptions.cs` — Frappe site name used as the <c>Host</c> header on every request. Required for multi-site Frappe rou (~245 tok)
+- `ERPNextProxy.cs` — Bridge route family for the W#60 ERPNext proxy surface. Phase 1 ships only GET /api/v1/erpnext/prope (~454 tok)
+- `IERPNextClient.cs` — Class: IERPNextClient (~163 tok)
+
+## ../../../../../tmp/wt-w60-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Proxy/
+
+- `ERPNextProxyTests.cs` — Class: ERPNextProxyTests (~781 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/
+
+- `.gitignore` — Git ignore rules (~15 tok)
+- `index.html` — Sunfish Property Management (~101 tok)
+- `package.json` — Node.js package manifest (~351 tok)
+- `tsconfig.app.json` (~197 tok)
+- `tsconfig.json` — TypeScript configuration (~34 tok)
+- `tsconfig.node.json` (~164 tok)
+- `vite.config.ts` (~142 tok)
+- `vitest.config.ts` (~111 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/
+
+- `app.tsx` — queryClient (~1050 tok)
+- `index.css` — Styles: 2 rules, 18 vars (~287 tok)
+- `main.tsx` (~66 tok)
+- `test-setup.ts` (~10 tok)
+- `vite-env.d.ts` — / <reference types="vite/client" /> (~11 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/api/
+
+- `erpnext.ts` — Exports Property, getProperties (~232 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/
+
+- `CompanySwitcher.tsx` — CompanySwitcher (~231 tok)
+- `OfflineBanner.tsx` — OfflineBanner (~198 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/components/ui/
+
+- `badge.tsx` — badgeVariants (~331 tok)
+- `card.tsx` — Card (~519 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/hooks/
+
+- `useProperties.ts` — Exports useProperties (~124 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/lib/
+
+- `utils.ts` — Exports cn (~48 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/pages/
+
+- `PropertiesPage.test.tsx` — mockUseProperties (~858 tok)
+- `PropertiesPage.tsx` — statusVariant (~715 tok)
+
+## ../../../../../tmp/wt-w60-p2/apps/anchor-react/src/stores/
+
+- `companyStore.ts` — Exports useCompanyStore (~138 tok)
+
+## ../../../../../tmp/wt-w60-p3-addendum/icm/_state/handoffs/
+
+- `w60-tauri-offline-phase3-stage06-handoff.md` — W#60 Phase 3 — Tauri + Offline + Loro CRDT (~6786 tok)
+
+## ../../../../../tmp/wt-w60-p3-built/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~965 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/.github/workflows/
+
+- `anchor-react-ci.yml` — CI: anchor-react CI (~268 tok)
+- `tauri-build.yml` — CI: Tauri cross-platform build (~662 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/
+
+- `package.json` — Node.js package manifest (~410 tok)
+- `tsconfig.app.json` (~197 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-react/src/pages/
+
+- `CrewCommsPage.tsx` — THREADS (~1678 tok)
+- `MaintenancePage.tsx` — PRIORITY_COLORS — renders form, table (~2090 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/
+
+- `package.json` — Node.js package manifest (~480 tok)
+- `tsconfig.app.json` (~197 tok)
+- `vite.config.ts` — Declares host (~289 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/
+
+- `build.rs` (~11 tok)
+- `Cargo.toml` — Rust package manifest (~163 tok)
+- `tauri.conf.json` (~252 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src-tauri/src/
+
+- `lib.rs` — run (~149 tok)
+- `main.rs` (~30 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/apps/anchor-tauri/src/pages/
+
+- `CrewCommsPage.tsx` — THREADS (~1678 tok)
+- `MaintenancePage.tsx` — PRIORITY_COLORS — renders form, table (~2090 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~930 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr1/packages/ui-react/
+
+- `package.json` — Node.js package manifest (~381 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/.github/workflows/
+
+- `tauri-build.yml` — CI: Tauri cross-platform build (~737 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/
+
+- `Cargo.toml` — Rust package manifest (~217 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/
+
+- `db.rs` — open (~333 tok)
+- `lib.rs` — run (~442 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/commands/
+
+- `cache.rs` — [tauri::command] (~896 tok)
+- `mod.rs` (~4 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src-tauri/src/sync/
+
+- `mod.rs` (~4 tok)
+- `pull.rs` — pull_all (~571 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/
+
+- `app.tsx` — queryClient (~1764 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/hooks/
+
+- `useLeases.ts` — Exports useLeases, useLease, usePayments (~488 tok)
+- `useMaintenance.ts` — Exports useMaintenanceTickets (~238 tok)
+- `useProperties.test.ts` — mockIsTauri: wrapper (~856 tok)
+- `useProperties.ts` — Exports useProperties (~310 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/stores/
+
+- `syncStore.ts` — Exports useSyncStore (~134 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr2/apps/anchor-tauri/src/utils/
+
+- `isTauri.ts` — Exports isTauri (~18 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-react/
+
+- `RETIRED.md` — Retired (~69 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/
+
+- `Cargo.toml` — Rust package manifest (~232 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/
+
+- `db.rs` — open (~407 tok)
+- `lib.rs` — run (~1071 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/commands/
+
+- `mod.rs` (~10 tok)
+- `write_queue.rs` — enqueue_write (~864 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src-tauri/src/sync/
+
+- `mod.rs` (~8 tok)
+- `push.rs` — drain_write_queue (~1432 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/hooks/
+
+- `useMaintenanceNoteOffline.test.ts` — Declares submit (~683 tok)
+- `useMaintenanceNoteOffline.ts` — Exports useMaintenanceNoteSubmit (~280 tok)
+- `useProperties.test.ts` — Declares wrapper (~868 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/lib/
+
+- `loro.ts` — PHASE 3: in-memory only. Acceptable because Phase 3 is single-writer CO and (~261 tok)
+
+## ../../../../../tmp/wt-w60-p3-pr3/apps/anchor-tauri/src/pages/
+
+- `RentCollectionPage.test.tsx` — mockUseLeases (~557 tok)
+- `RentCollectionPage.tsx` — PAYMENT_METHODS — renders form (~2219 tok)
+
+## ../../../../../tmp/wt-w60-p3-status/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~978 tok)
+
+## ../../../../../tmp/wt-w60-p3pr3/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~988 tok)
+
+## ../../../../../tmp/wt-w60-p4-handoff/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~997 tok)
+
+## ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/
+
+- `.gitignore` — Git ignore rules (~6 tok)
+- `package.json` — Node.js package manifest (~224 tok)
+- `tsconfig.json` — TypeScript configuration (~114 tok)
+
+## ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/
+
+- `accounting.ts` — Accounting domain contracts. (~491 tok)
+- `index.ts` (~266 tok)
+- `integrations.ts` — TypeScript projection of the Integration Atlas contract types (~1019 tok)
+- `property.ts` — Property management domain contracts. (~405 tok)
+- `sync.ts` — Local-first sync domain contracts. (~308 tok)
+- `system-requirements.ts` — TypeScript projection of the `SystemRequirementsResult` wire format produced (~1567 tok)
+- `tenant.ts` — Tenant, lease, and communication domain contracts. (~323 tok)
+
+## ../../../../../tmp/wt-w60-p5-contracts/packages/contracts/src/__tests__/
+
+- `index.test.ts` — Declares Property (~1538 tok)
+
+## ../../../../../tmp/wt-w60-p5-docs/apps/docs/blocks/
+
+- `toc.yml` (~275 tok)
+
+## ../../../../../tmp/wt-w60-p5-docs/apps/docs/blocks/erpnext-stack/
+
+- `overview.md` — ERPNext Stack — Overview (~1172 tok)
+- `toc.yml` (~11 tok)
+
+## ../../../../../tmp/wt-w60-p5-docs/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~993 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~6550 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/Sunfish.Bridge/Reports/
+
+- `ReportsEndpoints.cs` — Bridge route family for W#60 Phase 5 reporting surface. GET /api/v1/reports/rent-roll — all properti (~3375 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Reports/
+
+- `ReportsEndpointsTests.cs` — Returns successive JsonElement responses for each GetListWithFieldsAsync call. Supports handlers tha (~1457 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/
+
+- `app.tsx` — queryClient (~1854 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/api/
+
+- `erpnext.ts` — Exports Property, getProperties, Lease, Payment + 21 more (~1869 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/apps/anchor-react/src/pages/
+
+- `PLReport.test.tsx` — MOCK_PROPERTIES (~1126 tok)
+- `PLReport.tsx` — fmt — renders table (~1910 tok)
+- `RentRoll.test.tsx` — MOCK_ROWS (~931 tok)
+- `RentRoll.tsx` — StatusBadge — renders table (~1118 tok)
+
+## ../../../../../tmp/wt-w60-p5-reporting/packages/kernel-audit/
+
+- `AuditEventType.cs` — Discriminator for the kind of event captured in an <see cref="AuditRecord"/>. (~14382 tok)
+
+## ../../../../../tmp/wt-w60-p5/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~1008 tok)
+
+## ../../../../../tmp/wt-w60-p5pr1/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~988 tok)
+
+## ../../../../../tmp/wt-w60-status-836/icm/_state/workstreams/
+
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~986 tok)
 
 ## ../../../../../tmp/wt-xo-w55-p2b/icm/_state/research-inbox/
 
@@ -4865,11 +6542,26 @@
 
 ## ../../../.claude/projects/-Users-christopherwood-Projects-SunfishSoftware-Sunfish/memory/
 
-- `MEMORY.md` — Memory Index (~3792 tok)
+- `MEMORY.md` — Memory Index (~4364 tok)
 - `project_foss_gap_conflict_analysis_2026_05_11.md` — High-priority actions (~1086 tok)
-- `project_w45_crew_comms_mvp_priority_week.md` (~361 tok)
-- `project_w60_erpnext_pivot_stack.md` — Architecture decision (~904 tok)
+- `project_w23_apple_developer_constraint.md` (~337 tok)
+- `project_w45_crew_comms_mvp_priority_week.md` (~194 tok)
+- `project_w60_erpnext_pivot_stack.md` — Architecture decision (~958 tok)
+- `project_w60_phase1_pass_confirmed.md` (~626 tok)
 - `project_workstream_44_extensionfields_feature_gate_queued.md` (~840 tok)
+- `project_workstream_46_shared_design_system.md` (~554 tok)
+- `project_workstream_47_anchor_maui_renderer_built.md` (~603 tok)
+- `project_workstream_48_atlas_integration_config.md` (~664 tok)
+- `project_workstream_50_engine_room_observability.md` (~285 tok)
+- `project_workstream_51_quarterdeck_entry_point.md` (~222 tok)
+- `project_workstream_52_tactical_anomaly_detection.md` (~732 tok)
+- `project_workstream_53_helm_identity_atlas.md` — for: sections, deferred (~1422 tok)
+- `project_workstream_54_sick_bay.md` — Declares lacks (~1441 tok)
+- `project_workstream_55_ships_office_built.md` (~398 tok)
+- `project_workstream_55_ships_office.md` (~799 tok)
+- `project_workstream_56_bridge_react_renderer_built.md` — PRs (~698 tok)
+- `project_workstream_58_identity_atlas_implementations.md` (~771 tok)
+- `project_workstream_59_crew_comms_anchor_mvp_built.md` — PRs merged (~337 tok)
 - `project_workstream_59_crew_comms_anchor_mvp.md` (~393 tok)
 
 ## ../../../.claude/skills/voice-towles/
@@ -4982,13 +6674,25 @@
 - `MEMORY.md` — Memory Index (~982 tok)
 - `project_business_mvp_phase_1_progress.md` (~365 tok)
 
+## ../.claude/agents/
+
+- `dev.md` — Dev — galley senior developer + Sunfish overflow (~2627 tok)
+
 ## ../coordination/
 
-- `README.md` — Project documentation (~712 tok)
+- `README.md` — Project documentation (~801 tok)
 
 ## ../coordination/inbox/
 
+- `cob-idle-2026-05-14T02-16Z-w60-p5-complete.md` (~159 tok)
+- `cob-idle-2026-05-14T05-16Z-w60-p4-gated.md` (~121 tok)
+- `cob-question-2026-05-12T21-00Z-w1-wsb-circular-dependency.md` (~331 tok)
+- `cob-question-2026-05-13T02-21Z-w60-userservice-oidc-design.md` (~279 tok)
+- `cob-status-2026-05-13T21-34Z-w54-p3a-pr817-open.md` (~148 tok)
+- `cob-status-2026-05-13T22-16Z-w54-p4-pr821-open.md` (~94 tok)
 - `xo-directive-2026-05-06T17-00Z-post-session13-queue.md` — COB Priority Queue (post-session-19) (~1471 tok)
+- `xo-directive-2026-05-14T05-22Z-fallback-rungs.md` (~131 tok)
+- `xo-directive-2026-05-14T06-30Z-style-audit.md` (~150 tok)
 - `xo-idle-2026-05-06T22-30Z-housekeeping-session-complete.md` (~176 tok)
 
 ## ../erpnext-local/
@@ -5192,6 +6896,10 @@
 
 - `AUDIO-EDITOR-SPEC.md` — Audio-First Prose Editor — Spec (~1829 tok)
 
+## ../galley/docs/architecture/
+
+- `galley-production-graph.md` — Galley production graph — data-model spec (~22208 tok)
+
 ## ../galley/packages/api-client/
 
 - `package.json` — Node.js package manifest (~123 tok)
@@ -5246,9 +6954,9 @@
 - `.gitattributes` — Sunfish line-ending policy: LF in the repo, everywhere. (~342 tok)
 - `.gitignore` — Git ignore rules (~2253 tok)
 - `CHANGELOG.md` — Changelog (~179 tok)
-- `CLAUDE.md` — Claude Instructions for Sunfish (~3568 tok)
+- `CLAUDE.md` — Claude Instructions for Sunfish (~3743 tok)
 - `CONTRIBUTING.md` — Contributing to Sunfish (~887 tok)
-- `Directory.Build.props` (~807 tok)
+- `Directory.Build.props` (~2463 tok)
 - `Directory.Build.targets` — Declares folder (~567 tok)
 - `Directory.Packages.props` (~1632 tok)
 - `global.json` (~29 tok)
@@ -5336,6 +7044,10 @@
 - `docs.yml` — CI: Docs (~384 tok)
 - `global-ux-gate.yml` — Plan 5 — Global-First UX gate workflow. (~1070 tok)
 - `sbom.yml` — CI: SBOM (~269 tok)
+
+## .husky/
+
+- `commit-msg` — Husky.NET-managed commit-msg hook (matches the .husky/pre-commit pattern). (~893 tok)
 
 ## .vscode/
 
@@ -5438,6 +7150,27 @@
 ## .worktrees/g37-c3-col-menu/packages/ui-adapters-blazor/wwwroot/js/
 
 
+## W#60 Phase 5 — contracts + reporting (added 2026-05-14)
+
+- `accelerators/bridge/Sunfish.Bridge/Reports/ReportsEndpoints.cs` — GET /api/v1/reports/rent-roll + /profit-loss + /profit-loss/export; RentRollRow + ProfitLossData records (~270 tok)
+- `accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Reports/ReportsEndpointsTests.cs` — 4 xUnit tests using SequencedFakeERPNextClient (~110 tok)
+- `apps/anchor-react/src/pages/PLReport.test.tsx` — 5 Vitest tests for PLReport page (~110 tok)
+- `apps/anchor-react/src/pages/PLReport.tsx` — property/period/asOf selectors + income/expense line trees + Export CSV (~160 tok)
+- `apps/anchor-react/src/pages/RentRoll.test.tsx` — 5 Vitest tests for RentRoll page (~90 tok)
+- `apps/anchor-react/src/pages/RentRoll.tsx` — sortable rent roll table with Overdue-first sort + StatusBadge (~130 tok)
+- `apps/docs/blocks/erpnext-stack/overview.md` — ERPNext stack architecture summary, layer diagram, phase table, reporting endpoints (~120 tok)
+- `apps/docs/blocks/erpnext-stack/toc.yml` — toc for erpnext-stack docs block (~5 tok)
+- `packages/contracts/package.json` — @sunfish/contracts npm package config (~30 tok)
+- `packages/contracts/src/__tests__/index.test.ts` — 13 smoke tests for @sunfish/contracts namespaces (~155 tok)
+- `packages/contracts/src/accounting.ts` — ReconciliationStatus, PLLineItem, PLSummary, LedgerEntry, JournalEntry, BankTransaction, OutstandingInvoice types (~73 tok)
+- `packages/contracts/src/index.ts` — barrel export for @sunfish/contracts (~24 tok)
+- `packages/contracts/src/integrations.ts` — Integration Atlas types vendored from ui-adapters-react (ADR 0067) (~119 tok)
+- `packages/contracts/src/property.ts` — OccupancyStatus, RentStatus, Unit, Property, RentRollRow types (~55 tok)
+- `packages/contracts/src/sync.ts` — SyncStatus, OfflineQueueEntry, ConflictRecord types (~42 tok)
+- `packages/contracts/src/system-requirements.ts` — SystemRequirementsResult types vendored from ui-adapters-react (ADR 0063-A1.1) (~168 tok)
+- `packages/contracts/src/tenant.ts` — Tenant, Lease, PaymentRecord, MessageThread types (~53 tok)
+- `packages/contracts/tsconfig.json` — NodeNext module resolution, emitDeclarationOnly false (~20 tok)
+
 ## _shared/design/
 
 - `accessibility.md` — Accessibility (~5876 tok)
@@ -5484,7 +7217,7 @@
 ## accelerators/anchor/
 
 - `MauiProgram.cs` — Class: MauiProgram (~2671 tok)
-- `README.md` — Project documentation (~2666 tok)
+- `README.md` — Project documentation (~2978 tok)
 - `Sunfish.Anchor.csproj` — /*.cs" /> (~1855 tok)
 
 ## accelerators/anchor/Components/
@@ -6203,6 +7936,8 @@
 - `0061-three-tier-peer-transport.md` — ADR 0061 — Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay) (~12090 tok)
 - `0065-wayfinder-system-and-standing-order-contract.md` — ADR 0065 — Wayfinder System + Standing Order Contract (bundled) (~8211 tok)
 - `0076-crew-comms-foundation-channels.md` — ADR 0076 — Crew Comms: `foundation-channels` Contracts and Native Implementation (Status: Accepted 2026-05-04; council-amended) (~10800 tok)
+- `0086-anchor-tauri-react-product-surface.md` — ADR 0086 — Anchor Tauri-React Product Surface (~4420 tok)
+- `0087-role-key-forward-secrecy-explicit-acceptance.md` — ADR 0087 — Role-Key Forward-Secrecy Trade-off: Explicit Acceptance (~2986 tok)
 - `README.md` — Project documentation (~1471 tok)
 
 ## docs/marketing/
@@ -6263,6 +7998,10 @@
 - `2026-05-01_wayfinder-system-and-standing-order-intake.md` — Intake — Sunfish Wayfinder System + Standing Order Contract (bundled) (~1226 tok)
 - `2026-05-04_crew-comms-intake.md` — Intake Note — Crew Comms (W#45) (~1412 tok)
 - `2026-05-11_sunfish-node-multi-stack-reference-intake.md` — Intake — Sunfish-Node: multi-stack reference cohort + portable protocol specs (~3616 tok)
+- `2026-05-12_anchor-maui-vs-tauri-fate.md` — Intake — Anchor's fate: MAUI vs Tauri after W#60 (~2482 tok)
+- `2026-05-12_w60-phase3-tauri-loro-local-first.md` — Intake — W#60 Phase 3: Tauri v2 + Loro CRDT + Local-First Sync (~2401 tok)
+- `2026-05-12_w60-phase4-peer-node-cpa-tenant-portal.md` — Intake — W#60 Phase 4: Accountant Peer Node + CPA Read-Only + Tenant Portal (~2673 tok)
+- `2026-05-12_w60-phase5-self-hosting-docs-foss-polish.md` — Intake — W#60 Phase 5: Self-Hosting Docs + F/OSS Polish + Book Alignment (~2843 tok)
 - `business-mvp-phase-1-foundation-intake-2026-04-26.md` — Intake Note — Sunfish Business MVP Phase 1 (Foundation) (~3449 tok)
 - `compat-expansion-intake.md` — Intake Note — Compat Package Expansion (Syncfusion / DevExpress / Infragistics) (~6756 tok)
 - `compat-icon-expansion-intake.md` — Intake Note — Compat Icon Library Expansion (Font Awesome + OSS peers) (~3856 tok)
@@ -6276,6 +8015,7 @@
 - `2026-05-01_ship-architecture.md` — Sunfish Ship Architecture — Consolidated Operator/Admin/Dev Experience Discovery (~14281 tok)
 - `2026-05-01_wayfinder-configuration-ux.md` — Sunfish Wayfinder — Configuration UX Discovery (~13976 tok)
 - `2026-05-04_crew-comms-discovery.md` — Stage 01 Discovery — Crew Comms (W#45) (~4989 tok)
+- `2026-05-13_w60-final-stack-foss-substitutability-recheck.md` — Discovery — W#60 Final-Stack F/OSS Substitutability Re-check (~3328 tok)
 - `business-mvp-phase-1-discovery-final-2026-04-26.md` — Stage 01 Discovery — Phase 1 Final Report (~2085 tok)
 - `compat-devexpress-surface-inventory-2026-04-22.md` — compat-devexpress Surface Inventory — Stage 01 Discovery (~11250 tok)
 - `compat-icon-library-survey-2026-04-22.md` — Compat Icon Library Survey — 2026-04-22 (~5731 tok)
@@ -6289,6 +8029,8 @@
 
 ## icm/07_review/output/
 
+- `2026-05-12_w60-phase2-handoff-audit.md` — W#60 Phase 2 Hand-off Audit — 2026-05-12 (~1653 tok)
+- `council-review-adr-0086-tauri-react-surface-2026-05-13.md` — Council Review — ADR 0086 Anchor Tauri-React Product Surface (~2112 tok)
 - `paper-alignment-audit-2026-04-22.md` — Paper Alignment Audit — Packages + Anchor Accelerator vs. Local-Node Architecture Paper (v10.0) (~6168 tok)
 - `paper-alignment-audit-2026-04-23-post-wave-6-4.md` — Paper-Alignment Audit — Post Waves 5.1 / 6.1 / 6.4 (~3781 tok)
 - `paper-alignment-audit-2026-04-23-refresh.md` — Paper-Alignment Audit — Refresh after Tier-2 follow-ups (~3073 tok)
@@ -6318,13 +8060,19 @@
 
 ## icm/_state/
 
-- `active-workstreams.md` — Active Workstreams Ledger (~25268 tok)
+- `active-workstreams.md` — Active Workstreams Ledger (~42096 tok)
 
 ## icm/_state/handoffs/
 
 - `foundation-channels-crew-comms-stage06-handoff.md` — Stage 06 Hand-off — W#45 Crew Comms (`foundation-channels` + `blocks-crew-comms`) (~5998 tok)
+- `property-ios-field-app-stage06-handoff.md` — Workstream #23 — iOS Field-Capture App (substrate v1) — Stage 06 hand-off (~7628 tok)
 - `property-ios-field-app-stage06-p5-pairing-handoff.md` — W#23 Phase 5 — iOS Field-Capture Pairing Flow — Stage 06 hand-off (~8687 tok)
+- `property-owner-cockpit-stage06-handoff.md` — Hand-off — Owner Web Cockpit Phase 1 (W#29) (~2783 tok)
+- `w60-collaboration-phase4-stage06-handoff.md` — W#60 Phase 4 — Collaboration + Integrations (~3036 tok)
+- `w60-erpnext-react-ui-phase2-stage06-addendum.md` — Stage 06 Addendum — W#60 Phase 2: ERPNext React UI Skin (~3592 tok)
 - `w60-erpnext-react-ui-phase2-stage06-handoff.md` — Stage 06 Hand-off — W#60 Phase 2: ERPNext React UI Skin (~4078 tok)
+- `w60-reporting-contracts-phase5-stage06-handoff.md` — W#60 Phase 5 — Reporting + Contracts (~2136 tok)
+- `w60-tauri-offline-phase3-stage06-handoff.md` — W#60 Phase 3 — Tauri + Offline + Loro CRDT (~5921 tok)
 - `wayfinder-feature-provider-stage06-handoff.md` — W#43 Stage 06 — WayfinderFeatureProvider (~4906 tok)
 
 ## icm/_state/maintenance-runs/
@@ -6346,7 +8094,19 @@
 
 ## icm/_state/workstreams/
 
-- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~886 tok)
+- `W01-multi-tenancy-type-surface-convention.md` — Notes (~436 tok)
+- `W29-owner-web-cockpit.md` — `ready-to-build`; Phase 1 hand-off authored 2026-05-15; OQ1 permissions matrix resolved; status flipped from design-in-flight (~420 tok)
+- `W46-shared-design-system-load-bearing-w-35-ship-architecture-fol.md` — Notes (~1253 tok)
+- `W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md` — Notes (~728 tok)
+- `W48-atlas-integration-config-ui-surface.md` — Notes (~1201 tok)
+- `W51-quarterdeck-entry-point-surface.md` — Notes (~515 tok)
+- `W53-helm-identity-atlas-surface-stage-06-build-of-load-bearing-p.md` — Notes (~1210 tok)
+- `W54-sick-bay-aggregation-surface.md` — Notes (~1346 tok)
+- `W55-ships-office-content-aggregation-surface.md` — Notes (~1106 tok)
+- `W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md` — Notes (~973 tok)
+- `W58-identity-atlas-implementations-anchor-bridge.md` — Notes (~760 tok)
+- `W59-crew-comms-anchor-mvp-demo-integration.md` — Notes (~658 tok)
+- `W60-erpnext-composition-pivot-react-ui.md` — Notes (~926 tok)
 
 ## icm/pipelines/sunfish-inverted-stack-conformance/
 
@@ -6839,6 +8599,10 @@
 
 ## packages/foundation-multitenancy/tests/
 
+
+## packages/foundation-transport/tests/
+
+- `MdnsPeerTransportTests.cs` — Local-LAN end-to-end smoke test per ADR 0061 P3 acceptance gate. Two <see cref="MdnsPeerTransport"/> (~2197 tok)
 
 ## packages/foundation/
 
