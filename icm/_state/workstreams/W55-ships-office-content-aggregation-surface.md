@@ -3,8 +3,8 @@ sort_order: 58
 number: 55
 slug: ships-office-content-aggregation-surface
 title: "**Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline)"
-status: "building"
-status_cell: "`building` (Phase 1 #624 + Phase 2a #711 shipped 2026-05-06 — `blocks-ships-office` substrate stub + Noop editor; XO ruling PR #712 splits Phase 2 into 3 PRs: 2b DataProvider real impl / 2c CommandService / 2d Diff stub + analyzer (mirrors W#50/52/54 cohort precedent). **Phase 2b MERGED PR #753** — ShipsOfficeDataProvider real 4-source cross-package projection + 26 tests. **Phase 2c building PR #756** — ShipsOfficeCommandService §5 audit-ordering invariant (permission FIRST → audit pre-op → execute) + security council amendments B1–B5 + 12 command tests / 19 total; auto-merge enabled 2026-05-13. Phase 2d Diff stub + analyzer next. Phase 3 Blazor UI / Phase 4 React UI / Phase 5 conditional on ADR 0055 / Phase 6 ledger flip pending)"
+status: "built"
+status_cell: "`built` — non-conditional phases shipped 2026-05-13 (PRs #624+#711+#753+#756+#759+#762+#787; PR #828 flip merged); 5 Razor components + 59 tests; Phase 5 gated on ADR 0055 Accepted (still Proposed); pipeline partially closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md`"

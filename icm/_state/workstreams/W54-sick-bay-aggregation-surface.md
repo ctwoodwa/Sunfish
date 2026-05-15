@@ -3,8 +3,8 @@ sort_order: 57
 number: 54
 slug: sick-bay-aggregation-surface
 title: "**Sick Bay Aggregation Surface + IDC Role** (ADR 0082; W#35 Ship Architecture follow-on #6; `sunfish-feature-change` pipeline)"
-status: "building"
-status_cell: "`building` (Phase 1 merged PR #628; Phase 2 merged PR #695; Phase 2b merged PR #735; ADR 0082 Accepted PR #672; Phase 3a merged PR #817 2026-05-13 — 6 Blazor components + 73 tests; **Phase 3b PR #819 OPEN — auto-merge enabled (2026-05-13)** — SickBayCommandService + MedevacServiceImpl + per-tenant semaphore; security council PASS; Phase 4 → 5 pending)"
+status: "built"
+status_cell: "`built` — all 5 phases shipped 2026-05-13 (PRs #628+#695+#735+#817+#819+#821); Sick Bay Blazor + React panels + MedevacServiceImpl + IDC role; PR #822 ledger flip merged; pipeline closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/sick-bay-stage06-handoff.md` + `docs/adrs/0082-sick-bay-aggregation-surface.md` (PR #589 merged) + `packages/foundation-sick-bay/` (P1 merged) + `icm/00_intake/output/2026-05-01_sick-bay-aggregation-intake.md`"

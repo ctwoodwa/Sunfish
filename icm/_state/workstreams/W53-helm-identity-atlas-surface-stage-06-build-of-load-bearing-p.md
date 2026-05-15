@@ -3,8 +3,8 @@ sort_order: 55
 number: 53
 slug: helm-identity-atlas-surface-stage-06-build-of-load-bearing-p
 title: "**Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1**"
-status: "building"
-status_cell: "`building` (Phase 1 fully merged PR #630+#633; Phase 2 COMPLETE — PR 2a #663 + PR 2b #665 + PR 2c-blazor #666 + **PR 2c-react #744 merged 2026-05-13** — H9 parity gate CLEARED; W#58 Phase 1 H1 gate CLEARED; Phases 3-deferred → W#58)"
+status: "built"
+status_cell: "`built` — Phase 2 complete PRs #663+#665+#666+#744; Phases 3+ DONE via W#58; PR #814 flip merged 2026-05-13; pipeline closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) + `packages/ui-core/Wayfinder/` (P1 merged)"
