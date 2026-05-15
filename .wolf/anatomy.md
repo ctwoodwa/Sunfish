@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T18:55:15.604Z
-> Files: 3834 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T19:43:10.236Z
+> Files: 3835 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../../../../private/tmp/wt-coordination-move/icm/_state/
 
@@ -8067,6 +8067,7 @@
 - `foundation-channels-crew-comms-stage06-handoff.md` — Stage 06 Hand-off — W#45 Crew Comms (`foundation-channels` + `blocks-crew-comms`) (~5998 tok)
 - `property-ios-field-app-stage06-handoff.md` — Workstream #23 — iOS Field-Capture App (substrate v1) — Stage 06 hand-off (~7628 tok)
 - `property-ios-field-app-stage06-p5-pairing-handoff.md` — W#23 Phase 5 — iOS Field-Capture Pairing Flow — Stage 06 hand-off (~8687 tok)
+- `property-ios-field-app-stage06-w23-6-work-order-response-handoff.md` — Hand-off — W#23.6 iOS Work-Order Response capture flow (~2038 tok)
 - `property-owner-cockpit-stage06-handoff.md` — Hand-off — Owner Web Cockpit Phase 1 (W#29) (~2783 tok)
 - `w60-collaboration-phase4-stage06-handoff.md` — W#60 Phase 4 — Collaboration + Integrations (~3036 tok)
 - `w60-erpnext-react-ui-phase2-stage06-addendum.md` — Stage 06 Addendum — W#60 Phase 2: ERPNext React UI Skin (~3592 tok)
