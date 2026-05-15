@@ -17,7 +17,9 @@ export function getNoteText(ticketName: string): LoroText {
 }
 
 export function exportUpdate(ticketName: string): Uint8Array {
-  return getLoroDoc(ticketName).exportSnapshot()
+  // loro-crdt 1.x replaced per-mode helpers (exportSnapshot, exportFrom)
+  // with a unified `doc.export({ mode })`.
+  return getLoroDoc(ticketName).export({ mode: 'snapshot' })
 }
 
 // PHASE 4 SECURITY: validate signature + size cap before import when peer sync is added.
