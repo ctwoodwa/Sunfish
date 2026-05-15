@@ -1,8 +1,8 @@
 # Sunfish Anchor
 
-**Status:** Re-activated (Wave 3.3 + 3.4). Three deferred items landed; five still deferred.
+**Status:** Active — shell functional; Crew Comms, device pairing, and kernel stack wired; reporting/packaging deferred.
 **Tier:** Accelerator
-**Platform:** .NET MAUI Blazor Hybrid (Windows, macOS, iOS, Android)
+**Platform:** .NET MAUI Blazor Hybrid (Windows, macOS; iOS/Android excluded pending MAUI 11 stable)
 
 Anchor is the **local-first desktop reports and admin dashboard** accelerator for
 Sunfish. It is the desktop counterpart to Bridge (the Zone-C Hybrid multi-tenant
@@ -34,39 +34,50 @@ Anchor exists to prove that the same component surface, bundle manifests, and
 Foundation primitives compose cleanly into both shapes — if something only works
 in the SaaS case, it isn't really local-first.
 
-## Scope — Wave 3.3 + 3.4 landed; further scope still deferred
+## Scope — what has shipped and what is deferred
 
-Paper-alignment Wave 3.3 + 3.4 de-gates Anchor from the [ADR 0017](../../docs/adrs/0017-web-components-lit-technical-basis.md)
-Web Components migration (the paper at `_shared/product/local-node-architecture-paper.md`
-is now the load-bearing spec; WC migration is downstream). The current slice wires
-LocalFirst + kernel-security + kernel-runtime into the MAUI shell and ships the
-three-step QR-code onboarding flow from paper §13.4. Bundle-selection and
-report-catalog scope remain deferred.
+The kernel stack, onboarding, crew comms, and device pairing are all wired and
+functional. Bundle-selection, report catalog, and packaging remain deferred.
 
 Deliverable checklist:
 
-- [x] **LocalFirst store wiring (Wave 3.3 — landed)** — `AddSunfishEncryptedStore()`
-      + `AddSunfishKernelRuntime()` + `AddSunfishKernelSecurity()` wired in
-      `MauiProgram.cs`. Actual encrypted-DB open-on-login + export-as-first-class-operation
-      still pending the follow-up slice — Wave 4 work.
-- [ ] **Bundle selection UI** — which bundles does Anchor compose? For the small-landlord
-      reference vertical: `blocks-rent-collection`, `blocks-leases`, `blocks-maintenance`,
-      `blocks-accounting`. For small-medical-office: TBD based on practice workflow.
+- [x] **Kernel stack wiring** — `AddSunfishEncryptedStore()`, `AddSunfishKernelRuntime()`,
+      `AddSunfishKernelSecurity()`, `AddSunfishKernelSync()`, `AddSunfishKernelCrdt()`,
+      and `AddSunfishTransport()` wired in `MauiProgram.cs`. `AnchorSyncHostedService`
+      runs the gossip daemon; `AnchorBootstrapHostedService` applies startup migration.
+- [x] **Onboarding flow (paper §13.4)** — `Onboarding.razor` (three-step paste-bundle /
+      generate-founder flow), `QrOnboardingService`, `AnchorSessionService.OnboardAsync`.
+      Camera/QR-decode stub present in `QrScanner.razor`; paste-bundle is the current
+      reference transport.
+- [x] **Authentication model** — device-bound Ed25519 keypair issued at onboarding;
+      self-signed founder attestation vs. joiner attestation signed by founder key.
+      Passphrase recovery and OS-keystore cache of the derived encrypted-DB key remain
+      pending (`Services/Pairing/`).
+- [x] **Crew Comms consumer (W#59)** — `CrewChatPage.razor` wires `ICrewCommsChannel`,
+      `CrewCommsListenerHostedService`, `CrewCommsInvitationBus`, and
+      `TeamMembershipCrewRoster` adapter. Full transport + roster + TYPING/DELIVERED
+      indicators live.
+- [x] **Team switcher surface** — `TeamSwitcherPage.razor` exposes the multi-team
+      workspace model (ADR 0032) in the nav shell. `AnchorV1MigrationService` handles
+      the v1 → v2 in-place migration.
+- [x] **Device pairing (W#23 Phase 0)** — `Services/Pairing/` implements the pairing
+      handshake surface used by the companion iOS Field app.
+- [x] **Localization** — 12-locale roster (en-US, es-419, pt-BR, fr, de, ja, zh-Hans,
+      ar-SA, hi, he-IL, fa-IR, ko) via satellite RESX assemblies under
+      `Resources/Localization/`.
+- [ ] **Bundle selection UI** — which blocks compose into Anchor? Reference verticals:
+      `blocks-rent-collection + blocks-leases + blocks-maintenance + blocks-accounting`
+      (small-landlord); `blocks-scheduling + blocks-tasks` (small-medical-office).
 - [ ] **Report catalog** — ties to [ADR 0021](../../docs/adrs/0021-reporting-pipeline-policy.md);
-      Anchor is the natural home to demo the PDF / XLSX / DOCX / PPTX / CSV contract-and-adapter
-      model end-to-end.
+      Anchor is the natural demo surface for the PDF / XLSX / DOCX / PPTX / CSV
+      contract-and-adapter pipeline.
 - [ ] **Audit log surface** — read-only view over the Foundation audit log for compliance posture.
 - [ ] **Sync toggle** — per-bundle opt-in sync UI against a federated peer (ADR 0013).
-      The three-indicator status bar (paper §13.2) is live via `SunfishNodeHealthBar`;
-      the per-bundle toggle is still pending.
-- [x] **Authentication model (Wave 3.4 — landed partial)** — device-bound Ed25519
-      keypair issued at onboarding, self-signed founder attestation vs. joiner
-      attestation issued by the founder's key. Passphrase recovery + OS-keystore
-      cache of the derived encrypted-DB key still pending.
+      `SunfishNodeHealthBar` (paper §13.2 three-indicator status bar) is live in the nav
+      shell; the per-bundle toggle is pending.
 - [ ] **Platform packaging** — .msix (Windows Store + sideload), .dmg (macOS),
       Mac Catalyst notarization, App Store submission flows.
-- [ ] **Auto-update** — delivery channel (Sparkle for macOS, MSIX AppInstaller for Windows,
-      or an OSS alternative).
+- [ ] **Auto-update** — Sparkle (macOS) or MSIX AppInstaller (Windows).
 - [ ] **Crash reporting** — pre-production OTel pipeline per `_shared/engineering/operations-sre.md`.
 
 ### Onboarding flow (paper §13.4)
@@ -100,16 +111,25 @@ own declared `IssuerPublicKey` at decode time; founder bundles are self-signed
 
 ## Running it today
 
-Anchor builds and launches, but the shell is a placeholder. From this directory:
+Anchor builds and runs with a functional shell (Home, Onboarding, CrewChat, TeamSwitcher
+pages) and the full kernel stack. From this directory:
 
 ```bash
-dotnet build Sunfish.Anchor.csproj -f net10.0-windows10.0.19041.0
-dotnet run  --project Sunfish.Anchor.csproj -f net10.0-windows10.0.19041.0
+# Windows
+dotnet build Sunfish.Anchor.csproj -f net11.0-windows10.0.19041.0
+dotnet run  --project Sunfish.Anchor.csproj -f net11.0-windows10.0.19041.0
+
+# macOS
+dotnet build Sunfish.Anchor.csproj -f net11.0-maccatalyst
+dotnet run  --project Sunfish.Anchor.csproj -f net11.0-maccatalyst
 ```
 
-Multi-target frameworks: `net10.0-windows*`, `net10.0-maccatalyst`, `net10.0-ios`,
-`net10.0-android`. `net10.0-maccatalyst` and `net10.0-ios` are Windows-excluded;
-they must be built on macOS.
+**Framework note:** Anchor targets `net11.0-windows*` and `net11.0-maccatalyst`.
+iOS and Android target frameworks are commented out in the .csproj — MAUI 11 preview
+pins to a specific Xcode release and the mobile targets are re-enabled once the
+preview stabilizes. macOS builds require Xcode + the MAUI workload
+(`dotnet workload install maui`); see the auto-memory note on Xcode license acceptance
+and the `xcode-select` link before first build.
 
 ## Why MAUI Blazor Hybrid
 
