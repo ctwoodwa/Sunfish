@@ -394,11 +394,16 @@ th.is-dragging-source {
 // B4: Row Drag-and-Drop — drag handle, clone, drop indicator, source highlight
 // =================================================================
 
+// SYNTHESIS Theme 6 (P0-2) — `--sf-datagrid-*` consumer-extension hooks now
+// chain through BS5 token equivalents (`--bs-secondary-color`, `--bs-primary`,
+// `--bs-body-bg`, `--bs-border-color`) before falling back to the literal hex,
+// so dark-mode flips happen automatically via the BS5 token contract without
+// requiring a parallel `[data-bs-theme="dark"]` rule per element.
 .sf-datagrid__row-drag-handle {
   cursor: grab;
   user-select: none;
   padding: 0 4px;
-  color: var(--sf-datagrid__row-drag-handle-color, #999);
+  color: var(--sf-datagrid__row-drag-handle-color, var(--bs-secondary-color, #999));
 
   &:active {
     cursor: grabbing;
@@ -420,7 +425,7 @@ tr.is-row-dragging-source {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--sf-datagrid-reorder-line-color, #1e90ff);
+  background: var(--sf-datagrid-reorder-line-color, var(--bs-primary, #1e90ff));
   pointer-events: none;
 }
 
@@ -432,10 +437,12 @@ tr.is-row-dragging-source {
   right: 0;
   z-index: 10;
   min-width: 180px;
-  background: var(--sf-datagrid-menu-bg, #fff);
-  border: 1px solid var(--sf-datagrid-border-color, #dee2e6);
+  background: var(--sf-datagrid-menu-bg, var(--bs-body-bg, #fff));
+  border: 1px solid var(--sf-datagrid-border-color, var(--bs-border-color, #dee2e6));
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  // Shadow keyed on emphasis-color-rgb (black in light mode, white in dark)
+  // so menu elevation stays perceptible under both themes.
+  box-shadow: 0 4px 12px rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.15);
   padding: 4px 0;
 }
 
@@ -449,12 +456,14 @@ tr.is-row-dragging-source {
   cursor: pointer;
   font-size: inherit;
 
+  // Hover surface uses emphasis-color-rgb so the wash inverts in dark mode
+  // (white-on-dark) instead of staying black-on-dark and going invisible.
   &:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.05);
   }
 
   &:disabled {
-    color: #999;
+    color: var(--bs-secondary-color, #999);
     cursor: not-allowed;
   }
 }
@@ -462,7 +471,7 @@ tr.is-row-dragging-source {
 .sf-datagrid__column-menu-divider {
   height: 1px;
   margin: 4px 0;
-  background: var(--sf-datagrid-border-color, #dee2e6);
+  background: var(--sf-datagrid-border-color, var(--bs-border-color, #dee2e6));
 }
 
 .sf-datagrid__column-menu-trigger {
@@ -470,7 +479,7 @@ tr.is-row-dragging-source {
   background: transparent;
   border: none;
   padding: 0 4px;
-  color: var(--sf-datagrid-muted-color, #6c757d);
+  color: var(--sf-datagrid-muted-color, var(--bs-secondary-color, #6c757d));
   line-height: 1;
 
   &:hover {

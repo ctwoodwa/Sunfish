@@ -14581,7 +14581,7 @@ th.is-dragging-source {
   cursor: grab;
   user-select: none;
   padding: 0 4px;
-  color: var(--sf-datagrid__row-drag-handle-color, #999);
+  color: var(--sf-datagrid__row-drag-handle-color, var(--bs-secondary-color, #999));
 }
 .sf-datagrid__row-drag-handle:active {
   cursor: grabbing;
@@ -14602,7 +14602,7 @@ tr.is-row-dragging-source {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--sf-datagrid-reorder-line-color, #1e90ff);
+  background: var(--sf-datagrid-reorder-line-color, var(--bs-primary, #1e90ff));
   pointer-events: none;
 }
 
@@ -14612,10 +14612,10 @@ tr.is-row-dragging-source {
   right: 0;
   z-index: 10;
   min-width: 180px;
-  background: var(--sf-datagrid-menu-bg, #fff);
-  border: 1px solid var(--sf-datagrid-border-color, #dee2e6);
+  background: var(--sf-datagrid-menu-bg, var(--bs-body-bg, #fff));
+  border: 1px solid var(--sf-datagrid-border-color, var(--bs-border-color, #dee2e6));
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.15);
   padding: 4px 0;
 }
 
@@ -14630,17 +14630,17 @@ tr.is-row-dragging-source {
   font-size: inherit;
 }
 .sf-datagrid__column-menu-item:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.05);
 }
 .sf-datagrid__column-menu-item:disabled {
-  color: #999;
+  color: var(--bs-secondary-color, #999);
   cursor: not-allowed;
 }
 
 .sf-datagrid__column-menu-divider {
   height: 1px;
   margin: 4px 0;
-  background: var(--sf-datagrid-border-color, #dee2e6);
+  background: var(--sf-datagrid-border-color, var(--bs-border-color, #dee2e6));
 }
 
 .sf-datagrid__column-menu-trigger {
@@ -14648,7 +14648,7 @@ tr.is-row-dragging-source {
   background: transparent;
   border: none;
   padding: 0 4px;
-  color: var(--sf-datagrid-muted-color, #6c757d);
+  color: var(--sf-datagrid-muted-color, var(--bs-secondary-color, #6c757d));
   line-height: 1;
 }
 .sf-datagrid__column-menu-trigger:hover {
