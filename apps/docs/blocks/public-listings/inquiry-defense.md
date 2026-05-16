@@ -57,4 +57,4 @@ await leasingPipeline.SubmitInquiryAsync(domainRequest, anonymousCapability, ct)
 - [Overview](./overview.md)
 - [Audit Emission](./audit-emission.md)
 - [ADR 0059](../../../docs/adrs/0059-public-listing-surface.md) — Public listing surface
-- [ADR 0043 addendum](../../../docs/adrs/0043-capability-gradient.md) — Anonymous / Prospect / Applicant tiers (planned addendum)
+- [ADR 0043](../../../docs/adrs/0043-unified-threat-model-public-oss-chain-of-permissiveness.md) — Anonymous / Prospect / Applicant tiers (capability-tier addendum is planned future work per ADR 0059)
