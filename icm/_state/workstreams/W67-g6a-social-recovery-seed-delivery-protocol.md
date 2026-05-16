@@ -4,7 +4,7 @@ number: 67
 slug: g6a-social-recovery-seed-delivery-protocol
 title: "W#67 — G6-A: Social recovery seed-delivery protocol (ADR 0046 Phase 2)"
 status: "building"
-status_cell: "`building` — PR 1 MERGED 2026-05-16 (#875 `IX25519SubkeyDerivation` + `IRootSeedRestorer` in `kernel-security`); PR 2 next: `RecoveryRequest` + `TrusteeAttestation` field additions + updated canonical bytes (`foundation-recovery`)"
+status_cell: "`building` — PR 1 MERGED (#875 `IX25519SubkeyDerivation` + `IRootSeedRestorer`); PR 2 MERGED (#878 `RecoveryRequest` + `TrusteeAttestation` field additions + canonical bytes in `foundation-recovery`); PR 3 next: `RecoveryCoordinatorState` + `IRecoveryCoordinator.SetupTrusteeAsync` + `EvaluateGracePeriodAsync` → `RecoveryCompletionResult?`"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md` (Proposed 2026-05-16) + `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` + `packages/foundation-recovery/RecoveryRequest.cs` + `packages/foundation-recovery/TrusteeAttestation.cs` + `packages/kernel-security/Crypto/IX25519KeyAgreement.cs` + `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` §G6-A"
