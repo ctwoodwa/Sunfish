@@ -158,11 +158,25 @@ public sealed class PeriodCloseServiceSoftCloseTests
 
     internal sealed class CapturingEventPublisher : IDomainEventPublisher
     {
-        public List<object> Published { get; } = new();
+        /// <summary>Captured envelopes in publish order.</summary>
+        public List<object> Envelopes { get; } = new();
 
-        public Task PublishAsync<TPayload>(TPayload payload, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Convenience accessor that flattens envelopes back to their
+        /// payloads in publish order — most assertions only care about
+        /// the payload shape (e.g., <c>.OfType&lt;PeriodSoftClosed&gt;()</c>).
+        /// </summary>
+        public List<object> Published =>
+            Envelopes
+                .Select(e => e.GetType().GetProperty(nameof(DomainEventEnvelope<object>.Payload))!.GetValue(e)!)
+                .ToList();
+
+        public Task PublishAsync<TPayload>(
+            DomainEventEnvelope<TPayload> envelope,
+            CancellationToken cancellationToken = default)
         {
-            if (payload is not null) Published.Add(payload);
+            ArgumentNullException.ThrowIfNull(envelope);
+            Envelopes.Add(envelope);
             return Task.CompletedTask;
         }
     }
