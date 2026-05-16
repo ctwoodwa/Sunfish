@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,11 +43,33 @@ public sealed class DefaultTeamServiceRegistrarSyncTests : IDisposable
 
     public DefaultTeamServiceRegistrarSyncTests()
     {
-        _tempRoot = Path.Combine(Path.GetTempPath(), "sunfish-test-" + Guid.NewGuid().ToString("N"));
+        _tempRoot = BuildShortTempRoot();
         Directory.CreateDirectory(_tempRoot);
 
         _subkeyDerivation = new TeamSubkeyDerivation(_signer);
         _rootIdentity = BuildRootIdentity(_signer, fillByte: 0x42);
+    }
+
+    /// <summary>
+    /// Build a temp directory that stays well under the 104-character POSIX
+    /// Unix-domain-socket path limit. <see cref="Path.GetTempPath"/> on macOS
+    /// returns <c>/var/folders/&lt;14&gt;/&lt;14&gt;/T/</c> (~50 chars); add
+    /// the test directory + <c>/teams/&lt;36-char teamId&gt;/sync.sock</c>
+    /// (~50 chars) and the socket bind hits
+    /// <c>ArgumentOutOfRangeException</c>. On non-Windows, root under
+    /// <c>/tmp</c> (4 chars) with a short 8-hex-char suffix to keep the full
+    /// socket path comfortably below the limit while preserving uniqueness
+    /// across parallel test runs. On Windows we keep
+    /// <see cref="Path.GetTempPath"/> because the transport uses named pipes
+    /// (the path-length limit does not apply).
+    /// </summary>
+    private static string BuildShortTempRoot()
+    {
+        var suffix = "sft-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+        var baseDir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? Path.GetTempPath()
+            : "/tmp";
+        return Path.Combine(baseDir, suffix);
     }
 
     public void Dispose()
