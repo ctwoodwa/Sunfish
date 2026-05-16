@@ -29,6 +29,33 @@ public sealed record JournalEntryLine
     /// <summary>Optional free-form annotation for this line.</summary>
     public string? Notes { get; }
 
+    // ---------- W#60 P4 PR 3 — Stage 02 §3.4 dimensional tags ----------
+
+    /// <summary>
+    /// Optional cost-center dimensional tag — which property this line
+    /// posts against. Drives per-property P&amp;L and balance-sheet
+    /// rollups. Per Stage 02 §3.4 validation rule 3, non-null values
+    /// MUST exist in the property registry (enforced at the
+    /// <see cref="Services.IAccountingService"/> layer in a later PR).
+    /// </summary>
+    public PropertyId? PropertyId { get; init; }
+
+    /// <summary>
+    /// Optional user-defined classification tag (project / department /
+    /// fund / cost-pool). Driven by the in-app classification picker
+    /// when posting manual entries.
+    /// </summary>
+    public ClassificationId? ClassId { get; init; }
+
+    /// <summary>
+    /// Optional tax-code reference — populated when this line represents
+    /// tax (sales tax collected, withholding, etc.). Per Stage 02 §3.4
+    /// validation rule 4, may only be non-null on lines posted to
+    /// <see cref="AccountSubtype.TaxesPayable"/> accounts (enforced at
+    /// the service layer in a later PR).
+    /// </summary>
+    public TaxCodeId? TaxCodeId { get; init; }
+
     /// <summary>Constructs and validates a journal entry line.</summary>
     /// <exception cref="ArgumentException">
     /// Thrown when both <paramref name="debit"/> and <paramref name="credit"/> are non-zero,

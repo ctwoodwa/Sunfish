@@ -38,6 +38,63 @@ public sealed record JournalEntry
     /// </summary>
     public string? SourceReference { get; }
 
+    // ---------- W#60 P4 PR 3 — Stage 02 §3.3 extensions ----------
+
+    /// <summary>
+    /// FK to the <see cref="ChartOfAccounts"/> this entry posts against.
+    /// Optional in PR 3; becomes mandatory once <see cref="ChartOfAccounts"/>
+    /// registration enforces every <see cref="GLAccount"/> belongs to a chart.
+    /// </summary>
+    public ChartOfAccountsId? ChartId { get; init; }
+
+    /// <summary>
+    /// Wall-clock instant the entry transitioned to
+    /// <see cref="JournalEntryStatus.Posted"/>. Null while
+    /// <see cref="Status"/> is <see cref="JournalEntryStatus.Draft"/>.
+    /// </summary>
+    public Instant? PostedAtUtc { get; init; }
+
+    /// <summary>
+    /// Lifecycle state. Defaults to <see cref="JournalEntryStatus.Draft"/>
+    /// for back-compat with pre-PR-3 call sites that did not specify
+    /// a status.
+    /// </summary>
+    public JournalEntryStatus Status { get; init; } = JournalEntryStatus.Draft;
+
+    /// <summary>
+    /// Classification of the originating event (Invoice / Bill / Payment /
+    /// etc.). Defaults to <see cref="JournalEntrySource.Manual"/> when
+    /// unspecified.
+    /// </summary>
+    public JournalEntrySource SourceKind { get; init; } = JournalEntrySource.Manual;
+
+    /// <summary>
+    /// Backward FK on a reversing entry — points to the entry being
+    /// reversed. Non-null only when <see cref="SourceKind"/> is
+    /// <see cref="JournalEntrySource.Reversal"/>.
+    /// </summary>
+    public JournalEntryId? ReversalOf { get; init; }
+
+    /// <summary>
+    /// Forward FK on a reversed entry — points to the reversing entry
+    /// that superseded this one. Non-null only when <see cref="Status"/>
+    /// is <see cref="JournalEntryStatus.Reversed"/>.
+    /// </summary>
+    public JournalEntryId? ReversedBy { get; init; }
+
+    /// <summary>
+    /// FK to the fiscal period this entry posts within. Nullable in PR 3
+    /// (the periods entity ships in <c>blocks-financial-periods</c> in a
+    /// follow-on hand-off).
+    /// </summary>
+    public FiscalPeriodId? PeriodId { get; init; }
+
+    /// <summary>
+    /// Optional external system reference (e.g. ERPNext import id) so the
+    /// migration importer can record provenance.
+    /// </summary>
+    public string? ExternalRef { get; init; }
+
     /// <summary>Constructs and validates a journal entry.</summary>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="lines"/> is empty, or when total debits do not equal total credits.
