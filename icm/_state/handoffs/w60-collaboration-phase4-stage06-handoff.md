@@ -154,7 +154,7 @@ Location: `apps/tenant-portal/` — standalone Vite + React + `@sunfish/ui-react
 **Deliverables:**
 - `docker-compose.prod.yml` — ERPNext + MariaDB + Redis + Sunfish Bridge (ASP.NET) + Nextcloud; persistent volumes; environment variable placeholders
 - `README.md` section "Self-hosting" — `docker-compose up -d`; domain/TLS config notes; ERPNext first-run setup; estimated time: 20 minutes
-- **Windows installer arch-detection page** (XO ruling 2026-05-16 T11-45Z): a `/download` or `/install` page in `apps/docs/` (or Bridge static) that uses `navigator.userAgentData.getHighEntropyValues(['architecture'])` (UA-string fallback) to surface the correct download link (`_x64-setup.exe` vs `arm64-setup.exe`); manual arch toggle included. VS Code / Discord / Slack pattern. Multi-arch MSIX/WiX deferred until Windows-ARM test device on tailnet. Note the Anchor Tauri x64 + ARM64 artifacts built by dev-win; link both from the page.
+- **Windows installer arch-detection page** (XO ruling 2026-05-16 T15-46Z; ADR 0088): a `/download` or `/install` page in `apps/docs/` (or Bridge static) that uses `navigator.userAgentData.getHighEntropyValues(['architecture'])` (UA-string fallback) to surface the correct download link (`_x64-setup.exe` vs `arm64-setup.exe`); manual arch toggle included. VS Code / Discord / Slack pattern. Multi-arch MSIX/WiX (Approach B) deferred until Windows-ARM test device on tailnet; bootstrapper `.exe` (Approach A) skipped permanently. Note the Anchor Tauri x64 + ARM64 artifacts built by dev-win; link both from the page.
 - `icm/_state/workstreams/W60-*.md` — flip `status: "building"` → `status: "built"` for Phase 4; run `render-ledger.py`
 
 **PASS gate:** New landlord following `README` can have ERPNext + Bridge running in under 20 minutes. Windows download page shows correct installer for host CPU without user needing to know their architecture.
@@ -194,6 +194,7 @@ Location: `apps/tenant-portal/` — standalone Vite + React + `@sunfish/ui-react
 - **Phase 3 hand-off** — `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md` (stronghold stub, CP/AP boundary)
 - **ADR 0061** — `docs/adrs/0061-headscale-mesh-vpn.md` (accountant peer sync design — Phase 5)
 - **ADR 0086** — `docs/adrs/0086-anchor-tauri-react-product-surface.md` (Tauri shell)
+- **ADR 0088** — `docs/adrs/0088-multiarch-windows-installer-packaging.md` (PR 5 download page; C-now / B-deferred / A-skip)
 - **W#18 magic-link precedent** — `AuditEventType.VendorMagicLinkIssued` in `Sunfish.Kernel.Audit`
 - **blocks-crew-comms** — `packages/blocks-crew-comms/` (tenant portal messaging)
 - **IERPNextClient** — `accelerators/bridge/Sunfish.Bridge/Proxy/IERPNextClient.cs` (Phase 2)

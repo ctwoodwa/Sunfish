@@ -231,14 +231,58 @@ await SecureStorage.SetAsync("recovery:dh-priv", Convert.ToBase64String(ephX2551
 
 ---
 
-### PR 5 — Trustee setup flow + identity bundle (~3-4h)
+### PR 5 — Trustee setup flow + identity bundle (~5-7h including MAJOR-2)
+
+#### MAJOR-2 binding fix (council finding — `TrusteeDesignation.DHPublicKey`)
+
+**`packages/foundation-recovery/TrusteeDesignation.cs`** — add X25519 DH key field:
+```csharp
+// Add positional field (32 bytes, X25519 public key):
+public byte[] DHPublicKey { get; init; } = Array.Empty<byte>();
+public const int DHPublicKeyLength = 32;
+```
+
+**`packages/foundation-recovery/IRecoveryCoordinator.cs`** — widen `DesignateTrusteeAsync`:
+```diff
+-Task<RecoveryEvent> DesignateTrusteeAsync(
+-    string trusteeNodeId,
+-    ReadOnlyMemory<byte> trusteePublicKey,
+-    CancellationToken ct);
++Task<RecoveryEvent> DesignateTrusteeAsync(
++    string trusteeNodeId,
++    ReadOnlyMemory<byte> trusteePublicKey,
++    ReadOnlyMemory<byte> trusteeDHPublicKey,
++    CancellationToken ct);
+```
+
+**`packages/foundation-recovery/RecoveryCoordinator.cs`** — cross-check in `SubmitAttestationAsync`:
+- After verifying attestation signature, retrieve `state.Trustees[nodeId].DHPublicKey`
+- Use `CryptographicOperations.FixedTimeEquals(attestation.TrusteeDHPublicKey, stored.DHPublicKey)`
+- If mismatch: drop attestation (emit no event, log at Warn — use the ≤8-char fingerprint pattern
+  from MAJOR-2's sibling fix M-4, i.e., `Convert.ToHexString(SHA256.HashData(key))[..8]`)
+
+**Tests (`packages/foundation-recovery.tests/RecoveryCoordinatorTests.cs` + `TrusteeRecordTests.cs`):**
+- Update all `DesignateTrusteeAsync` call sites to pass `trusteeDHPublicKey` argument
+- Add: `SubmitAttestation_DropsWhenTrusteeDHKeyMismatch` — ensure no event emitted when
+  `attestation.TrusteeDHPublicKey` ≠ `state.Trustees[id].DHPublicKey`
+
+**Note on callers:** `RecoveryAttestationSubmitter` (W#65 session signer) already passes
+`signer.PublicKey.ToArray()` as trustee DH — no change needed there. Only the owner-side
+`TrusteeSetupPage.razor` changes (see below).
+
+---
+
+#### Identity bundle + page changes
 
 **Identity bundle** (`accelerators/anchor/Services/Pairing/` — locate identity bundle type):
 - Add `DHPublicKey: byte[]` (32 bytes, from `IX25519SubkeyDerivation.DeriveX25519PublicKey`)
 - Populate during bundle generation; include in QR-code payload
 
 **`TrusteeSetupPage.razor`** (`accelerators/anchor/Components/Pages/Recovery/TrusteeSetupPage.razor`):
-- After trustee is designated, add seed distribution step:
+- **Designation step:** collect trustee's X25519 DH public key alongside Ed25519 + NodeId
+  (trustee presents both via identity-bundle QR + paste flow). Pass to widened
+  `DesignateTrusteeAsync(trusteeNodeId, trusteeEdPublicKey, trusteeDHPublicKey, ct)`.
+- **After designation, add seed distribution step:**
   1. `IRootSeedProvider.GetRootSeedAsync()` → root seed
   2. For each trustee: `IX25519KeyAgreement.Box(rootSeed, trustee.DHPublicKey, ownerEphPriv)` → `(Ciphertext, Nonce)`
   3. `IRecoveryCoordinator.SetupTrusteeAsync(trusteeNodeId, new TrusteeEncryptedSeed(...))`
@@ -282,6 +326,8 @@ public sealed record RecoveryRekeyPayload(
 - [ ] `RecoveryRequest.CanonicalBytesForSigning` includes `EphemeralDHPublicKey`
 - [ ] `TrusteeAttestation.CanonicalBytesForSigning` includes `TrusteeDHPublicKey` + `SeedEnvelopeCiphertext` + `SeedEnvelopeNonce`
 - [ ] `IRootSeedRestorer` is injected only into `AnchorRecoveryCompletionHandler` (grep DI registrations)
+- [ ] `TrusteeDesignation.DHPublicKey` populated at designation time; `SubmitAttestationAsync` cross-checks via `FixedTimeEquals` (MAJOR-2 closed)
+- [ ] `SubmitAttestation_DropsWhenTrusteeDHKeyMismatch` test passes
 - [ ] Divergent-seed audit path logs SHA-256 hashes, NOT raw seed bytes
 - [ ] Ephemeral DH private key is cleared from `SecureStorage` after successful completion
 - [ ] G6-A gap CLOSED in G7 conformance baseline (flip `g7-conformance-baseline-2026-Q2.md` G6 from PARTIAL → CLOSED in PR 6)
