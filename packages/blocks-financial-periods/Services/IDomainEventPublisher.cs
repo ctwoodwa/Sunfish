@@ -8,9 +8,19 @@ namespace Sunfish.Blocks.FinancialPeriods.Services;
 /// <c>foundation-events</c> ships the canonical
 /// <c>Sunfish.Foundation.Events.IDomainEventPublisher</c>, the
 /// per-cluster migration sweep re-namespaces consumers to the upstream
-/// substrate and deletes this declaration. DI registration shape
-/// (<c>TryAddSingleton</c>) stays compatible so the swap is one-line.
+/// substrate and deletes this declaration.
 /// </summary>
+/// <remarks>
+/// <b>DI registration discipline:</b> the periods package + the
+/// canonical foundation-events package both register via
+/// <c>services.TryAddSingleton&lt;IDomainEventPublisher, …&gt;()</c>.
+/// Host composition roots that wire foundation-events FIRST (before
+/// invoking <c>AddBlocksFinancialPeriods()</c>) leave the canonical
+/// impl in place; the periods package's
+/// <c>TryAddSingleton&lt;…, NoopDomainEventPublisher&gt;</c> is a
+/// no-op when the canonical is already registered. This is what makes
+/// the eventual one-line sweep PR work without ordering hazards.
+/// </remarks>
 public interface IDomainEventPublisher
 {
     /// <summary>

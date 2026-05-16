@@ -230,6 +230,11 @@ public sealed class PeriodCloseService : IPeriodCloseService
     {
         var envelope = new DomainEventEnvelope<TPayload>
         {
+            // EventId is an interim UUIDv7-as-GUID-string (sortable by
+            // mint-time, satisfies the §1 eventId sortability intent).
+            // foundation-events will mint real ULID Crockford-base32
+            // strings; the swap is value-shape-only — consumers must
+            // treat EventId as opaque string.
             EventId              = Guid.CreateVersion7().ToString(),
             EventType            = eventType,
             SchemaVersion        = PayloadSchemaVersion,
@@ -243,5 +248,9 @@ public sealed class PeriodCloseService : IPeriodCloseService
     }
 
     private string IdempotencyKey(string eventType, FiscalPeriodId periodId, FiscalPeriodStatus newStatus)
-        => $"{eventType}|{_tenantId.Value ?? "__system__"}|{periodId.Value}|{newStatus}";
+        // Per xo-ruling-2026-05-16T21-12Z idempotency-key convention
+        // for periods. Falls back to TenantId.System.Value (not a bare
+        // literal) for default-constructed TenantIds — keeps the
+        // canonical sentinel literal in one place.
+        => $"{eventType}|{_tenantId.Value ?? TenantId.System.Value}|{periodId.Value}|{newStatus}";
 }
