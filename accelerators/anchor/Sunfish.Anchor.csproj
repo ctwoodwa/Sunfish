@@ -148,6 +148,8 @@
         <ProjectReference Include="..\..\packages\blocks-properties\Sunfish.Blocks.Properties.csproj" />
         <!-- W#29 Phase 2 — property detail page reads equipment via IEquipmentRepository. -->
         <ProjectReference Include="..\..\packages\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
+        <!-- W#29 Phase 3 — work-orders pages read IMaintenanceService. -->
+        <ProjectReference Include="..\..\packages\blocks-maintenance\Sunfish.Blocks.Maintenance.csproj" />
         <ProjectReference Include="..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
         <ProjectReference Include="..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />

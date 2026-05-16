@@ -1,0 +1,173 @@
+@page "/cockpit/work-orders/{WorkOrderIdValue}"
+@layout CockpitLayout
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Maintenance.Models
+@using Sunfish.Blocks.Maintenance.Services
+@inject IMaintenanceService Maintenance
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>@(_workOrder?.Id.Value ?? "Work Order") · Cockpit</PageTitle>
+
+@* W#29 Phase 3 — work-order detail. Renders WO state, vendor lookup,
+   appointment, entry notices, completion attestation, and the last
+   10 audit-trail GUIDs. "Linked inspection" omitted (no FK on WO). *@
+
+@if (_loadError is not null)
+{
+    <div class="cockpit-wo-detail-error">
+        <strong>Failed to load work order.</strong>
+        <p>@_loadError</p>
+        <a class="cockpit-wo-detail-link" href="cockpit/work-orders">← Back to work orders</a>
+    </div>
+}
+else if (_notFound)
+{
+    <div class="cockpit-wo-detail-empty">
+        <h2>Work order not found</h2>
+        <a class="cockpit-wo-detail-link" href="cockpit/work-orders">← Back to work orders</a>
+    </div>
+}
+else if (_workOrder is null)
+{
+    <p class="cockpit-wo-detail-loading">Loading work order…</p>
+}
+else
+{
+    <header class="cockpit-wo-detail-header">
+        <a class="cockpit-wo-detail-link" href="cockpit/work-orders">← Back to work orders</a>
+        <h1>@_workOrder.Id.Value</h1>
+        <p class="cockpit-wo-detail-meta">
+            @_workOrder.Status · @(_vendor?.DisplayName ?? _workOrder.AssignedVendorId.Value) ·
+            Scheduled @_workOrder.ScheduledDate.ToShortDateString()
+            @if (_workOrder.CompletedDate is { } d) { <text> · Completed @d.ToShortDateString()</text> }
+        </p>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(_workOrder.Notes))
+    {
+        <section class="cockpit-wo-section">
+            <h2>Notes</h2>
+            <p>@_workOrder.Notes</p>
+        </section>
+    }
+
+    <section class="cockpit-wo-section">
+        <h2>Appointment</h2>
+        @if (_workOrder.Appointment is { } appt)
+        {
+            <p>
+                @appt.SlotStartUtc.ToLocalTime() → @appt.SlotEndUtc.ToLocalTime()
+                · <span class="cockpit-wo-chip">@appt.Status</span>
+            </p>
+        }
+        else
+        {
+            <p class="cockpit-wo-muted">No appointment proposed.</p>
+        }
+    </section>
+
+    <section class="cockpit-wo-section">
+        <h2>Entry notices</h2>
+        @if (_workOrder.EntryNotices.Count == 0)
+        {
+            <p class="cockpit-wo-muted">No entry notices recorded.</p>
+        }
+        else
+        {
+            <ul class="cockpit-wo-list">
+                @foreach (var n in _workOrder.EntryNotices)
+                {
+                    <li>
+                        <strong>@n.PlannedEntryUtc.ToLocalTime()</strong>
+                        <span class="cockpit-wo-muted">— @n.EntryReason</span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="cockpit-wo-section">
+        <h2>Completion attestation</h2>
+        @if (_workOrder.CompletionAttestation is { } att)
+        {
+            <p>Attested at @att.AttestedAt.ToLocalTime() · <span class="cockpit-wo-muted">signature @att.Signature.SignatureEventId</span></p>
+        }
+        else
+        {
+            <p class="cockpit-wo-muted">Not yet attested.</p>
+        }
+    </section>
+
+    <section class="cockpit-wo-section cockpit-wo-section--muted">
+        <h2>Audit trail (last 10)</h2>
+        @if (_workOrder.AuditTrail.Count == 0)
+        {
+            <p class="cockpit-wo-muted">No audit records.</p>
+        }
+        else
+        {
+            <ul class="cockpit-wo-audit-list">
+                @foreach (var g in _workOrder.AuditTrail.TakeLast(10))
+                {
+                    <li>@g</li>
+                }
+            </ul>
+        }
+    </section>
+}
+
+@code {
+    [Parameter] public string? WorkOrderIdValue { get; set; }
+
+    private WorkOrder? _workOrder;
+    private Vendor? _vendor;
+    private bool _notFound;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded)
+        {
+            Nav.NavigateTo("/onboarding", replace: true);
+            return;
+        }
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null; _notFound = false; _workOrder = null; _vendor = null;
+        if (string.IsNullOrWhiteSpace(WorkOrderIdValue)) { _notFound = true; return; }
+
+        try
+        {
+            _workOrder = await Maintenance.GetWorkOrderAsync(new WorkOrderId(WorkOrderIdValue), default);
+            if (_workOrder is null) { _notFound = true; return; }
+            _vendor = await Maintenance.GetVendorAsync(_workOrder.AssignedVendorId, default);
+        }
+        catch (Exception ex) { _loadError = ex.Message; }
+    }
+}
+
+<style>
+    .cockpit-wo-detail-loading { color: #6b7280; padding: 3rem 0; text-align: center; }
+    .cockpit-wo-detail-error { padding: 1rem 1.25rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 0.5rem; }
+    .cockpit-wo-detail-empty { padding: 3rem 1.5rem; text-align: center; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .cockpit-wo-detail-empty h2 { font-size: 1.125rem; margin: 0 0 1rem; }
+    .cockpit-wo-detail-link { color: #2563eb; font-size: 0.875rem; text-decoration: none; }
+    .cockpit-wo-detail-link:hover { text-decoration: underline; }
+    .cockpit-wo-detail-header { margin-bottom: 1.5rem; }
+    .cockpit-wo-detail-header h1 { font-size: 1.5rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .cockpit-wo-detail-meta { color: #6b7280; font-size: 0.875rem; margin: 0; }
+    .cockpit-wo-section { padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; margin-bottom: 0.75rem; }
+    .cockpit-wo-section h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+    .cockpit-wo-section--muted { background: #f9fafb; }
+    .cockpit-wo-muted { color: #6b7280; }
+    .cockpit-wo-list { list-style: none; padding: 0; margin: 0; }
+    .cockpit-wo-list li { padding: 0.375rem 0; border-bottom: 1px solid #f3f4f6; font-size: 0.875rem; }
+    .cockpit-wo-list li:last-child { border-bottom: 0; }
+    .cockpit-wo-audit-list { list-style: none; padding: 0; margin: 0; font-family: Consolas, Menlo, monospace; font-size: 0.75rem; color: #4b5563; }
+    .cockpit-wo-audit-list li { padding: 0.125rem 0; }
+    .cockpit-wo-chip { display: inline-block; padding: 0.125rem 0.5rem; background: #f3f4f6; color: #1f2937; border-radius: 0.25rem; font-size: 0.75rem; }
+</style>

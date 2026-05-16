@@ -76,3 +76,84 @@ export async function getCockpitPropertyDetail(propertyId: string): Promise<Cock
   }
   return (await resp.json()) as CockpitPropertyDetail
 }
+
+// ── Work orders (PR 3) ────────────────────────────────────────────────
+
+export interface CockpitWorkOrderSummary {
+  workOrderId: string
+  status: string
+  vendorId: string
+  scheduledDate: string
+  completedDate: string | null
+  appointmentDate: string | null
+}
+
+export interface CockpitWorkOrderList {
+  items: CockpitWorkOrderSummary[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface CockpitEntryNotice {
+  plannedEntryUtc: string
+  entryReason: string
+}
+
+export interface CockpitAppointment {
+  slotStartUtc: string
+  slotEndUtc: string
+  status: string
+}
+
+export interface CockpitCompletionAttestation {
+  attestedAt: string
+  signatureRef: string
+}
+
+export interface CockpitWorkOrderDetail {
+  workOrderId: string
+  status: string
+  scheduledDate: string
+  completedDate: string | null
+  vendorId: string
+  vendorDisplayName: string
+  notes: string | null
+  entryNotices: CockpitEntryNotice[]
+  appointment: CockpitAppointment | null
+  completionAttestation: CockpitCompletionAttestation | null
+  auditTrail: string[]
+}
+
+export interface ListWorkOrdersParams {
+  status?: string
+  vendorId?: string
+  from?: string
+  to?: string
+  page?: number
+  pageSize?: number
+}
+
+export async function getCockpitWorkOrders(params: ListWorkOrdersParams = {}): Promise<CockpitWorkOrderList> {
+  const qs = new URLSearchParams()
+  if (params.status) qs.set('status', params.status)
+  if (params.vendorId) qs.set('vendorId', params.vendorId)
+  if (params.from) qs.set('from', params.from)
+  if (params.to) qs.set('to', params.to)
+  if (params.page) qs.set('page', String(params.page))
+  if (params.pageSize) qs.set('pageSize', String(params.pageSize))
+  const url = `/api/v1/cockpit/work-orders${qs.size > 0 ? `?${qs}` : ''}`
+  const resp = await fetch(url, { credentials: 'include' })
+  if (!resp.ok) throw new Error(`Failed to load work orders: ${resp.status} ${resp.statusText}`)
+  return (await resp.json()) as CockpitWorkOrderList
+}
+
+export async function getCockpitWorkOrderDetail(workOrderId: string): Promise<CockpitWorkOrderDetail> {
+  const resp = await fetch(
+    `/api/v1/cockpit/work-orders/${encodeURIComponent(workOrderId)}`,
+    { credentials: 'include' },
+  )
+  if (resp.status === 404) throw new Error('Work order not found')
+  if (!resp.ok) throw new Error(`Failed to load work order: ${resp.status} ${resp.statusText}`)
+  return (await resp.json()) as CockpitWorkOrderDetail
+}

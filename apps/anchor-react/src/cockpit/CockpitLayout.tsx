@@ -22,7 +22,7 @@ export function CockpitLayout() {
         </h2>
         <nav className="flex flex-col gap-1 text-sm">
           <CockpitNavLink to="/cockpit">Properties</CockpitNavLink>
-          <CockpitNavLink to="/cockpit/work-orders" disabled>
+          <CockpitNavLink to="/cockpit/work-orders">
             Work Orders
           </CockpitNavLink>
           <CockpitNavLink to="/cockpit/vendors" disabled>

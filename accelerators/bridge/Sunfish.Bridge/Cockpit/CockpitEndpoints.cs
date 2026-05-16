@@ -52,6 +52,7 @@ public static class CockpitEndpoints
         var group = app.MapGroup("/api/v1/cockpit").RequireAuthorization(CockpitPolicyName);
         group.MapGet("/properties", HandleListPropertiesAsync).WithName("CockpitListProperties");
         group.MapPropertyDetail();
+        group.MapWorkOrders();
         return app;
     }
 
