@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from 'react-error-boundary'
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import { PropertiesPage } from '@/pages/PropertiesPage'
 import { LeasesPage } from '@/pages/LeasesPage'
 import { LeaseDetailPage } from '@/pages/LeaseDetailPage'
@@ -9,6 +10,7 @@ import { RentCollectionPage } from '@/pages/RentCollectionPage'
 import { AccountingPage } from '@/pages/AccountingPage'
 import { CrewCommsPage } from '@/pages/CrewCommsPage'
 import { MaintenancePage } from '@/pages/MaintenancePage'
+import { LoginPage } from '@/pages/LoginPage'
 import { SyncStateBadge } from '@sunfish/ui-react'
 
 // Dev-only PDF preview route. import.meta.env.DEV is a build-time
@@ -26,6 +28,7 @@ import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useSyncStore } from '@/stores/syncStore'
+import { getToken as loadStoredToken, clearToken as clearStoredToken } from '@/services/credentialStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,7 +77,17 @@ function AppLayout() {
   const setActiveCompany = useCompanyStore((s) => s.setActiveCompany)
   const setAvailableCompanies = useCompanyStore((s) => s.setAvailableCompanies)
   const setAuth = useAuthStore((s) => s.setAuth)
+  const setToken = useAuthStore((s) => s.setToken)
   const syncState = useSyncStore((s) => s.syncState)
+
+  async function onLogout() {
+    try {
+      await clearStoredToken()
+      await invoke('set_bridge_token', { token: '' }).catch(() => {})
+    } finally {
+      setToken(null)
+    }
+  }
 
   useEffect(() => {
     fetch('/api/v1/whoami', { credentials: 'include' })
@@ -148,6 +161,13 @@ function AppLayout() {
           <div className="flex items-center gap-3">
             <SyncStateBadge state={syncState} />
             <CompanySwitcher />
+            <button
+              type="button"
+              onClick={onLogout}
+              className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -177,12 +197,58 @@ function AppLayout() {
   )
 }
 
+/**
+ * W#60 P4 PR 1 — auth boot gate.
+ *
+ * On mount, attempts to load a previously-stored Bridge auth token from the
+ * Stronghold-backed credentialStore. If present: seeds the authStore + informs
+ * the Rust side via `set_bridge_token`, then renders the app. If absent or
+ * keychain access fails: renders the LoginPage for manual entry.
+ *
+ * Subscribes to authStore.token so a successful LoginPage submit (which sets
+ * the token) re-renders this component and reveals the app.
+ */
+function AuthGate() {
+  const token = useAuthStore((s) => s.token)
+  const setToken = useAuthStore((s) => s.setToken)
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const stored = await loadStoredToken()
+        if (cancelled) return
+        if (stored) {
+          await invoke('set_bridge_token', { token: stored }).catch(() => {})
+          setToken(stored)
+        }
+      } catch {
+        // Keychain access or Stronghold init failed — fall through to login.
+      } finally {
+        if (!cancelled) setLoaded(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [setToken])
+
+  if (!loaded) {
+    // Brief splash while we probe Stronghold; avoids the LoginPage flashing
+    // before we know whether there's a stored token.
+    return <div className="min-h-screen bg-background" />
+  }
+  if (!token) return <LoginPage />
+  return <AppLayout />
+}
+
 export function App() {
   return (
     <ErrorBoundary FallbackComponent={AppErrorFallback}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <AppLayout />
+          <AuthGate />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>

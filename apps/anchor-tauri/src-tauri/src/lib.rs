@@ -121,18 +121,30 @@ pub fn run() {
 
             // Drain any pending write-queue entries from previous offline sessions
             let pool_push = pool.clone();
+            let bridge_url_push = bridge_url.clone();
+            let auth_token_push = auth_token.clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) =
-                    sync::push::drain_write_queue(&pool_push, &bridge_url, &auth_token).await
+                    sync::push::drain_write_queue(&pool_push, &bridge_url_push, &auth_token_push)
+                        .await
                 {
                     eprintln!("[sync] startup write-queue drain failed: {e}");
                 }
             });
 
+            // W#60 P4 PR 1 — Bridge auth token state for the JS-side credentialStore.
+            // Initial value comes from BRIDGE_TOKEN env var (dev/CI fallback); JS
+            // updates it via the `set_bridge_token` command after reading from
+            // Stronghold or LoginPage. Wiring the sync code at startup to read
+            // from this state (instead of the env-var-captured `auth_token` above)
+            // is a follow-up scope-cut from this PR — see PR description.
+            app.manage(commands::auth::AuthToken::new(auth_token));
             app.manage(pool);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::auth::set_bridge_token,
+            commands::auth::has_bridge_token,
             commands::cache::get_cached_properties,
             commands::cache::get_cached_leases,
             commands::cache::get_cached_payments,
