@@ -577,6 +577,10 @@ public class MaterialCssProvider : ISunfishCssProvider
 
     public string DataGridGroupHeaderClass() => "sf-datagrid-group-header";
 
+    // Material checkboxes pick up M3 styling via the Material theme stylesheet
+    // without an explicit class on the input element. No class hook needed.
+    public string DataGridCheckboxInputClass() => string.Empty;
+
     // DataSheet
     public string DataSheetClass(bool isLoading) =>
         new CssClassBuilder()

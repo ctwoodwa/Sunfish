@@ -769,6 +769,12 @@ public class BootstrapCssProvider : ISunfishCssProvider
 
     public string DataGridGroupHeaderClass() => "table-secondary fw-bold sf-bs-datagrid-group-header";
 
+    // BS5 selection-cell checkbox — style-audit P0-3. Native BS5 checkbox
+    // styling requires `.form-check-input` on the input element so the
+    // rendered checkbox picks up BS5's sizing, border, and focus-ring
+    // tokens. Without it the input falls back to UA defaults.
+    public string DataGridCheckboxInputClass() => "form-check-input";
+
     // ───────────────────────────────────────────────
     // DataSheet
     // ───────────────────────────────────────────────
