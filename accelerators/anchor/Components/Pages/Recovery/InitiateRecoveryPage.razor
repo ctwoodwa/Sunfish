@@ -4,6 +4,7 @@
 @using Sunfish.Kernel.Security.Crypto
 @inject IRecoveryCoordinator Recovery
 @inject IEd25519Signer Signer
+@inject IX25519KeyAgreement DhAgreement
 @inject AnchorSessionService Session
 @inject NavigationManager Nav
 
@@ -67,13 +68,19 @@
         _busy = true;
         try
         {
-            // Generate an ephemeral keypair for this recovery attempt only.
-            // The private key never leaves the page; the public key + signature
-            // ride on the RecoveryRequest record.
+            // Generate an ephemeral Ed25519 keypair for this recovery attempt
+            // only (signs the request) AND an ephemeral X25519 keypair (the
+            // public key trustees re-encrypt their held root seed to per
+            // ADR 0046-A6 / W#67). The private keys never leave the page in
+            // the current build; W#67 PR 5 persists the X25519 private key to
+            // SecureStorage so the recovery completion handler can decrypt
+            // the trustee-delivered seed envelopes.
             var (ephemeralPub, ephemeralPriv) = Signer.GenerateKeyPair();
+            var (ephX25519Pub, _ephX25519Priv) = DhAgreement.GenerateKeyPair();
             var request = RecoveryRequest.Create(
                 requestingNodeId:     Session.NodeId,
                 ephemeralPublicKey:   ephemeralPub,
+                ephemeralDHPublicKey: ephX25519Pub,
                 ephemeralPrivateKey:  ephemeralPriv,
                 requestedAt:          DateTimeOffset.UtcNow,
                 signer:               Signer);
