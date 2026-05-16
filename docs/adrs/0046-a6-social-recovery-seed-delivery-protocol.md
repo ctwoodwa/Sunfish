@@ -21,7 +21,7 @@ amendments:
 # ADR-0046-A6 — Social Recovery Seed-Delivery Protocol
 
 **Status:** Proposed
-**Date:** 2026-05-16
+**Date:** 2026-05-16 (council review amendments applied 2026-05-16)
 **Amends:** [ADR 0046](./0046-key-loss-recovery-scheme-phase-1.md) — Key-loss recovery scheme for Business MVP Phase 1 (Accepted 2026-04-26)
 **Driven by:** G7 conformance baseline scan 2026-05-16 — G6-A gap: `AnchorRecoveryCompletionHandler.HandleAsync` stubs the SQLCipher rekey because `RecoveryCompleted` carries no key material; Phase 1 sub-pattern #48a implements identity proof only, not seed delivery. See W#67 (`icm/_state/workstreams/W67-g6a-social-recovery-seed-delivery-protocol.md`).
 
@@ -34,31 +34,28 @@ Phase 1 ADR 0046 implemented three components of the social recovery stack:
 - **#48e grace period** — 7-day dispute window before recovery finalizes
 - **#48f audit trail** — `RecoveryEvent` log persisted to per-tenant store
 
-Missing: after the grace period expires and `RecoveryCompleted` fires, the recovering device has no way to obtain its root seed. `IEncryptedStore.RotateKeyAsync(newKey)` exists and is implemented by `SqlCipherEncryptedStore`, but `AnchorRecoveryCompletionHandler` has no `newKey` bytes to supply.
+Missing: after the grace period expires and `RecoveryCompleted` fires, the recovering device has no way to obtain its root seed. `IEncryptedStore.RotateKeyAsync(newKey)` exists and is implemented by `SqlCipherEncryptedStore`, but `AnchorRecoveryCompletionHandler` has no `newKey` bytes to supply. The `RecoveryRequest` type carries `EphemeralPublicKey` (Ed25519, for signing) as the design hook for key transport, but the Phase 1 `TrusteeAttestation` includes no encrypted seed payload — trustees sign only a hash of the request.
 
-The `RecoveryRequest` type already carries `EphemeralPublicKey` (Ed25519, for signing the request) but the Phase 1 trustee attestation flow does not include an encrypted seed payload — trustees sign only a hash of the request.
+**SQLCipher key derivation (verified 2026-05-16):** The production SQLCipher key is NOT Argon2id-derived from a user password. `ISqlCipherKeyDerivation` in `packages/kernel-security/Keys/` specifies `HKDF-Expand(prk = root_seed, info = "sunfish:sqlcipher:v1:" + teamId, L = 32)` — fully deterministic from the root seed. `Argon2idKeyDerivation` in `foundation-localfirst` exists for other use cases (e.g. paper-key passphrase hardening) but is NOT in the primary SQLCipher key path. Delivering the root seed to the recovering device therefore enables both identity restoration AND SQLCipher re-keying.
 
 ## Decision drivers
 
-1. **Cryptographic correctness** — the recovering device must receive the root seed via an authenticated, confidential channel so it can re-derive its SQLCipher key.
-2. **Minimal protocol churn** — the new types must be additive amendments to `RecoveryRequest` and `TrusteeAttestation`; the existing signature scheme must not be invalidated.
-3. **Use existing primitives** — `IX25519KeyAgreement` (NSec-backed; X25519 + HKDF-SHA256 + ChaCha20-Poly1305) already exists in `kernel-security`; no new cryptographic dependencies.
-4. **Full-copy model for Phase 2 simplicity** — Shamir Secret Sharing (k-of-n threshold) is the correct long-term design but adds implementation complexity. Phase 2 of A6 uses full-copy-per-trustee (each trustee holds a complete encrypted copy of the root seed). Shamir upgrade is Phase 3.
+1. **Cryptographic correctness** — recovering device must receive the root seed via an authenticated, confidential channel to re-derive its team identity keys and SQLCipher key.
+2. **Minimal protocol churn** — new types must be additive amendments to `RecoveryRequest` and `TrusteeAttestation`; existing signature scheme must not be invalidated.
+3. **Use existing primitives** — `IX25519KeyAgreement` (NSec-backed; X25519 + HKDF-SHA256 + ChaCha20-Poly1305) already exists in `kernel-security`; no new cryptographic dependencies beyond a new `IX25519SubkeyDerivation` interface (A6.4).
+4. **Full-copy model for Phase 2 simplicity** — Shamir Secret Sharing is the correct long-term design but adds ~300 lines of crypto. Phase 2 uses full-copy-per-trustee with explicit threat-model documentation. Shamir is Phase 3 of A6.
 
 ## Decisions
 
-### A6.1 — Recover via per-trustee full seed copy (Phase 2 of A6)
+### A6.1 — Per-trustee full seed copy; threat model expansions vs. Phase 1
 
-Each designated trustee holds a complete encrypted copy of the owner's 32-byte root seed. The copy is encrypted using a sealed-box constructed with the **owner's ephemeral X25519 key × the trustee's X25519 DH key**. Trustees store their copy in their local RecoveryCoordinatorState.
+Each designated trustee holds a complete encrypted copy of the owner's 32-byte root seed. When attesting a recovery request, the trustee decrypts their copy and re-encrypts it addressed to the recovering device's X25519 ephemeral public key.
 
-When attesting a recovery request, the trustee:
-1. Decrypts their own seed copy using their X25519 DH private key
-2. Re-encrypts the seed using a sealed-box addressed to the **recovering device's X25519 DH ephemeral key** (from `RecoveryRequest.EphemeralDHPublicKey` — A6.2)
-3. Includes the sealed box in `TrusteeAttestation.EncryptedSeedEnvelope` (A6.3)
-
-The recovering device decrypts using the corresponding ephemeral X25519 private key (held in memory only; never persisted).
-
-**Threat model:** A single compromised trustee exposes the full root seed encrypted under the trustee's X25519 key. This is acceptable in Phase 2 (trustees are already trusted to hold the full seed in the existing model — they can attest and authorize any device). Shamir (k-of-n threshold cryptography) restricts seed exposure to k-of-n colluding trustees but adds ~300 lines of new crypto. Deferred to Phase 3 of A6. Trustee compromise risk is mitigated by the 7-day grace period (#48e): the owner can dispute on any device that still holds the original keystore.
+**Threat model expansions vs. Phase 1 #48a (council amendment A6-A4):**
+- **Per-install, not per-team.** The seed delivered is the 32-byte install root seed, from which ALL team subkeys are derived. A single trustee compromise for ANY team where they hold a seed copy exposes the root seed and thereby every team on that install. In Phase 1, trustees could only attest/authorize a device; they could not derive the root seed. Phase 2 materially expands trustee trust: they become capable of impersonating the owner indefinitely if their keystore is compromised.
+- **No revocation.** Once a trustee's encrypted seed copy is gossiped to their node, it is retained locally until their node is wiped. De-designating a trustee does NOT revoke their copy. Owners who de-designate a trustee for security reasons should assume the trustee retains a usable seed copy until they rotate their root seed (which is not a Phase 2 primitive — see Phase 3).
+- **Grace period is one-directional.** The 7-day grace period (#48e) mitigates "attacker initiates fake recovery" by giving the original device time to dispute. It does NOT mitigate "compromised trustee passively decrypts their seed copy offline and stores the root seed for later use." There is no observable signal for this attack path.
+- **Shamir upgrade (Phase 3)** is the structural fix: k-of-n threshold cryptography means no single trustee can reconstruct the root seed alone. Phase 2 explicitly accepts the full-copy trade-offs above; they are documented here as known obligations, not gaps.
 
 ### A6.2 — `RecoveryRequest` adds `EphemeralDHPublicKey`
 
@@ -72,22 +69,24 @@ public sealed record RecoveryRequest(
     byte[] Signature)
 ```
 
-`CanonicalBytesForSigning` is updated to include `EphemeralDHPublicKey` AFTER `EphemeralPublicKey` in the byte buffer (fully backwards-incompatible change — existing signed requests are invalid; Phase 1 had no live devices so no migration needed):
+`CanonicalBytesForSigning` is updated to include `EphemeralDHPublicKey` AFTER `EphemeralPublicKey`:
 ```
 "sunfish-recovery-request-v1\n" || NodeId || EphEd25519Pub || EphX25519Pub || RequestedAt
 ```
 
-The recovering device generates both keypairs at `RecoveryRequest.Create()` time. The `EphemeralDHPrivateKey` is held in memory on the recovering device for the duration of the grace period and used at completion to decrypt attestation seed envelopes. It must NOT be persisted.
+Breaking change — existing signed requests are invalid. The repo scan (2026-05-16) confirmed no callers of `RecoveryRequest.Create()` exist outside `packages/foundation-recovery/tests/`; no live devices use this flow. Migration is not needed.
 
 `RecoveryRequest.EphemeralDHPublicKeyLength = 32`.
 
+The recovering device generates both keypairs (`EphemeralPublicKey` Ed25519 + `EphemeralDHPublicKey` X25519) at `RecoveryRequest.Create()` time. The corresponding `EphemeralDHPrivateKey` is held securely on the recovering device (see OQ-A6.1 resolution, A6.11) and used at completion to decrypt attestation seed envelopes.
+
 ### A6.3 — `TrusteeAttestation` adds `EncryptedSeedEnvelope`
 
-`TrusteeAttestation` gains two new fields:
+`TrusteeAttestation` gains three new fields (council amendment A6-A2):
 ```csharp
 public sealed record TrusteeAttestation(
     string TrusteeNodeId,
-    byte[] TrusteePublicKey,               // Ed25519, 32 bytes — for signature verification (unchanged)
+    byte[] TrusteePublicKey,               // Ed25519, 32 bytes — signature verification (unchanged)
     byte[] TrusteeDHPublicKey,             // X25519, 32 bytes — for OpenBox (NEW)
     byte[] RecoveryRequestHash,
     DateTimeOffset AttestedAt,
@@ -96,52 +95,60 @@ public sealed record TrusteeAttestation(
     byte[] Signature)
 ```
 
-`CanonicalBytesForSigning` is updated to include `EncryptedSeedEnvelopeCiphertext` in the signed payload (to prevent tampering with the sealed seed after the trustee signs):
+`CanonicalBytesForSigning` is updated to include ALL three new fields (council amendment A6-A2: nonce and DH public key must be in signed payload so the recovering device does not need a subtle AEAD-binding argument):
 ```
-"sunfish-trustee-attestation-v1\n" || TrusteeNodeId || RequestHash || AttestedAt || SeedEnvelopeCiphertext
+"sunfish-trustee-attestation-v1\n" || TrusteeNodeId || RequestHash || AttestedAt || TrusteeDHPublicKey || SeedEnvelopeCiphertext || SeedEnvelopeNonce
 ```
 
-Nonce is NOT included in the signed payload (nonce is authenticated by the AEAD tag; including it would be redundant; the trustee signs over the ciphertext+auth-tag which implicitly authenticates the nonce).
+Breaking change — existing attestations are invalid. Same verification as A6.2: no callers outside tests; safe to break.
 
 `TrusteeAttestation.SeedEnvelopeCiphertextLength = 48` (32-byte seed + 16-byte auth tag).
 `TrusteeAttestation.SeedEnvelopeNonceLength = 24`.
+`TrusteeAttestation.TrusteeDHPublicKeyLength = 32`.
 
-### A6.4 — Trustee X25519 DH key derivation path
+### A6.4 — Trustee X25519 DH key derivation path (council amendment A6-A1)
 
-The trustee's X25519 DH private key is derived from the team root seed via a separate path from the Ed25519 identity key:
+**`ITeamSubkeyDerivation.DeriveSubkey(root, teamId + "-dh")` is NOT the correct derivation.** String-suffix manipulation is not domain separation — a team whose `teamId` ends in `-dh` would collide with another team's DH-derived key. The info prefix must change, not the suffix.
+
+**Correct design:** introduce a dedicated `IX25519SubkeyDerivation` interface in `packages/kernel-security/Keys/` with its own HKDF info prefix:
 
 ```
-IRootSeedProvider.GetRootSeedAsync()          → 32-byte root seed
-ITeamSubkeyDerivation.DeriveSubkey(root, teamId + "-dh") → 64 bytes
-                                  [0..32]      → X25519 private key (seed bytes)
+IRootSeedProvider.GetRootSeedAsync()                               → 32-byte root seed
+IX25519SubkeyDerivation.DeriveX25519PrivateKey(root, teamId)      → 32 bytes
+                         HKDF-Expand(root, "sunfish-x25519-team-v1:" + teamId, 32)
+→ X25519 private key (imported via IX25519KeyAgreement via NSec Key.Import; NSec applies RFC 7748 clamping internally)
+→ X25519 public key = Curve25519 scalar multiplication of private key over base point
 ```
 
-The X25519 private key is then passed to `IX25519KeyAgreement.GenerateKeyPair()` (or equivalently: the 32-byte seed IS the X25519 private key; public key = scalar multiplication on Curve25519 base point, which NSec handles automatically from the private key).
+Info prefix `"sunfish-x25519-team-v1:"` is distinct from:
+- Ed25519 signing path: uses `ITeamSubkeyDerivation` with prefix `"sunfish-team-subkey-v1:"`
+- SQLCipher key path: uses `ISqlCipherKeyDerivation` with prefix `"sunfish:sqlcipher:v1:"`
+
+**RFC 7748 clamping note:** NSec's `Key.Import(KeyAgreementAlgorithm.X25519, bytes, KeyBlobFormat.RawPrivateKey)` applies the mandatory bit clamping (low 3 bits cleared; bit 254 set; bit 255 cleared) internally. Callers do NOT apply clamping manually; passing raw bytes through this import path is correct.
 
 `TrusteeDHPublicKey` in the attestation is the 32-byte X25519 public key derived from this path.
-
-**Domain separation:** the `-dh` suffix on the team ID ensures the X25519 key is derived independently from the Ed25519 identity key (`DeriveSubkey(root, teamId)` → [0..32] → Ed25519 seed). Same root seed, different derivation inputs, different keys.
 
 ### A6.5 — Trustee setup: seed copy distribution
 
 During `TrusteeSetupPage` trustee designation, the owner's device:
 1. Retrieves the root seed via `IRootSeedProvider.GetRootSeedAsync()`
-2. For each designated trustee, obtains their X25519 DH public key via gossip/sync (the trustee's DH key is included in their identity bundle — A6.6)
-3. Generates an owner ephemeral X25519 keypair per trustee
-4. Calls `IX25519KeyAgreement.Box(rootSeed, trusteeX25519Pub, ownerEphPriv)` → `(Ciphertext, Nonce)`
-5. Stores `(TrusteeNodeId, OwnerEphX25519Pub, Ciphertext, Nonce)` in `RecoveryCoordinatorState.TrusteeEncryptedSeeds`
-6. Syncs the updated state to the trustee's node (via gossip)
+2. Obtains each trustee's X25519 DH public key from their identity bundle (A6.6); **trustees must be online for setup** — the owner cannot encrypt without the trustee's DH public key
+3. For each trustee: generates an owner ephemeral X25519 keypair; calls `IX25519KeyAgreement.Box(rootSeed, trusteeX25519Pub, ownerEphPriv)` → `(Ciphertext, Nonce)`
+4. Stores `(TrusteeNodeId, OwnerEphX25519Pub, Ciphertext, Nonce)` in `RecoveryCoordinatorState.TrusteeEncryptedSeeds`
+5. Syncs to the trustee's node via gossip
 
-The trustee receives the encrypted seed copy and stores it locally. On startup, the trustee's node can re-derive its X25519 DH private key and decrypt the copy to verify it received a valid 32-byte seed (integrity check only; the trustee's node should not hold the plaintext seed in long-term storage — see the `IBoundEd25519Signer` pattern for session-scoped key handling).
+The trustee stores their encrypted copy locally. The plaintext root seed is held in memory only during the setup ceremony — once `Box()` completes, the plaintext is cleared.
+
+**Trustee-online requirement for setup** is an acceptable Phase 2 UX constraint: trustee setup is a deliberate one-time ceremony (analogous to the QR-code pairing flow). Future automation (e.g. deferred distribution via gossip when the trustee next connects) is Phase 3.
 
 ### A6.6 — Identity bundle extension
 
-The trustee's identity bundle (the payload exchanged during QR-code pairing) gains `DHPublicKey: byte[]` (32-byte X25519 public key derived per A6.4). This allows the owner's device to obtain the trustee's DH public key without requiring the trustee to be online during seed distribution.
+The trustee's identity bundle (exchanged during QR-code pairing) gains `DHPublicKey: byte[]` (32-byte X25519 public key derived per A6.4). This allows the owner to obtain the trustee's DH public key without a separate round-trip.
 
 ### A6.7 — `RecoveryCoordinatorState` and `IRecoveryCoordinator` changes
 
 `RecoveryCoordinatorState` adds:
-- `TrusteeEncryptedSeeds: ImmutableDictionary<string, TrusteeEncryptedSeed>` — maps trustee NodeId → their encrypted seed copy (set during trustee setup, A6.5)
+- `TrusteeEncryptedSeeds: ImmutableDictionary<string, TrusteeEncryptedSeed>` — set during trustee setup (A6.5)
 
 New record:
 ```csharp
@@ -153,68 +160,99 @@ public sealed record TrusteeEncryptedSeed(
 ```
 
 `IRecoveryCoordinator` gains:
-- `Task SetupTrusteeAsync(string trusteeNodeId, TrusteeEncryptedSeed encryptedSeed, CancellationToken ct)` — called during `TrusteeSetupPage` trustee designation to store the encrypted seed copy
+- `Task SetupTrusteeAsync(string trusteeNodeId, TrusteeEncryptedSeed encryptedSeed, CancellationToken ct)` — called during `TrusteeSetupPage`
 
-`EvaluateGracePeriodAsync` return value changes: instead of returning a bare `RecoveryEvent?`, it returns `RecoveryCompletionResult?` which includes:
+`EvaluateGracePeriodAsync` return type changes: `RecoveryEvent?` → `RecoveryCompletionResult?`:
 ```csharp
 public sealed record RecoveryCompletionResult(
     RecoveryEvent Event,
-    IReadOnlyList<TrusteeAttestation> Attestations); // attestations with EncryptedSeedEnvelopes
+    IReadOnlyList<TrusteeAttestation> Attestations); // includes EncryptedSeedEnvelopes
 ```
 
-This allows `AnchorRecoveryCompletionHandler` to access the sealed seed envelopes from the attestations.
+### A6.8 — `IRootSeedRestorer` — write-back interface (council amendment A6-A3)
 
-### A6.8 — Completion handler: identity restoration (revised per OQ-A6.3 resolution)
+`IRootSeedProvider` is read-only (`GetRootSeedAsync` only). A6.8 step 5 requires writing the recovered root seed back to the keystore. This is a **high-risk, single-use write path** that must be isolated from the normal read surface.
 
-**OQ-A6.3 RESOLVED (2026-05-16):** The current SQLCipher key is Argon2id-derived from the user's password + salt (`packages/foundation-localfirst/Encryption/Argon2idKeyDerivation.cs`), NOT root-seed-derived. This means the original A6.8 design (steps 5–6: derive SQLCipher key from recovered seed → call `RotateKeyAsync`) was incorrect.
+New interface in `packages/kernel-security/Keys/`:
+```csharp
+/// <summary>
+/// Single-use interface for restoring a root seed to the keystore during social recovery.
+/// Only <see cref="AnchorRecoveryCompletionHandler"/> (or equivalent per-accelerator handler) should inject this.
+/// </summary>
+public interface IRootSeedRestorer
+{
+    /// <summary>
+    /// Overwrites the existing root seed slot with <paramref name="recoveredSeed"/>.
+    /// Invalidates the <see cref="IRootSeedProvider"/> cache so subsequent calls reflect the new seed.
+    /// Emits a <see cref="AuditEventType.RecoveryRekey"/> record via <see cref="IAuditTrail"/>.
+    /// </summary>
+    Task RestoreRootSeedAsync(ReadOnlyMemory<byte> recoveredSeed, CancellationToken ct);
+}
+```
 
-**Two recovery scenarios with different completion behavior:**
+`KeystoreRootSeedProvider` implements both `IRootSeedProvider` (existing read path) and `IRootSeedRestorer` (new write path). `RestoreRootSeedAsync` overwrites the keystore slot and resets the internal `Lazy<>` cache so the next `GetRootSeedAsync` call returns the new seed.
 
-**Scenario A — New device recovery** (lost device → fresh device; primary Phase 2 scope):
-- The recovering device's local SQLCipher store is EMPTY — it was freshly initialized with a new password on device setup.
-- No key rotation is needed. The existing SQLCipher key on the new device is correct.
-- What recovery completion delivers: the 32-byte **root seed** that the recovering device restores to its `IRootSeedProvider` keystore (SecureStorage / Windows DPAPI).
-- After root seed restoration: the recovering device can re-derive its team identity Ed25519 keys, team subkeys, and role keys — fully restoring its cryptographic identity.
-- Sync will subsequently repopulate the local database from peer nodes.
+**Lifecycle after seed restore (council amendment A6-A3 §A6.10):**
+1. `IRootSeedRestorer.RestoreRootSeedAsync(recovered)` — writes seed, resets cache
+2. All consumers of derived keys (`ITeamSubkeyDerivation`, `ISqlCipherKeyDerivation`, `IX25519SubkeyDerivation`) that cache derived material in memory must be restarted or invalidated — on a fresh recovery device (Scenario A, first run) no caches exist; on a same-device re-recovery (Scenario B) the app restart that follows SQLCipher re-keying serves as the cache reset
+3. Trigger sync subsystem to begin receiving gossip
 
-**Scenario B — Same-device recovery** (keystore corruption → recover to same device; Phase 3 scope):
-- The recovering device has an existing SQLCipher database encrypted under the Argon2id-derived key.
-- Full key recovery requires either: (a) delivering the Argon2id key directly (not just the root seed), or (b) changing the SQLCipher key derivation to be deterministically derived from the root seed (architectural change to `foundation-localfirst`).
-- **Deferred to Phase 3 of A6.** No implementation target in Phase 2.
+**DI scoping:** `IRootSeedRestorer` is registered as a Scoped or Singleton implementation (same as `KeystoreRootSeedProvider`) but injected only into `AnchorRecoveryCompletionHandler`. No other DI consumer should reference it.
 
-**Phase 2 completion handler (Scenario A):**
+### A6.9 — Completion handler: seed reconstruction and SQLCipher re-keying
+
 `AnchorRecoveryCompletionHandler.HandleAsync` is updated to:
-1. Collect the `TrusteeAttestation` records from `RecoveryCompletionResult.Attestations`
-2. For each attestation: call `IX25519KeyAgreement.OpenBox(ciphertext, nonce, trusteeDHPub, ephX25519Priv_recovering)` using the ephemeral X25519 private key generated at `RecoveryRequest.Create()` time
-3. Verify all successful decryptions return identical 32-byte seeds; if they diverge, log audit event and do NOT proceed (security escalation)
-4. Take the first successfully-decrypted seed as the recovered root seed
-5. **Write recovered seed to `IRootSeedProvider`** (SecureStorage / OS keystore) — restores cryptographic identity; does NOT rotate the SQLCipher key
-6. Emit a `RecoveryRekey` kernel-audit record (A6.9) with `ReKeySucceeded: true` (note: "rekey" here means "identity key restoration"; SQLCipher key is unchanged in Scenario A)
-7. Clear the ephemeral X25519 private key from memory
-8. Signal the sync subsystem to begin gossip (existing Anchor sync mechanism)
 
-The ephemeral X25519 private key must be held in the `IHostedService` or a scoped service for the duration of the grace period. It must NOT be persisted (ADR 0046 key-exposure-minimization principle).
+1. Retrieve `TrusteeAttestation` records from `RecoveryCompletionResult.Attestations`
+2. Retrieve the `EphemeralDHPrivateKey` from secure platform storage (see OQ-A6.1 resolution, A6.11)
+3. For each attestation: call `IX25519KeyAgreement.OpenBox(Ciphertext, Nonce, TrusteeDHPublicKey, ephX25519Priv)` — returns `null` on AEAD failure; log audit event and skip that attestation (do NOT abort — the set of successful decryptions drives the next step)
+4. Collect all non-null results. **Minimum quorum: 1 successful decryption is sufficient to proceed** (rationale: the 3-of-5 trustee quorum already established identity trust; a single valid seed delivery is adequate for deterministic key reconstruction; divergence detection below provides the compromised-trustee safety net)
+5. Compare all successful decryptions: if any decoded seeds diverge, log `AuditEventType.RecoveryRekey` with `ReKeySucceeded: false` and the SHA-256 hashes of each distinct decoded value (do not log raw seeds); do NOT proceed — owner must investigate
+6. All decoded seeds are identical: take the first as `recoveredSeed`
+7. Call `IRootSeedRestorer.RestoreRootSeedAsync(recoveredSeed, ct)` — writes seed to keystore, invalidates cache
+8. Derive the team's SQLCipher key: `ISqlCipherKeyDerivation.DeriveSqlCipherKey(recoveredSeed, teamId)` → 32 bytes
+9. Call `IEncryptedStore.RotateKeyAsync(sqlCipherKey, ct)` — re-keys the encrypted store (both new-device Scenario A where the store is empty, and same-device Scenario B where it holds old data)
+10. Emit `AuditEventType.RecoveryRekey` with `ReKeySucceeded: true`
+11. Clear `EphemeralDHPrivateKey` from platform storage (SecureStorage delete)
+12. Signal sync subsystem to begin gossip
 
-### A6.9 — `RecoveryRekey` audit event
+**Scenario A (new device):** steps 8–9 produce a fresh empty SQLCipher store keyed correctly from the recovered seed. Data flows in via sync. No pre-existing data to rotate.
+**Scenario B (same device, keystore corruption):** IF the SQLCipher store was previously keyed from the same root seed via `ISqlCipherKeyDerivation`, step 9 (`RotateKeyAsync`) re-keys it from old to new with the same derived key (no data change). IF the store was orphaned (old key from a different seed), step 9 produces a key mismatch — the store must be wiped and re-populated via sync. The handler should catch `NotSupportedException` from `RotateKeyAsync` (meaning the store implementation doesn't support rekey), log, and fallback to wipe-and-resync.
 
-A new `AuditEventType.RecoveryRekey` constant is added with a typed payload:
+### A6.10 — `RecoveryRekey` audit event
+
+New `AuditEventType.RecoveryRekey` constant with typed payload:
 ```csharp
 public sealed record RecoveryRekeyPayload(
     string TargetNodeId,
     DateTimeOffset CompletedAt,
     int AttestationCount,
-    bool ReKeySucceeded);
+    int SuccessfulDecryptions,
+    bool ReKeySucceeded,
+    string? FailureReason);  // null on success; "divergent_seeds" or "min_decryption_failed" on failure
 ```
+
+### A6.11 — Ephemeral DH private key storage (OQ-A6.1 resolved)
+
+The `EphemeralDHPrivateKey` (32 bytes) must survive the grace period (7 days per ADR 0046 Phase 1; the earlier draft's "30 days" was a typo). It is stored using platform-managed encryption at rest:
+- **MAUI Anchor:** `Microsoft.Maui.Storage.SecureStorage.SetAsync("recovery:dh-priv", base64Key)` — backed by DPAPI (Windows), Keychain (macOS/iOS), Android Keystore (Android); all are encrypted at rest
+- **Requirement:** storage must be encrypted at rest under a platform-managed or user-credential-derived key
+
+**Device-wipe between request and completion:** the ephemeral private key is lost; the existing attestations (bound to the original `RecoveryRequestHash`) cannot be decrypted. The user must initiate a fresh recovery request (generating a new `EphemeralPublicKey` + `EphemeralDHPublicKey` pair). This is correct behaviour — it forces trustees to re-attest the new device identity — and must be documented in the recovery UX.
+
+**Compromise window:** while the ephemeral key is in platform storage, an attacker with OS-level access to the recovering device can extract it and decrypt any submitted attestation envelopes to recover the root seed. This is mitigated by the OS platform protections (biometrics / PIN required for SecureStorage extraction on most platforms) and the existing physical-device threat model.
 
 ---
 
 ## Alternatives rejected
 
-**Shamir Secret Sharing (threshold k-of-n)**: Stronger threat model (requires k trustees to collude to expose seed) but adds ~300 lines of crypto + test complexity. Each trustee holds only a SHARE of the seed. Deferred to A6 Phase 3.
+**Shamir Secret Sharing (threshold k-of-n)**: Stronger — requires k trustees to collude to expose seed. Deferred to Phase 3 of A6 due to implementation complexity (~300 lines new crypto + test coverage).
 
-**Ed25519→X25519 key conversion**: Mathematically valid (same underlying curve; different forms). Avoids needing a separate X25519 identity key per trustee. Rejected because: (a) .NET 11 System.Security.Cryptography does not expose this conversion; (b) NSec supports it but it's a non-obvious API path; (c) adding a explicit `-dh` derived key is cleaner and auditable.
+**Ed25519→X25519 key conversion**: Mathematically valid. Rejected: .NET 11 `System.Security.Cryptography` does not expose this conversion; NSec supports it but the API is non-obvious; introducing `IX25519SubkeyDerivation` is cleaner and auditable.
 
-**Coordinator-held encrypted seed**: A coordinator (Bridge relay) holds the seed, releases it after quorum of "release" signatures from trustees. Rejected: violates local-first P7 (no privileged server); contradicts the Phase 1 design goal of trustee-only social recovery.
+**Coordinator-held encrypted seed**: Violates local-first P7; contradicts ADR 0046's design.
+
+**`ITeamSubkeyDerivation.DeriveSubkey(root, teamId + "-dh")`**: Rejected (council amendment A6-A1) — string-suffix manipulation is not domain separation; team IDs ending in `-dh` would collide.
 
 ---
 
@@ -222,37 +260,55 @@ public sealed record RecoveryRekeyPayload(
 
 | Type | Change | Backward compat |
 |---|---|---|
-| `RecoveryRequest` | +`EphemeralDHPublicKey`; updated `CanonicalBytesForSigning` | Breaking — existing requests recompute their canonical bytes differently. Phase 1 had no live devices; acceptable. |
-| `TrusteeAttestation` | +`TrusteeDHPublicKey`, +`EncryptedSeedEnvelopeCiphertext`, +`EncryptedSeedEnvelopeNonce`; updated canonical bytes | Breaking — existing attestations have no seed envelope. Phase 1 attestations are coordinator-state only; no serialized wire format shipped to users yet. |
+| `RecoveryRequest` | +`EphemeralDHPublicKey`; updated `CanonicalBytesForSigning` | Breaking. No live devices (repo scan 2026-05-16). |
+| `TrusteeAttestation` | +`TrusteeDHPublicKey`, +`EncryptedSeedEnvelopeCiphertext`, +`EncryptedSeedEnvelopeNonce`; updated canonical bytes (all three fields included) | Breaking. No live devices. |
 | `RecoveryCoordinatorState` | +`TrusteeEncryptedSeeds` | Additive |
-| `IRecoveryCoordinator` | +`SetupTrusteeAsync`; `EvaluateGracePeriodAsync` → returns `RecoveryCompletionResult?` | Breaking on the interface; api-change pipeline required |
-| `AnchorRecoveryCompletionHandler` | Rewrite stub to real rekey path | Internal; no contract change |
+| `IRecoveryCoordinator` | +`SetupTrusteeAsync`; `EvaluateGracePeriodAsync` → `RecoveryCompletionResult?` | Breaking on interface; api-change pipeline |
+| `IRootSeedProvider` | No change | — |
+| `IRootSeedRestorer` | NEW interface + `KeystoreRootSeedProvider` implementation | Additive |
+| `IX25519SubkeyDerivation` | NEW interface + `HkdfX25519SubkeyDerivation` implementation | Additive |
+| `AnchorRecoveryCompletionHandler` | Rewrite stub to real rekey path (A6.9) | Internal |
+| `TrusteeSetupPage.razor` | Add seed distribution step | Internal |
 
 ---
 
-## Open questions
+## Open questions (remaining after council amendments)
 
-**OQ-A6.1:** The `EphemeralDHPrivateKey` on the recovering device must survive the grace period (up to 30 days). Where is it stored? Options: (a) encrypted in `RecoveryCoordinatorState` under a PIN-derived key; (b) in the MAUI SecureStorage; (c) re-derived from a user-supplied PIN at completion time. **XO recommendation: MAUI SecureStorage** (existing Anchor pattern; used for the keystore root seed). This unblocks the Phase 2 implementation; Phase 3 can add hardware-backed key storage.
-
-**OQ-A6.2:** At trustee setup time, if a trustee is offline, the owner cannot obtain their X25519 DH public key from gossip. Should the owner pre-compute the seed copy and store it, then deliver it when the trustee comes online? Or require trustees to be online for setup? **XO recommendation: require online trustee during setup ceremony** (matches the UX of QR-code pairing; not a significant practical constraint since trustee setup is a deliberate one-time act). Owner retains the unencrypted root seed in memory (via `IRootSeedProvider`) only for the duration of the setup ceremony.
-
-**OQ-A6.3 — RESOLVED 2026-05-16:** The SQLCipher key is Argon2id-derived from the user's password + salt (`packages/foundation-localfirst/Encryption/Argon2idKeyDerivation.cs`; `IKeyDerivation.DeriveKey(password, salt)`). It is NOT root-seed-derived. Therefore, delivering the root seed during social recovery does NOT allow reconstruction of the SQLCipher key. A6.8 was corrected to define two recovery scenarios: Scenario A (new device, SQLCipher unchanged) and Scenario B (same device, out of Phase 2 scope). See A6.8 for full resolution.
+**OQ-A6.2:** Online-trustee requirement for setup — future automation of deferred distribution (trustee receives their encrypted seed copy next time they connect, not during the ceremony). Phase 3 scope; document in TrusteeSetupPage UX as "Trustees must be reachable during setup."
 
 ---
 
-## Implementation scope
+## Implementation scope (updated)
 
-| Phase | Work | Effort | Files |
+| Phase | Work | Effort | Key files |
 |---|---|---|---|
-| A6.1 — Protocol types | `RecoveryRequest` + `TrusteeAttestation` field additions; updated `CanonicalBytesForSigning`; `TrusteeEncryptedSeed` new record | ~3-4h | `packages/foundation-recovery/{RecoveryRequest,TrusteeAttestation,TrusteeEncryptedSeed}.cs` |
-| A6.2 — Coordinator changes | `RecoveryCoordinatorState` + `IRecoveryCoordinator.SetupTrusteeAsync` + `EvaluateGracePeriodAsync` → `RecoveryCompletionResult?` | ~4-5h | `packages/foundation-recovery/{RecoveryCoordinatorState,IRecoveryCoordinator,RecoveryCoordinator}.cs` |
-| A6.3 — Identity bundle + DH key derivation | Trustee X25519 key derivation in `ITeamSubkeyDerivation`; identity bundle extension | ~2-3h | `packages/kernel-security/Keys/ITeamSubkeyDerivation.cs`; identity bundle type |
-| A6.4 — Completion handler | `AnchorRecoveryCompletionHandler`: decrypt seed envelopes + verify + rekey + audit | ~2-3h | `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` |
-| A6.5 — Setup flow | `TrusteeSetupPage.razor` seed distribution step; new `TrusteeSetupService` helper | ~3-4h | `accelerators/anchor/Components/Pages/Recovery/TrusteeSetupPage.razor`; new service |
-| A6.6 — Audit event | `AuditEventType.RecoveryRekey` + `RecoveryRekeyPayload` | ~1h | `packages/kernel-audit/AuditEventType.cs` |
-| **Total** | **~15-20h / ~4-5 PRs** | — | api-change pipeline (IRecoveryCoordinator is a public interface) |
+| A6.1 — New key interfaces | `IX25519SubkeyDerivation` + `HkdfX25519SubkeyDerivation` + `IRootSeedRestorer` + `KeystoreRootSeedProvider` extension | ~3h | `packages/kernel-security/Keys/` |
+| A6.2 — Protocol types | `RecoveryRequest` + `TrusteeAttestation` field additions; updated `CanonicalBytesForSigning` for both | ~3-4h | `packages/foundation-recovery/` |
+| A6.3 — Coordinator changes | `RecoveryCoordinatorState` + `IRecoveryCoordinator.SetupTrusteeAsync` + `EvaluateGracePeriodAsync` → `RecoveryCompletionResult?` | ~4-5h | `packages/foundation-recovery/` |
+| A6.4 — Identity bundle + DH key inclusion | Identity bundle `DHPublicKey` field; QR-code pairing extension | ~2h | `accelerators/anchor/Services/Pairing/` |
+| A6.5 — Completion handler | `AnchorRecoveryCompletionHandler`: decrypt + verify + restore seed + SQLCipher rekey + audit | ~2-3h | `accelerators/anchor/Services/` |
+| A6.6 — Setup flow | `TrusteeSetupPage.razor` seed distribution step; `TrusteeSetupService` helper | ~3-4h | `accelerators/anchor/Components/Pages/Recovery/` |
+| A6.7 — Audit event | `AuditEventType.RecoveryRekey` + `RecoveryRekeyPayload` | ~1h | `packages/kernel-audit/` |
+| **Total** | **~18-22h / ~5-6 PRs** | — | api-change pipeline (`IRecoveryCoordinator` is public interface) |
 
-**Pre-build requirement:** Resolve OQ-A6.3 before Phase A6.2. If `SqlCipherKeyDerivation` accepts a random key, that must be fixed first (or A6.4 must define a separate seed→SQLCipher key transport path that doesn't depend on the current derivation).
+**Pre-build gate:** Council review of this amendment (complete 2026-05-16 — see `icm/_state/workstreams/W67-g6a-social-recovery-seed-delivery-protocol.md`). CO acceptance flip required before COB implementation.
+
+---
+
+## Council review applied 2026-05-16
+
+Security-engineering council review identified 3 BLOCKING + 4 MAJOR items. All resolved in this revised draft:
+
+| Finding | Check | Resolution |
+|---|---|---|
+| A6.4 domain-separation unsound (`teamId + "-dh"` suffix) | BLOCKING 1 | Replaced with `IX25519SubkeyDerivation` + info prefix `"sunfish-x25519-team-v1:"` |
+| `TrusteeDHPublicKey` + `EncryptedSeedEnvelopeNonce` not in canonical bytes | BLOCKING 2 | Both added to `TrusteeAttestation.CanonicalBytesForSigning` |
+| `IRootSeedProvider` read-only; A6.8 step 5 not implementable | BLOCKING 3 | `IRootSeedRestorer` interface introduced; A6.9 revised |
+| Full-copy blast radius understated (per-install, not per-team; no revocation) | MAJOR 1 | A6.1 expanded with explicit threat-model expansions section |
+| OQ-A6.1 unresolved; 7d vs 30d grace period mismatch | MAJOR 2 | A6.11 resolves OQ-A6.1; grace period corrected to 7 days |
+| `OpenBox` null-handling and minimum decryption count undefined | MAJOR 3 | A6.9 steps 3–4 specify null-handling and 1-successful-decryption minimum |
+| Per-install seed cross-team blast radius; trustee de-designation gap | MAJOR 4 | A6.1 threat model + A6.1 "no revocation" documented |
+| OQ-A6.3: Argon2id claim incorrect — SQLCipher is HKDF root-seed-derived | Cross-cutting | A6.9 corrected: both Scenario A and B use `ISqlCipherKeyDerivation.DeriveSqlCipherKey(recoveredSeed, teamId)` |
 
 ---
 
