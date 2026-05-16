@@ -34,7 +34,7 @@ namespace Sunfish.Kernel.Security.Keys;
 /// must succeed today; mac/Linux support lands with the Wave-2 keystore work.
 /// </para>
 /// </remarks>
-public sealed class KeystoreRootSeedProvider : IRootSeedProvider
+public sealed class KeystoreRootSeedProvider : IRootSeedProvider, IRootSeedRestorer
 {
     /// <summary>Keystore slot name for the install's root seed (v1 derivation).</summary>
     public const string SlotName = "sunfish:root-seed:v1";
@@ -91,5 +91,28 @@ public sealed class KeystoreRootSeedProvider : IRootSeedProvider
         var seed = RandomNumberGenerator.GetBytes(SeedLength);
         await _keystore.SetKeyAsync(SlotName, seed, ct).ConfigureAwait(false);
         return seed;
+    }
+
+    /// <inheritdoc />
+    public async Task RestoreRootSeedAsync(ReadOnlyMemory<byte> recoveredSeed, CancellationToken ct)
+    {
+        if (recoveredSeed.Length != SeedLength)
+        {
+            throw new ArgumentException(
+                $"Recovered seed must be {SeedLength} bytes (was {recoveredSeed.Length}).",
+                nameof(recoveredSeed));
+        }
+
+        // Defensive copy: the caller may reuse / clear the source buffer.
+        var seed = recoveredSeed.ToArray();
+        await _keystore.SetKeyAsync(SlotName, seed, ct).ConfigureAwait(false);
+
+        // Invalidate the in-process Lazy<> cache so the next GetRootSeedAsync
+        // re-reads the keystore and observes the restored bytes. A subsequent
+        // call to GetRootSeedAsync will re-materialize the Lazy under the gate.
+        lock (_gate)
+        {
+            _cached = null;
+        }
     }
 }

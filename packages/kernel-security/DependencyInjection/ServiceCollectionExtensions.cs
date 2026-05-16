@@ -30,6 +30,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRoleKeyManager, RoleKeyManager>();
         services.AddSingleton<ITeamSubkeyDerivation, TeamSubkeyDerivation>();
         services.AddSingleton<ISqlCipherKeyDerivation, SqlCipherKeyDerivation>();
+        // W#67 / ADR 0046-A6 — per-team X25519 subkey for trustee
+        // seed-envelope encryption. Distinct HKDF prefix from the Ed25519
+        // and SQLCipher derivations; see HkdfX25519SubkeyDerivation.InfoPrefix.
+        services.AddSingleton<IX25519SubkeyDerivation, HkdfX25519SubkeyDerivation>();
 
         return services;
     }
@@ -62,7 +66,16 @@ public static class ServiceCollectionExtensions
 
         services.TryAddSingleton<IKeystore>(_ =>
             Keystore.CreateForCurrentPlatform(keystoreStorageDirectory));
-        services.TryAddSingleton<IRootSeedProvider, KeystoreRootSeedProvider>();
+        services.TryAddSingleton<KeystoreRootSeedProvider>();
+        services.TryAddSingleton<IRootSeedProvider>(
+            sp => sp.GetRequiredService<KeystoreRootSeedProvider>());
+        // W#67 — IRootSeedRestorer single-use write path is implemented by
+        // the same KeystoreRootSeedProvider singleton so a restore observed
+        // by the restorer is immediately visible to the provider's cache
+        // (the restorer invalidates the provider's Lazy<>). Only
+        // AnchorRecoveryCompletionHandler should inject IRootSeedRestorer.
+        services.TryAddSingleton<IRootSeedRestorer>(
+            sp => sp.GetRequiredService<KeystoreRootSeedProvider>());
 
         return services;
     }
