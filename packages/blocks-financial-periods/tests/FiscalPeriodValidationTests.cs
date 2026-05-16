@@ -1,10 +1,5 @@
 using Sunfish.Blocks.FinancialLedger.Models;
 using Sunfish.Blocks.FinancialPeriods.Models;
-// Resolve the FiscalPeriod ambiguity (ledger PR 4 ships a placeholder
-// FiscalPeriod that this hand-off's PR 2 will delete). For PR 1, alias
-// our canonical FiscalPeriod so the validator tests compile cleanly.
-using FiscalPeriod = Sunfish.Blocks.FinancialPeriods.Models.FiscalPeriod;
-using FiscalPeriodStatus = Sunfish.Blocks.FinancialPeriods.Models.FiscalPeriodStatus;
 using Sunfish.Foundation.Assets.Common;
 using Xunit;
 

@@ -17,10 +17,10 @@ It provides:
   (contiguous, non-overlapping, full FY coverage; Locked-only-if-Closed).
 - **`FiscalPeriodFactory`** — `BuildMonthlyPeriods` / `BuildQuarterlyPeriods` /
   `BuildAnnualPeriod` helpers.
-- **`IPeriodCloseService`** — soft-close + hard-close + year-end retained-
-  earnings rollover (lands in PR 2 + PR 3).
+- **`IPeriodCloseService`** — soft-close + reopen-soft (PR 2); hard-close
+  + year-end retained-earnings rollover land in PR 3.
 - **`SqlitePeriodResolver`** — date → period lookup; consumed by the
-  ledger's `JournalPostingService` for period-gating (lands in PR 2).
+  ledger's `JournalPostingService` for period-gating (landed in PR 2).
 - **`IErpnextFiscalYearImporter`** + **`IErpnextFiscalPeriodImporter`** —
   ERPNext migration entry-points (lands in PR 4).
 
