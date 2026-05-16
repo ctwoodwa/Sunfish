@@ -24,15 +24,18 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Period-state transitions per Stage 02 §6.5(a). PR 3 will extend.
+        // Period-state transitions per Stage 02 §6.5(a) + §8.5 row 3.
         services.TryAddSingleton<IPeriodCloseService, PeriodCloseService>();
+
+        // Year-end close + retained-earnings rollover per Stage 02 §6.5(b).
+        services.TryAddSingleton<IFiscalYearCloseService, FiscalYearCloseService>();
 
         // Production resolver — projects FiscalPeriod rows into the
         // ledger's minimal PeriodSnapshot contract.
         services.TryAddSingleton<IPeriodResolver, SqlitePeriodResolver>();
 
-        // Local event-publisher seam until the canonical foundation/
-        // kernel-events home is ratified (cob-question filed PR 2).
+        // Local event-publisher seam until the canonical foundation-
+        // events home is ratified (cob-question 22-15Z).
         services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
 
         return services;
@@ -61,6 +64,9 @@ public static class ServiceCollectionExtensions
 
         services.TryAddSingleton<IFiscalPeriodRepository, InMemoryFiscalPeriodRepository>();
         services.TryAddSingleton<IFiscalYearRepository, InMemoryFiscalYearRepository>();
+        services.TryAddSingleton<IChartRepository, InMemoryChartRepository>();
+        services.TryAddSingleton<IAccountTypeQuery, InMemoryAccountTypeQuery>();
+        services.TryAddSingleton<IBalanceComputer, InMemoryBalanceComputer>();
         return services.AddBlocksFinancialPeriods();
     }
 }
