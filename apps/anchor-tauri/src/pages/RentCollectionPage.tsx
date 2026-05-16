@@ -45,8 +45,8 @@ export function RentCollectionPage() {
     const lease = leases?.find((l) => l.name === selectedLease)
     return (
       <div className="max-w-md">
-        <div className="rounded-lg border border-green-200 bg-green-50 p-6">
-          <h2 className="text-lg font-semibold text-green-800">Payment recorded</h2>
+        <div className="rounded-lg border border-success/20 bg-success/10 p-6">
+          <h2 className="text-lg font-semibold text-success">Payment recorded</h2>
           <p className="mt-1 text-sm text-gray-700">
             <strong>${parseFloat(amount).toLocaleString()}</strong> recorded for{' '}
             {lease?.tenant ?? selectedLease} (ref: {confirmation}).
@@ -166,13 +166,13 @@ export function RentCollectionPage() {
             </div>
 
             {mutation.isError && (
-              <div className="rounded border border-red-200 bg-red-50 p-3">
-                <p className="text-sm text-red-700">{(mutation.error as Error).message}</p>
+              <div className="rounded border border-destructive/20 bg-destructive/10 p-3">
+                <p className="text-sm text-destructive">{(mutation.error as Error).message}</p>
               </div>
             )}
 
             {isOffline && (
-              <p className="text-sm text-amber-600">
+              <p className="text-sm text-warning">
                 Rent payments require a live connection to ERPNext to maintain ledger integrity.
               </p>
             )}

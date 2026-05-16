@@ -10,43 +10,43 @@ import {
 import { AuthRoleGate } from '@/components/AuthRoleGate'
 
 const PRIORITY_COLORS: Record<string, string> = {
-  Critical: 'bg-red-100 text-red-700',
-  High: 'bg-orange-100 text-orange-700',
-  Medium: 'bg-yellow-100 text-yellow-700',
-  Low: 'bg-green-100 text-green-700',
+  Critical: 'bg-priority-urgent text-priority-urgent-fg',
+  High:     'bg-priority-high text-priority-high-fg',
+  Medium:   'bg-priority-medium text-priority-medium-fg',
+  Low:      'bg-priority-low text-priority-low-fg',
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  Open: 'bg-blue-100 text-blue-700',
-  'In Progress': 'bg-purple-100 text-purple-700',
-  Resolved: 'bg-green-100 text-green-700',
-  Closed: 'bg-gray-100 text-gray-700',
+  Open:          'bg-status-open text-status-open-fg',
+  'In Progress': 'bg-status-in-progress text-status-in-progress-fg',
+  Resolved:      'bg-status-resolved text-status-resolved-fg',
+  Closed:        'bg-status-closed text-status-closed-fg',
 }
 
 function TicketRow({ ticket, onStatusChange }: { ticket: MaintenanceTicket; onStatusChange: (name: string, status: string) => void }) {
   return (
-    <tr className="border-t border-gray-100 hover:bg-gray-50">
-      <td className="py-3 px-4 text-sm font-mono text-gray-500">{ticket.name}</td>
-      <td className="py-3 px-4 text-sm text-gray-900">{ticket.subject}</td>
-      <td className="py-3 px-4 text-sm text-gray-600">{ticket.property}</td>
+    <tr className="border-t border-border hover:bg-muted">
+      <td className="py-3 px-4 text-sm font-mono text-muted-foreground">{ticket.name}</td>
+      <td className="py-3 px-4 text-sm text-foreground">{ticket.subject}</td>
+      <td className="py-3 px-4 text-sm text-muted-foreground">{ticket.property}</td>
       <td className="py-3 px-4">
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[ticket.priority] ?? 'bg-gray-100 text-gray-700'}`}>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[ticket.priority] ?? 'bg-muted text-muted-foreground'}`}>
           {ticket.priority}
         </span>
       </td>
       <td className="py-3 px-4">
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[ticket.status] ?? 'bg-gray-100 text-gray-700'}`}>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[ticket.status] ?? 'bg-muted text-muted-foreground'}`}>
           {ticket.status}
         </span>
       </td>
-      <td className="py-3 px-4 text-sm text-gray-600">{ticket.assigned_to ?? '—'}</td>
-      <td className="py-3 px-4 text-sm text-gray-600">
+      <td className="py-3 px-4 text-sm text-muted-foreground">{ticket.assigned_to ?? '—'}</td>
+      <td className="py-3 px-4 text-sm text-muted-foreground">
         {ticket.cost != null ? `$${ticket.cost.toFixed(2)}` : '—'}
       </td>
       <td className="py-3 px-4">
         <AuthRoleGate allow={['owner', 'manager']}>
           <select
-            className="text-xs rounded border border-gray-200 py-1 px-2 text-gray-700"
+            className="text-xs rounded border border-border bg-background py-1 px-2 text-foreground"
             value={ticket.status}
             onChange={(e) => onStatusChange(ticket.name, e.target.value)}
           >
@@ -82,28 +82,28 @@ function CreateTicketForm({ onSuccess }: { onSuccess: () => void }) {
         e.preventDefault()
         mutation.mutate({ Subject: subject, Property: property, Priority: priority })
       }}
-      className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3"
+      className="rounded-lg border border-border bg-muted p-4 space-y-3"
     >
-      <h3 className="text-sm font-semibold text-gray-700">New Ticket</h3>
+      <h3 className="text-sm font-semibold text-foreground">New Ticket</h3>
       <div className="grid grid-cols-3 gap-3">
         <input
           required
           placeholder="Subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="col-span-1 rounded border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="col-span-1 rounded border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <input
           required
           placeholder="Property (ERPNext name)"
           value={property}
           onChange={(e) => setProperty(e.target.value)}
-          className="col-span-1 rounded border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="col-span-1 rounded border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
-          className="col-span-1 rounded border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="col-span-1 rounded border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option>Low</option>
           <option>Medium</option>
@@ -114,12 +114,12 @@ function CreateTicketForm({ onSuccess }: { onSuccess: () => void }) {
       <button
         type="submit"
         disabled={mutation.isPending}
-        className="rounded bg-blue-600 px-4 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+        className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
         {mutation.isPending ? 'Submitting…' : 'Submit'}
       </button>
       {mutation.isError && (
-        <p className="text-xs text-red-600">{(mutation.error as Error).message}</p>
+        <p className="text-xs text-destructive">{(mutation.error as Error).message}</p>
       )}
     </form>
   )
@@ -148,8 +148,8 @@ export function MaintenancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Maintenance</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-semibold text-foreground">Maintenance</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           {openCount} open ticket{openCount !== 1 ? 's' : ''}
         </p>
       </div>
@@ -158,19 +158,19 @@ export function MaintenancePage() {
         <CreateTicketForm onSuccess={() => void qc.invalidateQueries({ queryKey: ['maintenance'] })} />
       </AuthRoleGate>
 
-      {isLoading && <p className="text-sm text-gray-500">Loading maintenance tickets…</p>}
+      {isLoading && <p className="text-sm text-muted-foreground">Loading maintenance tickets…</p>}
       {isError && (
-        <p className="text-sm text-red-600">Error: {(error as Error).message}</p>
+        <p className="text-sm text-destructive">Error: {(error as Error).message}</p>
       )}
 
       {!isLoading && !isError && tickets.length === 0 && (
-        <p className="text-sm text-gray-500">No maintenance tickets found.</p>
+        <p className="text-sm text-muted-foreground">No maintenance tickets found.</p>
       )}
 
       {tickets.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-left">
-            <thead className="bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="bg-muted text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="py-3 px-4">ID</th>
                 <th className="py-3 px-4">Subject</th>

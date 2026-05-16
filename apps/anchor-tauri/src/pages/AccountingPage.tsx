@@ -21,50 +21,50 @@ export function AccountingPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Accounting</h1>
-        <p className="mt-1 text-sm text-gray-500">Year-to-date summary from ERPNext General Ledger</p>
+        <h1 className="text-2xl font-semibold text-foreground">Accounting</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Year-to-date summary from ERPNext General Ledger</p>
       </div>
 
       {/* P&L Summary */}
       <section>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">P&amp;L Summary</h2>
-        {summary.isLoading && <p className="text-sm text-gray-500">Loading…</p>}
+        <h2 className="text-lg font-medium text-foreground mb-4">P&amp;L Summary</h2>
+        {summary.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
         {summary.isError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-destructive">
             Could not load accounting summary: {summary.error instanceof Error ? summary.error.message : 'Unknown error'}
           </p>
         )}
         {summary.data && (
-          <div className="overflow-hidden rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {summary.data.period}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide-border bg-card">
                 <tr>
-                  <td className="px-6 py-4 text-sm text-gray-900">Total Income</td>
-                  <td className="px-6 py-4 text-right text-sm font-medium text-green-700">
+                  <td className="px-6 py-4 text-sm text-foreground">Total Income</td>
+                  <td className="px-6 py-4 text-right text-sm font-medium text-financial-positive">
                     {formatCurrency(summary.data.income)}
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 text-sm text-gray-900">Total Expenses</td>
-                  <td className="px-6 py-4 text-right text-sm font-medium text-red-700">
+                  <td className="px-6 py-4 text-sm text-foreground">Total Expenses</td>
+                  <td className="px-6 py-4 text-right text-sm font-medium text-financial-negative">
                     {formatCurrency(summary.data.expenses)}
                   </td>
                 </tr>
-                <tr className="bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">Net Income</td>
+                <tr className="bg-muted">
+                  <td className="px-6 py-4 text-sm font-semibold text-foreground">Net Income</td>
                   <td
                     className={`px-6 py-4 text-right text-sm font-semibold ${
-                      summary.data.net >= 0 ? 'text-green-700' : 'text-red-700'
+                      summary.data.net >= 0 ? 'text-financial-positive' : 'text-financial-negative'
                     }`}
                   >
                     {formatCurrency(summary.data.net)}
@@ -78,34 +78,34 @@ export function AccountingPage() {
 
       {/* Outstanding Invoices */}
       <section>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Outstanding Invoices</h2>
-        {outstanding.isLoading && <p className="text-sm text-gray-500">Loading…</p>}
+        <h2 className="text-lg font-medium text-foreground mb-4">Outstanding Invoices</h2>
+        {outstanding.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
         {outstanding.isError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-destructive">
             Could not load outstanding invoices: {outstanding.error instanceof Error ? outstanding.error.message : 'Unknown error'}
           </p>
         )}
         {outstanding.data && outstanding.data.length === 0 && (
-          <p className="text-sm text-gray-500">No outstanding invoices.</p>
+          <p className="text-sm text-muted-foreground">No outstanding invoices.</p>
         )}
         {outstanding.data && outstanding.data.length > 0 && (
-          <div className="overflow-hidden rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Customer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Invoice</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Due Date</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Outstanding</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Customer</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Invoice</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Due Date</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Outstanding</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide-border bg-card">
                 {outstanding.data.map((inv) => (
                   <tr key={inv.name}>
-                    <td className="px-6 py-4 text-sm text-gray-900">{inv.customer}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{inv.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{inv.due_date}</td>
-                    <td className="px-6 py-4 text-right text-sm font-medium text-red-700">
+                    <td className="px-6 py-4 text-sm text-foreground">{inv.customer}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{inv.name}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{inv.due_date}</td>
+                    <td className="px-6 py-4 text-right text-sm font-medium text-financial-negative">
                       {formatCurrency(inv.outstanding_amount)}
                     </td>
                   </tr>

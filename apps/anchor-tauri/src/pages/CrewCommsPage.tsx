@@ -108,12 +108,12 @@ export function CrewCommsPage() {
         <div className="mt-4 px-3">
           <span
             className={`inline-flex items-center gap-1 text-xs ${
-              connected ? 'text-green-600' : 'text-gray-400'
+              connected ? 'text-status-online' : 'text-status-offline'
             }`}
           >
             <span
               className={`inline-block h-1.5 w-1.5 rounded-full ${
-                connected ? 'bg-green-500' : 'bg-gray-400'
+                connected ? 'bg-status-online' : 'bg-status-offline'
               }`}
             />
             {connected ? 'Connected' : 'Disconnected'}

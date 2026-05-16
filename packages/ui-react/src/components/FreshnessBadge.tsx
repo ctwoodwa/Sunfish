@@ -27,7 +27,7 @@ export function FreshnessBadge({ updatedAt, staleAfterMs = 5 * 60 * 1000, classN
 
   return (
     <span
-      className={`inline-flex items-center gap-1 text-xs ${stale ? 'text-yellow-600' : 'text-gray-400'} ${className}`}
+      className={`inline-flex items-center gap-1 text-xs ${stale ? 'text-warning' : 'text-muted-foreground'} ${className}`}
       title={new Date(updatedAt).toLocaleString()}
     >
       {stale && (
