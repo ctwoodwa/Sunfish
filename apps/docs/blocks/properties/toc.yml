@@ -1,2 +1,6 @@
 - name: Overview
   href: overview.md
+- name: PropertyUnit
+  href: property-unit.md
+- name: Aggregating across a property
+  href: property-aggregation.md

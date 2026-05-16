@@ -4,6 +4,8 @@
   href: assets/
 - name: Business Cases
   href: businesscases/
+- name: Cockpit
+  href: cockpit/
 - name: Crew Comms
   href: crew-comms/
 - name: ERPNext Stack
