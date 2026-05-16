@@ -22,7 +22,9 @@ It provides:
 - **`SqlitePeriodResolver`** — date → period lookup; consumed by the
   ledger's `JournalPostingService` for period-gating (landed in PR 2).
 - **`IErpnextFiscalYearImporter`** + **`IErpnextFiscalPeriodImporter`** —
-  ERPNext migration entry-points (lands in PR 4).
+  ERPNext migration entry-points (landed in PR 4). Idempotent on
+  `ErpnextFiscalYearSource.Name` (FY) and per-FY (periods are
+  synthesized via `FiscalPeriodFactory`).
 
 ## Period status state machine
 

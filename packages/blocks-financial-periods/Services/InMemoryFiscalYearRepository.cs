@@ -35,10 +35,22 @@ public sealed class InMemoryFiscalYearRepository : IFiscalYearRepository
         if (!_byId.TryAdd(fiscalYear.Id, fiscalYear))
             throw new InvalidOperationException(
                 $"FiscalYear {fiscalYear.Id.Value} already exists.");
+        // Auto-tag the external-ref index when the row carries an
+        // ExternalRef — mirrors the SQLite-backed prod repo which
+        // persists the column on insert without a separate tag call.
+        if (!string.IsNullOrWhiteSpace(fiscalYear.ExternalRef))
+            _byExternalRef[fiscalYear.ExternalRef] = fiscalYear.Id;
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <see cref="FiscalYear.ExternalRef"/> is treated as immutable
+    /// post-Insert — this method does NOT re-tag the external-ref
+    /// index. If a future caller needs to rotate the ERPNext
+    /// reference (e.g., rename in the source system), add re-tag logic
+    /// here + an inverse-remove for the old ref.
+    /// </remarks>
     public Task<bool> UpdateAsync(FiscalYear fiscalYear, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fiscalYear);
