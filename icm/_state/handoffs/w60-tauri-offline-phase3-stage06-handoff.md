@@ -32,101 +32,10 @@ Before writing any code:
 
 ---
 
-## Cross-platform Build Strategy (XO Ruling 2026-05-13)
-
-**Problem:** macOS cannot cross-compile for Windows ARM natively. COB develops on macOS; CO's acceptance target is Windows ARM Surface Pro.
-
-**Resolution:** COB builds and iterates on macOS (`npm run tauri dev`). Windows + Linux artifacts are produced via GitHub Actions CI matrix. CO downloads the `aarch64-pc-windows-msvc` artifact and does final acceptance on device.
-
-### COB one-time local setup
-
-```bash
-# Install Rust toolchain (if not already present)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source "$HOME/.cargo/env"
-
-# Tauri CLI — pin via npm (preferred; keeps version in package.json lockfile)
-cd apps/anchor-tauri && npm install @tauri-apps/cli --save-dev
-
-# Verify
-npx tauri --version   # should print 2.x.x
-```
-
-### CI build matrix
-
-Add `.github/workflows/tauri-build.yml`:
-
-```yaml
-name: Tauri cross-platform build
-
-on:
-  push:
-    paths: ['apps/anchor-tauri/**', '.github/workflows/tauri-build.yml']
-  pull_request:
-    paths: ['apps/anchor-tauri/**']
-
-jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            bundle: dmg
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            bundle: dmg
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            bundle: msi
-          - os: windows-11-arm
-            target: aarch64-pc-windows-msvc
-            bundle: msi
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            bundle: appimage
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '22' }
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-      - name: Install Linux deps
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-      - run: cd apps/anchor-tauri && npm ci
-      - run: cd apps/anchor-tauri && npm run tauri build -- --target ${{ matrix.target }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: anchor-tauri-${{ matrix.target }}
-          path: apps/anchor-tauri/src-tauri/target/${{ matrix.target }}/release/bundle/${{ matrix.bundle }}/*
-```
-
-> `windows-11-arm` runners are GA on GitHub Actions (2025). Use `aarch64-pc-windows-msvc` for the Surface Pro target.
-
-### CO acceptance flow
-
-1. PR CI runs all 5 targets; artifacts uploaded.
-2. CO downloads `anchor-tauri-aarch64-pc-windows-msvc` artifact (Surface Pro target).
-3. CO installs `.msi` on Surface Pro and verifies Phase 3 PASS criteria.
-4. CO signals via PR comment or coordination beacon: PASS / PASS-with-fixes / FAIL.
-
-### CI cost note
-
-~5–15 min per target × 5 targets × ~8 PR rounds ≈ 5 hours CI compute/week. Acceptable for v0.1. Drop `x86_64-pc-windows-msvc` + Linux to cut 40% if budget is a concern.
-
-### FAILED trigger (Windows ARM runners)
-
-If `windows-11-arm` runners have stability issues: fall back to `x86_64-pc-windows-msvc` only; CO uses x64 emulation on Surface Pro for v0.1 acceptance; document the ARM gap.
-
----
-
 ## PR 1 — Tauri shell scaffold (`apps/anchor-tauri/`)
 
 **Branch:** `w60/phase3-pr1-tauri-scaffold`  
-**Acceptance gate (amended — XO Ruling 2026-05-13):** `npm run tauri dev` opens all 6 Phase 2 screens in a native macOS window; CI matrix successfully produces `.msi` artifacts for both `x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc` targets; CO downloads the ARM `.msi` and installs successfully on Surface Pro.
+**Acceptance gate:** `npm run tauri dev` opens all 6 Phase 2 screens in a native window; `npm run tauri build` produces a Windows `.msi` installer ≤50 MB.
 
 ### What to build
 
@@ -744,9 +653,9 @@ CO must personally verify each item on Surface Pro ARM Windows before Phase 3 is
 
 | # | Criterion | Verified by |
 |---|---|---|
-| 1 | Anchor installs and runs from CI-built `aarch64-pc-windows-msvc` `.msi` artifact | CO on Surface Pro |
+| 1 | Anchor installs and runs from `.msi` installer | CO on Surface Pro |
 | 2 | Cold start ≤3s from installer launch to Properties screen visible | CO — stopwatch |
-| 3 | `.msi` artifact file size ≤50 MB | CI artifact size check (GitHub Actions upload step) |
+| 3 | `.msi` installer file size ≤50 MB | CI artifact size check |
 | 4 | Disconnect WiFi → all 6 screens load from SQLite cache | CO on Surface Pro |
 | 5 | Offline: add maintenance note → reconnect → note in ERPNext ≤10s | CO on Surface Pro |
 | 6 | Offline: attempt rent payment → submit button disabled with message | CO on Surface Pro |
