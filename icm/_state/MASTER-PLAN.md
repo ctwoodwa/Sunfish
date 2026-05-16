@@ -38,8 +38,8 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 |---|---|---|---|---|
 | **A** | Anchor team-context binding for 6 entities | Not started; ERPNext manages multi-entity natively; Sunfish needs team-switch UX wiring to ERPNext entity IDs (ADR 0032) | **Scope reduced** — ERPNext carries the data model; Sunfish adds the UI + team-context selection | 2-3 |
 | **B** | Wave Accounting migration | **SUPERSEDED** — W#60 Phase 1 PASS (CO entered data directly into ERPNext 2026-05-12); no Wave import tool needed | — | 0 |
-| **C** | Bank ingest + reconciliation | **REFORMULATED** — ERPNext bank reconciliation handles this natively; Sunfish role is: offline local cache of reconciled statement data + Plaid token routing to ERPNext import | **Scope shifted** — Plaid integration targets ERPNext REST API, not Sunfish blocks-accounting | 3-5 |
-| **D** | Payments (Stripe + ADR 0051) | **REFORMULATED** — ERPNext records payments; Stripe integration feeds ERPNext; Sunfish's ADR 0051 scope shrinks to outbound-payment event forwarding | **Scope reduced** — ADR 0051 still needed for the event-forwarding contract; impl is an ERPNext Stripe integration | 4-6 |
+| **C** | Bank ingest + reconciliation | **LIKELY SUPERSEDED at Sunfish layer** — ERPNext bank reconciliation + Plaid integration operate at the ERPNext layer (via Frappe connectors). Sunfish React UI displays reconciled data from ERPNext API. Remaining Sunfish scope: offline cache of reconciled statement data in the Tauri SQLite store (W#60 P3). | **Decision needed:** Does CO want a dedicated Sunfish Plaid integration, or use ERPNext's native bank feed? XO recommends deferring until W#60 P3 ships and CO sees the offline experience. | 0-2 |
+| **D** | Payments (Stripe + ADR 0051) | **LIKELY SUPERSEDED at Sunfish layer** — ERPNext has native Stripe integration (Frappe Payment Gateway). Stripe webhooks go to ERPNext directly; Sunfish React UI reads payment status from ERPNext API. No separate Sunfish Bridge Stripe integration needed. | **Decision needed:** ADR 0051 "outbound-payment event forwarding" may be a no-op given ERPNext native handling. XO recommends treating WS-D as done via ERPNext unless CO identifies a gap. | 0-1 |
 | **E** | Outbound messaging (SendGrid + ADR 0052) | Not started; **blocks on ADR 0052 drafting**; scope unchanged (ERPNext has no chat/messaging) | **Unchanged** — `blocks-crew-comms` is Sunfish's primary differentiator over ERPNext | 4-6 |
 | **F** | Audit trail (kernel-audit + Tier 1 retrofit) | **scaffold merged 2026-04-28**; Tier 1 retrofit ready-to-build | Unchanged | 1-2 |
 | **G** | Statement template + monthly job | **SUPERSEDED** — ERPNext generates invoices/statements natively; Sunfish role is React UI display + offline cache | — | 0 |
@@ -54,13 +54,13 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 | **W#60 P4** | Collaboration (accountant peer + CPA + tenant portal + bank CSV) | **Hand-off authored 2026-05-16** — gated on P3 PASS (CO Surface Pro acceptance) | 5-6 |
 | **W#60 P5** | @sunfish/contracts + rent roll + P&L + Schedule-E | **Hand-off authored 2026-05-16** — PR 1 (@sunfish/contracts) immediately buildable; PR 2+ gated on P2 React UI (done) | 4-5 |
 
-**Phase 2 completion estimate (revised):** ~27-41 PRs remaining (down from 33-53 pre-pivot; B and G superseded; C and D scopes reduced).
+**Phase 2 completion estimate (revised):** ~15-30 PRs remaining (if WS-C and WS-D are confirmed superseded by ERPNext native integrations, down from 27-41). CO decision on C+D needed after W#60 P3 ships.
 
 ### G-1 done conditions (concrete, revised 2026-05-16)
 
 **Phase 1:**
 - [x] `Foundation.Recovery` package split built (W#15 + W#32 both `built`)
-- [ ] G6 host integration + Razor UI shipped (Anchor on Windows VM — hand-off not yet authored; immediately authorable)
+- [ ] G6 host integration + Razor UI shipped (W#63 hand-off authored 2026-05-16 — immediately buildable)
 - [ ] G7 conformance baseline scan committed under `icm/01_discovery/output/`
 
 **ERPNext layer (W#60):**
@@ -74,9 +74,9 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 - [x] ADR 0051 (Payments) Accepted 2026-04-28
 - [x] ADR 0052 (Outbound messaging) Accepted 2026-04-28
 - [ ] WS-E built (blocks-crew-comms → SendGrid outbound bridge; ADR 0052 accepted, hand-off needed)
-- [ ] WS-D built (Stripe → ERPNext payment forwarding; ADR 0051 accepted, hand-off needed)
+- [ ] WS-D: **CO decision needed** — ERPNext native Stripe may make this a no-op; defer until W#60 P3 ships
 - [ ] WS-A built (Anchor team-context bound to ERPNext entities for 6-entity setup)
-- [ ] WS-C built (Plaid → ERPNext bank import; offline local cache of reconciled data)
+- [ ] WS-C: **CO decision needed** — ERPNext native bank feed vs. dedicated Plaid integration; defer until W#60 P3
 - [ ] WS-H built (spouse co-ownership + recovery)
 
 **Business validation:**
