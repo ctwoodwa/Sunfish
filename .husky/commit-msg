@@ -32,10 +32,21 @@
 [ "${SKIP_COMMITLINT:-0}" = "1" ] && exit 0
 
 # Find the commitlint binary. We don't require global install; prefer
-# the repo-local copy if available.
+# the repo-local copy if available. Worktree-aware: a worktree's CWD does
+# not have its own node_modules, so we also check the main repo's
+# node_modules via `git rev-parse --git-common-dir`.
 COMMITLINT_BIN=""
+MAIN_REPO_ROOT=""
+if command -v git >/dev/null 2>&1; then
+  GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
+  if [ -n "$GIT_COMMON_DIR" ]; then
+    MAIN_REPO_ROOT=$(cd "$GIT_COMMON_DIR/.." && pwd)
+  fi
+fi
 if [ -x "node_modules/.bin/commitlint" ]; then
   COMMITLINT_BIN="node_modules/.bin/commitlint"
+elif [ -n "$MAIN_REPO_ROOT" ] && [ -x "$MAIN_REPO_ROOT/node_modules/.bin/commitlint" ]; then
+  COMMITLINT_BIN="$MAIN_REPO_ROOT/node_modules/.bin/commitlint"
 elif command -v commitlint >/dev/null 2>&1; then
   COMMITLINT_BIN="commitlint"
 elif command -v npx >/dev/null 2>&1; then
