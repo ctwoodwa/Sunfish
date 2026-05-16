@@ -20,9 +20,9 @@
 
 ---
 
-## Phase 1 verdict: **PARTIAL — 5 PASS, 1 PARTIAL**
+## Phase 1 verdict: **PASS — 6/6 PASS**
 
-G1–G5 are fully satisfied. G6 has its core state machine, hosting infrastructure, and 5 Razor pages wired — but two surfaces are deferred: the SQLCipher rekey path on recovery completion and the live attestation submission from `ApproveRecoveryPage`. Both are tracked as active workstreams. Phase 2 can begin in parallel; G6 closure is ~3-4h of net additional COB effort.
+All six G-items are fully satisfied. G6 closed 2026-05-16 via W#65 (PR #868 — `ISessionSignerAccessor` + `IBoundEd25519Signer`), W#66 (PR #870 — `ApproveRecoveryPage` live attestation), and W#67 (PRs #875–#903 — ADR 0046-A6 seed-delivery protocol + full social-recovery implementation). Phase 2 is unblocked.
 
 ---
 
@@ -159,23 +159,15 @@ The round-trip test exports a snapshot of 50 text CRDT operations, reimports int
 - `StopAsync_AllowsSubsequentStart_WithoutDispatchingStaleEvents` ✅
 - `LoopTick_DispatchesRecoveryCompleted_AfterFirstInterval` ✅
 
-### Gaps ⚠
+### Gaps closed ✅ (all resolved 2026-05-16)
 
-**Gap G6-A: SQLCipher rekey path stubbed — protocol design gap, not a missing API**
-- `AnchorRecoveryCompletionHandler.HandleAsync` stubs the rekey. Root cause is **not** a missing API: `IEncryptedStore.RotateKeyAsync(ReadOnlyMemory<byte> newKey, ct)` EXISTS on the interface (foundation-localfirst line 73) and is implemented by `SqlCipherEncryptedStore` (line 209 via `PRAGMA rekey`). The PR #867 handler comment incorrectly states the API doesn't exist.
-- **True gap:** the `RecoveryCompleted` event carries only metadata (`grace.startedAt`, `grace.elapsedAt`, `attestations.count`) — no key material. `AnchorRecoveryCompletionHandler` has no `newKey` bytes to pass to `RotateKeyAsync`.
-- **Protocol design gap:** Phase 1 ADR 0046 sub-pattern #48a implements identity proof (trustees attest the recovering device's identity) but not key delivery (trustees provide the encrypted root seed so the device can re-derive its SQLCipher key). `RecoveryRequest.EphemeralPublicKey` is the design hook for ECIES key transport, but `TrusteeAttestation` has no `EncryptedSeedShare` field — that protocol is Phase 2 scope.
-- **Tracked as:** W#67 (`g6a-social-recovery-seed-delivery-protocol`), `design-in-flight`, XO research required. See `icm/_state/workstreams/W67-g6a-social-recovery-seed-delivery-protocol.md`.
-- **Impact:** Recovery completion does NOT rekey SQLCipher. The state machine correctly records completion and the UI reflects it, but the cryptographic key rotation that ADR 0046 requires does not execute. This means G6 does not satisfy the "new device gets access to existing data" invariant until W#67 produces an ADR amendment and implementation hand-off.
+**Gap G6-A: SQLCipher rekey — CLOSED by W#67 (PRs #875–#903)**
+- ADR 0046-A6 (seed-delivery protocol) authored and accepted. `TrusteeAttestation.EncryptedSeedShare` added via ECIES key transport. `AnchorRecoveryCompletionHandler.HandleAsync` now calls `IEncryptedStore.RotateKeyAsync` with the decrypted seed. Full 6-PR social-recovery chain shipped.
 
-**Gap G6-B: `ApproveRecoveryPage` is a placeholder**
-- `ApproveRecoveryPage.razor` renders the pending request but its "Approve" button does not call `IRecoveryCoordinator.SubmitAttestationAsync` with a real `TrusteeAttestation`. It shows a "Coming soon" banner pending a kernel-security session-signer accessor API.
-- **Tracked as:** W#66 (`anchor-approve-recovery-page-live-attestation`), gated on W#65 (`ISessionSignerAccessor` + `IBoundEd25519Signer`).
-- W#65 status: `ready-to-build` (hand-off at `icm/_state/handoffs/kernel-security-session-signer-accessor-stage06-handoff.md`).
-- W#66 status: `blocked` on W#65.
-- **Impact:** Trustees cannot submit live attestations from Anchor. The recovery flow cannot reach quorum on a real device. G6's multi-sig social recovery is functionally incomplete until W#65 + W#66 land.
+**Gap G6-B: `ApproveRecoveryPage` — CLOSED by W#65 + W#66 (PRs #868 + #870)**
+- W#65 shipped `ISessionSignerAccessor` + `IBoundEd25519Signer` (PR #868). W#66 wired live attestation submission from `ApproveRecoveryPage` (PR #870). Trustees can now submit real `TrusteeAttestation` objects.
 
-**Verdict: PARTIAL** — infrastructure is built and wired; two surfaces (rekey + attestation) are explicitly deferred as tracked workstreams.
+**Verdict: PASS** — all recovery surfaces are fully wired and tested; G6 is complete.
 
 ---
 
@@ -183,23 +175,21 @@ The round-trip test exports a snapshot of 50 text CRDT operations, reimports int
 
 | Gap ID | Description | Effort | Workstream |
 |---|---|---|---|
-| G6-A | SQLCipher rekey stubbed — seed delivery protocol gap (Phase 2) | XO research + ADR amendment + impl | W#67 (`design-in-flight`) |
-| G6-B | ApproveRecoveryPage placeholder (no live attestation) | ~1.5-2h | W#66 (blocked on W#65 ~2-3h) |
+| ~~G6-A~~ | ~~SQLCipher rekey stubbed~~ | **CLOSED** — W#67 PRs #875–#903 | W#67 `built` |
+| ~~G6-B~~ | ~~ApproveRecoveryPage placeholder~~ | **CLOSED** — W#65 PR #868 + W#66 PR #870 | W#65+W#66 `built` |
 | G3-H | Rate limiting in Bridge Program.cs missing | ~2-4h | Phase 2 hardening; unowned |
 | G3-H | Security response headers (CSP, X-Frame-Options) missing | ~1-2h | Phase 2 hardening; unowned |
 | G4-T | No WAN relay integration test (Anchor→Bridge relay→Anchor) | ~3-4h | Phase 2 test-expansion; unowned |
 
-**G6-B is now resolved:** W#65 merged (PR #868, 2026-05-16) + W#66 in PR #870 (DRAFT, CI running 2026-05-16). G6-B gap is closed once #870 merges. **G6-A remains open:** W#67 filed as `design-in-flight`; requires XO to author the ADR 0046 seed-delivery protocol amendment before COB can implement.
+**G6 fully closed 2026-05-16:** W#65 (PR #868), W#66 (PR #870), and W#67 (PRs #875–#903) all merged. Phase 1 G7 conformance = **PASS**.
 
 ---
 
 ## Next steps
 
 1. ~~**COB:** build W#65~~ — **DONE** PR #868 merged 2026-05-16
-2. ~~**COB:** build W#66~~ — PR #870 DRAFT, CI running 2026-05-16; G6-B gap closes on merge
-3. **XO:** author ADR 0046 amendment (A6) defining seed-delivery protocol — W#67 `design-in-flight`; see `icm/_state/workstreams/W67-g6a-social-recovery-seed-delivery-protocol.md` for research findings and protocol design requirements
-4. **Phase 2 workstreams (W#60 P3+, W#64, etc.) can begin now** — G1–G5 are fully green; G6's gaps are tracked and do not block Phase 2
-5. **CO:** ADR decisions needed to unblock Phase 2 branches:
-   - ADR 0086 Proposed→Accepted (unblocks W#60 P3 Tauri offline shell)
-   - W#64 A vs B design decision (ERPNext company↔team context binding)
-   - ADR 0055 Proposed→Accepted (unblocks W#26 Property Receipts)
+2. ~~**COB:** build W#66~~ — **DONE** PR #870 merged 2026-05-16
+3. ~~**XO:** author ADR 0046 amendment (A6) defining seed-delivery protocol~~ — **DONE** W#67 6-PR chain (PRs #875–#903) merged 2026-05-16
+4. **Phase 2 workstreams unblocked** — G1–G6 all green; conformance is PASS
+5. ~~**CO:** ADR 0055 Proposed→Accepted~~ — **DONE** PR #916 merged 2026-05-16
+6. **CO:** W#64 A vs B design decision (entity-switcher approach) — still pending
