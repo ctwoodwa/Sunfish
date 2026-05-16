@@ -164,19 +164,36 @@ public sealed record RecoveryCompletionResult(
 
 This allows `AnchorRecoveryCompletionHandler` to access the sealed seed envelopes from the attestations.
 
-### A6.8 — Completion handler: seed reconstruction and rekey
+### A6.8 — Completion handler: identity restoration (revised per OQ-A6.3 resolution)
 
+**OQ-A6.3 RESOLVED (2026-05-16):** The current SQLCipher key is Argon2id-derived from the user's password + salt (`packages/foundation-localfirst/Encryption/Argon2idKeyDerivation.cs`), NOT root-seed-derived. This means the original A6.8 design (steps 5–6: derive SQLCipher key from recovered seed → call `RotateKeyAsync`) was incorrect.
+
+**Two recovery scenarios with different completion behavior:**
+
+**Scenario A — New device recovery** (lost device → fresh device; primary Phase 2 scope):
+- The recovering device's local SQLCipher store is EMPTY — it was freshly initialized with a new password on device setup.
+- No key rotation is needed. The existing SQLCipher key on the new device is correct.
+- What recovery completion delivers: the 32-byte **root seed** that the recovering device restores to its `IRootSeedProvider` keystore (SecureStorage / Windows DPAPI).
+- After root seed restoration: the recovering device can re-derive its team identity Ed25519 keys, team subkeys, and role keys — fully restoring its cryptographic identity.
+- Sync will subsequently repopulate the local database from peer nodes.
+
+**Scenario B — Same-device recovery** (keystore corruption → recover to same device; Phase 3 scope):
+- The recovering device has an existing SQLCipher database encrypted under the Argon2id-derived key.
+- Full key recovery requires either: (a) delivering the Argon2id key directly (not just the root seed), or (b) changing the SQLCipher key derivation to be deterministically derived from the root seed (architectural change to `foundation-localfirst`).
+- **Deferred to Phase 3 of A6.** No implementation target in Phase 2.
+
+**Phase 2 completion handler (Scenario A):**
 `AnchorRecoveryCompletionHandler.HandleAsync` is updated to:
 1. Collect the `TrusteeAttestation` records from `RecoveryCompletionResult.Attestations`
 2. For each attestation: call `IX25519KeyAgreement.OpenBox(ciphertext, nonce, trusteeDHPub, ephX25519Priv_recovering)` using the ephemeral X25519 private key generated at `RecoveryRequest.Create()` time
-3. Verify all successful decryptions return identical 32-byte seeds (if they diverge, a trustee submitted a bad seed — escalate via audit log, do not proceed)
+3. Verify all successful decryptions return identical 32-byte seeds; if they diverge, log audit event and do NOT proceed (security escalation)
 4. Take the first successfully-decrypted seed as the recovered root seed
-5. Derive the new SQLCipher key: `SqlCipherKeyDerivation.DeriveKey(recoveredSeed, teamId)` (using the same path as the original key)
-6. Call `IEncryptedStore.RotateKeyAsync(newSqlCipherKey, ct)`
-7. Emit a `RecoveryRekey` kernel-audit record (A6.9)
-8. Clear the ephemeral X25519 private key from memory
+5. **Write recovered seed to `IRootSeedProvider`** (SecureStorage / OS keystore) — restores cryptographic identity; does NOT rotate the SQLCipher key
+6. Emit a `RecoveryRekey` kernel-audit record (A6.9) with `ReKeySucceeded: true` (note: "rekey" here means "identity key restoration"; SQLCipher key is unchanged in Scenario A)
+7. Clear the ephemeral X25519 private key from memory
+8. Signal the sync subsystem to begin gossip (existing Anchor sync mechanism)
 
-The ephemeral X25519 private key must be held in the `IHostedService` or a scoped service that lives for the duration of the recovery session. It must not be persisted (ADR 0046's key-exposure-minimization principle).
+The ephemeral X25519 private key must be held in the `IHostedService` or a scoped service for the duration of the grace period. It must NOT be persisted (ADR 0046 key-exposure-minimization principle).
 
 ### A6.9 — `RecoveryRekey` audit event
 
@@ -219,7 +236,7 @@ public sealed record RecoveryRekeyPayload(
 
 **OQ-A6.2:** At trustee setup time, if a trustee is offline, the owner cannot obtain their X25519 DH public key from gossip. Should the owner pre-compute the seed copy and store it, then deliver it when the trustee comes online? Or require trustees to be online for setup? **XO recommendation: require online trustee during setup ceremony** (matches the UX of QR-code pairing; not a significant practical constraint since trustee setup is a deliberate one-time act). Owner retains the unencrypted root seed in memory (via `IRootSeedProvider`) only for the duration of the setup ceremony.
 
-**OQ-A6.3:** The `SqlCipherKeyDerivation.DeriveKey(recoveredSeed, teamId)` path must produce the SAME key as the original SQLCipher key. This works if the original key was also derived from the root seed via the same path. But if the original device used a directly-generated random SQLCipher key (not seed-derived), recovery cannot reconstruct it. Is the current SQLCipher key derivation seed-derived? **Action: verify that `SqlCipherKeyDerivation` in `foundation-localfirst` uses `IRootSeedProvider` + `ITeamSubkeyDerivation` and does not accept a user-supplied random key.** If it does accept a random key (e.g., from `AddKernelSecurity()` MAUI initialization), A6 must also define how the original random key is distributed to trustees or replaced with a deterministic derivation.
+**OQ-A6.3 — RESOLVED 2026-05-16:** The SQLCipher key is Argon2id-derived from the user's password + salt (`packages/foundation-localfirst/Encryption/Argon2idKeyDerivation.cs`; `IKeyDerivation.DeriveKey(password, salt)`). It is NOT root-seed-derived. Therefore, delivering the root seed during social recovery does NOT allow reconstruction of the SQLCipher key. A6.8 was corrected to define two recovery scenarios: Scenario A (new device, SQLCipher unchanged) and Scenario B (same device, out of Phase 2 scope). See A6.8 for full resolution.
 
 ---
 
