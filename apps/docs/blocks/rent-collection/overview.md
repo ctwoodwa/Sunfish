@@ -24,7 +24,7 @@ The block is designed to be usable the moment it is referenced — an `AddInMemo
 
 `blocks-rent-collection` is one of the property-management-flavoured composition blocks in the Sunfish catalog. It depends on `foundation` (for the `Instant` primitive and strong-typed id generator) and nothing else — no accounting block, no leasing block, no external billing gateway. Consumers that want a richer posture combine it with:
 
-- `blocks-accounting` — when journal-entry bookkeeping should accompany the invoice/payment trail.
+- `blocks-financial-ledger` — when journal-entry bookkeeping should accompany the invoice/payment trail.
 - `blocks-leases` (G14, forthcoming) — when `LeaseId` should be strong-typed rather than an opaque `string`.
 - `blocks-tax-reporting` — when the year's rent receipts should feed into Schedule E line items.
 
@@ -38,7 +38,7 @@ The block is designed to be usable the moment it is referenced — an `AddInMemo
 - You are standing up a property-management demo or a real landlord app and want an off-the-shelf invoice model with due-date tracking, aging, and status transitions.
 - You want a service contract that decouples the domain (rent schedules, billing frequency, payments) from whichever UI or framework you ship.
 
-If you need journal entries, double-entry accounting, or deep reconciliation, see `blocks-accounting` instead — rent-collection writes *invoices* and *payments*, not ledger transactions.
+If you need journal entries, double-entry accounting, or deep reconciliation, see `blocks-financial-ledger` instead — rent-collection writes *invoices* and *payments*, not ledger transactions.
 
 ## Key entities
 
@@ -145,4 +145,4 @@ The service tests double as executable specification for edge cases. Notable fix
 - [Ledger Service](ledger-service.md)
 - [Deferred Integrations](deferred-integrations.md)
 - ADR 0022 — `docs/adrs/0022-example-catalog-and-docs-taxonomy.md` (canonical docs taxonomy)
-- Sibling block: [blocks-accounting](../accounting/overview.md)
+- Sibling block: [blocks-financial-ledger](../accounting/overview.md)

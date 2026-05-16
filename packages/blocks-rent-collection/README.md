@@ -44,5 +44,5 @@ services.AddInMemoryRentCollection();
 ## See also
 
 - [apps/docs Overview](../../apps/docs/blocks/rent-collection/overview.md)
-- [Sunfish.Blocks.Accounting](../blocks-accounting/README.md) — GL/JE downstream consumer (rent payments roll up to JEs)
+- [Sunfish.Blocks.FinancialLedger](../blocks-financial-ledger/README.md) — GL/JE downstream consumer (rent payments roll up to JEs)
 - [Sunfish.Blocks.Leases](../blocks-leases/README.md) — `Lease.RentAmount` is the upstream amount source

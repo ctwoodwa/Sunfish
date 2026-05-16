@@ -31,7 +31,7 @@ services.AddInMemoryTaxReporting();
 - Per-jurisdiction state-form templates (varies widely; needs general-counsel guidance)
 - PDF rendering (requires the form layout templates)
 - E-filing adapter (varies by IRS eFile / FIRE / state portals)
-- Automatic JE rollup from `blocks-rent-collection` + `blocks-accounting` into the form pre-populator
+- Automatic JE rollup from `blocks-rent-collection` + `blocks-financial-ledger` into the form pre-populator
 
 ## ADR map
 
@@ -40,6 +40,6 @@ services.AddInMemoryTaxReporting();
 ## See also
 
 - [apps/docs Overview](../../apps/docs/blocks/tax-reporting/overview.md)
-- [Sunfish.Blocks.Accounting](../blocks-accounting/README.md) — JE source for tax-form pre-population
+- [Sunfish.Blocks.FinancialLedger](../blocks-financial-ledger/README.md) — JE source for tax-form pre-population
 - [Sunfish.Blocks.RentCollection](../blocks-rent-collection/README.md) — rental income source for Schedule E
 - [Sunfish.Blocks.Maintenance](../blocks-maintenance/README.md) — vendor payment source for 1099-NEC (W#18 Phase 4 W9Document is the upstream TIN source)

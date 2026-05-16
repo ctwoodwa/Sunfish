@@ -66,7 +66,7 @@ Deliverable checklist:
       ar-SA, hi, he-IL, fa-IR, ko) via satellite RESX assemblies under
       `Resources/Localization/`.
 - [ ] **Bundle selection UI** — which blocks compose into Anchor? Reference verticals:
-      `blocks-rent-collection + blocks-leases + blocks-maintenance + blocks-accounting`
+      `blocks-rent-collection + blocks-leases + blocks-maintenance + blocks-financial-ledger`
       (small-landlord); `blocks-scheduling + blocks-tasks` (small-medical-office).
 - [ ] **Report catalog** — ties to [ADR 0021](../../docs/adrs/0021-reporting-pipeline-policy.md);
       Anchor is the natural demo surface for the PDF / XLSX / DOCX / PPTX / CSV

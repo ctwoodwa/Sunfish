@@ -83,7 +83,7 @@ Planned admin surfaces:
 | Surface | Purpose |
 |---|---|
 | **Audit log** | Read-only view over the Foundation audit log. Filter by entity, actor, timestamp, action; export. This is the compliance-posture surface for a solo operator. |
-| **Bundle activation** | Which bundles are composed into this Anchor install. For small-landlord: blocks-rent-collection, blocks-leases, blocks-maintenance, blocks-accounting. For small-medical-office: TBD. |
+| **Bundle activation** | Which bundles are composed into this Anchor install. For small-landlord: blocks-rent-collection, blocks-leases, blocks-maintenance, blocks-financial-ledger. For small-medical-office: TBD. |
 | **Sync toggle** | Per-bundle opt-in sync against a federated peer (ADR 0013). Off by default - Anchor is offline-by-default; sync is a conscious decision a user makes per data category. |
 | **Preferences** | Theme, density, locale, default home, accessibility flags - same contract (ISunfishThemeService, IPreferencesService) as Bridge. |
 | **Account / device identity** | Device-bound credentials, optional passphrase, recovery mechanism. Ties to Foundation.MultiTenancy in single-tenant mode (ADR 0008). |
@@ -94,7 +94,7 @@ Anchor does not ship every Sunfish bundle. Each Anchor deployment picks
 its bundles based on the reference vertical it targets:
 
 - **Small-landlord deployment** - blocks-rent-collection, blocks-leases,
-  blocks-maintenance, blocks-accounting. Reports: rent roll, lease
+  blocks-maintenance, blocks-financial-ledger. Reports: rent roll, lease
   expirations, maintenance aging, P&L by property.
 - **Small-medical-office deployment** - TBD based on practice workflow.
   Likely ingests from ingestion-voice and ingestion-forms.

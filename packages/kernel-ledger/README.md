@@ -69,5 +69,5 @@ await closer.CloseAsync(new DateTimeOffset(2026, 3, 31, 23, 59, 59, TimeSpan.Zer
 
 ## Out of scope for this wave
 
-- Refactoring `packages/blocks-accounting/` onto this kernel — separate follow-up task.
+- Refactoring `packages/blocks-financial-ledger/` onto this kernel — separate follow-up task.
 - Durable / distributed event backend for the ledger event stream — currently in-process only; `IEventLog` is used for the durability receipt.

@@ -22,7 +22,7 @@ period close).
 This document is **the** clean-room artifact for the cluster — sufficient for
 an implementer with no copyleft FOSS access to build the cluster correctly.
 Implementation may be in TypeScript (Anchor Tauri-React surface) or Rust
-(Tauri side / future native domain shards) or C# (existing `blocks-accounting`
+(Tauri side / future native domain shards) or C# (existing `blocks-financial-ledger`
 package, the canonical .NET implementation). Type notation in this document
 leans TypeScript for readability; equivalents in Rust (`enum` + `struct`) and
 C# (`record` + `enum`) follow obvious conventions.
@@ -60,7 +60,7 @@ produced this schema.
   The TypeScript surface exposes them as `Money` (a tagged type wrapping
   bigint-minor-units + ISO 4217 currency code). The C# surface uses
   `decimal` with two-decimal rounding enforcement (matches the existing
-  `blocks-accounting` `JournalEntryLine.Debit` pattern). The two
+  `blocks-financial-ledger` `JournalEntryLine.Debit` pattern). The two
   representations interop via the integer-minor-units canonical form.
 - **MIT license output**: every line of cluster code remains MIT.
 
@@ -97,13 +97,13 @@ than any of those projects.
 
 The cluster is decomposed into block packages along entity-cohesion lines.
 This mirrors existing Sunfish conventions (one package per cohesive entity
-family) and the existing `blocks-accounting` thin shell, which is rolled
+family) and the existing `blocks-financial-ledger` thin shell, which is rolled
 into this design as the GL package.
 
 | Package | Purpose | Phase |
 |---|---|---|
 | `blocks-financial-chart` | Chart of accounts (Account hierarchy + AccountType). | 1 |
-| `blocks-financial-ledger` | Journal entries + lines (double-entry posting engine). Rolls in the existing thin `blocks-accounting`. | 1 |
+| `blocks-financial-ledger` | Journal entries + lines (double-entry posting engine). Rolls in the existing thin `blocks-financial-ledger`. | 1 |
 | `blocks-financial-ar` | Customer-facing: Invoices + InvoiceLines + InvoiceStatus + Receipts. | 1 |
 | `blocks-financial-ap` | Vendor-facing: Bills + BillLines + BillStatus. | 1 |
 | `blocks-financial-payments` | Payment + PaymentApplication (apply to invoices / bills / mixed). | 1 |
@@ -117,7 +117,7 @@ into this design as the GL package.
 **Naming compliance (cluster-naming-rules):**
 
 - Cluster prefix `financial` applied per Rule 1.
-- Existing `blocks-accounting` (GL primitives) is a pre-cluster name. Rule 1
+- Existing `blocks-financial-ledger` (GL primitives) is a pre-cluster name. Rule 1
   exception applies: the existing thin shell is the cluster's GL spine and
   will be renamed to `blocks-financial-ledger` during Stage 04 (scaffolding),
   with type aliases retained for one release cycle.
@@ -240,7 +240,7 @@ interface ChartOfAccounts {
 
 **Purpose:** An atomic accounting transaction — a balanced set of debit and
 credit lines posted on a single date. **The fundamental unit of the ledger.**
-Existing implementation: `Sunfish.Blocks.Accounting.Models.JournalEntry`.
+Existing implementation: `Sunfish.Blocks.FinancialLedger.Models.JournalEntry`.
 
 ```ts
 type JournalEntryStatus =
@@ -316,7 +316,7 @@ never-posted drafts in v1).
 
 **Purpose:** One debit or one credit posting to a single account within a
 `JournalEntry`. Existing implementation:
-`Sunfish.Blocks.Accounting.Models.JournalEntryLine`.
+`Sunfish.Blocks.FinancialLedger.Models.JournalEntryLine`.
 
 ```ts
 interface JournalLine {
@@ -2057,7 +2057,7 @@ Sunfish-native records.
 - IRS Schedule E (Form 1040) and instructions — informs §6.6 (form-line
   mapping table).
 - IRS Publication 946, *How To Depreciate Property* — informs the existing
-  `DepreciationMethod` / `DepreciationSchedule` types in `blocks-accounting`
+  `DepreciationMethod` / `DepreciationSchedule` types in `blocks-financial-ledger`
   (already implemented; out of scope for new design but referenced).
 - IRS Publication 535, *Business Expenses* — informs the deductibility
   classifications on `Account.taxLineMappingId`.
@@ -2081,9 +2081,9 @@ from Frappe.
    cluster's `Account` is the textbook GL term, namespaced behind a
    `Financial.Chart.` qualifier. Does CO ratify this as the canonical
    resolution? (Alternatives: rename to `LedgerAccount` or `GLAccount` —
-   matches the existing `Sunfish.Blocks.Accounting.GLAccount` — at the cost
+   matches the existing `Sunfish.Blocks.FinancialLedger.GLAccount` — at the cost
    of less idiomatic accounting terminology.) **XO recommendation:** keep
-   the existing `GLAccount` name (already in `blocks-accounting`) and have
+   the existing `GLAccount` name (already in `blocks-financial-ledger`) and have
    this design's `Account` be an alias / TypeScript-side rename only.
 
 2. **Relationship of existing `blocks-rent-collection.Invoice` to new
@@ -2157,8 +2157,8 @@ from Frappe.
     scoped to `chartId`, not `tenantId`. Confirm this matches the intended
     tenancy model.
 
-12. **`blocks-financial-ledger` rename from `blocks-accounting`.** The
-    existing thin shell currently lives at `packages/blocks-accounting`. The
+12. **`blocks-financial-ledger` rename from `blocks-financial-ledger`.** The
+    existing thin shell currently lives at `packages/blocks-financial-ledger`. The
     cluster names favor `blocks-financial-ledger` (Rule 1: cluster prefix).
     Scaffolding will rename; existing tests + DI bindings need updates.
     Confirm naming + accept the rename impact (small — the shell is thin).
