@@ -9,8 +9,21 @@ namespace Sunfish.Foundation.Recovery.Tests;
 /// its trustees. Verifies signature round-trips, replay protection
 /// via the request-hash binding, and tampering detection.
 /// </summary>
+/// <remarks>
+/// W#67 placeholder W#67 fields (EphemeralDHPublicKey on the request;
+/// TrusteeDHPublicKey + EncryptedSeedEnvelopeCiphertext + ...Nonce on
+/// the attestation) are populated with zero-filled byte arrays of the
+/// canonical length. These tests cover signature/hash binding semantics
+/// only — the seed-envelope encryption is exercised separately in
+/// W#67 PR 4+5 (AnchorRecoveryCompletionHandler + TrusteeSetupPage).
+/// </remarks>
 public sealed class TrusteeRecordTests
 {
+    private static readonly byte[] EphDH       = new byte[RecoveryRequest.EphemeralDHPublicKeyLength];
+    private static readonly byte[] TrusteeDH   = new byte[TrusteeAttestation.TrusteeDHPublicKeyLength];
+    private static readonly byte[] SeedCT      = new byte[TrusteeAttestation.SeedEnvelopeCiphertextLength];
+    private static readonly byte[] SeedNonce   = new byte[TrusteeAttestation.SeedEnvelopeNonceLength];
+
     [Fact]
     public void RecoveryRequest_signed_then_verified_round_trips()
     {
@@ -18,15 +31,17 @@ public sealed class TrusteeRecordTests
         var (pub, priv) = signer.GenerateKeyPair();
 
         var request = RecoveryRequest.Create(
-            requestingNodeId: "node-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            ephemeralPublicKey: pub,
-            ephemeralPrivateKey: priv,
-            requestedAt: DateTimeOffset.UtcNow,
-            signer: signer);
+            requestingNodeId:     "node-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            ephemeralPublicKey:   pub,
+            ephemeralDHPublicKey: EphDH,
+            ephemeralPrivateKey:  priv,
+            requestedAt:          DateTimeOffset.UtcNow,
+            signer:               signer);
 
         Assert.True(request.VerifySignature(signer));
         Assert.Equal(RecoveryRequest.SignatureLength, request.Signature.Length);
         Assert.Equal(RecoveryRequest.EphemeralPublicKeyLength, request.EphemeralPublicKey.Length);
+        Assert.Equal(RecoveryRequest.EphemeralDHPublicKeyLength, request.EphemeralDHPublicKey.Length);
     }
 
     [Fact]
@@ -36,10 +51,8 @@ public sealed class TrusteeRecordTests
         var (pub, priv) = signer.GenerateKeyPair();
         var legit = RecoveryRequest.Create(
             "node-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            pub, priv, DateTimeOffset.UtcNow, signer);
+            pub, EphDH, priv, DateTimeOffset.UtcNow, signer);
 
-        // Forge a request that claims a different NodeId but reuses the
-        // legit request's signature.
         var tampered = legit with { RequestingNodeId = "node-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" };
 
         Assert.False(tampered.VerifySignature(signer));
@@ -52,7 +65,7 @@ public sealed class TrusteeRecordTests
         var (pub, priv) = signer.GenerateKeyPair();
         var legit = RecoveryRequest.Create(
             "node-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            pub, priv, DateTimeOffset.UtcNow, signer);
+            pub, EphDH, priv, DateTimeOffset.UtcNow, signer);
 
         var tampered = legit with { RequestedAt = legit.RequestedAt.AddDays(7) };
 
@@ -66,7 +79,7 @@ public sealed class TrusteeRecordTests
         var (pub, priv) = signer.GenerateKeyPair();
         var legit = RecoveryRequest.Create(
             "node-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            pub, priv, DateTimeOffset.UtcNow, signer);
+            pub, EphDH, priv, DateTimeOffset.UtcNow, signer);
 
         var corruptedSig = (byte[])legit.Signature.Clone();
         corruptedSig[0] ^= 0xFF;
@@ -82,16 +95,19 @@ public sealed class TrusteeRecordTests
         var (devicePub, devicePriv) = signer.GenerateKeyPair();
         var request = RecoveryRequest.Create(
             "new-device-node",
-            devicePub, devicePriv, DateTimeOffset.UtcNow, signer);
+            devicePub, EphDH, devicePriv, DateTimeOffset.UtcNow, signer);
 
         var (trusteePub, trusteePriv) = signer.GenerateKeyPair();
         var attestation = TrusteeAttestation.Create(
             request,
-            trusteeNodeId: "trustee-1-node",
-            trusteePublicKey: trusteePub,
-            trusteePrivateKey: trusteePriv,
-            attestedAt: DateTimeOffset.UtcNow.AddSeconds(30),
-            signer: signer);
+            trusteeNodeId:                   "trustee-1-node",
+            trusteePublicKey:                trusteePub,
+            trusteePrivateKey:               trusteePriv,
+            attestedAt:                      DateTimeOffset.UtcNow.AddSeconds(30),
+            signer:                          signer,
+            trusteeDHPublicKey:              TrusteeDH,
+            encryptedSeedEnvelopeCiphertext: SeedCT,
+            encryptedSeedEnvelopeNonce:      SeedNonce);
 
         Assert.True(attestation.Verify(request, signer));
         Assert.Equal(TrusteeAttestation.RequestHashLength, attestation.RecoveryRequestHash.Length);
@@ -100,22 +116,20 @@ public sealed class TrusteeRecordTests
     [Fact]
     public void TrusteeAttestation_Verify_fails_when_replayed_against_different_request()
     {
-        // Trustee attests to request A; attacker tries to replay the attestation
-        // against a different request B. The hash binding catches it.
         var signer = new Ed25519Signer();
         var (devicePubA, devicePrivA) = signer.GenerateKeyPair();
         var (devicePubB, devicePrivB) = signer.GenerateKeyPair();
         var requestA = RecoveryRequest.Create(
-            "device-a", devicePubA, devicePrivA, DateTimeOffset.UtcNow, signer);
+            "device-a", devicePubA, EphDH, devicePrivA, DateTimeOffset.UtcNow, signer);
         var requestB = RecoveryRequest.Create(
-            "device-b", devicePubB, devicePrivB, DateTimeOffset.UtcNow, signer);
+            "device-b", devicePubB, EphDH, devicePrivB, DateTimeOffset.UtcNow, signer);
 
         var (trusteePub, trusteePriv) = signer.GenerateKeyPair();
         var attestationForA = TrusteeAttestation.Create(
             requestA, "trustee-1-node", trusteePub, trusteePriv,
-            DateTimeOffset.UtcNow, signer);
+            DateTimeOffset.UtcNow, signer,
+            TrusteeDH, SeedCT, SeedNonce);
 
-        // Same attestation bytes, different request reference at verify time.
         Assert.True(attestationForA.Verify(requestA, signer));
         Assert.False(attestationForA.Verify(requestB, signer));
     }
@@ -127,12 +141,13 @@ public sealed class TrusteeRecordTests
         var (devicePub, devicePriv) = signer.GenerateKeyPair();
         var request = RecoveryRequest.Create(
             "new-device-node",
-            devicePub, devicePriv, DateTimeOffset.UtcNow, signer);
+            devicePub, EphDH, devicePriv, DateTimeOffset.UtcNow, signer);
 
         var (trusteePub, trusteePriv) = signer.GenerateKeyPair();
         var attestation = TrusteeAttestation.Create(
             request, "trustee-1", trusteePub, trusteePriv,
-            DateTimeOffset.UtcNow, signer);
+            DateTimeOffset.UtcNow, signer,
+            TrusteeDH, SeedCT, SeedNonce);
 
         var corrupted = (byte[])attestation.Signature.Clone();
         corrupted[^1] ^= 0xFF;
@@ -147,10 +162,9 @@ public sealed class TrusteeRecordTests
         var signer = new Ed25519Signer();
         var (pub, priv) = signer.GenerateKeyPair();
         var ts = DateTimeOffset.UtcNow;
-        var requestA = RecoveryRequest.Create("device-a", pub, priv, ts, signer);
-        var requestB = RecoveryRequest.Create("device-a", pub, priv, ts, signer);
+        var requestA = RecoveryRequest.Create("device-a", pub, EphDH, priv, ts, signer);
+        var requestB = RecoveryRequest.Create("device-a", pub, EphDH, priv, ts, signer);
 
-        // Same NodeId + pubkey + timestamp -> same canonical bytes -> same hash.
         var hashA = TrusteeAttestation.HashOf(requestA);
         var hashB = TrusteeAttestation.HashOf(requestB);
 
@@ -161,9 +175,6 @@ public sealed class TrusteeRecordTests
     [Fact]
     public void RecoveryEvent_record_carries_chain_pointer_and_detail_metadata()
     {
-        // Smoke test the record contract — orchestrator reads/writes these
-        // so the structural fields need to round-trip cleanly through pattern
-        // matching and `with` expressions.
         var detail = new Dictionary<string, string>
         {
             ["trustee.nodeId"] = "trustee-1-node",
@@ -184,7 +195,6 @@ public sealed class TrusteeRecordTests
         Assert.Equal(2, evt.Detail.Count);
         Assert.Equal(prevHash, evt.PreviousEventHash);
 
-        // `with` produces a new value preserving the rest.
         var completed = evt with { Type = RecoveryEventType.RecoveryCompleted };
         Assert.Equal(RecoveryEventType.RecoveryCompleted, completed.Type);
         Assert.Equal(evt.ActorNodeId, completed.ActorNodeId);

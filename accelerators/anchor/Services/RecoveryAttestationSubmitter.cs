@@ -55,16 +55,31 @@ public sealed class RecoveryAttestationSubmitter
         var trusteeNodeId = _nodeIdentity.Current.NodeId;
         var attestedAt    = _time.GetUtcNow();
         var requestHash   = TrusteeAttestation.HashOf(request);
-        var canonical     = TrusteeAttestation.CanonicalBytesForSigning(
-            trusteeNodeId, requestHash, attestedAt);
-        var signature     = await signer.SignAsync(canonical, cancellationToken).ConfigureAwait(false);
+
+        // W#67 PR 2 placeholder — seed-envelope payload is populated in
+        // W#67 PR 5 (TrusteeSetupPage + ApproveRecoveryPage encryption
+        // flow). Zero-filled to canonical lengths so the signature is
+        // well-formed and Verify() accepts it. PR 5 will replace these
+        // with the real Box ciphertext + nonce keyed to the requesting
+        // device's RecoveryRequest.EphemeralDHPublicKey.
+        var trusteeDHPublicKey              = new byte[TrusteeAttestation.TrusteeDHPublicKeyLength];
+        var encryptedSeedEnvelopeCiphertext = new byte[TrusteeAttestation.SeedEnvelopeCiphertextLength];
+        var encryptedSeedEnvelopeNonce      = new byte[TrusteeAttestation.SeedEnvelopeNonceLength];
+
+        var canonical = TrusteeAttestation.CanonicalBytesForSigning(
+            trusteeNodeId, requestHash, attestedAt,
+            trusteeDHPublicKey, encryptedSeedEnvelopeCiphertext, encryptedSeedEnvelopeNonce);
+        var signature = await signer.SignAsync(canonical, cancellationToken).ConfigureAwait(false);
 
         var attestation = new TrusteeAttestation(
-            TrusteeNodeId:        trusteeNodeId,
-            TrusteePublicKey:     signer.PublicKey.ToArray(),
-            RecoveryRequestHash:  requestHash,
-            AttestedAt:           attestedAt,
-            Signature:            signature);
+            TrusteeNodeId:                    trusteeNodeId,
+            TrusteePublicKey:                 signer.PublicKey.ToArray(),
+            RecoveryRequestHash:              requestHash,
+            AttestedAt:                       attestedAt,
+            Signature:                        signature,
+            TrusteeDHPublicKey:               trusteeDHPublicKey,
+            EncryptedSeedEnvelopeCiphertext:  encryptedSeedEnvelopeCiphertext,
+            EncryptedSeedEnvelopeNonce:       encryptedSeedEnvelopeNonce);
 
         var outcome = await _recovery.SubmitAttestationAsync(attestation, cancellationToken)
             .ConfigureAwait(false);
