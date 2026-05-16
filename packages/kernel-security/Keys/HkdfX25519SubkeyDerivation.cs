@@ -54,18 +54,27 @@ public sealed class HkdfX25519SubkeyDerivation : IX25519SubkeyDerivation
     public byte[] DeriveX25519PublicKey(ReadOnlyMemory<byte> rootSeed, string teamId)
     {
         var raw = DeriveX25519PrivateKey(rootSeed, teamId);
-        // NSec applies RFC 7748 clamping inside Key.Import; the raw bytes
-        // we pass in are accepted directly. Export the matching public key
-        // via Curve25519 scalar mult against the base point.
-        var creationParameters = new KeyCreationParameters
+        try
         {
-            ExportPolicy = KeyExportPolicies.AllowPlaintextExport,
-        };
-        using var key = Key.Import(
-            KeyAgreementAlgorithm.X25519,
-            raw,
-            KeyBlobFormat.RawPrivateKey,
-            creationParameters);
-        return key.Export(KeyBlobFormat.RawPublicKey);
+            // NSec applies RFC 7748 clamping inside Key.Import; the raw
+            // bytes we pass in are accepted directly. Export the
+            // matching public key via Curve25519 scalar mult against
+            // the base point.
+            using var key = Key.Import(
+                KeyAgreementAlgorithm.X25519,
+                raw,
+                KeyBlobFormat.RawPrivateKey,
+                new KeyCreationParameters
+                {
+                    ExportPolicy = KeyExportPolicies.AllowPlaintextExport,
+                });
+            return key.Export(KeyBlobFormat.RawPublicKey);
+        }
+        finally
+        {
+            // W#67 PR 5 council R-1: zero the intermediate private-key
+            // buffer so it does not sit on the GC heap until collection.
+            CryptographicOperations.ZeroMemory(raw);
+        }
     }
 }

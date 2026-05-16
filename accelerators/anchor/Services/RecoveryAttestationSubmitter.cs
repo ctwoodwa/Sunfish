@@ -118,26 +118,20 @@ public sealed class RecoveryAttestationSubmitter
                 "No active team selected. Pick a team before approving recovery.");
         var rootSeed = await _rootSeedProvider.GetRootSeedAsync(cancellationToken).ConfigureAwait(false);
         var teamId   = active.TeamId.Value.ToString("D");
-        // Council MAJOR-1: derive the private key ONCE here and compute
-        // the public key inline via NSec to avoid the orphan private-key
-        // copy that DeriveX25519PublicKey would otherwise leave on the
-        // GC heap (DeriveX25519PublicKey calls DeriveX25519PrivateKey
-        // internally; the intermediate buffer is not zeroed). Our local
-        // trusteeDhPriv IS zeroed in the finally block.
-        var trusteeDhPriv = _x25519SubkeyDerivation.DeriveX25519PrivateKey(rootSeed, teamId);
-        byte[] trusteeDhPub;
-        using (var importedKey = Key.Import(
-            KeyAgreementAlgorithm.X25519, trusteeDhPriv, KeyBlobFormat.RawPrivateKey,
-            new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextExport }))
-        {
-            trusteeDhPub = importedKey.Export(KeyBlobFormat.RawPublicKey);
-        }
-
+        // Council R-1 fix in HkdfX25519SubkeyDerivation.DeriveX25519PublicKey
+        // now zeros its intermediate buffer, so the explicit inline-NSec
+        // workaround is no longer required — use the simpler API.
+        // R-3: derive both keys INSIDE the try-block so the finally's
+        // ZeroMemory still runs if either derivation throws.
+        byte[]? trusteeDhPriv = null;
+        byte[]? trusteeDhPub  = null;
         byte[]? recoveredSeed = null;
         byte[]? reEncryptedCiphertext = null;
         byte[]? reEncryptedNonce = null;
         try
         {
+            trusteeDhPriv = _x25519SubkeyDerivation.DeriveX25519PrivateKey(rootSeed, teamId);
+            trusteeDhPub  = _x25519SubkeyDerivation.DeriveX25519PublicKey(rootSeed, teamId);
             // 3) OpenBox the owner-delivered envelope. Sender = owner
             //    ephemeral X25519 pub (recorded in the envelope).
             //    Recipient = this trustee's per-team X25519 private key.
@@ -222,7 +216,7 @@ public sealed class RecoveryAttestationSubmitter
             // Zero secret material — recovered seed and trustee X25519
             // private key. The re-encrypted ciphertext is non-secret
             // (encrypted to the recovering device); leave it.
-            CryptographicOperations.ZeroMemory(trusteeDhPriv);
+            if (trusteeDhPriv is not null) CryptographicOperations.ZeroMemory(trusteeDhPriv);
             if (recoveredSeed is not null) CryptographicOperations.ZeroMemory(recoveredSeed);
         }
     }

@@ -52,6 +52,35 @@ public sealed class RecoveryAttestationSubmitterTests
     }
 
     [Fact]
+    public async Task SubmitAsync_OpenBoxAuthTagMismatch_ReturnsAcceptedFalse()
+    {
+        // Council R-9 — distinct from the all-zero contributory-check
+        // case: use a REAL non-zero ownerEph keypair + valid Box() to
+        // produce a well-formed envelope, then corrupt the last byte
+        // of the ciphertext so OpenBox returns null (auth-tag mismatch
+        // path, not CryptographicException path).
+        var harness = new Harness();
+        var realDhPub = harness.X25519SubkeyDerivation.DeriveX25519PublicKey(
+            new byte[KeystoreRootSeedProvider.SeedLength], "team");
+        var (ownerEphPub, ownerEphPriv) = harness.KeyAgreement.GenerateKeyPair();
+        var (ct, nonce) = harness.KeyAgreement.Box(new byte[32], realDhPub, ownerEphPriv);
+        // Corrupt the auth tag (last 16 bytes of ciphertext).
+        ct[^1] ^= 0xFF;
+
+        await harness.Coordinator.SetupTrusteeAsync(
+            TrusteeNodeId,
+            new TrusteeEncryptedSeed(
+                TrusteeNodeId:           TrusteeNodeId,
+                OwnerEphX25519PublicKey: ownerEphPub,
+                Ciphertext:              ct,
+                Nonce:                   nonce));
+
+        var result = await harness.Sut.SubmitAsync(harness.Request);
+
+        Assert.False(result.Accepted);
+    }
+
+    [Fact]
     public async Task SubmitAsync_HappyPath_SubmitsAttestationWithDerivedDhKeyAndReEncryptedEnvelope()
     {
         // End-to-end OpenBox + re-Box flow through real X25519

@@ -1,7 +1,9 @@
 @page "/recovery/trustee-setup"
 @using System.Security.Cryptography
+@using System.Threading
 @using Sunfish.Anchor.Services
 @using Sunfish.Foundation.Recovery
+@implements IDisposable
 @inject TrusteeSetupService SetupService
 @inject NavigationManager Nav
 
@@ -96,6 +98,16 @@
     private string? _lastFingerprint;
     private string? _lastEd25519Fingerprint;
     private bool _busy;
+    // Council R-6: lifecycle-bound CT so an in-flight
+    // SetupService.DesignateAndDistributeAsync call cancels when the
+    // user navigates away from the page mid-encryption.
+    private readonly CancellationTokenSource _cts = new();
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
 
     private bool CanSubmit =>
         !string.IsNullOrWhiteSpace(_nodeId)
@@ -134,7 +146,7 @@
         try
         {
             var outcome = await SetupService.DesignateAndDistributeAsync(
-                _nodeId.Trim(), publicKey, dhPublicKey, default);
+                _nodeId.Trim(), publicKey, dhPublicKey, _cts.Token);
             _lastDesignated = outcome.TrusteeNodeId;
             _lastFingerprint = outcome.TrusteeDHFingerprintHex;
             _lastEd25519Fingerprint = outcome.TrusteeEd25519FingerprintHex;
