@@ -73,6 +73,9 @@
     <Compile Include="..\Services\AnchorRecoveryCompletionHandler.cs" Link="Anchor\AnchorRecoveryCompletionHandler.cs" />
     <Compile Include="..\Services\RecoveryHostOptions.cs" Link="Anchor\RecoveryHostOptions.cs" />
     <Compile Include="..\Services\RecoveryGracePollingService.cs" Link="Anchor\RecoveryGracePollingService.cs" />
+    <!-- W#66 — RecoveryAttestationSubmitter composes W#65 ISessionSignerAccessor
+         with IRecoveryCoordinator; MAUI-free (no Razor / no MAUI deps). -->
+    <Compile Include="..\Services\RecoveryAttestationSubmitter.cs" Link="Anchor\RecoveryAttestationSubmitter.cs" />
   </ItemGroup>
 
   <ItemGroup>

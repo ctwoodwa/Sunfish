@@ -260,6 +260,12 @@ public static class MauiProgram
 		// 2026-05-16 §c — IRecoveryCoordinator has no event subscription;
 		// events return synchronously from each coordinator method).
 		builder.Services.AddAnchorRecoveryHost(builder.Configuration);
+		// W#66 — ApproveRecoveryPage helper. Composes W#65 ISessionSignerAccessor
+		// + IRecoveryCoordinator + INodeIdentityProvider into a single
+		// SubmitAsync(request) call. Transient so each approval gets a fresh
+		// signer (and to keep the page lightweight).
+		builder.Services.TryAddSingleton(TimeProvider.System);
+		builder.Services.AddTransient<RecoveryAttestationSubmitter>();
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();
