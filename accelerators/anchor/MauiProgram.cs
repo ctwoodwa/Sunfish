@@ -272,6 +272,10 @@ public static class MauiProgram
 		// signer (and to keep the page lightweight).
 		builder.Services.TryAddSingleton(TimeProvider.System);
 		builder.Services.AddTransient<RecoveryAttestationSubmitter>();
+		// W#67 PR 5 — TrusteeSetupPage uses TrusteeSetupService to
+		// designate trustees AND distribute the per-trustee seed
+		// envelope in one step.
+		builder.Services.AddTransient<TrusteeSetupService>();
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();

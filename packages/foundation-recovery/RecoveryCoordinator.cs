@@ -49,6 +49,7 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
     public async Task<RecoveryEvent> DesignateTrusteeAsync(
         string trusteeNodeId,
         ReadOnlyMemory<byte> trusteePublicKey,
+        ReadOnlyMemory<byte> trusteeDHPublicKey,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(trusteeNodeId);
@@ -58,15 +59,49 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                 $"Trustee public key must be {RecoveryRequest.EphemeralPublicKeyLength} bytes; got {trusteePublicKey.Length}.",
                 nameof(trusteePublicKey));
         }
+        if (trusteeDHPublicKey.Length != TrusteeDesignation.DHPublicKeyLength)
+        {
+            throw new ArgumentException(
+                $"Trustee DH public key must be {TrusteeDesignation.DHPublicKeyLength} bytes; got {trusteeDHPublicKey.Length}.",
+                nameof(trusteeDHPublicKey));
+        }
 
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             var state = await _store.LoadAsync(cancellationToken).ConfigureAwait(false);
-            if (state.Trustees.ContainsKey(trusteeNodeId))
+            if (state.Trustees.TryGetValue(trusteeNodeId, out var existing))
             {
+                // W#67 PR 5 council R-5: idempotent on same-keys. If the
+                // existing designation has the same (Ed25519 pub, X25519
+                // DH pub), re-running Phase 1 (e.g., after a Phase 2
+                // SetupTrusteeAsync failure) silently succeeds — surfacing
+                // a re-emitted TrusteeDesignated event. Keys-differ
+                // remains a hard error: a NodeId-collision attack must
+                // not silently overwrite the designation.
+                var sameEd  = existing.PublicKey.Length == trusteePublicKey.Length
+                    && CryptographicOperations.FixedTimeEquals(existing.PublicKey, trusteePublicKey.Span);
+                var sameDh  = existing.DHPublicKey is not null
+                    && existing.DHPublicKey.Length == trusteeDHPublicKey.Length
+                    && CryptographicOperations.FixedTimeEquals(existing.DHPublicKey, trusteeDHPublicKey.Span);
+                if (sameEd && sameDh)
+                {
+                    var (sameEvt, sameHash) = AppendEvent(
+                        state,
+                        RecoveryEventType.TrusteeDesignated,
+                        actorNodeId: trusteeNodeId,
+                        targetNodeId: trusteeNodeId,
+                        occurredAt: _clock.UtcNow(),
+                        detail: BuildDetail(
+                            ("trustee.publicKey.hex", Convert.ToHexString(trusteePublicKey.Span)),
+                            ("trustee.dhPublicKey.hex", Convert.ToHexString(trusteeDHPublicKey.Span)),
+                            ("trustee.designation.idempotent", "true")));
+                    var sameNext = CloneStateWith(state, lastEventHash: sameHash);
+                    await _store.SaveAsync(sameNext, cancellationToken).ConfigureAwait(false);
+                    return sameEvt;
+                }
                 throw new InvalidOperationException(
-                    $"Trustee '{trusteeNodeId}' is already designated.");
+                    $"Trustee '{trusteeNodeId}' is already designated with different keys.");
             }
             if (state.Trustees.Count >= _options.MaxTrustees)
             {
@@ -78,6 +113,7 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var designation = new TrusteeDesignation(
                 trusteeNodeId,
                 trusteePublicKey.ToArray(),
+                trusteeDHPublicKey.ToArray(),
                 now);
             var trustees = new Dictionary<string, TrusteeDesignation>(state.Trustees, StringComparer.Ordinal)
             {
@@ -90,7 +126,9 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                 actorNodeId: trusteeNodeId,
                 targetNodeId: trusteeNodeId,
                 occurredAt: now,
-                detail: BuildDetail(("trustee.publicKey.hex", Convert.ToHexString(trusteePublicKey.Span))));
+                detail: BuildDetail(
+                    ("trustee.publicKey.hex", Convert.ToHexString(trusteePublicKey.Span)),
+                    ("trustee.dhPublicKey.hex", Convert.ToHexString(trusteeDHPublicKey.Span))));
 
             var next = CloneStateWith(state, trustees: trustees, lastEventHash: hashAfter);
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
@@ -122,6 +160,16 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var trustees = new Dictionary<string, TrusteeDesignation>(state.Trustees, StringComparer.Ordinal);
             trustees.Remove(trusteeNodeId);
 
+            // W#67 PR 5 council MAJOR-2: also wipe the trustee's
+            // persisted seed envelope. The ciphertext is encrypted to
+            // the revoked trustee's DH long-term key; leaving it on
+            // disk means a future compromise of that trustee's DH
+            // private half (the very threat motivating revocation) can
+            // decrypt it and recover the owner's root seed.
+            var seeds = new Dictionary<string, TrusteeEncryptedSeed>(
+                state.TrusteeEncryptedSeeds, StringComparer.Ordinal);
+            seeds.Remove(trusteeNodeId);
+
             var now = _clock.UtcNow();
             var (evt, hashAfter) = AppendEvent(
                 state,
@@ -131,7 +179,10 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                 occurredAt: now,
                 detail: BuildDetail());
 
-            var next = CloneStateWith(state, trustees: trustees, lastEventHash: hashAfter);
+            var next = CloneStateWith(state,
+                trustees: trustees,
+                lastEventHash: hashAfter,
+                trusteeEncryptedSeeds: seeds);
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
             return evt;
         }
@@ -221,6 +272,22 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var designated = state.Trustees[attestation.TrusteeNodeId];
             if (designated.PublicKey.Length != attestation.TrusteePublicKey.Length
                 || !CryptographicOperations.FixedTimeEquals(designated.PublicKey, attestation.TrusteePublicKey))
+            {
+                return Drop();
+            }
+
+            // W#67 PR 5 MAJOR-2 binding — also cross-check the trustee's
+            // per-team X25519 public key against the designation. Without
+            // this, a compromised trustee (or attacker who learned a
+            // trustee's NodeId + Ed25519 pubkey) could submit an attestation
+            // whose seed-envelope is Boxed against an attacker-controlled
+            // DH key whose private half they hold — letting them inject a
+            // rogue seed into the recovering device's rekey. Constant-time
+            // comparison + length check.
+            if (designated.DHPublicKey is null
+                || attestation.TrusteeDHPublicKey is null
+                || designated.DHPublicKey.Length != attestation.TrusteeDHPublicKey.Length
+                || !CryptographicOperations.FixedTimeEquals(designated.DHPublicKey, attestation.TrusteeDHPublicKey))
             {
                 return Drop();
             }
@@ -384,6 +451,24 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
     }
 
     /// <inheritdoc />
+    public async Task<TrusteeEncryptedSeed?> GetTrusteeEncryptedSeedAsync(
+        string trusteeNodeId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(trusteeNodeId);
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await _store.LoadAsync(cancellationToken).ConfigureAwait(false);
+            return state.TrusteeEncryptedSeeds.TryGetValue(trusteeNodeId, out var env) ? env : null;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <inheritdoc />
     public async Task SetupTrusteeAsync(
         string trusteeNodeId,
         TrusteeEncryptedSeed encryptedSeed,
@@ -454,7 +539,18 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                 .Where(a => state.Trustees.ContainsKey(a.TrusteeNodeId))
                 .ToList();
 
-            var next = CloneStateWith(state, completed: true, lastEventHash: hashAfter);
+            // W#67 PR 5 council R-4: wipe the persisted trustee
+            // seed envelopes on RecoveryCompleted. They are now
+            // single-use (the recovering device's completion handler
+            // has read the attestations above); leaving them on disk
+            // gives a future trustee-DH-key compromise an indefinite
+            // window to recover the OLD root seed (which the rekey
+            // just rotated away from). Forward-secrecy guarantee.
+            var next = CloneStateWith(
+                state,
+                completed: true,
+                lastEventHash: hashAfter,
+                trusteeEncryptedSeeds: new Dictionary<string, TrusteeEncryptedSeed>(StringComparer.Ordinal));
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
             return new RecoveryCompletionResult(evt, attestations);
         }

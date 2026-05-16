@@ -127,6 +127,10 @@ public sealed class X25519KeyAgreement : IX25519KeyAgreement
             }
             catch (AuthenticationTagMismatchException)
             {
+                // W#67 PR 5 council R-2: zero the plaintext buffer so
+                // any partially-written bytes from the failed decrypt
+                // do not sit on the GC heap until collection.
+                CryptographicOperations.ZeroMemory(plaintext);
                 return null;
             }
 

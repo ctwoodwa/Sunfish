@@ -81,6 +81,9 @@
     <!-- W#66 — RecoveryAttestationSubmitter composes W#65 ISessionSignerAccessor
          with IRecoveryCoordinator; MAUI-free (no Razor / no MAUI deps). -->
     <Compile Include="..\Services\RecoveryAttestationSubmitter.cs" Link="Anchor\RecoveryAttestationSubmitter.cs" />
+    <!-- W#67 PR 5 — TrusteeSetupService composes IRecoveryCoordinator +
+         IRootSeedProvider + IX25519KeyAgreement; MAUI-free. -->
+    <Compile Include="..\Services\TrusteeSetupService.cs" Link="Anchor\TrusteeSetupService.cs" />
   </ItemGroup>
 
   <ItemGroup>
