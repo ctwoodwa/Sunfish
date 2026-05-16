@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.WorkOrders</PackageId>
+    <Description>WorkOrder + MaintenanceSchedule + Contractor entities for the Sunfish Anchor native work-cluster domain. Day-to-day repair tickets, preventive maintenance, contractor assignments, and deficiency hand-offs from blocks-property-*. Distinct from blocks-workflow (state-machine engine).</Description>
+    <PackageTags>work-order;maintenance;contractor;repair-ticket;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.WorkOrders.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+</Project>
