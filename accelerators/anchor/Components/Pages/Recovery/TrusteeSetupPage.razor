@@ -1,0 +1,158 @@
+@page "/recovery/trustee-setup"
+@using System.Security.Cryptography
+@using Sunfish.Foundation.Recovery
+@inject IRecoveryCoordinator Recovery
+@inject NavigationManager Nav
+
+<PageTitle>Trustee Setup · Recovery · Sunfish Anchor</PageTitle>
+
+@* W#63 Phase 1 — designate trustees for ADR 0046 social recovery.
+   Per XO ruling 2026-05-16: operator collects (NodeId, public key) from
+   each trustee out-of-band, pastes the base64url-encoded public key here,
+   verifies the rendered fingerprint with the trustee verbally. QR-code
+   pairing is a Phase 1.x enhancement. *@
+
+<div class="recovery-trustee">
+    <header>
+        <a class="recovery-trustee__link" href="recovery/status">← Back to recovery status</a>
+        <h1>Designate trustees</h1>
+        <p class="recovery-trustee__hint">
+            Add the people you trust to approve a recovery of this Sunfish identity.
+            Get the trustee's NodeId and Ed25519 public key out-of-band (Signal, encrypted email, in-person)
+            and paste them below. Read the rendered fingerprint aloud to the trustee to confirm.
+        </p>
+    </header>
+
+    <form @onsubmit="OnSubmitAsync" @onsubmit:preventDefault>
+        <label>
+            <span>Name (display only)</span>
+            <input type="text" @bind="_name" placeholder="e.g. Sister Alice" />
+        </label>
+
+        <label>
+            <span>NodeId</span>
+            <input type="text" @bind="_nodeId" placeholder="node-id from trustee's invitation" />
+        </label>
+
+        <label>
+            <span>Ed25519 public key (base64url, 32 bytes)</span>
+            <textarea @bind="_publicKeyBase64Url" rows="3"
+                      placeholder="paste base64url-encoded public key"></textarea>
+        </label>
+
+        <button type="submit" disabled="@(_busy || !CanSubmit)">@(_busy ? "Designating…" : "Designate trustee")</button>
+    </form>
+
+    @if (_error is not null)
+    {
+        <p class="recovery-trustee__error">@_error</p>
+    }
+
+    @if (_lastDesignated is not null)
+    {
+        <section class="recovery-trustee__success">
+            <strong>Trustee designated.</strong>
+            <p>Read this fingerprint aloud to the trustee to confirm you have their correct key:</p>
+            <p class="recovery-trustee__fingerprint">@_lastFingerprint</p>
+            <p class="recovery-trustee__hint">
+                Continue adding trustees (quorum is 3-of-5 by default) or
+                <a href="recovery/status">return to recovery status</a>.
+            </p>
+        </section>
+    }
+</div>
+
+@code {
+    private string _name = "";
+    private string _nodeId = "";
+    private string _publicKeyBase64Url = "";
+    private string? _error;
+    private string? _lastDesignated;
+    private string? _lastFingerprint;
+    private bool _busy;
+
+    private bool CanSubmit =>
+        !string.IsNullOrWhiteSpace(_nodeId) && !string.IsNullOrWhiteSpace(_publicKeyBase64Url);
+
+    private async Task OnSubmitAsync()
+    {
+        _error = null; _lastDesignated = null; _lastFingerprint = null;
+        if (!CanSubmit) return;
+
+        byte[] publicKey;
+        try
+        {
+            publicKey = Base64UrlDecode(_publicKeyBase64Url.Trim());
+        }
+        catch (Exception ex)
+        {
+            _error = $"Public key is not valid base64url: {ex.Message}";
+            return;
+        }
+        if (publicKey.Length != 32)
+        {
+            _error = $"Public key must decode to exactly 32 bytes (Ed25519); got {publicKey.Length}.";
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            await Recovery.DesignateTrusteeAsync(_nodeId.Trim(), publicKey, default);
+            _lastDesignated = _nodeId.Trim();
+            _lastFingerprint = ComputeFingerprint(publicKey);
+            _nodeId = ""; _publicKeyBase64Url = ""; _name = "";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static byte[] Base64UrlDecode(string s)
+    {
+        var padded = s.Replace('-', '+').Replace('_', '/');
+        switch (padded.Length % 4)
+        {
+            case 2: padded += "=="; break;
+            case 3: padded += "="; break;
+        }
+        return Convert.FromBase64String(padded);
+    }
+
+    private static string ComputeFingerprint(byte[] publicKey)
+    {
+        var hash = SHA256.HashData(publicKey);
+        // First 8 bytes → colon-separated hex pairs, e.g. "A1:B2:C3:D4:E5:F6:78:90"
+        var sb = new System.Text.StringBuilder(23);
+        for (var i = 0; i < 8; i++)
+        {
+            if (i > 0) sb.Append(':');
+            sb.Append(hash[i].ToString("X2"));
+        }
+        return sb.ToString();
+    }
+}
+
+<style>
+    .recovery-trustee { max-width: 720px; margin: 0 auto; padding: 1rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .recovery-trustee__link { color: #2563eb; font-size: 0.875rem; text-decoration: none; }
+    .recovery-trustee__link:hover { text-decoration: underline; }
+    .recovery-trustee h1 { font-size: 1.75rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .recovery-trustee__hint { color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem; line-height: 1.5; }
+    .recovery-trustee form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .recovery-trustee label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: #374151; }
+    .recovery-trustee input, .recovery-trustee textarea { padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-family: inherit; font-size: 0.875rem; }
+    .recovery-trustee textarea { font-family: Consolas, Menlo, monospace; }
+    .recovery-trustee button { padding: 0.5rem 1rem; background: #2563eb; color: #fff; border: 0; border-radius: 0.25rem; font-size: 0.875rem; cursor: pointer; }
+    .recovery-trustee button:hover:not(:disabled) { background: #1d4ed8; }
+    .recovery-trustee button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .recovery-trustee__error { padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 0.25rem; font-size: 0.875rem; margin: 1rem 0 0; }
+    .recovery-trustee__success { margin-top: 1rem; padding: 1rem 1.25rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.5rem; color: #047857; font-size: 0.875rem; }
+    .recovery-trustee__success strong { display: block; margin-bottom: 0.25rem; }
+    .recovery-trustee__fingerprint { font-family: Consolas, Menlo, monospace; font-size: 1.125rem; color: #111827; background: #fff; padding: 0.5rem 0.75rem; border-radius: 0.25rem; border: 1px solid #d1fae5; }
+</style>
