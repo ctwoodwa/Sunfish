@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T19:43:10.236Z
-> Files: 3835 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-16T01:40:59.554Z
+> Files: 3867 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../../../../private/tmp/wt-coordination-move/icm/_state/
 
@@ -557,6 +557,39 @@
 
 - `W51-quarterdeck-entry-point-surface.md` — Notes (~446 tok)
 
+## ../../../../../tmp/wt-checkbox-p03/accelerators/bridge/Sunfish.Bridge.Client/Services/
+
+- `ProviderSwitcher.cs` — Class: ProviderSwitcher (~6083 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/apps/kitchen-sink/Services/
+
+- `ProviderSwitcher.cs` — Class: ProviderSwitcher (~6180 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/
+
+- `SunfishDataGrid.razor` (~6823 tok)
+- `SunfishDataGrid.Rendering.cs` — Row, cell, and fragment rendering logic for SunfishDataGrid. (~8180 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Providers/Bootstrap/
+
+- `BootstrapCssProvider.cs` — Maps Sunfish component state to Bootstrap 5.3 CSS classes. Uses native Bootstrap classes where a dir (~12798 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Providers/FluentUI/
+
+- `FluentUICssProvider.cs` — Class: FluentUICssProvider (~9540 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Providers/Material/
+
+- `MaterialCssProvider.cs` — Class: MaterialCssProvider (~9397 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/tests/
+
+- `Stubs.cs` — Class: StubCssProvider (~4212 tok)
+
+## ../../../../../tmp/wt-checkbox-p03/packages/ui-core/Contracts/
+
+- `ISunfishCssProvider.cs` — Defines the contract for a design-system CSS provider. Each implementation (e.g., Fluent UI, Materia (~12678 tok)
+
 ## ../../../../../tmp/wt-design-tokens-fix/packages/foundation-transport/tests/
 
 - `MdnsPeerTransportTests.cs` — Local-LAN end-to-end smoke test per ADR 0061 P3 acceptance gate. Two <see cref="MdnsPeerTransport"/> (~2370 tok)
@@ -642,6 +675,10 @@
 
 - `SunfishDialog.razor` — Declares string (~3245 tok)
 
+## ../../../../../tmp/wt-style-grid-dark/packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/
+
+- `_data-grid.scss` — ================================================================= (~5703 tok)
+
 ## ../../../../../tmp/wt-w1-wsb/packages/foundation-assets-postgres/Audit/
 
 - `PostgresAuditLog.cs` — EF Core + PostgreSQL <see cref="IAuditLog"/>. (~2045 tok)
@@ -691,6 +728,47 @@
 ## ../../../../../tmp/wt-w23-2-p2/packages/kernel-audit/
 
 - `AuditEventType.cs` — Discriminator for the kind of event captured in an <see cref="AuditRecord"/>. (~14159 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/anchor/
+
+- `MauiProgram.cs` — Class: MauiProgram (~5675 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~3020 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/anchor/Cockpit/
+
+- `CockpitPermissions.cs` — Owner cockpit role + area permissions matrix (W#29 hand-off cluster OQ1). Mirror lives at <c>acceler (~977 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/anchor/Components/Layout/
+
+- `NavMenu.razor` (~1688 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/anchor/Components/Pages/
+
+- `CockpitLayout.razor` (~601 tok)
+- `CockpitPropertySelectorPage.razor` (~1414 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/
+
+- `Program.cs` — Class: Program (~6775 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Cockpit/
+
+- `CockpitEndpoints.cs` — Bridge route family for the W#29 Owner Web Cockpit. All routes are guarded by <c>CockpitPolicy</c> ( (~979 tok)
+- `CockpitPermissions.cs` — Owner cockpit role + area permissions matrix (W#29 hand-off cluster OQ1). Mirror lives at <c>acceler (~973 tok)
+
+## ../../../../../tmp/wt-w29-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/
+
+- `CockpitEndpointsTests.cs` — W#29 Phase 1 — route-guard + handler tests for the cockpit endpoint family. The Bridge integration t (~1346 tok)
+
+## ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/
+
+- `app.tsx` — queryClient (~2002 tok)
+
+## ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/cockpit/
+
+- `api.ts` — W#29 Phase 1 — Owner cockpit API client. (~265 tok)
+- `CockpitLayout.tsx` — W#29 Phase 1 — Owner cockpit shell layout. (~617 tok)
+- `PropertySelector.tsx` — W#29 Phase 1 — Cockpit landing page. Lists every property the (~783 tok)
 
 ## ../../../../../tmp/wt-w45-p45-pr1/apps/docs/blocks/crew-comms/
 
@@ -6688,6 +6766,7 @@
 - `cob-idle-2026-05-14T05-16Z-w60-p4-gated.md` (~121 tok)
 - `cob-question-2026-05-12T21-00Z-w1-wsb-circular-dependency.md` (~331 tok)
 - `cob-question-2026-05-13T02-21Z-w60-userservice-oidc-design.md` (~279 tok)
+- `cob-question-2026-05-15T07-15Z-datagrid-checkbox-input-class.md` — Declares change (~229 tok)
 - `cob-status-2026-05-13T21-34Z-w54-p3a-pr817-open.md` (~148 tok)
 - `cob-status-2026-05-13T22-16Z-w54-p4-pr821-open.md` (~94 tok)
 - `xo-directive-2026-05-06T17-00Z-post-session13-queue.md` — COB Priority Queue (post-session-19) (~1471 tok)
@@ -8065,8 +8144,12 @@
 ## icm/_state/handoffs/
 
 - `foundation-channels-crew-comms-stage06-handoff.md` — Stage 06 Hand-off — W#45 Crew Comms (`foundation-channels` + `blocks-crew-comms`) (~5998 tok)
+- `property-equipment-vehicle-trip-records-stage06-handoff.md` — Hand-off — W#61 Vehicle Equipment Subtype + Trip Records (~2138 tok)
 - `property-ios-field-app-stage06-handoff.md` — Workstream #23 — iOS Field-Capture App (substrate v1) — Stage 06 hand-off (~7628 tok)
 - `property-ios-field-app-stage06-p5-pairing-handoff.md` — W#23 Phase 5 — iOS Field-Capture Pairing Flow — Stage 06 hand-off (~8687 tok)
+- `property-ios-field-app-stage06-w23-3-inspections-handoff.md` — Hand-off — W#23.3 iOS Inspections walkthrough capture flow (~2818 tok)
+- `property-ios-field-app-stage06-w23-4-signatures-handoff.md` — Hand-off — W#23.4 iOS Signatures capture flow (~3539 tok)
+- `property-ios-field-app-stage06-w23-5-mileage-handoff.md` — Hand-off — W#23.5 iOS Mileage capture flow (~4055 tok)
 - `property-ios-field-app-stage06-w23-6-work-order-response-handoff.md` — Hand-off — W#23.6 iOS Work-Order Response capture flow (~2038 tok)
 - `property-owner-cockpit-stage06-handoff.md` — Hand-off — Owner Web Cockpit Phase 1 (W#29) (~2783 tok)
 - `w60-collaboration-phase4-stage06-handoff.md` — W#60 Phase 4 — Collaboration + Integrations (~3036 tok)
@@ -8096,6 +8179,8 @@
 ## icm/_state/workstreams/
 
 - `W01-multi-tenancy-type-surface-convention.md` — Notes (~436 tok)
+- `W23-ios-field-capture-app-substrate-v1.md` — Notes (~1048 tok)
+- `W23.5-ios-mileage-capture-flow.md` — Notes (~399 tok)
 - `W29-owner-web-cockpit.md` — `ready-to-build`; Phase 1 hand-off authored 2026-05-15; OQ1 permissions matrix resolved; status flipped from design-in-flight (~420 tok)
 - `W46-shared-design-system-load-bearing-w-35-ship-architecture-fol.md` — Notes (~1253 tok)
 - `W47-w-42-follow-on-anchor-maui-concrete-per-adapter-ui-surface-f.md` — Notes (~728 tok)
@@ -8108,6 +8193,7 @@
 - `W58-identity-atlas-implementations-anchor-bridge.md` — Notes (~760 tok)
 - `W59-crew-comms-anchor-mvp-demo-integration.md` — Notes (~658 tok)
 - `W60-erpnext-composition-pivot-react-ui.md` — Notes (~926 tok)
+- `W61-vehicle-equipment-subtype-trip-records.md` — Notes (~316 tok)
 
 ## icm/pipelines/sunfish-inverted-stack-conformance/
 
