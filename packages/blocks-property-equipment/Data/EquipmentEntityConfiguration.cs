@@ -76,6 +76,22 @@ public sealed class EquipmentEntityConfiguration : IEntityTypeConfiguration<Equi
             warranty.Property(w => w.CoverageNotes);
         });
 
+        // W#61 — VehicleMetadata as an owned complex type. Always non-null
+        // on the persisted row (EFCore requires owned-one columns to exist);
+        // domain model treats VehicleData == null as "this equipment is not
+        // a vehicle." Use OwnsOne with a NavigationBuilder predicate to skip
+        // hydrating the navigation when all fields are default — handled by
+        // the consumer when materializing rows.
+        builder.OwnsOne(x => x.VehicleData, vehicle =>
+        {
+            vehicle.Property(v => v.Vin).HasMaxLength(32);
+            vehicle.Property(v => v.Make).HasMaxLength(64);
+            vehicle.Property(v => v.Model).HasMaxLength(64);
+            vehicle.Property(v => v.Year);
+            vehicle.Property(v => v.LicensePlate).HasMaxLength(32);
+            vehicle.Property(v => v.CurrentOdometer).HasPrecision(12, 2);
+        });
+
         builder.HasIndex(x => new { x.TenantId, x.Property, x.DisposedAt })
             .HasDatabaseName("ix_property_equipment_asset_tenant_property_disposed");
 

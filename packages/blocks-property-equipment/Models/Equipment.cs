@@ -77,6 +77,13 @@ public sealed record Equipment : IMustHaveTenant
     /// <summary>Optional warranty metadata.</summary>
     public WarrantyMetadata? Warranty { get; init; }
 
+    /// <summary>
+    /// Vehicle-specific metadata. Non-null only when <see cref="Class"/> is
+    /// <see cref="EquipmentClass.Vehicle"/>; null on all other classes.
+    /// W#61 addition; unblocks the iOS Mileage capture flow (W#23.5).
+    /// </summary>
+    public VehicleMetadata? VehicleData { get; init; }
+
     /// <summary>Free-text operator notes.</summary>
     public string? Notes { get; init; }
 
