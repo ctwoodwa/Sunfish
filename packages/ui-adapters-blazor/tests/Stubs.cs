@@ -154,6 +154,7 @@ internal sealed class StubCssProvider : ISunfishCssProvider
     public string DataGridFilterRowClass() => string.Empty;
     public string DataGridFilterCellClass() => string.Empty;
     public string DataGridGroupHeaderClass() => string.Empty;
+    public string DataGridCheckboxInputClass() => string.Empty;
     public string DataSheetClass(bool isLoading) => string.Empty;
     public string DataSheetCellClass(CellState state, bool isActive, bool isEditable) => string.Empty;
     public string DataSheetHeaderCellClass(bool isSortable) => string.Empty;

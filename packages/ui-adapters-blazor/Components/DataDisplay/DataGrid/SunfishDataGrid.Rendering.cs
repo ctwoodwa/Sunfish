@@ -83,15 +83,19 @@ public partial class SunfishDataGrid<TItem>
             builder.CloseElement(); // td
         }
 
-        // Checkbox cell
+        // Checkbox cell — style-audit P0-3. Provider-driven input class
+        // (BS5 emits `form-check-input`; Fluent / Material return empty).
         if (ShowCheckboxColumn)
         {
             var cbItem = item;
+            var checkboxClass = CssProvider.DataGridCheckboxInputClass();
             builder.OpenElement(30, "td");
             builder.AddAttribute(31, "class", "sf-datagrid__checkbox-cell");
             builder.AddAttribute(32, "role", "gridcell");
             builder.OpenElement(33, "input");
             builder.AddAttribute(34, "type", "checkbox");
+            if (!string.IsNullOrEmpty(checkboxClass))
+                builder.AddAttribute(34, "class", checkboxClass);
             builder.AddAttribute(35, "checked", isSelected);
             builder.AddAttribute(36, "aria-label", "Select row");
             builder.AddEventStopPropagationAttribute(37, "onclick", true);

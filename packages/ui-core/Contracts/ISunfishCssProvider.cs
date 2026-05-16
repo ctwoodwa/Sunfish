@@ -614,6 +614,14 @@ public interface ISunfishCssProvider
     /// <summary>Returns the CSS class(es) for a group header row (when grouping is enabled).</summary>
     string DataGridGroupHeaderClass();
 
+    /// <summary>
+    /// Returns the CSS class(es) for a checkbox input element rendered inside a
+    /// data grid selection cell (e.g., Bootstrap's <c>"form-check-input"</c>).
+    /// Providers whose design system styles checkboxes without an explicit class
+    /// (Fluent, Material) return <see cref="string.Empty"/>.
+    /// </summary>
+    string DataGridCheckboxInputClass();
+
     // ── DataSheet ───────────────────────────────────────────────
 
     /// <summary>Returns the CSS class(es) for a data sheet root.</summary>

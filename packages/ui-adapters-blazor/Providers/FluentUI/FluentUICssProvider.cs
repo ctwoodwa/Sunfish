@@ -582,6 +582,11 @@ public class FluentUICssProvider : ISunfishCssProvider
 
     public string DataGridGroupHeaderClass() => "sf-datagrid-group-header";
 
+    // Fluent renders native checkboxes via the Fluent v9 Checkbox web component
+    // (consumer-supplied) or the bare <input type="checkbox"> falls through to
+    // the Fluent theme stylesheet. No class hook needed at the input element.
+    public string DataGridCheckboxInputClass() => string.Empty;
+
     // DataSheet
     public string DataSheetClass(bool isLoading) =>
         new CssClassBuilder()

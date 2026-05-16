@@ -105,6 +105,7 @@
                             @if (SelectionMode == GridSelectionMode.Multiple)
                             {
                                 <input type="checkbox"
+                                       class="@CssProvider.DataGridCheckboxInputClass()"
                                        checked="@(_selectedItems.Count > 0 && _selectedItems.Count == _displayedItems.Count)"
                                        aria-label="Select all rows"
                                        @onchange="OnSelectAllChanged" />

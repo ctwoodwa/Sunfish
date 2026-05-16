@@ -243,6 +243,7 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     public string DataGridFilterRowClass() => Css.DataGridFilterRowClass();
     public string DataGridFilterCellClass() => Css.DataGridFilterCellClass();
     public string DataGridGroupHeaderClass() => Css.DataGridGroupHeaderClass();
+    public string DataGridCheckboxInputClass() => Css.DataGridCheckboxInputClass();
 
     // ── DataSheet ──
     public string DataSheetClass(bool isLoading) => Css.DataSheetClass(isLoading);
