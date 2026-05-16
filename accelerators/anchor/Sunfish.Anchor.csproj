@@ -150,6 +150,9 @@
         <ProjectReference Include="..\..\packages\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
         <!-- W#29 Phase 3 — work-orders pages read IMaintenanceService. -->
         <ProjectReference Include="..\..\packages\blocks-maintenance\Sunfish.Blocks.Maintenance.csproj" />
+        <!-- W#29 Phase 5 — dashboard joins leases + inspections per unit. -->
+        <ProjectReference Include="..\..\packages\blocks-leases\Sunfish.Blocks.Leases.csproj" />
+        <ProjectReference Include="..\..\packages\blocks-inspections\Sunfish.Blocks.Inspections.csproj" />
         <ProjectReference Include="..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
         <ProjectReference Include="..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />

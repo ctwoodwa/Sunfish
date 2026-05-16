@@ -1,0 +1,208 @@
+@page "/cockpit/properties/{PropertyIdValue}/dashboard"
+@layout CockpitLayout
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Inspections.Models
+@using Sunfish.Blocks.Inspections.Services
+@using Sunfish.Blocks.Leases.Models
+@using Sunfish.Blocks.Leases.Services
+@using Sunfish.Blocks.Maintenance.Models
+@using Sunfish.Blocks.Maintenance.Services
+@using Sunfish.Blocks.Properties.Models
+@using Sunfish.Blocks.Properties.Services
+@using Sunfish.Foundation.Assets.Common
+@inject IPropertyRepository Properties
+@inject IPropertyUnitRepository Units
+@inject ILeaseService Leases
+@inject IInspectionsService Inspections
+@inject IMaintenanceService Maintenance
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Dashboard · @(PropertyIdValue ?? "") · Cockpit</PageTitle>
+
+@* W#29 Phase 5 — per-property dashboard. Four widgets per hand-off:
+   vacancy rate, 30/60/90-day renewal radar, work-order rollup
+   (Open / InProgress / Blocked), overdue-inspection unit list. *@
+
+@if (_loadError is not null)
+{
+    <div class="cockpit-dash-error">
+        <strong>Failed to load dashboard.</strong>
+        <p>@_loadError</p>
+    </div>
+}
+else if (_notFound)
+{
+    <div class="cockpit-dash-empty">
+        <h2>Property not found</h2>
+        <a href="cockpit">← Back to cockpit</a>
+    </div>
+}
+else if (!_loaded)
+{
+    <p class="cockpit-dash-loading">Loading dashboard…</p>
+}
+else
+{
+    <header class="cockpit-dash-header">
+        <a class="cockpit-dash-link" href="@($"cockpit/properties/{Uri.EscapeDataString(PropertyIdValue!)}")">← Back to property</a>
+        <h1>Dashboard</h1>
+        <p class="cockpit-dash-meta">@PropertyIdValue</p>
+    </header>
+
+    <div class="cockpit-dash-grid">
+        <div class="cockpit-dash-card">
+            <p class="cockpit-dash-card__title">Vacancy</p>
+            <p class="cockpit-dash-card__value">@(_totalUnits == 0 ? "0" : ((_vacantUnits * 100.0 / _totalUnits)).ToString("F0"))%</p>
+            <p class="cockpit-dash-card__hint">@_vacantUnits of @_totalUnits @(_totalUnits == 1 ? "unit" : "units") vacant</p>
+        </div>
+        <div class="cockpit-dash-card">
+            <p class="cockpit-dash-card__title">Work orders</p>
+            <p class="cockpit-dash-card__value">@(_woOpen + _woInProgress + _woBlocked)</p>
+            <p class="cockpit-dash-card__hint">@_woOpen open · @_woInProgress in progress · @_woBlocked blocked</p>
+        </div>
+        <div class="cockpit-dash-card">
+            <p class="cockpit-dash-card__title">Overdue inspections</p>
+            <p class="cockpit-dash-card__value">@_overdueUnitIds.Count</p>
+            <p class="cockpit-dash-card__hint">unit@(_overdueUnitIds.Count == 1 ? "" : "s") not inspected in 12+ months</p>
+        </div>
+        <div class="cockpit-dash-card">
+            <p class="cockpit-dash-card__title">Renewals (90 days)</p>
+            <p class="cockpit-dash-card__value">@(_bucketCounts[0] + _bucketCounts[1] + _bucketCounts[2])</p>
+            <p class="cockpit-dash-card__hint">@_bucketCounts[0]≤30d · @_bucketCounts[1]≤60d · @_bucketCounts[2]≤90d</p>
+        </div>
+    </div>
+
+    @if (_overdueUnitIds.Count > 0)
+    {
+        <section class="cockpit-dash-overdue">
+            <h2>Overdue inspection units</h2>
+            <ul>
+                @foreach (var u in _overdueUnitIds)
+                {
+                    <li><code>@u</code></li>
+                }
+            </ul>
+        </section>
+    }
+}
+
+@code {
+    [Parameter] public string? PropertyIdValue { get; set; }
+
+    private static readonly int[] RenewalBucketDays = [30, 60, 90];
+    private static readonly TimeSpan OverdueThreshold = TimeSpan.FromDays(365);
+
+    private bool _loaded;
+    private bool _notFound;
+    private string? _loadError;
+    private int _totalUnits;
+    private int _vacantUnits;
+    private int _woOpen, _woInProgress, _woBlocked;
+    private readonly int[] _bucketCounts = new int[3];
+    private List<string> _overdueUnitIds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded) { Nav.NavigateTo("/onboarding", replace: true); return; }
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null; _notFound = false; _loaded = false;
+        if (string.IsNullOrWhiteSpace(PropertyIdValue)) { _notFound = true; return; }
+
+        try
+        {
+            var tenant = new TenantId(Session.TeamId ?? "anchor-tenant");
+            var propId = new PropertyId(PropertyIdValue);
+
+            var property = await Properties.GetByIdAsync(tenant, propId, default);
+            if (property is null) { _notFound = true; return; }
+
+            var units = await Units.ListByPropertyAsync(tenant, propId, default);
+            var unitIds = units.Select(u => u.Id).ToHashSet();
+            _totalUnits  = units.Count;
+            _vacantUnits = units.Count(u => u.Status == UnitStatus.Available);
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+
+            if (unitIds.Count > 0)
+            {
+                await foreach (var lease in Leases.ListAsync(new ListLeasesQuery { Phase = LeasePhase.Active }, default))
+                {
+                    if (!unitIds.Contains(lease.UnitId)) continue;
+                    var daysOut = lease.EndDate.DayNumber - today.DayNumber;
+                    if (daysOut < 0) continue;
+                    for (var i = 0; i < RenewalBucketDays.Length; i++)
+                    {
+                        if (daysOut <= RenewalBucketDays[i])
+                        {
+                            _bucketCounts[i]++;
+                            break;
+                        }
+                    }
+                }
+
+                var latestByUnit = new Dictionary<EntityId, DateOnly>();
+                await foreach (var insp in Inspections.ListInspectionsAsync(new ListInspectionsQuery(), default))
+                {
+                    if (!unitIds.Contains(insp.UnitId)) continue;
+                    if (!latestByUnit.TryGetValue(insp.UnitId, out var prev) || insp.ScheduledDate > prev)
+                        latestByUnit[insp.UnitId] = insp.ScheduledDate;
+                }
+                foreach (var unit in units)
+                {
+                    if (!latestByUnit.TryGetValue(unit.Id, out var latest))
+                    {
+                        _overdueUnitIds.Add(unit.Id.ToString());
+                        continue;
+                    }
+                    if (today.DayNumber - latest.DayNumber > OverdueThreshold.TotalDays)
+                        _overdueUnitIds.Add(unit.Id.ToString());
+                }
+            }
+
+            await foreach (var wo in Maintenance.ListWorkOrdersAsync(
+                new ListWorkOrdersQuery { PropertyId = propId }, default))
+            {
+                switch (wo.Status)
+                {
+                    case WorkOrderStatus.Draft:
+                    case WorkOrderStatus.Sent:
+                    case WorkOrderStatus.Accepted:
+                    case WorkOrderStatus.Scheduled:
+                        _woOpen++; break;
+                    case WorkOrderStatus.InProgress:
+                        _woInProgress++; break;
+                    case WorkOrderStatus.OnHold:
+                        _woBlocked++; break;
+                }
+            }
+
+            _loaded = true;
+        }
+        catch (Exception ex) { _loadError = ex.Message; }
+    }
+}
+
+<style>
+    .cockpit-dash-loading { color: #6b7280; padding: 3rem 0; text-align: center; }
+    .cockpit-dash-error { padding: 1rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 0.5rem; }
+    .cockpit-dash-empty { padding: 3rem 1.5rem; text-align: center; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .cockpit-dash-header { margin-bottom: 1.5rem; }
+    .cockpit-dash-link { color: #2563eb; font-size: 0.875rem; text-decoration: none; }
+    .cockpit-dash-link:hover { text-decoration: underline; }
+    .cockpit-dash-header h1 { font-size: 1.5rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .cockpit-dash-meta { color: #6b7280; font-size: 0.875rem; margin: 0; }
+    .cockpit-dash-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .cockpit-dash-card { padding: 1rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .cockpit-dash-card__title { color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+    .cockpit-dash-card__value { font-size: 1.5rem; font-weight: 600; color: #111827; margin: 0.5rem 0 0.25rem; }
+    .cockpit-dash-card__hint { color: #6b7280; font-size: 0.75rem; margin: 0; }
+    .cockpit-dash-overdue { margin-top: 1.5rem; padding: 1rem 1.25rem; border: 1px solid #fde68a; background: #fffbeb; color: #92400e; border-radius: 0.5rem; }
+    .cockpit-dash-overdue h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+    .cockpit-dash-overdue ul { margin: 0; padding-left: 1.25rem; }
+    .cockpit-dash-overdue code { font-family: Consolas, Menlo, monospace; font-size: 0.75rem; }
+</style>

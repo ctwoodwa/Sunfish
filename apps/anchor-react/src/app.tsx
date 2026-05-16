@@ -18,6 +18,7 @@ import { WorkOrderListView } from '@/cockpit/work-orders/WorkOrderListView'
 import { WorkOrderDetailView } from '@/cockpit/work-orders/WorkOrderDetailView'
 import { VendorListView } from '@/cockpit/vendors/VendorListView'
 import { VendorDetailView } from '@/cockpit/vendors/VendorDetailView'
+import { DashboardView } from '@/cockpit/DashboardView'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -178,6 +179,7 @@ function AppLayout() {
             <Route path="work-orders/:workOrderId" element={<WorkOrderDetailView />} />
             <Route path="vendors" element={<VendorListView />} />
             <Route path="vendors/:vendorId" element={<VendorDetailView />} />
+            <Route path=":propertyId/dashboard" element={<DashboardView />} />
             <Route path=":propertyId" element={<PropertyDetailView />} />
           </Route>
         </Routes>

@@ -54,6 +54,7 @@ public static class CockpitEndpoints
         group.MapPropertyDetail();
         group.MapWorkOrders();
         group.MapVendors();
+        group.MapDashboard();
         return app;
     }
 

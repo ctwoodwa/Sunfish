@@ -62,7 +62,15 @@ export function PropertyDetailView() {
         <Link to="/cockpit" className="text-sm text-blue-600 hover:underline">
           ← Back to cockpit
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">{data.propertyId}</h1>
+        <div className="mt-2 flex items-baseline justify-between gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">{data.propertyId}</h1>
+          <Link
+            to={`/cockpit/${encodeURIComponent(data.propertyId)}/dashboard`}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            View dashboard →
+          </Link>
+        </div>
         <p className="text-sm text-gray-500">
           {data.displayAddress} · {data.kind}
         </p>
