@@ -3,8 +3,8 @@ sort_order: 71
 number: 62
 slug: blocks-properties-property-unit-substrate
 title: "PropertyUnit substrate — additive extension of `blocks-properties`; ships `PropertyUnit` entity + `IPropertyUnitRepository`; unblocks W#29 Phase 1.5 (real property-detail aggregation) and WorkOrder.PropertyId FK"
-status: "ready-to-build"
-status_cell: "`ready-to-build` — hand-off authored 2026-05-16; no prerequisites; immediately buildable; ~8-12h / 3-4 PRs"
+status: "building"
+status_cell: "`building` — **Phase 1 PR #860 merged 2026-05-16** (PropertyUnit entity + IPropertyUnitRepository + InMemory + EFCore + DI + 5 tests); Phase 2 (property-detail real aggregation, W#29 P1.5) next; Phase 3 (WorkOrder.PropertyId FK) after; Phase 4 (docs + ledger flip) last"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/blocks-properties-property-unit-substrate-stage06-handoff.md`"
