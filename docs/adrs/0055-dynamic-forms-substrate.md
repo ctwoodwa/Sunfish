@@ -1,7 +1,7 @@
 ---
 id: 55
 title: Dynamic Forms Substrate
-status: Proposed
+status: Accepted
 date: 2026-04-29
 tier: foundation
 concern:
