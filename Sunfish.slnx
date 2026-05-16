@@ -143,6 +143,10 @@
     <Project Path="packages/blocks-workflow/Sunfish.Blocks.Workflow.csproj" />
     <Project Path="packages/blocks-workflow/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/work-orders/">
+    <Project Path="packages/blocks-work-orders/Sunfish.Blocks.WorkOrders.csproj" />
+    <Project Path="packages/blocks-work-orders/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/forms/">
     <Project Path="packages/blocks-forms/Sunfish.Blocks.Forms.csproj" />
     <Project Path="packages/blocks-forms/tests/tests.csproj" />
