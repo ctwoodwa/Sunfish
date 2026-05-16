@@ -73,7 +73,7 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 **Phase 2 Sunfish-layer workstreams:**
 - [x] ADR 0051 (Payments) Accepted 2026-04-28
 - [x] ADR 0052 (Outbound messaging) Accepted 2026-04-28
-- [ ] WS-E built (blocks-crew-comms → SendGrid outbound bridge; ADR 0052 accepted, hand-off needed)
+- [ ] WS-E built (**W#20 phases 4-9 ARE WS-E** — providers-postmark adapter + inbound webhook + audit + docs; hand-off at `icm/_state/handoffs/property-messaging-substrate-stage06-handoff.md`; COB to continue from Phase 4)
 - [ ] WS-D: **CO decision needed** — ERPNext native Stripe may make this a no-op; defer until W#60 P3 ships
 - [ ] WS-A built (Anchor team-context bound to ERPNext entities for 6-entity setup)
 - [ ] WS-C: **CO decision needed** — ERPNext native bank feed vs. dedicated Plaid integration; defer until W#60 P3
@@ -178,7 +178,7 @@ User on Pro Max ($200/mo). Recent overnight automation run consumed ~830K tokens
 | W#60 P3 (Tauri offline shell) | gated on ADR 0086 Accepted (CO action) | 1-2 weeks after CO flips |
 | W#60 P4 (Collaboration — accountant peer + CPA + tenant) | gated on P3 PASS | 2-3 weeks after P3 |
 | W#60 P5 (@sunfish/contracts + reporting) | PR 1 buildable now; PR 2+ gated on P2 (done) | 1-2 weeks |
-| Phase 2 Sunfish-layer (WS-A, C, D, E, H) | ~18-28 PRs; WS-E and WS-H have no hands-off yet | 3-5 weeks |
+| Phase 2 Sunfish-layer (WS-A, C, D, E, H) | ~18-28 PRs; WS-E = W#20 phases 4-9 (hand-off exists); WS-H gated on W#63 + W#A | 3-5 weeks |
 | ~~ADR 0051 + 0052 drafting~~ | ~~XO research~~ | ✅ Both Accepted 2026-04-28 |
 | Business validation cycle | BDFL-time-bound; first real rent-collection cycle | 2-4 weeks real-world |
 
