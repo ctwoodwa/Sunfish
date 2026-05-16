@@ -4,7 +4,7 @@ number: 62
 slug: blocks-properties-property-unit-substrate
 title: "PropertyUnit substrate — additive extension of `blocks-properties`; ships `PropertyUnit` entity + `IPropertyUnitRepository`; unblocks W#29 Phase 1.5 (real property-detail aggregation) and WorkOrder.PropertyId FK"
 status: "building"
-status_cell: "`building` — **Phase 1 PR #860 merged 2026-05-16**; **Phase 2 PR #861 merged 2026-05-16** (real property-detail aggregation via IPropertyUnitRepository; W#29 Phase 1.5 joint PR); Phase 3 (WorkOrder.PropertyId? nullable FK + ListWorkOrdersQuery.PropertyId filter + open-WO count) next; Phase 4 (docs + ledger flip) last — completes W#29 Phase 5 gate"
+status_cell: "`building` — **Phase 1 PR #860 merged**; **Phase 2 PR #861 merged**; **Phase 3 PR #862 merged 2026-05-16** (WorkOrder.PropertyId? nullable FK + cockpit open-WO count wired); Phase 4 (docs + ledger flip) remaining — flip W#62 → built"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/blocks-properties-property-unit-substrate-stage06-handoff.md`"
