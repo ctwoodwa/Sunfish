@@ -23,7 +23,8 @@ public static class FinancialTaxServiceCollectionExtensions
         services.AddSingleton<ITaxRateLookup, InMemoryTaxRateLookup>();
         services.AddSingleton<ITaxCodeStore, InMemoryTaxCodeStore>();
         services.AddSingleton<ITaxCalculationService, TaxCalculationService>();
-        // PR 4 adds ITaxFormLineMapStore; PR 5 adds the ledger-wiring service.
+        services.AddSingleton<ITaxFormLineMapStore, InMemoryTaxFormLineMapStore>();
+        // PR 5 adds the ledger-wiring service.
         //
         // NOTE: InMemoryTaxRateLookup requires an IAccountResolver from
         // blocks-financial-ledger. Composition consumers must call
