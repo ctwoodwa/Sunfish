@@ -23,7 +23,7 @@
 
 ## Scope summary
 
-This is the **substrate v1 hand-off**. It ships the SwiftUI app shell, local persistence, event-queue contract, outbound sync engine, pairing flow, queue-status UX, and TestFlight smoke test — but **NOT** the 6 capture flows themselves (receipts / assets / inspections / signatures / mileage / work-order-response). Each capture flow is a follow-up Stage 06 hand-off composed on top of this substrate.
+This is the **substrate v1 hand-off**. It ships the SwiftUI app shell, local persistence, event-queue contract, outbound sync engine, pairing flow, queue-status UX, and IPA sideload smoke test — but **NOT** the 6 capture flows themselves (receipts / assets / inspections / signatures / mileage / work-order-response). Each capture flow is a follow-up Stage 06 hand-off composed on top of this substrate.
 
 Why substrate-first: per the W#19 / W#22 / W#27 / W#28 first-slice precedent, shipping a usable-but-narrow substrate that subsequent hand-offs build against is cleaner than a single 30-phase mega-hand-off. Each capture-flow hand-off will be ~3–6 phases targeting one domain.
 
@@ -33,14 +33,14 @@ Why substrate-first: per the W#19 / W#22 / W#27 / W#28 first-slice precedent, sh
 4. **Outbound sync engine** — `URLSessionConfiguration.background` per ADR 0028-A2.2 settings (`discretionary=false`, `sessionSendsLaunchEvents=true`, file-based `uploadTask(with:fromFile:)` for blobs); retry semantics; queue compaction per ADR 0028-A2.7 (5000 events / 500 MB cap; 30/90-day TTL; SQLite VACUUM after ACK'd batches ≥100).
 5. **Pairing flow with Anchor** — Phase 0 stub addendum surface (per W#19 Phase 3 stub precedent in lieu of a pre-ADR per W#23-queued-plan iteration N+3-DROPPED decision). Per-device install identity (Ed25519 root keypair generated locally on first launch + stored in Keychain with `kSecAttrAccessibleAfterFirstUnlock` per ADR 0028-A2.8); Anchor-issued pairing token consumed via Bridge HTTPS + bound to `device_id` derived from the install Ed25519 public key.
 6. **Queue-status home screen + sync UX** — minimal SwiftUI home with queue-status row (`<events queued>` + `<MB blob storage>` + `<last successful sync>`); tap-to-force-sync; user-visible warning at 80% queue cap; user-visible block at 100% per ADR 0028-A2.7.
-7. **TestFlight build + end-to-end smoke test** — submit to App Store Connect TestFlight; first user (BDFL + spouse + close team per W#23 intake item 8) installs; pair to Anchor; submit a smoke-test "Hello" event through to Anchor merge boundary.
+7. **IPA sideload build + end-to-end smoke test** — `xcodebuild archive` + `xcodebuild -exportArchive`; CO installs direct to device via Xcode; pair to Anchor; submit a smoke-test "Hello" event through to Anchor merge boundary. No TestFlight / App Store enrollment required for this phase.
 8. **Ledger flip** — update `icm/_state/active-workstreams.md` row #23 → `built` (substrate-only; capture-flow follow-up hand-offs queued separately).
 
 **NOT in scope** (deferred to follow-up hand-offs):
 - All 6 capture flows (receipts / assets / inspections / signatures / mileage / work-order-response) — each is a separate Stage 06 hand-off composing on top of this substrate
 - Tailscale / mesh-VPN transport upgrade (Phase 2.2; ADR 0061 Tier 2 work)
 - Push notifications (Phase 2.2 per W#23 intake out-of-scope)
-- App Store distribution (Phase 2.3; this hand-off ships TestFlight only)
+- TestFlight / App Store distribution (Phase 2.3; this hand-off ships IPA sideload via Xcode only; public TestFlight / App Store distribution deferred until a clean Apple Developer account, not enterprise-linked, is established)
 - Live Activities / widgets / Apple Watch companion (Phase 2.3+)
 - Full Sunfish kernel port to Swift (Phase 3+; per ADR 0028-A1.3 reconsider triggers)
 - Android version (Phase 4+)
@@ -241,25 +241,37 @@ Per ADR 0028-A2.7 user-visible warning at 80% / block at 100%.
 
 **PR title:** `feat(anchor-mobile-ios): home screen + queue-status UX + settings (W#23 Phase 6, ADR 0028-A2.7)`
 
-### Phase 7 — TestFlight build + first end-to-end smoke test (~2h)
+### Phase 7 — IPA sideload build + first end-to-end smoke test (~2h)
+
+**Distribution path:** IPA sideloading via Xcode. CO installs directly to their device from Xcode — no TestFlight enrollment or Apple Developer Program account required for this phase. Long-term public TestFlight / App Store distribution is deferred until a clean Apple Developer account (not enterprise-linked) is established.
 
 **Tasks:**
-- Configure App Store Connect: TestFlight tester group (BDFL + spouse + close team per W#23 intake item 8); App ID `dev.sunfish.field`; signing certificate + provisioning profile
-- Submit first build to TestFlight (manual upload OR Xcode Cloud OR Fastlane)
+- Configure a free Apple ID (personal, not enterprise-enrolled) or use CO's existing local Xcode signing for device registration
+- Archive and export the IPA:
+  ```bash
+  xcodebuild archive \
+    -scheme SunfishField \
+    -archivePath build/SunfishField.xcarchive
+  xcodebuild -exportArchive \
+    -archivePath build/SunfishField.xcarchive \
+    -exportOptionsPlist ExportOptions-development.plist \
+    -exportPath build/
+  ```
+- `ExportOptions-development.plist` — set `method` to `development`; `signingStyle` to `automatic`; `teamID` to the registered development team (CO's personal Apple ID dev team or free provisioning)
+- Install on iPad via Xcode Organizer (drag IPA) or `ios-deploy` CLI
 - First-pass smoke test:
-  - Install on iPad
   - Pair with Anchor
   - Submit a synthetic "Hello" event (event_type = `Receipt`, payload = `{"hello": "world"}`)
   - Anchor merge boundary receives + processes
   - Anchor desktop UI shows the synthetic event in its received-from-field view (TBD; may need a tiny Anchor-side smoke UI as part of this phase)
 
 **Halt-conditions:**
-- Apple Developer Program membership not active for `dev.sunfish.field` Bundle ID: HALT; CO-class issue (signing cert + DUNS number + business membership)
-- TestFlight rejection on first build (privacy manifest missing, etc.): HALT + iterate on Info.plist / privacy declarations
+- Free provisioning profile expires (7-day rolling expiry on free Apple ID devices): HALT; CO re-registers device or joins Apple Developer Program with a clean personal account ($99/yr, NOT enterprise-linked)
+- Background URLSession (`BGTaskScheduler`, `sessionSendsLaunchEvents`) restricted under free provisioning: document limitation; foreground-sync path is sufficient for smoke test gate
 
-**Gate:** PASS iff TestFlight build is downloadable + smoke test completes end-to-end + audit trail on Anchor shows the event.
+**Gate:** PASS iff IPA installs on CO's iPad via Xcode sideload + smoke test completes end-to-end + audit trail on Anchor shows the event.
 
-**PR title:** `chore(anchor-mobile-ios): TestFlight Phase 1 build + end-to-end smoke (W#23 Phase 7)`
+**PR title:** `chore(anchor-mobile-ios): IPA sideload Phase 1 build + end-to-end smoke (W#23 Phase 7)`
 
 ### Phase 8 — Ledger flip (~0.5h)
 
@@ -282,7 +294,7 @@ Note that capture-flow follow-up hand-offs are queued separately (W#23.1 Receipt
 | 4 | Outbound sync engine + Bridge field-event endpoints | 6.0 |
 | 5 | Pairing flow + 4 AuditEventType | 4.0 |
 | 6 | Home screen + queue-status UX | 3.0 |
-| 7 | TestFlight build + smoke test | 2.0 |
+| 7 | IPA sideload build + smoke test | 2.0 |
 | 8 | Ledger flip + capture-flow queue | 0.5 |
 | **Total** | | **~28.5 h** |
 
@@ -295,7 +307,7 @@ Note that capture-flow follow-up hand-offs are queued separately (W#23.1 Receipt
 3. **GRDB.swift 6.x ABI break** (Phase 2): HALT; verify with XO before bumping
 4. **`NSFileProtectionComplete` interferes with background URLSession reads** (Phase 2): HALT; decide between weaker protection or accept locked-device limitation
 5. **RFC 8785 Swift ↔ .NET canonicalizer divergence** (Phase 3): HALT; XO investigates which side has the bug
-6. **Apple Developer Program membership inactive for `dev.sunfish.field`** (Phase 7): HALT; CO-class spending decision (Apple Developer Program: $99/year; DUNS number for business account; LLC formation may gate)
+6. **Background capabilities restricted under free provisioning profile** (Phase 7): `BGTaskScheduler` + `sessionSendsLaunchEvents` may be unavailable without paid Apple Developer Program membership; foreground-sync path is the fallback for the smoke test gate; full background sync requires a clean (non-enterprise) paid Apple Developer account — deferred to a future phase
 7. **Phase 5 pairing UX requires capabilities not in current Bridge auth model** (e.g., need OIDC + macaroons that don't ship in Phase 2.1): HALT; XO sequences with W#28 / capability-promotion work
 
 ---
@@ -309,7 +321,7 @@ Note that capture-flow follow-up hand-offs are queued separately (W#23.1 Receipt
 - [ ] `URLSessionConfiguration.background` settings match ADR 0028-A2.2
 - [ ] Pairing flow: Anchor issues + iPad consumes; 4 AuditEventType emitted
 - [ ] Queue-status UX: 80% warning + 100% block per ADR 0028-A2.7
-- [ ] TestFlight build downloadable + end-to-end smoke test passes
+- [ ] IPA sideload installs on CO's iPad via Xcode + end-to-end smoke test passes
 - [ ] Ledger row #23 → `built` (substrate v1)
 - [ ] Capture-flow follow-up hand-offs queued (W#23.1 Receipts at minimum; remaining 5 to be authored as priority surfaces)
 
