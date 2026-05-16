@@ -82,5 +82,5 @@ Lease.Draft  (W#27, EXTEND)
 - [Jurisdiction rules](./jurisdiction-rules.md)
 - [ADR 0057](../../../docs/adrs/0057-leasing-pipeline-fair-housing.md) — Leasing pipeline architecture
 - [ADR 0059](../../../docs/adrs/0059-public-listing-surface.md) — Public listing surface (W#28)
-- [ADR 0043](../../../docs/adrs/0043-capability-tiers.md) — Anonymous / Prospect / Applicant tiers
+- [ADR 0043](../../../docs/adrs/0043-unified-threat-model-public-oss-chain-of-permissiveness.md) — Anonymous / Prospect / Applicant tiers (capability-tier addendum is planned future work per ADR 0059)
 - [W#22 hand-off](../../../icm/_state/handoffs/property-leasing-pipeline-stage06-handoff.md)

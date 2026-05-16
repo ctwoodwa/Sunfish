@@ -90,6 +90,6 @@ services.AddInMemoryTenantKeyProvider();  // foundation-recovery stub for Phase 
 
 - [ADR 0052](../../../docs/adrs/0052-bidirectional-messaging-substrate.md)
 - [ADR 0013](../../../docs/adrs/0013-provider-neutrality-enforcement.md) — provider-neutrality
-- [ADR 0046](../../../docs/adrs/0046-recovery-multisig-key-recovery.md) — Foundation.Recovery (provides `ITenantKeyProvider`)
+- [ADR 0046](../../../docs/adrs/0046-key-loss-recovery-scheme-phase-1.md) — Foundation.Recovery (provides `ITenantKeyProvider`)
 - [ADR 0049](../../../docs/adrs/0049-audit-trail-substrate.md) — audit emission target
 - [W#20 hand-off](../../../icm/_state/handoffs/property-messaging-substrate-stage06-handoff.md)

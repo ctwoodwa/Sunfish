@@ -93,6 +93,6 @@ Every verification + denial emits a `kernel-audit` record:
 
 - [Inquiry-Form Defense](./inquiry-defense.md) — 5-layer abuse-defense pipeline (Anonymous tier)
 - [Audit Emission](./audit-emission.md) — full audit-event taxonomy for the public-listings substrate
-- [ADR 0043 addendum](../../../docs/adrs/0043-capability-gradient.md) — capability-tier framework
+- [ADR 0043](../../../docs/adrs/0043-unified-threat-model-public-oss-chain-of-permissiveness.md) — capability-tier framework (capability-gradient addendum is planned future work per ADR 0059)
 - [ADR 0059](../../../docs/adrs/0059-public-listing-surface.md) — public-listing surface architecture
 - [ADR 0032](../../../docs/adrs/0032-multi-team-anchor-workspace-switching.md) — macaroon substrate
