@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Blocks.CrewComms.DependencyInjection;
 using Sunfish.Blocks.Properties.DependencyInjection;
+using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Foundation.IdentityAtlas;
 using Sunfish.Foundation.Transport.DependencyInjection;
@@ -224,6 +225,9 @@ public static class MauiProgram
 		// resolve it from local-first DI; the InMemory repo is the only impl
 		// today and is replaced once a SQLCipher-backed adapter ships.
 		builder.Services.AddInMemoryProperties();
+		// W#29 Phase 2 — property detail page reads equipment via
+		// IEquipmentRepository. Same in-memory swap-out story as properties.
+		builder.Services.AddInMemoryPropertyEquipment();
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();

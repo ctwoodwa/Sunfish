@@ -146,6 +146,8 @@
         <ProjectReference Include="..\..\packages\blocks-crew-comms\Sunfish.Blocks.CrewComms.csproj" />
         <!-- W#29 Phase 1 — owner cockpit reads property summaries via IPropertyRepository. -->
         <ProjectReference Include="..\..\packages\blocks-properties\Sunfish.Blocks.Properties.csproj" />
+        <!-- W#29 Phase 2 — property detail page reads equipment via IEquipmentRepository. -->
+        <ProjectReference Include="..\..\packages\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
         <ProjectReference Include="..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
         <ProjectReference Include="..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
