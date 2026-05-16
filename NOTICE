@@ -1,0 +1,33 @@
+Sunfish — third-party attribution notices.
+
+This file consolidates required attributions for third-party
+inspiration, design, or code referenced inside the Sunfish codebase.
+Direct npm / NuGet / cargo dependencies are attributed through their
+respective package metadata and ship under their original LICENSE
+files; this NOTICE covers "borrow with attribution" relationships
+where Sunfish code structure follows the shape of an upstream
+open-source project without vendoring the project's source.
+
+License-posture policy: ADR 0088 §3 (Anchor) + ADR 0088 §2 (clean-
+room vs borrow-with-attribution distinction).
+
+
+## Apache OFBiz — accounting template inspiration
+
+  - Upstream: https://ofbiz.apache.org/
+  - License: Apache License 2.0
+  - Referenced by:
+      apps/anchor-tauri/src/services/reports/InvoiceTemplate.tsx
+      apps/anchor-tauri/src/services/reports/ReceiptTemplate.tsx
+  - Inspiration: header + bill-to + line-items + totals + footer
+    layout from `accounting/template/invoice.fo` and payment-
+    document layout from `accounting/template/payment.fo`. No
+    code or markup is copied verbatim; the Sunfish templates use
+    `@react-pdf/renderer` JSX rather than XSL-FO.
+
+  Apache License 2.0 NOTICE preserved per §4(d):
+
+      Apache OFBiz
+      Copyright 2001-2024 The Apache Software Foundation
+
+  Full license: https://www.apache.org/licenses/LICENSE-2.0
