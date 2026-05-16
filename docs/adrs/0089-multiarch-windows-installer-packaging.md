@@ -1,5 +1,5 @@
 ---
-id: 88
+id: 89
 title: Multi-arch Windows Installer Packaging Strategy
 status: Proposed
 date: 2026-05-16
