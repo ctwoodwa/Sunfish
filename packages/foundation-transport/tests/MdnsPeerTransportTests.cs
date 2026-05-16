@@ -107,7 +107,7 @@ public sealed class MdnsPeerTransportTests
         var acceptTask = listener.AcceptTcpClientAsync();
         try
         {
-            var transport = new MdnsPeerTransport();
+            var transport = new MdnsPeerTransport(time: new FakeTimeProvider(Now));
             transport.SeedCacheForTest(RemotePeer, new PeerEndpoint
             {
                 Peer = RemotePeer,
