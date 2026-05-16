@@ -79,10 +79,16 @@ internal sealed class RecoveryGracePollingService : IHostedService, IAsyncDispos
 
     private async Task PollOnceAsync(CancellationToken ct)
     {
-        var evt = await _coordinator.EvaluateGracePeriodAsync(ct).ConfigureAwait(false);
-        if (evt is null) return;
-        if (evt.Type != RecoveryEventType.RecoveryCompleted) return;
-        await _completion.HandleAsync(evt, ct).ConfigureAwait(false);
+        // W#67 PR 3 — EvaluateGracePeriodAsync now returns a
+        // RecoveryCompletionResult? carrying both the event AND the
+        // contributing attestations. Pass the event to the handler for
+        // now; W#67 PR 4 will widen IRecoveryCompletionHandler so the
+        // handler also receives the attestations (needed to decrypt
+        // the trustee seed envelopes for the SQLCipher rekey).
+        var result = await _coordinator.EvaluateGracePeriodAsync(ct).ConfigureAwait(false);
+        if (result is null) return;
+        if (result.Event.Type != RecoveryEventType.RecoveryCompleted) return;
+        await _completion.HandleAsync(result.Event, ct).ConfigureAwait(false);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

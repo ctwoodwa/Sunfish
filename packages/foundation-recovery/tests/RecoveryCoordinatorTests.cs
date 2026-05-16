@@ -400,10 +400,11 @@ public sealed class RecoveryCoordinatorTests
         await f.Coordinator.SubmitAttestationAsync(MakeAttestation(f, request, trustees[1]));
 
         f.Clock.Advance(TimeSpan.FromHours(2));
-        var evt = await f.Coordinator.EvaluateGracePeriodAsync();
+        var result = await f.Coordinator.EvaluateGracePeriodAsync();
 
-        Assert.NotNull(evt);
-        Assert.Equal(RecoveryEventType.RecoveryCompleted, evt!.Type);
+        Assert.NotNull(result);
+        Assert.Equal(RecoveryEventType.RecoveryCompleted, result!.Event.Type);
+        Assert.Equal(2, result.Attestations.Count);
         var status = await f.Coordinator.GetStatusAsync();
         Assert.Equal(RecoveryStatusKind.Completed, status.Kind);
     }
@@ -473,7 +474,7 @@ public sealed class RecoveryCoordinatorTests
         var completed = await f.Coordinator.EvaluateGracePeriodAsync();
 
         Assert.NotNull(completed);
-        Assert.Equal(RecoveryEventType.RecoveryCompleted, completed!.Type);
+        Assert.Equal(RecoveryEventType.RecoveryCompleted, completed!.Event.Type);
 
         var status = await f.Coordinator.GetStatusAsync();
         Assert.Equal(RecoveryStatusKind.Completed, status.Kind);
@@ -486,7 +487,7 @@ public sealed class RecoveryCoordinatorTests
         allEvents.AddRange(att1.Events);
         allEvents.AddRange(att2.Events);
         allEvents.AddRange(att3.Events);
-        allEvents.Add(completed);
+        allEvents.Add(completed.Event);
         for (var i = 1; i < allEvents.Count; i++)
         {
             Assert.NotNull(allEvents[i].PreviousEventHash);
@@ -535,7 +536,7 @@ public sealed class RecoveryCoordinatorTests
         clock.Advance(TimeSpan.FromHours(2));
         var completed = await coordinatorB.EvaluateGracePeriodAsync();
         Assert.NotNull(completed);
-        Assert.Equal(RecoveryEventType.RecoveryCompleted, completed!.Type);
+        Assert.Equal(RecoveryEventType.RecoveryCompleted, completed!.Event.Type);
     }
 
     [Fact]

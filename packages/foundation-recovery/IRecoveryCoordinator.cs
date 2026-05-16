@@ -112,6 +112,25 @@ public interface IRecoveryCoordinator
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// W#67 / ADR 0046-A6 — record a trustee's encrypted root-seed
+    /// envelope at trustee-designation time. The owner's
+    /// <c>TrusteeSetupPage</c> encrypts the install root seed with
+    /// <c>IX25519KeyAgreement.Box</c> against the trustee's per-team
+    /// X25519 public key and calls this method to persist the resulting
+    /// ciphertext + nonce + sender ephemeral public key. The trustee's
+    /// local Anchor reads its own entry during the approval flow to
+    /// re-encrypt the seed toward the recovering device's ephemeral key.
+    /// Idempotent — re-calling with the same NodeId overwrites the prior
+    /// envelope (use when the owner re-runs setup after key rotation).
+    /// </summary>
+    /// <exception cref="ArgumentNullException">If <paramref name="encryptedSeed"/> is null.</exception>
+    /// <exception cref="ArgumentException">If <paramref name="trusteeNodeId"/> is empty or differs from <see cref="TrusteeEncryptedSeed.TrusteeNodeId"/>.</exception>
+    Task SetupTrusteeAsync(
+        string trusteeNodeId,
+        TrusteeEncryptedSeed encryptedSeed,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Re-evaluate the grace window. If quorum is reached, the window
     /// has elapsed, and no dispute landed, the coordinator emits
     /// <see cref="RecoveryEventType.RecoveryCompleted"/> and transitions
@@ -119,12 +138,16 @@ public interface IRecoveryCoordinator
     /// this on startup and on any periodic tick (e.g., every 60 seconds).
     /// </summary>
     /// <returns>
-    /// The emitted <see cref="RecoveryEventType.RecoveryCompleted"/> event
-    /// if completion fired this call; <c>null</c> if no transition was
-    /// warranted (no request, quorum not reached, grace not elapsed,
-    /// already completed/disputed).
+    /// A <see cref="RecoveryCompletionResult"/> carrying the emitted
+    /// <see cref="RecoveryEventType.RecoveryCompleted"/> event and the
+    /// trustee attestations that contributed to quorum (so the host's
+    /// completion handler can decrypt the seed envelopes per
+    /// ADR 0046-A6); <c>null</c> if no transition was warranted (no
+    /// request, quorum not reached, grace not elapsed, already
+    /// completed/disputed). W#67 PR 3 — return type widened from
+    /// <c>RecoveryEvent?</c> to retain the attestations.
     /// </returns>
-    Task<RecoveryEvent?> EvaluateGracePeriodAsync(CancellationToken cancellationToken = default);
+    Task<RecoveryCompletionResult?> EvaluateGracePeriodAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Snapshot of the coordinator's state for host UI consumption.

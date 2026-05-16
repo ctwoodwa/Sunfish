@@ -384,7 +384,41 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
     }
 
     /// <inheritdoc />
-    public async Task<RecoveryEvent?> EvaluateGracePeriodAsync(CancellationToken cancellationToken = default)
+    public async Task SetupTrusteeAsync(
+        string trusteeNodeId,
+        TrusteeEncryptedSeed encryptedSeed,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(trusteeNodeId);
+        ArgumentNullException.ThrowIfNull(encryptedSeed);
+        if (!string.Equals(trusteeNodeId, encryptedSeed.TrusteeNodeId, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"trusteeNodeId ({trusteeNodeId}) must match encryptedSeed.TrusteeNodeId ({encryptedSeed.TrusteeNodeId}).",
+                nameof(encryptedSeed));
+        }
+
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await _store.LoadAsync(cancellationToken).ConfigureAwait(false);
+            var seeds = new Dictionary<string, TrusteeEncryptedSeed>(
+                state.TrusteeEncryptedSeeds, StringComparer.Ordinal)
+            {
+                [trusteeNodeId] = encryptedSeed,
+            };
+
+            var next = CloneStateWith(state, trusteeEncryptedSeeds: seeds);
+            await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<RecoveryCompletionResult?> EvaluateGracePeriodAsync(CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -409,9 +443,20 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                     ("grace.elapsedAt", graceEndsAt.ToString("O")),
                     ("attestations.count", state.Attestations.Count.ToString())));
 
+            // Snapshot the attestations BEFORE clearing/mutating state so
+            // the completion handler can decrypt seed envelopes
+            // (ADR 0046-A6 — W#67 PR 3). Order is not load-bearing for
+            // the protocol (the handler treats decryptions as a
+            // distinct-seed set + majority quorum), but enumerating in
+            // dictionary order keeps the result deterministic across
+            // restarts that re-evaluate the same state.
+            var attestations = state.Attestations.Values
+                .Where(a => state.Trustees.ContainsKey(a.TrusteeNodeId))
+                .ToList();
+
             var next = CloneStateWith(state, completed: true, lastEventHash: hashAfter);
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
-            return evt;
+            return new RecoveryCompletionResult(evt, attestations);
         }
         finally
         {
@@ -482,7 +527,8 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
         IReadOnlyDictionary<string, TrusteeDesignation>? trustees = null,
         bool? disputed = null,
         bool? completed = null,
-        byte[]? lastEventHash = null)
+        byte[]? lastEventHash = null,
+        IReadOnlyDictionary<string, TrusteeEncryptedSeed>? trusteeEncryptedSeeds = null)
     {
         return new RecoveryCoordinatorState
         {
@@ -493,6 +539,7 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             Disputed = disputed ?? source.Disputed,
             Completed = completed ?? source.Completed,
             LastEventHash = lastEventHash ?? source.LastEventHash,
+            TrusteeEncryptedSeeds = trusteeEncryptedSeeds ?? source.TrusteeEncryptedSeeds,
         };
     }
 

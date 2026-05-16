@@ -32,7 +32,8 @@ public sealed class RecoveryGracePollingServiceTests
         var completion  = Substitute.For<IRecoveryCompletionHandler>();
         var evt = NewRecoveryEvent(RecoveryEventType.RecoveryCompleted);
         coordinator.EvaluateGracePeriodAsync(Arg.Any<CancellationToken>())
-                   .Returns<RecoveryEvent?>(evt);
+                   .Returns<RecoveryCompletionResult?>(
+                       evt is null ? null : new RecoveryCompletionResult(evt, Array.Empty<TrusteeAttestation>()));
 
         var svc = new RecoveryGracePollingService(coordinator, completion, FastInterval(),
             NullLogger<RecoveryGracePollingService>.Instance);
@@ -52,7 +53,8 @@ public sealed class RecoveryGracePollingServiceTests
         var completion  = Substitute.For<IRecoveryCompletionHandler>();
         var evt = NewRecoveryEvent(RecoveryEventType.GracePeriodStarted);
         coordinator.EvaluateGracePeriodAsync(Arg.Any<CancellationToken>())
-                   .Returns<RecoveryEvent?>(evt);
+                   .Returns<RecoveryCompletionResult?>(
+                       evt is null ? null : new RecoveryCompletionResult(evt, Array.Empty<TrusteeAttestation>()));
 
         var svc = new RecoveryGracePollingService(coordinator, completion, FastInterval(),
             NullLogger<RecoveryGracePollingService>.Instance);
@@ -70,7 +72,7 @@ public sealed class RecoveryGracePollingServiceTests
         var coordinator = Substitute.For<IRecoveryCoordinator>();
         var completion  = Substitute.For<IRecoveryCompletionHandler>();
         coordinator.EvaluateGracePeriodAsync(Arg.Any<CancellationToken>())
-                   .Returns<RecoveryEvent?>((RecoveryEvent?)null);
+                   .Returns<RecoveryCompletionResult?>((RecoveryCompletionResult?)null);
 
         var svc = new RecoveryGracePollingService(coordinator, completion, FastInterval(),
             NullLogger<RecoveryGracePollingService>.Instance);
@@ -88,7 +90,7 @@ public sealed class RecoveryGracePollingServiceTests
         var coordinator = Substitute.For<IRecoveryCoordinator>();
         var completion  = Substitute.For<IRecoveryCompletionHandler>();
         coordinator.EvaluateGracePeriodAsync(Arg.Any<CancellationToken>())
-                   .Returns<RecoveryEvent?>((RecoveryEvent?)null);
+                   .Returns<RecoveryCompletionResult?>((RecoveryCompletionResult?)null);
 
         var svc = new RecoveryGracePollingService(coordinator, completion, FastInterval(),
             NullLogger<RecoveryGracePollingService>.Instance);
@@ -113,12 +115,14 @@ public sealed class RecoveryGracePollingServiceTests
         var completion  = Substitute.For<IRecoveryCompletionHandler>();
         var callCount = 0;
         coordinator.EvaluateGracePeriodAsync(Arg.Any<CancellationToken>())
-                   .Returns<RecoveryEvent?>(_ =>
+                   .Returns<RecoveryCompletionResult?>(_ =>
                    {
                        callCount++;
                        return callCount == 1
                            ? null
-                           : NewRecoveryEvent(RecoveryEventType.RecoveryCompleted);
+                           : new RecoveryCompletionResult(
+                               NewRecoveryEvent(RecoveryEventType.RecoveryCompleted),
+                               Array.Empty<TrusteeAttestation>());
                    });
 
         var svc = new RecoveryGracePollingService(coordinator, completion, FastInterval(),
