@@ -11,7 +11,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset"] }
+tauri = { version = "2", features = [] }
 tauri-plugin-stronghold = "2"
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
@@ -23,6 +23,16 @@ reqwest = { version = "0.12", features = ["json"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
 url = "2"
+# W#60 P4 PR 1 — OS-keychain backing for Stronghold master key.
+#
+# keyring v3 ships NO default features and will silently fall back to its
+# in-process mock store unless platform backends are explicitly enabled.
+# Council A1.1: enable native backends for all targets.
+#   - `windows-native`        → Credential Manager (DPAPI)
+#   - `apple-native`          → macOS / iOS Keychain
+#   - `sync-secret-service`   → Linux Secret Service (libsecret), sync API
+keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
+rand = "0.8"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt", "macros"] }

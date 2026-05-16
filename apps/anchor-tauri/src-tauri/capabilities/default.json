@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capability for the Anchor main window. Grants Tauri core APIs, the shell plugin (used for opening external URLs in the system browser), and the Stronghold plugin needed by the credentialStore for Bridge auth token storage. W#60 P4 PR 1 — council A1.2.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:default",
+    "stronghold:default",
+    "stronghold:allow-remove-store-record"
+  ]
+}

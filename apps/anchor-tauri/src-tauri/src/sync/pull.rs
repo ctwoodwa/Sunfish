@@ -1,7 +1,21 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use sqlx::SqlitePool;
+use tokio::sync::RwLock;
 
-pub async fn pull_all(pool: &SqlitePool, bridge_base_url: &str, auth_token: &str) -> anyhow::Result<()> {
+/// W#60 P4 PR 1 (council R4) — reads the current Bridge auth token from the
+/// shared state at each HTTP call. Token rotations (login, logout, re-paste)
+/// take effect on the next request without restarting the sync task.
+async fn current_token(token: &Arc<RwLock<String>>) -> String {
+    token.read().await.clone()
+}
+
+pub async fn pull_all(
+    pool: &SqlitePool,
+    bridge_base_url: &str,
+    auth_token: &Arc<RwLock<String>>,
+) -> anyhow::Result<()> {
     pull_table(pool, bridge_base_url, auth_token, "properties", "/api/v1/erpnext/properties", "company").await?;
     pull_table(pool, bridge_base_url, auth_token, "leases", "/api/v1/erpnext/leases", "company").await?;
     pull_table(pool, bridge_base_url, auth_token, "maintenance_tickets", "/api/v1/erpnext/maintenance", "company").await?;
@@ -12,16 +26,17 @@ pub async fn pull_all(pool: &SqlitePool, bridge_base_url: &str, auth_token: &str
 async fn pull_table(
     pool: &SqlitePool,
     bridge_base_url: &str,
-    auth_token: &str,
+    auth_token: &Arc<RwLock<String>>,
     table: &str,
     path: &str,
     fk_col: &str,
 ) -> anyhow::Result<()> {
     let url = format!("{}{}", bridge_base_url, path);
+    let token = current_token(auth_token).await;
     let client = reqwest::Client::new();
     let resp = client
         .get(&url)
-        .bearer_auth(auth_token)
+        .bearer_auth(&token)
         .send()
         .await
         .with_context(|| format!("fetch {url}"))?;
