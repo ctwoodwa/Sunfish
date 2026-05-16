@@ -3,10 +3,10 @@ sort_order: 76
 number: 67
 slug: g6a-social-recovery-seed-delivery-protocol
 title: "W#67 — G6-A: Social recovery seed-delivery protocol (ADR 0046 Phase 2)"
-status: "design-in-flight"
-status_cell: "`design-in-flight` — G7 scan 2026-05-16 identified: `AnchorRecoveryCompletionHandler.HandleAsync` is stubbed because `RecoveryCompleted` event carries no key material; `IEncryptedStore.RotateKeyAsync` EXISTS but requires `newKey` bytes the Phase 1 protocol doesn't deliver; XO research required"
-owner: "research"
-owner_cell: "research (XO)"
+status: "ready-to-build"
+status_cell: "`ready-to-build` — ADR 0046-A6 Accepted 2026-05-16 (CO); hand-off at `icm/_state/handoffs/w67-g6a-social-recovery-seed-delivery-protocol-stage06-handoff.md`; api-change pipeline; ~18-22h / 5-6 PRs"
+owner: "sunfish-PM"
+owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md` (Proposed 2026-05-16) + `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` + `packages/foundation-recovery/RecoveryRequest.cs` + `packages/foundation-recovery/TrusteeAttestation.cs` + `packages/kernel-security/Crypto/IX25519KeyAgreement.cs` + `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` §G6-A"
 ---
 
