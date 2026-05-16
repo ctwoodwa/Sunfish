@@ -132,5 +132,14 @@ test.describe('LoginPage smoke (no token)', () => {
     await expect(page.getByRole('link', { name: 'Properties' })).toBeVisible({ timeout: 60_000 })
     await expect(page.getByRole('button', { name: /Logout/ })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Sign in to Anchor' })).toBeHidden()
+
+    // Capture a screenshot of the rendered AppLayout. Useful for visual
+    // verification of theme-token rendering (dark/light) without requiring a
+    // reviewer to build + run locally. Saved to smoke-artifacts/ which is in
+    // .gitignore — Playwright also auto-attaches it to the HTML report.
+    await page.screenshot({
+      path: 'smoke-artifacts/applayout-post-login.png',
+      fullPage: true,
+    })
   })
 })

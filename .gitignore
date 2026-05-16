@@ -311,6 +311,7 @@ storybook-static/
 **/storybook-static/
 test-results/
 playwright-report/
+smoke-artifacts/
 
 # ui-core build artifacts (a11y-contracts.json + Vite outputs)
 packages/ui-core/dist/
