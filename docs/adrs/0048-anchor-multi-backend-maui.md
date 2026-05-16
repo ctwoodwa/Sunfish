@@ -12,7 +12,10 @@ extends:
   - 44
 supersedes: []
 superseded_by: null
-amendments: []
+amendments:
+  - A1
+  - A2
+  - A3
 ---
 # ADR 0048 — Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly
 
@@ -350,3 +353,54 @@ Per the cohort lesson, A2 re-runs the cited-symbol audit:
 | `accelerators/anchor-mobile-ios/` | ✓ correctly classified introduced-by-W#23 (does NOT exist on `origin/main`; A2.6 confirms path resolution) |
 
 No new `Sunfish.*` source symbols introduced by A2.
+
+
+### A3 (REQUIRED) — γ-scope domain clarification post-W#60 pivot
+
+**Date:** 2026-05-13
+**Driver:** W#60 (ERPNext Composition Pivot, CO UPF plan approved 2026-05-11; Phase 1 PASS 2026-05-12) introduces a parallel Zone A desktop surface — `apps/anchor-tauri/` — built on Tauri v2 + React 19 + Loro CRDT + SQLite, governed by **ADR 0086** (Anchor Tauri-React product surface). The two Anchors now occupy the same architectural slot in paper §20.7 with different domains.
+
+The Anchor's fate intake (`icm/00_intake/output/2026-05-12_anchor-maui-vs-tauri-fate.md`) evaluated three coexistence postures and recommended **phased γ → α**: declare γ (split by domain) now; re-evaluate after W#60 Phase 3 PASS. This amendment scopes ADR 0048's applicability under the γ posture so the two ADRs (0048 + 0086) don't appear to be in conflict.
+
+#### A3.1 — Scope clarification (γ posture)
+
+ADR 0048's applicability is scoped to the **platform-showcase / Crew Comms demo / kernel-\* + blocks-\* demonstration** domain. Specifically:
+
+- The `accelerators/anchor/` (MAUI + Blazor) codebase governed by ADR 0048 continues to host:
+  - W#45 Crew Comms substrate consumers (W#59 Crew Comms Anchor MVP, shipped 2026-05-06)
+  - `kernel-*` integration demos (sync, CRDT, security, audit, schema-registry, runtime, ledger)
+  - `blocks-*` showcase surfaces where a Blazor/MAUI demonstration is the natural fit
+  - The MAUI multi-backend cross-OS roadmap (Win, Mac, Linux via Avalonia, WebAssembly via Avalonia, iPad — per A1.1)
+
+- ADR 0048 does **not** govern:
+  - The W#60 property management product surface — that surface is governed by ADR 0086
+  - The tenant magic-link portal (W#60 Phase 4 deliverable, `apps/tenant-portal/`)
+  - The W#23 Field-Capture iOS app (already carved out by A1)
+
+#### A3.2 — Coexistence guardrails
+
+Until α flip is decided (post W#60 Phase 3 PASS):
+
+- The two Anchors share **packages** (foundation-\*, kernel-\*, blocks-\*, design tokens, foundation-channels) but **no UI code**.
+- Shared SignalR endpoints (BridgeHub for Crew Comms) are consumed by both — the W#60 React Crew Comms screen (W#60 Phase 2 Phase 4) and the MAUI Anchor SunfishChat Blazor component (W#59 Phase 4) are parallel consumers of the same hub.
+- New Sunfish kernel/foundation/blocks-\* features land **framework-agnostic** by default. ADRs that name a UI surface must specify which Anchor.
+- No new MAUI-specific features in `accelerators/anchor/` beyond the W#59 Crew Comms scope until the α flip decision lands.
+
+#### A3.3 — α flip preconditions (re-evaluation gate)
+
+Per ADR 0086's §"Phase 3 PASS re-evaluation criteria (binding)", a follow-on workstream (anticipated W#61 or similar) re-evaluates the γ → α flip after W#60 Phase 3 PASS. If the five criteria pass (Surface Pro ARM, offline workflow, conflict handling, bundle/cold-start, ergonomics), the follow-on workstream may supersede ADR 0048 in favor of a single Tauri Anchor.
+
+This amendment does **not** itself supersede ADR 0048 or deprecate the MAUI surface. ADR 0048 remains the canonical MAUI Anchor governance ADR for as long as the γ posture is in force.
+
+#### A3.4 — No new cited symbols
+
+A3 introduces no new code symbols. Cited references:
+
+| Reference | Status |
+|---|---|
+| ADR 0086 (Anchor Tauri-React product surface) | ✓ Proposed (PR #737, 2026-05-12) |
+| W#60 (ERPNext Composition Pivot) | ✓ workstream source on `main` |
+| `icm/00_intake/output/2026-05-12_anchor-maui-vs-tauri-fate.md` | ✓ merged via PR #730 |
+| `accelerators/anchor/` (MAUI Anchor) | ✓ existing on `main` |
+| `apps/anchor-tauri/` (Tauri Anchor) | ⏳ planned (introduced in W#60 Phase 3 build) |
+| W#45 + W#59 Crew Comms work | ✓ shipped to `main` |

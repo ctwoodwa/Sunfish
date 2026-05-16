@@ -15,6 +15,15 @@ supersedes: []
 superseded_by: null
 amendments:
   - A1
+  - A2
+  - A3
+  - A4
+  - A5
+  - A6
+  - A7
+  - A8
+  - A9
+  - A10
 ---
 # ADR 0061 — Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)
 
@@ -621,3 +630,60 @@ This is captured here, in the amendments section, rather than rewriting the Cont
 - [x] **Revisit triggers.** Five named with externally-observable signals.
 - [x] **Cold Start Test.** Implementation checklist is 10 specific tasks. Stage 02 contributor reading this ADR + ADR 0013 + ADR 0031 + paper §6.1 should be able to scaffold without asking.
 - [x] **Sources cited.** Headscale + Tailscale + NetBird + WireGuard + Nebula + Innernet GitHub repos referenced. NetMaker + ZeroTier explicitly excluded with license citations. Paper §6.1 + §6.2 + §17.2 cited.
+
+
+### A10 (REQUIRED) — NetBird management-plane BSL drift correction
+
+**Date:** 2026-05-13
+**Driver:** Carryover finding C3 from the 2026-05-11 F/OSS gap analysis (memory: `project_foss_gap_conflict_analysis_2026_05_11.md`) refreshed against W#60's stack in `icm/01_discovery/output/2026-05-13_w60-final-stack-foss-substitutability-recheck.md`.
+
+The ADR body multiple times cites "NetBird (BSD-3)" as an in-scope permissive mesh-VPN provider (lines 45, 47, 159, 198, 386). That claim is **partially wrong as of mid-2024**: NetBird's **management-plane source** moved to BSL (Business Source License), while NetBird's **agent (client)** remains Apache-2.0. This A10 amendment scopes the NetBird position correctly.
+
+#### A10.1 — Component-level license accuracy
+
+| NetBird component | License | In-scope for Sunfish? |
+|---|---|---|
+| NetBird **agent** (client running on each peer) | Apache-2.0 | ✓ yes — Sunfish's `IPeerTransport` adapter (`packages/providers-mesh-netbird`) talks to this; the adapter is fine to ship |
+| NetBird **management plane** (control server, coordination, key distribution) self-hosted source | BSL 1.1 (since mid-2024) | ⚠️ permissive-substitute-required — see A10.2 |
+| NetBird **management plane SaaS** (netbird.io hosted) | Commercial / proprietary | ✓ permitted as bring-your-own per A10.3 |
+
+#### A10.2 — Self-hosted NetBird management plane is OUT of the permissive substrate
+
+A self-hoster who wants Sunfish + a mesh-VPN that is **fully open-source-permissive end-to-end** must use **Headscale** (BSD-3) per the canonical recommendation in §"Decision". Self-hosting NetBird's management plane requires accepting BSL 1.1 terms, which is incompatible with Sunfish's open-source-permissive posture as articulated in §"Why" line 45.
+
+The previous A3 amendment (Headscale-abandonment fallback) is unaffected: if Headscale becomes unusable, the A3 fallback can route to Tailscale (BSD-3 client + commercial SaaS coordinator) or plain WireGuard (GPL-2 client). A10 does not change A3 — it only corrects the NetBird license characterization that A3's analysis relied on.
+
+#### A10.3 — Bring-your-own NetBird SaaS remains permitted
+
+Operators with existing NetBird SaaS subscriptions (netbird.io) may use the `packages/providers-mesh-netbird` adapter to route Tier 2 sync through NetBird's hosted control plane. This is analogous to bring-your-own Tailscale SaaS — the Sunfish adapter remains open source (talks to NetBird's Apache-2.0 agent + NetBird's hosted REST API); the operator's relationship with NetBird the company is separate.
+
+This preserves the original ADR 0061's "bring-your-own SaaS is OK" stance (line 47) for NetBird.
+
+#### A10.4 — Updates to specific ADR body claims
+
+The following lines in the ADR body are now historical-correct-as-of-acceptance-date but require A10 to be applied for current-state accuracy:
+
+- **Line 45** ("NetBird (BSD-3)") — read as "NetBird agent (Apache-2.0); management plane BSL since mid-2024, out of permissive substrate per A10".
+- **Line 47** ("bring-your-own SaaS is OK ... NetBird") — unchanged in spirit; reaffirmed by A10.3.
+- **Line 159** (`AdapterName { get; }` enumerating "netbird") — unchanged; the adapter is still valid, talking to the Apache-2.0 agent.
+- **Line 198** + line 386 (`packages/providers-mesh-netbird` — BSD-3) — **read as "Apache-2.0 (agent license; adapter package itself MIT per Sunfish-authored convention)".**
+
+#### A10.5 — Affects ADR 0067-A1 precedent
+
+ADR 0067-A1 (Tailscale BSL → Headscale BSD-3 substitution) is the precedent for the "permissive substitute when forced to drop the commercial license tier" pattern. A10 applies that same pattern to NetBird's management plane: when forced off NetBird's BSL self-host or commercial SaaS, the substitute is Headscale.
+
+This makes Headscale the canonical "Tier 2 permissive control plane" for Sunfish across **both** the Tailscale-substitution path and the NetBird-substitution path. Headscale becomes load-bearing; if Headscale itself ever shifts license, A3's pre-existing fallback (Tailscale or WireGuard) is the next step.
+
+#### A10.6 — Cited-symbol re-verification
+
+| Reference | Status |
+|---|---|
+| `packages/providers-mesh-netbird` | ⏳ planned (Phase 2.3 per Stage 02 plan; not yet shipping; A10 lands before package creation so the adapter ships with correct license metadata from day one) |
+| `packages/providers-mesh-headscale` | ✓ exists on `main` (per W#60 F/OSS re-check 2026-05-13) |
+| ADR 0067-A1 (Headscale substitution precedent) | ✓ Accepted |
+| `feedback_oss_substitutability_principle.md` (memory) | ✓ existing |
+| 2026-05-11 F/OSS gap analysis (memory) C3 entry | ✓ existing — this amendment resolves C3 |
+
+#### A10.7 — Resolves carryover from F/OSS analysis
+
+This amendment closes carryover item **C3** (NetBird management plane BSL drift) from the 2026-05-11 F/OSS gap analysis. Remaining carryover items (G2 group E2E, C2 role-key forward-secrecy, OQ-1 GPLv3 boundary, OQ-3 Loro→Automerge migration story) are tracked in the W#60 F/OSS re-check discovery doc.
