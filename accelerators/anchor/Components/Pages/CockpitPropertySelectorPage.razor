@@ -1,0 +1,122 @@
+@page "/cockpit"
+@layout CockpitLayout
+@using Sunfish.Anchor.Cockpit
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Properties.Models
+@using Sunfish.Blocks.Properties.Services
+@using Sunfish.Foundation.Assets.Common
+@inject IPropertyRepository Properties
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Cockpit · Sunfish Anchor</PageTitle>
+
+@* W#29 Phase 1 — Cockpit landing page. Lists every property the operator
+   manages on this Anchor install; clicking one routes to the property-detail
+   view (PR 2). Anchor reads IPropertyRepository directly because it is
+   local-first; Bridge mirrors via /api/v1/cockpit/properties. *@
+
+@if (_loadError is not null)
+{
+    <div class="cockpit-error">
+        <strong>Failed to load properties.</strong>
+        <p>@_loadError</p>
+        <button class="cockpit-button" @onclick="LoadAsync">Retry</button>
+    </div>
+}
+else if (_properties is null)
+{
+    <p class="cockpit-loading">Loading properties…</p>
+}
+else if (_properties.Count == 0)
+{
+    <div class="cockpit-empty">
+        <h2>No properties yet</h2>
+        <p>Add a property in the operational UI; it will appear here for cockpit oversight.</p>
+    </div>
+}
+else
+{
+    <header class="cockpit-header">
+        <h1>Owner Cockpit</h1>
+        <p class="cockpit-subtitle">@_properties.Count @(_properties.Count == 1 ? "property" : "properties")</p>
+    </header>
+    <ul class="cockpit-property-grid">
+        @foreach (var p in _properties)
+        {
+            <li>
+                <button class="cockpit-property-card"
+                        type="button"
+                        @onclick="() => SelectProperty(p.Id)">
+                    <span class="cockpit-property-card__title">@p.DisplayName</span>
+                    <span class="cockpit-property-card__meta">@p.Address.City, @p.Address.Region · @p.Kind</span>
+                </button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private IReadOnlyList<Property>? _properties;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Anchor is single-user local-first: the operator on the device IS the
+        // owner. We gate by session onboarding, not by cockpit role — Anchor's
+        // attestation roles (`team_member`/`admin`/etc.) are the kernel-security
+        // schema, distinct from the cockpit role schema (`owner`/`spouse`/...)
+        // which only Bridge currently surfaces. The CockpitPermissions matrix is
+        // imported for parity and will be consulted once an attestation→cockpit
+        // role mapping lands (W#37 / ADR 0068 follow-up).
+        if (!Session.IsOnboarded)
+        {
+            Nav.NavigateTo("/onboarding", replace: true);
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null;
+        try
+        {
+            // Anchor is single-tenant per install; the team-id from the active
+            // attestation is the natural tenant scope. Until AnchorSessionService
+            // exposes a typed TenantId accessor, we coerce the team-id string
+            // through the implicit conversion.
+            var tenant = new TenantId(Session.TeamId ?? "anchor-tenant");
+            _properties = await Properties.ListByTenantAsync(tenant, includeDisposed: false, default);
+        }
+        catch (Exception ex)
+        {
+            _loadError = ex.Message;
+        }
+    }
+
+    private void SelectProperty(PropertyId id)
+    {
+        // PR 2 will add `/cockpit/properties/{PropertyId}` route.
+        Nav.NavigateTo($"/cockpit/properties/{Uri.EscapeDataString(id.Value)}");
+    }
+}
+
+<style>
+    .cockpit-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; letter-spacing: -0.01em; }
+    .cockpit-subtitle { color: #6b7280; font-size: 0.875rem; margin: 0 0 1.25rem; }
+    .cockpit-loading { color: #6b7280; padding: 3rem 0; text-align: center; }
+    .cockpit-error { padding: 1rem 1.25rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 0.5rem; }
+    .cockpit-error p { margin: 0.5rem 0 0.75rem; color: #4b5563; }
+    .cockpit-empty { padding: 3rem 1.5rem; text-align: center; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .cockpit-empty h2 { font-size: 1.125rem; margin: 0 0 0.5rem; }
+    .cockpit-empty p { color: #6b7280; font-size: 0.875rem; margin: 0; }
+    .cockpit-property-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .cockpit-property-card { display: block; width: 100%; padding: 1rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; text-align: left; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+    .cockpit-property-card:hover { border-color: #93c5fd; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .cockpit-property-card__title { display: block; font-weight: 600; color: #111827; }
+    .cockpit-property-card__meta { display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #6b7280; }
+    .cockpit-button { padding: 0.5rem 1rem; border-radius: 0.25rem; border: none; background: #2563eb; color: #fff; font-size: 0.875rem; cursor: pointer; }
+    .cockpit-button:hover { background: #1d4ed8; }
+</style>

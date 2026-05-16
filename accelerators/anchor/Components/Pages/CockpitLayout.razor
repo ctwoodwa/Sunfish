@@ -1,0 +1,38 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+
+@* W#29 Phase 1 — Owner cockpit shell layout. Cockpit-scoped sidebar lives
+   here so the existing top-level nav (Home / Onboarding / Teams / Chat) stays
+   intact while cockpit pages render with their own functional sub-nav.
+   PR 1 wires only the Properties link; PR 2–5 add Work Orders / Vendors /
+   Dashboard targets. *@
+
+<div class="cockpit-layout">
+    <aside class="cockpit-sidebar">
+        <h2 class="cockpit-sidebar__title">Cockpit</h2>
+        <nav class="cockpit-sidebar__nav">
+            <NavLink class="cockpit-nav-link" href="cockpit" Match="NavLinkMatch.All">
+                Properties
+            </NavLink>
+            <span class="cockpit-nav-link cockpit-nav-link--disabled" title="Coming in a later phase">Work Orders</span>
+            <span class="cockpit-nav-link cockpit-nav-link--disabled" title="Coming in a later phase">Vendors</span>
+            <span class="cockpit-nav-link cockpit-nav-link--disabled" title="Coming in a later phase">Dashboard</span>
+        </nav>
+    </aside>
+    <section class="cockpit-content">
+        @Body
+    </section>
+</div>
+
+<style>
+    .cockpit-layout { display: flex; min-height: calc(100vh - 3.5rem); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .cockpit-sidebar { width: 14rem; flex-shrink: 0; border-right: 1px solid #e5e5e5; background: #f6f7f9; padding: 1rem 0.75rem; }
+    .cockpit-sidebar__title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 0 0 0.5rem; padding: 0 0.75rem; }
+    .cockpit-sidebar__nav { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; }
+    .cockpit-nav-link { display: block; padding: 0.5rem 0.75rem; border-radius: 0.25rem; color: #4b5563; text-decoration: none; }
+    .cockpit-nav-link:hover { background: #fff; color: #111827; }
+    .cockpit-nav-link.active { background: #fff; color: #111827; font-weight: 500; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+    .cockpit-nav-link--disabled { color: #9ca3af; cursor: default; }
+    .cockpit-nav-link--disabled:hover { background: transparent; color: #9ca3af; }
+    .cockpit-content { flex: 1; padding: 1.5rem 2rem; }
+</style>

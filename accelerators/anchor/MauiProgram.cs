@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Blocks.CrewComms.DependencyInjection;
+using Sunfish.Blocks.Properties.DependencyInjection;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Foundation.IdentityAtlas;
 using Sunfish.Foundation.Transport.DependencyInjection;
@@ -217,6 +218,12 @@ public static class MauiProgram
 			sp.GetRequiredService<AnchorCrdtDeltaBridge>());
 		builder.Services.TryAddSingleton<IDeltaSink>(sp =>
 			sp.GetRequiredService<AnchorCrdtDeltaBridge>());
+
+		// W#29 Phase 1 — owner cockpit needs IPropertyRepository to back the
+		// landing-page property selector. Wired here so the cockpit page can
+		// resolve it from local-first DI; the InMemory repo is the only impl
+		// today and is replaced once a SQLCipher-backed adapter ships.
+		builder.Services.AddInMemoryProperties();
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();

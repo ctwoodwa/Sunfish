@@ -11,6 +11,8 @@ import { CrewCommsPage } from '@/pages/CrewCommsPage'
 import { MaintenancePage } from '@/pages/MaintenancePage'
 import { RentRoll } from '@/pages/RentRoll'
 import { PLReport } from '@/pages/PLReport'
+import { CockpitLayout } from '@/cockpit/CockpitLayout'
+import { PropertySelector } from '@/cockpit/PropertySelector'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -140,6 +142,14 @@ function AppLayout() {
             >
               Reports
             </NavLink>
+            <NavLink
+              to="/cockpit"
+              className={({ isActive }) =>
+                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+              }
+            >
+              Cockpit
+            </NavLink>
           </nav>
           <CompanySwitcher />
         </div>
@@ -157,6 +167,9 @@ function AppLayout() {
           <Route path="/reports" element={<Navigate to="/reports/rent-roll" replace />} />
           <Route path="/reports/rent-roll" element={<RentRoll />} />
           <Route path="/reports/profit-loss" element={<PLReport />} />
+          <Route path="/cockpit" element={<CockpitLayout />}>
+            <Route index element={<PropertySelector />} />
+          </Route>
         </Routes>
       </main>
     </div>
