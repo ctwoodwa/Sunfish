@@ -109,7 +109,7 @@ public sealed class JournalPostingServiceTests
     public async Task Post_RejectsLockedPeriod()
     {
         var h = new Harness();
-        h.Periods.WithStatus(FiscalPeriodStatus.Locked);
+        h.Periods.WithStatus(IPeriodResolver.Status.Locked);
         var entry = h.NewDraftBalancedEntry() with { ChartId = Chart };
         var result = await h.Sut.PostAsync(entry);
 
@@ -120,7 +120,7 @@ public sealed class JournalPostingServiceTests
     public async Task Post_AllowsAdminToPostSoftClosed()
     {
         var h = new Harness(roles: new[] { "FinancialAdmin" });
-        h.Periods.WithStatus(FiscalPeriodStatus.SoftClosed);
+        h.Periods.WithStatus(IPeriodResolver.Status.SoftClosed);
         var entry = h.NewDraftBalancedEntry() with { ChartId = Chart };
         var result = await h.Sut.PostAsync(entry);
 
@@ -133,7 +133,7 @@ public sealed class JournalPostingServiceTests
     public async Task Post_RejectsSoftClosedForNonAdmin()
     {
         var h = new Harness();
-        h.Periods.WithStatus(FiscalPeriodStatus.SoftClosed);
+        h.Periods.WithStatus(IPeriodResolver.Status.SoftClosed);
         var entry = h.NewDraftBalancedEntry() with { ChartId = Chart };
         var result = await h.Sut.PostAsync(entry);
 

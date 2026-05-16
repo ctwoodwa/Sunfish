@@ -34,9 +34,9 @@ public enum PostError
     /// <summary>No fiscal period covers the entry date.</summary>
     NoPeriodForDate,
 
-    /// <summary>The fiscal period for this date is <see cref="FiscalPeriodStatus.Locked"/>.</summary>
+    /// <summary>The fiscal period for this date is <see cref="Services.IPeriodResolver.Status.Locked"/>.</summary>
     PeriodLocked,
 
-    /// <summary>The fiscal period is <see cref="FiscalPeriodStatus.SoftClosed"/> and the user is not a Financial Admin.</summary>
+    /// <summary>The fiscal period is <see cref="Services.IPeriodResolver.Status.SoftClosed"/> and the user is not a Financial Admin.</summary>
     PeriodSoftClosed,
 }

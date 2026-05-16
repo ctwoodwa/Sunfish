@@ -1,9 +1,5 @@
 using Sunfish.Blocks.FinancialLedger.Models;
 using Sunfish.Blocks.FinancialPeriods.Models;
-// Disambiguate from the ledger PR 4 placeholder (deletion scheduled for
-// periods PR 2 — see hand-off § PR 2 swap step).
-using FiscalPeriod = Sunfish.Blocks.FinancialPeriods.Models.FiscalPeriod;
-using FiscalPeriodStatus = Sunfish.Blocks.FinancialPeriods.Models.FiscalPeriodStatus;
 using Sunfish.Foundation.Assets.Common;
 using Xunit;
 

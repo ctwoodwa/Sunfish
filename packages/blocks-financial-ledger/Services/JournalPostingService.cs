@@ -94,14 +94,14 @@ public sealed class JournalPostingService : IJournalPostingService
         {
             var period = await _periods.ResolveAsync(chartId, entry.EntryDate, cancellationToken)
                 .ConfigureAwait(false);
-            if (period is null)
+            if (period is not { } snapshot)
                 return new PostResult(null, PostError.NoPeriodForDate,
                     $"chartId={chartId}, date={entry.EntryDate}");
-            if (period.Status == FiscalPeriodStatus.Locked)
-                return new PostResult(null, PostError.PeriodLocked, $"periodId={period.Id}");
-            if (period.Status == FiscalPeriodStatus.SoftClosed && !_user.HasRole(FinancialAdminRole))
+            if (snapshot.Status == IPeriodResolver.Status.Locked)
+                return new PostResult(null, PostError.PeriodLocked, $"periodId={snapshot.PeriodId}");
+            if (snapshot.Status == IPeriodResolver.Status.SoftClosed && !_user.HasRole(FinancialAdminRole))
                 return new PostResult(null, PostError.PeriodSoftClosed,
-                    $"periodId={period.Id}, userId={_user.UserId}");
+                    $"periodId={snapshot.PeriodId}, userId={_user.UserId}");
         }
 
         // Phase 5 — atomic commit.
