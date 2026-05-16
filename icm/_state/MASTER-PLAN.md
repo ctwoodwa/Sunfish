@@ -174,7 +174,7 @@ User on Pro Max ($200/mo). Recent overnight automation run consumed ~830K tokens
 
 | Track | Remaining work | Time estimate |
 |---|---|---|
-| Phase 1 G6 (Recovery host integration + UI) | ~3-5 PRs; hand-off not yet authored | 1-2 weeks |
+| Phase 1 G6 (Recovery host integration + UI) | **W#63 hand-off authored 2026-05-16; immediately buildable**; 3 PRs | 1-2 weeks |
 | W#60 P3 (Tauri offline shell) | gated on ADR 0086 Accepted (CO action) | 1-2 weeks after CO flips |
 | W#60 P4 (Collaboration — accountant peer + CPA + tenant) | gated on P3 PASS | 2-3 weeks after P3 |
 | W#60 P5 (@sunfish/contracts + reporting) | PR 1 buildable now; PR 2+ gated on P2 (done) | 1-2 weeks |
