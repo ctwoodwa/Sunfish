@@ -64,12 +64,89 @@
   --color-status-closed-fg:      hsl(215 25% 27%);
 }
 
+/* W#60 P4 PR 1 — dark-mode variants of every token defined above.
+ *
+ * Tailwind v4's `@theme` is a build-time directive and doesn't support
+ * `@media` nesting (verified empirically; that was the root cause of an
+ * earlier broken-dark-mode attempt). The pattern below overrides CSS
+ * custom properties at `:root` scope when the system color scheme is
+ * dark — utility classes like `bg-background` resolve via these vars at
+ * runtime, so the whole theme flips on system theme change.
+ *
+ * Color-scheme tag below also ensures native form controls (scrollbars,
+ * date pickers, default focus rings) follow the dark theme.
+ *
+ * Light-mode values for the semantic-palette extensions (warning,
+ * success, financial, status, priority) were added by #893; this block
+ * defines the dark-mode counterparts that #893's PR description deferred
+ * to "the rest of the dark theme once dev-win pushes their W#60 P4
+ * sweep". */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* shadcn baseline */
+    --color-background: hsl(222.2 84% 4.9%);
+    --color-foreground: hsl(210 40% 98%);
+    --color-card: hsl(222.2 84% 4.9%);
+    --color-card-foreground: hsl(210 40% 98%);
+    --color-primary: hsl(217.2 91.2% 59.8%);
+    --color-primary-foreground: hsl(222.2 47.4% 11.2%);
+    --color-secondary: hsl(217.2 32.6% 17.5%);
+    --color-secondary-foreground: hsl(210 40% 98%);
+    --color-muted: hsl(217.2 32.6% 17.5%);
+    --color-muted-foreground: hsl(215 20.2% 65.1%);
+    --color-accent: hsl(217.2 32.6% 17.5%);
+    --color-accent-foreground: hsl(210 40% 98%);
+    --color-destructive: hsl(0 62.8% 50%);
+    --color-destructive-foreground: hsl(210 40% 98%);
+    --color-border: hsl(217.2 32.6% 17.5%);
+    --color-input: hsl(217.2 32.6% 17.5%);
+    --color-ring: hsl(224.3 76.3% 48%);
+
+    /* Semantic extensions (#893's additions, dark variants) */
+    --color-warning: hsl(38 80% 55%);
+    --color-warning-foreground: hsl(48 96% 12%);
+    --color-success: hsl(142 60% 50%);
+    --color-success-foreground: hsl(0 0% 100%);
+
+    --color-financial-positive: hsl(142 60% 55%);
+    --color-financial-negative: hsl(0 70% 60%);
+
+    --color-status-online: hsl(142 60% 50%);
+    --color-status-offline: hsl(215 14% 55%);
+
+    /* Badge palettes: dark mode swaps to dimmer backgrounds and brighter
+     * foregrounds so the colored chips remain readable against the dark
+     * card backdrop. */
+    --color-priority-low:        hsl(142 25% 22%);
+    --color-priority-low-fg:     hsl(142 65% 75%);
+    --color-priority-medium:     hsl(38 25% 22%);
+    --color-priority-medium-fg:  hsl(48 90% 78%);
+    --color-priority-high:       hsl(25 30% 24%);
+    --color-priority-high-fg:    hsl(25 95% 78%);
+    --color-priority-urgent:     hsl(0 30% 26%);
+    --color-priority-urgent-fg:  hsl(0 90% 80%);
+
+    --color-status-open:           hsl(217 30% 24%);
+    --color-status-open-fg:        hsl(217 90% 80%);
+    --color-status-in-progress:    hsl(280 30% 24%);
+    --color-status-in-progress-fg: hsl(280 60% 82%);
+    --color-status-resolved:       hsl(142 25% 22%);
+    --color-status-resolved-fg:    hsl(142 65% 75%);
+    --color-status-closed:         hsl(215 14% 25%);
+    --color-status-closed-fg:      hsl(215 14% 80%);
+  }
+}
+
 *,
 ::after,
 ::before,
 ::backdrop,
 ::file-selector-button {
   border-color: var(--color-border, currentColor);
+}
+
+:root {
+  color-scheme: light dark;
 }
 
 body {
