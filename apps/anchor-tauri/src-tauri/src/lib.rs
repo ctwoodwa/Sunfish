@@ -3,9 +3,30 @@ pub mod db;
 pub mod sync;
 
 use std::sync::Arc;
+use std::time::Instant;
 
 use rand::RngCore;
 use tauri::Manager;
+
+/// Append a boot-timing entry to `%LOCALAPPDATA%\io.sunfish.anchor\boot-timing.log`.
+/// Used only for ad-hoc local-first first-paint profiling — not for production
+/// telemetry. No-op in release builds so we don't touch disk on every launch.
+fn boot_timing_log(label: &str, start: Instant) {
+    if !cfg!(debug_assertions) {
+        return;
+    }
+    use std::io::Write;
+    let Ok(local) = std::env::var("LOCALAPPDATA") else { return };
+    let dir = std::path::PathBuf::from(local).join("io.sunfish.anchor");
+    let _ = std::fs::create_dir_all(&dir);
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join("boot-timing.log"))
+    {
+        let _ = writeln!(f, "[+{:>6}ms] rust {}", start.elapsed().as_millis(), label);
+    }
+}
 
 /// Service name used for the OS-keychain entry that backs Stronghold's master key.
 /// Suffixed with `.stronghold` (council R7) to leave the bare app identifier free
@@ -69,6 +90,36 @@ fn derive_stronghold_master_key() -> Result<Vec<u8>, String> {
 }
 
 pub fn run() {
+    let boot_start = Instant::now();
+    // Truncate prior run's log so each launch is a clean slate.
+    if let Ok(local) = std::env::var("LOCALAPPDATA") {
+        let p = std::path::PathBuf::from(local)
+            .join("io.sunfish.anchor")
+            .join("boot-timing.log");
+        let _ = std::fs::remove_file(&p);
+    }
+    boot_timing_log("run() entered", boot_start);
+
+    // Disable the snapshot KDF (age + scrypt) for our use case.
+    //
+    // tauri-plugin-stronghold encrypts its snapshot via iota_stronghold, which
+    // uses the `age` format with scrypt key-stretching keyed on the password.
+    // The default DECRYPT max-work-factor (~22) costs ~43s on cold load — a
+    // catastrophic first-paint cost for a local-first app.
+    //
+    // SECURITY: scrypt's purpose is to stretch low-entropy *human passwords*.
+    // We provide a 32-byte high-entropy key derived from the OS keychain
+    // (DPAPI on Windows, Keychain on macOS, Secret Service on Linux). Adding
+    // scrypt on top of a 256-bit random key gives zero brute-force protection
+    // — the XChaCha20-Poly1305 AEAD on a 256-bit random key is already
+    // computationally beyond reach. Setting work_factor=0 keeps the AEAD,
+    // skips the unnecessary stretching, and drops snapshot load to <100ms.
+    //
+    // The crate's own test suite uses work_factor=0 for the same reason
+    // (iota_stronghold-2.1.0/src/tests/interface_tests.rs:197, 258, …).
+    let _ = iota_stronghold::engine::snapshot::try_set_encrypt_work_factor(0);
+    boot_timing_log("try_set_encrypt_work_factor(0) called", boot_start);
+
     // W#60 P4 PR 1 council A1.4 — derive the Stronghold master key ONCE at
     // process start, outside the plugin closure. Failure here is surfaced via
     // the `keychain_status` Tauri command so the JS AuthGate can render a
@@ -78,6 +129,7 @@ pub fn run() {
     // `Stronghold.load()` despite a non-Ok status, the closure returns a
     // sentinel zero-key and Stronghold's normal decryption-error path runs.
     let derived = derive_stronghold_master_key();
+    boot_timing_log("derive_stronghold_master_key complete", boot_start);
     let derive_status = derived.as_ref().map(|_| ()).map_err(|e| e.clone());
     let key_arc: Arc<Result<Vec<u8>, String>> = Arc::new(derived);
     let key_arc_for_closure = Arc::clone(&key_arc);
@@ -112,9 +164,11 @@ pub fn run() {
             .build(),
         )
         .setup(move |app| {
+            boot_timing_log("setup hook entered", boot_start);
             let data_dir = app.path().app_data_dir()?;
             let pool = tauri::async_runtime::block_on(db::open(&data_dir))
                 .map_err(|e| format!("db init: {e}"))?;
+            boot_timing_log("db::open complete", boot_start);
 
             let bridge_url = std::env::var("BRIDGE_URL")
                 .unwrap_or_else(|_| "http://localhost:7080".to_string());
@@ -198,6 +252,7 @@ pub fn run() {
             // OS keychain is unavailable, instead of opaque Stronghold errors.
             app.manage(commands::auth::KeychainStatus::new(derive_status.clone()));
             app.manage(pool);
+            boot_timing_log("setup hook complete", boot_start);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

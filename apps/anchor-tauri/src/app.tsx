@@ -3,6 +3,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from 'react-error-boundary'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+
+// Ad-hoc boot-timing instrumentation (dev-only). Push timestamped labels to
+// window.__anchorBootTimings so a Playwright/CDP probe can dump them after
+// the AuthGate resolves. Remove once first-paint perf is acceptable.
+declare global {
+  interface Window {
+    __anchorBootTimings?: Array<{ label: string; t: number }>
+  }
+}
+const __bootStart = performance.now()
+function __mark(label: string) {
+  if (!window.__anchorBootTimings) window.__anchorBootTimings = []
+  window.__anchorBootTimings.push({ label, t: performance.now() - __bootStart })
+  // Also log to console so DevTools shows it inline.
+  console.log(`[boot] +${Math.round(performance.now() - __bootStart)}ms ${label}`)
+}
+__mark('app.tsx module loaded')
 import { PropertiesPage } from '@/pages/PropertiesPage'
 import { LeasesPage } from '@/pages/LeasesPage'
 import { LeaseDetailPage } from '@/pages/LeaseDetailPage'
@@ -220,13 +237,16 @@ function AuthGate() {
   const [keychainError, setKeychainError] = useState<string | null>(null)
 
   useEffect(() => {
+    __mark('AuthGate effect entered')
     let cancelled = false
     ;(async () => {
       // Step 1 — keychain probe. If derivation failed at setup, don't even
       // attempt to open Stronghold; the closure would return the sentinel key
       // and Stronghold would surface an opaque decryption error.
       try {
+        __mark('keychain_status invoke start')
         const status = await invoke<string | null>('keychain_status')
+        __mark('keychain_status invoke complete')
         if (cancelled) return
         if (status) {
           setKeychainError(status)
@@ -243,16 +263,23 @@ function AuthGate() {
       }
       // Step 2 — load any stored token from Stronghold.
       try {
+        __mark('Stronghold loadStoredToken start')
         const stored = await loadStoredToken()
+        __mark(`Stronghold loadStoredToken complete (token=${stored ? 'present' : 'absent'})`)
         if (cancelled) return
         if (stored) {
+          __mark('set_bridge_token invoke start')
           await invoke('set_bridge_token', { token: stored }).catch(() => {})
+          __mark('set_bridge_token invoke complete')
           setToken(stored)
         }
       } catch {
         // Stronghold init failed or token absent — fall through to LoginPage.
       } finally {
-        if (!cancelled) setLoaded(true)
+        if (!cancelled) {
+          __mark('AuthGate setLoaded(true)')
+          setLoaded(true)
+        }
       }
     })()
     return () => {

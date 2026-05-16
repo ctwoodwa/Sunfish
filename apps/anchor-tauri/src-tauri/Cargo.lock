@@ -85,6 +85,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "iota_stronghold",
  "keyring",
  "rand",
  "reqwest 0.12.28",
