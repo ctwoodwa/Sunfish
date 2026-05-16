@@ -36,6 +36,15 @@ public sealed class InMemoryAccountResolver : IAccountResolver
     /// <summary>Seed or replace an account in the backing dictionary.</summary>
     public void Upsert(GLAccount account) => _accounts[account.Id] = account;
 
+    /// <summary>
+    /// Snapshot of all accounts currently in the resolver — used by the
+    /// W#60 P4 PR 6 ERPNext importers to look up by
+    /// <see cref="GLAccount.ExternalRef"/>. Production resolvers will
+    /// expose a dedicated GetByExternalRef API; this snapshot suffices
+    /// for the in-memory path.
+    /// </summary>
+    public IReadOnlyList<GLAccount> SeededAccounts => _accounts.Values.ToList();
+
     /// <inheritdoc />
     public Task<GLAccount?> GetAsync(GLAccountId id, CancellationToken cancellationToken = default)
         => Task.FromResult(_accounts.TryGetValue(id, out var a) ? a : null);
