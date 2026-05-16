@@ -73,7 +73,7 @@ public sealed class RecoveryCoordinatorTests
         var f = NewFixture();
         var trustee = NewTrustee(f.Signer, 1);
 
-        var evt = await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub);
+        var evt = await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH);
 
         Assert.Equal(RecoveryEventType.TrusteeDesignated, evt.Type);
         Assert.Equal(trustee.NodeId, evt.ActorNodeId);
@@ -84,12 +84,12 @@ public sealed class RecoveryCoordinatorTests
     public async Task Designate_RejectsBeyondMaxTrustees()
     {
         var f = NewFixture(new RecoveryCoordinatorOptions { MaxTrustees = 2, QuorumThreshold = 2 });
-        await f.Coordinator.DesignateTrusteeAsync(NewTrustee(f.Signer, 1).NodeId, NewTrustee(f.Signer, 1).Pub);
-        await f.Coordinator.DesignateTrusteeAsync(NewTrustee(f.Signer, 2).NodeId, NewTrustee(f.Signer, 2).Pub);
+        await f.Coordinator.DesignateTrusteeAsync(NewTrustee(f.Signer, 1).NodeId, NewTrustee(f.Signer, 1).Pub, TrusteeDH);
+        await f.Coordinator.DesignateTrusteeAsync(NewTrustee(f.Signer, 2).NodeId, NewTrustee(f.Signer, 2).Pub, TrusteeDH);
 
         var third = NewTrustee(f.Signer, 3);
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => f.Coordinator.DesignateTrusteeAsync(third.NodeId, third.Pub));
+            () => f.Coordinator.DesignateTrusteeAsync(third.NodeId, third.Pub, TrusteeDH));
     }
 
     [Fact]
@@ -97,10 +97,10 @@ public sealed class RecoveryCoordinatorTests
     {
         var f = NewFixture();
         var trustee = NewTrustee(f.Signer, 1);
-        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub);
+        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub));
+            () => f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH));
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public sealed class RecoveryCoordinatorTests
     {
         var f = NewFixture();
         var trustee = NewTrustee(f.Signer, 1);
-        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub);
+        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH);
 
         var evt = await f.Coordinator.RevokeTrusteeAsync(trustee.NodeId);
 
@@ -176,7 +176,7 @@ public sealed class RecoveryCoordinatorTests
         });
 
         var trustee = NewTrustee(f.Signer, 1);
-        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub);
+        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH);
         var (req1, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(req1);
         var attestation = TrusteeAttestation.Create(
@@ -212,11 +212,47 @@ public sealed class RecoveryCoordinatorTests
     }
 
     [Fact]
+    public async Task SubmitAttestation_DropsWhenTrusteeDHKeyMismatch()
+    {
+        // W#67 PR 5 MAJOR-2 binding — designate the trustee with one
+        // DH key, then attempt to submit an attestation carrying a
+        // different DH key. Coordinator must drop the attestation
+        // silently (no event emitted).
+        var f = NewFixture(new RecoveryCoordinatorOptions
+        {
+            QuorumThreshold = 1,
+            MaxTrustees = 1,
+            GracePeriod = TimeSpan.FromDays(7),
+        });
+        var trustee = NewTrustee(f.Signer, 1);
+        var designatedDh = new byte[TrusteeDesignation.DHPublicKeyLength];
+        Array.Fill(designatedDh, (byte)0x11);
+        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, designatedDh);
+
+        var (request, _, _) = BuildRequest(f.Signer, f.Clock);
+        await f.Coordinator.InitiateRecoveryAsync(request);
+
+        // Attestation carries a DIFFERENT DH key — simulates an
+        // attacker who learned the trustee's NodeId + Ed25519 pubkey
+        // but uses an attacker-controlled DH key for the envelope.
+        var attackerDh = new byte[TrusteeDesignation.DHPublicKeyLength];
+        Array.Fill(attackerDh, (byte)0x22);
+        var attestation = TrusteeAttestation.Create(
+            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer,
+            attackerDh, SeedCT, SeedNonce);
+
+        var outcome = await f.Coordinator.SubmitAttestationAsync(attestation);
+
+        Assert.False(outcome.Accepted);
+        Assert.Empty(outcome.Events);
+    }
+
+    [Fact]
     public async Task SubmitAttestation_DuplicateFromTrustee_Dropped()
     {
         var f = NewFixture();
         var trustee = NewTrustee(f.Signer, 1);
-        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub);
+        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
 
@@ -246,7 +282,7 @@ public sealed class RecoveryCoordinatorTests
         var trustees = Enumerable.Range(1, 5).Select(i => NewTrustee(f.Signer, i)).ToList();
         foreach (var t in trustees)
         {
-            await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+            await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         }
 
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
@@ -280,7 +316,7 @@ public sealed class RecoveryCoordinatorTests
         });
 
         var trustees = Enumerable.Range(1, 5).Select(i => NewTrustee(f.Signer, i)).ToList();
-        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
 
@@ -301,7 +337,7 @@ public sealed class RecoveryCoordinatorTests
     {
         var f = NewFixture(new RecoveryCoordinatorOptions { QuorumThreshold = 2, MaxTrustees = 3 });
         var trustees = Enumerable.Range(1, 3).Select(i => NewTrustee(f.Signer, i)).ToList();
-        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
         await f.Coordinator.SubmitAttestationAsync(MakeAttestation(f, request, trustees[0]));
@@ -329,7 +365,7 @@ public sealed class RecoveryCoordinatorTests
     {
         var f = NewFixture(new RecoveryCoordinatorOptions { QuorumThreshold = 2, MaxTrustees = 3 });
         var trustees = Enumerable.Range(1, 3).Select(i => NewTrustee(f.Signer, i)).ToList();
-        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
         await f.Coordinator.SubmitAttestationAsync(MakeAttestation(f, request, trustees[0]));
@@ -369,7 +405,7 @@ public sealed class RecoveryCoordinatorTests
             GracePeriod = TimeSpan.FromHours(1),
         });
         var trustees = Enumerable.Range(1, 3).Select(i => NewTrustee(f.Signer, i)).ToList();
-        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
         await f.Coordinator.SubmitAttestationAsync(MakeAttestation(f, request, trustees[0]));
@@ -393,7 +429,7 @@ public sealed class RecoveryCoordinatorTests
             GracePeriod = TimeSpan.FromHours(1),
         });
         var trustees = Enumerable.Range(1, 3).Select(i => NewTrustee(f.Signer, i)).ToList();
-        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
         await f.Coordinator.SubmitAttestationAsync(MakeAttestation(f, request, trustees[0]));
@@ -419,7 +455,7 @@ public sealed class RecoveryCoordinatorTests
             GracePeriod = TimeSpan.FromHours(1),
         });
         var trustees = Enumerable.Range(1, 3).Select(i => NewTrustee(f.Signer, i)).ToList();
-        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(request);
         await f.Coordinator.SubmitAttestationAsync(MakeAttestation(f, request, trustees[0]));
@@ -454,7 +490,7 @@ public sealed class RecoveryCoordinatorTests
         var designations = new List<RecoveryEvent>();
         foreach (var t in trustees)
         {
-            designations.Add(await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub));
+            designations.Add(await f.Coordinator.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH));
         }
         Assert.Equal(5, designations.Count);
 
@@ -518,7 +554,7 @@ public sealed class RecoveryCoordinatorTests
         var coordinatorA = new RecoveryCoordinator(clock, store, signer, disputers, options);
 
         var trustees = Enumerable.Range(1, 3).Select(i => NewTrustee(signer, i)).ToList();
-        foreach (var t in trustees) await coordinatorA.DesignateTrusteeAsync(t.NodeId, t.Pub);
+        foreach (var t in trustees) await coordinatorA.DesignateTrusteeAsync(t.NodeId, t.Pub, TrusteeDH);
         var (request, _, _) = BuildRequest(signer, clock);
         await coordinatorA.InitiateRecoveryAsync(request);
 

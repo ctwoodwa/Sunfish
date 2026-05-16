@@ -49,6 +49,7 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
     public async Task<RecoveryEvent> DesignateTrusteeAsync(
         string trusteeNodeId,
         ReadOnlyMemory<byte> trusteePublicKey,
+        ReadOnlyMemory<byte> trusteeDHPublicKey,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(trusteeNodeId);
@@ -57,6 +58,12 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             throw new ArgumentException(
                 $"Trustee public key must be {RecoveryRequest.EphemeralPublicKeyLength} bytes; got {trusteePublicKey.Length}.",
                 nameof(trusteePublicKey));
+        }
+        if (trusteeDHPublicKey.Length != TrusteeDesignation.DHPublicKeyLength)
+        {
+            throw new ArgumentException(
+                $"Trustee DH public key must be {TrusteeDesignation.DHPublicKeyLength} bytes; got {trusteeDHPublicKey.Length}.",
+                nameof(trusteeDHPublicKey));
         }
 
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -78,6 +85,7 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var designation = new TrusteeDesignation(
                 trusteeNodeId,
                 trusteePublicKey.ToArray(),
+                trusteeDHPublicKey.ToArray(),
                 now);
             var trustees = new Dictionary<string, TrusteeDesignation>(state.Trustees, StringComparer.Ordinal)
             {
@@ -90,7 +98,9 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                 actorNodeId: trusteeNodeId,
                 targetNodeId: trusteeNodeId,
                 occurredAt: now,
-                detail: BuildDetail(("trustee.publicKey.hex", Convert.ToHexString(trusteePublicKey.Span))));
+                detail: BuildDetail(
+                    ("trustee.publicKey.hex", Convert.ToHexString(trusteePublicKey.Span)),
+                    ("trustee.dhPublicKey.hex", Convert.ToHexString(trusteeDHPublicKey.Span))));
 
             var next = CloneStateWith(state, trustees: trustees, lastEventHash: hashAfter);
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
@@ -221,6 +231,22 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var designated = state.Trustees[attestation.TrusteeNodeId];
             if (designated.PublicKey.Length != attestation.TrusteePublicKey.Length
                 || !CryptographicOperations.FixedTimeEquals(designated.PublicKey, attestation.TrusteePublicKey))
+            {
+                return Drop();
+            }
+
+            // W#67 PR 5 MAJOR-2 binding — also cross-check the trustee's
+            // per-team X25519 public key against the designation. Without
+            // this, a compromised trustee (or attacker who learned a
+            // trustee's NodeId + Ed25519 pubkey) could submit an attestation
+            // whose seed-envelope is Boxed against an attacker-controlled
+            // DH key whose private half they hold — letting them inject a
+            // rogue seed into the recovering device's rekey. Constant-time
+            // comparison + length check.
+            if (designated.DHPublicKey is null
+                || attestation.TrusteeDHPublicKey is null
+                || designated.DHPublicKey.Length != attestation.TrusteeDHPublicKey.Length
+                || !CryptographicOperations.FixedTimeEquals(designated.DHPublicKey, attestation.TrusteeDHPublicKey))
             {
                 return Drop();
             }
@@ -376,6 +402,24 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var next = CloneStateWith(state, disputed: true, lastEventHash: hashAfter);
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
             return evt;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<TrusteeEncryptedSeed?> GetTrusteeEncryptedSeedAsync(
+        string trusteeNodeId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(trusteeNodeId);
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await _store.LoadAsync(cancellationToken).ConfigureAwait(false);
+            return state.TrusteeEncryptedSeeds.TryGetValue(trusteeNodeId, out var env) ? env : null;
         }
         finally
         {

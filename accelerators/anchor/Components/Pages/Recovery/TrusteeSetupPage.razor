@@ -1,16 +1,19 @@
 @page "/recovery/trustee-setup"
 @using System.Security.Cryptography
+@using Sunfish.Anchor.Services
 @using Sunfish.Foundation.Recovery
-@inject IRecoveryCoordinator Recovery
+@inject TrusteeSetupService SetupService
 @inject NavigationManager Nav
 
 <PageTitle>Trustee Setup · Recovery · Sunfish Anchor</PageTitle>
 
-@* W#63 Phase 1 — designate trustees for ADR 0046 social recovery.
-   Per XO ruling 2026-05-16: operator collects (NodeId, public key) from
-   each trustee out-of-band, pastes the base64url-encoded public key here,
-   verifies the rendered fingerprint with the trustee verbally. QR-code
-   pairing is a Phase 1.x enhancement. *@
+@* W#67 PR 5 — designate a trustee AND distribute the root-seed envelope
+   in one step. Per ADR 0046-A6: trustees must be ONLINE during setup so
+   the owner can Box the root seed against the trustee's X25519 public
+   key. The Box ciphertext + nonce are persisted in the coordinator's
+   per-trustee TrusteeEncryptedSeed entry; the trustee's local Anchor
+   reads its own entry during the approval flow to re-encrypt the seed
+   toward the recovering device. *@
 
 <div class="recovery-trustee">
     <header>
@@ -18,8 +21,14 @@
         <h1>Designate trustees</h1>
         <p class="recovery-trustee__hint">
             Add the people you trust to approve a recovery of this Sunfish identity.
-            Get the trustee's NodeId and Ed25519 public key out-of-band (Signal, encrypted email, in-person)
-            and paste them below. Read the rendered fingerprint aloud to the trustee to confirm.
+            Get the trustee's NodeId, Ed25519 public key, AND X25519 DH public key
+            out-of-band (Signal, encrypted email, in-person) and paste them below.
+            Read the rendered DH fingerprint aloud to confirm.
+        </p>
+        <p class="recovery-trustee__warn">
+            <strong>Trustee must be reachable during setup.</strong>
+            We encrypt your root seed against their DH key right now so they
+            can re-encrypt it for the recovering device later.
         </p>
     </header>
 
@@ -40,7 +49,13 @@
                       placeholder="paste base64url-encoded public key"></textarea>
         </label>
 
-        <button type="submit" disabled="@(_busy || !CanSubmit)">@(_busy ? "Designating…" : "Designate trustee")</button>
+        <label>
+            <span>X25519 DH public key (base64url, 32 bytes)</span>
+            <textarea @bind="_dhPublicKeyBase64Url" rows="3"
+                      placeholder="paste base64url-encoded X25519 public key"></textarea>
+        </label>
+
+        <button type="submit" disabled="@(_busy || !CanSubmit)">@(_busy ? "Designating + encrypting…" : "Designate trustee")</button>
     </form>
 
     @if (_error is not null)
@@ -51,8 +66,8 @@
     @if (_lastDesignated is not null)
     {
         <section class="recovery-trustee__success">
-            <strong>Trustee designated.</strong>
-            <p>Read this fingerprint aloud to the trustee to confirm you have their correct key:</p>
+            <strong>Trustee designated and seed envelope distributed.</strong>
+            <p>Read this DH-key fingerprint aloud to the trustee to confirm you have their correct DH key:</p>
             <p class="recovery-trustee__fingerprint">@_lastFingerprint</p>
             <p class="recovery-trustee__hint">
                 Continue adding trustees (quorum is 3-of-5 by default) or
@@ -66,13 +81,16 @@
     private string _name = "";
     private string _nodeId = "";
     private string _publicKeyBase64Url = "";
+    private string _dhPublicKeyBase64Url = "";
     private string? _error;
     private string? _lastDesignated;
     private string? _lastFingerprint;
     private bool _busy;
 
     private bool CanSubmit =>
-        !string.IsNullOrWhiteSpace(_nodeId) && !string.IsNullOrWhiteSpace(_publicKeyBase64Url);
+        !string.IsNullOrWhiteSpace(_nodeId)
+        && !string.IsNullOrWhiteSpace(_publicKeyBase64Url)
+        && !string.IsNullOrWhiteSpace(_dhPublicKeyBase64Url);
 
     private async Task OnSubmitAsync()
     {
@@ -80,28 +98,36 @@
         if (!CanSubmit) return;
 
         byte[] publicKey;
+        byte[] dhPublicKey;
         try
         {
             publicKey = Base64UrlDecode(_publicKeyBase64Url.Trim());
+            dhPublicKey = Base64UrlDecode(_dhPublicKeyBase64Url.Trim());
         }
         catch (Exception ex)
         {
-            _error = $"Public key is not valid base64url: {ex.Message}";
+            _error = $"Key is not valid base64url: {ex.Message}";
             return;
         }
         if (publicKey.Length != 32)
         {
-            _error = $"Public key must decode to exactly 32 bytes (Ed25519); got {publicKey.Length}.";
+            _error = $"Ed25519 public key must decode to exactly 32 bytes; got {publicKey.Length}.";
+            return;
+        }
+        if (dhPublicKey.Length != TrusteeDesignation.DHPublicKeyLength)
+        {
+            _error = $"X25519 DH public key must decode to exactly {TrusteeDesignation.DHPublicKeyLength} bytes; got {dhPublicKey.Length}.";
             return;
         }
 
         _busy = true;
         try
         {
-            await Recovery.DesignateTrusteeAsync(_nodeId.Trim(), publicKey, default);
-            _lastDesignated = _nodeId.Trim();
-            _lastFingerprint = ComputeFingerprint(publicKey);
-            _nodeId = ""; _publicKeyBase64Url = ""; _name = "";
+            var outcome = await SetupService.DesignateAndDistributeAsync(
+                _nodeId.Trim(), publicKey, dhPublicKey, default);
+            _lastDesignated = outcome.TrusteeNodeId;
+            _lastFingerprint = outcome.TrusteeDHFingerprintHex;
+            _nodeId = ""; _publicKeyBase64Url = ""; _dhPublicKeyBase64Url = ""; _name = "";
         }
         catch (Exception ex)
         {
@@ -123,19 +149,6 @@
         }
         return Convert.FromBase64String(padded);
     }
-
-    private static string ComputeFingerprint(byte[] publicKey)
-    {
-        var hash = SHA256.HashData(publicKey);
-        // First 8 bytes → colon-separated hex pairs, e.g. "A1:B2:C3:D4:E5:F6:78:90"
-        var sb = new System.Text.StringBuilder(23);
-        for (var i = 0; i < 8; i++)
-        {
-            if (i > 0) sb.Append(':');
-            sb.Append(hash[i].ToString("X2"));
-        }
-        return sb.ToString();
-    }
 }
 
 <style>
@@ -144,6 +157,7 @@
     .recovery-trustee__link:hover { text-decoration: underline; }
     .recovery-trustee h1 { font-size: 1.75rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
     .recovery-trustee__hint { color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem; line-height: 1.5; }
+    .recovery-trustee__warn { padding: 0.75rem 1rem; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.5; margin: 0 0 1rem; }
     .recovery-trustee form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
     .recovery-trustee label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: #374151; }
     .recovery-trustee input, .recovery-trustee textarea { padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-family: inherit; font-size: 0.875rem; }

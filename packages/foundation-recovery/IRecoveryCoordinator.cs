@@ -38,15 +38,25 @@ public interface IRecoveryCoordinator
     /// Add <paramref name="trusteeNodeId"/> to the owner's designated
     /// trustee set per sub-pattern #48a. Bounded by
     /// <see cref="RecoveryCoordinatorOptions.MaxTrustees"/>.
+    /// <paramref name="trusteeDHPublicKey"/> (W#67 PR 5 binding) is
+    /// captured at designation time and cross-checked against every
+    /// later <see cref="TrusteeAttestation.TrusteeDHPublicKey"/> via
+    /// <see cref="System.Security.Cryptography.CryptographicOperations.FixedTimeEquals"/>
+    /// — attestations with a different DH key are silently dropped.
     /// </summary>
     /// <returns>The emitted <see cref="RecoveryEventType.TrusteeDesignated"/> event.</returns>
     /// <exception cref="InvalidOperationException">
     /// If the trustee set is already at <see cref="RecoveryCoordinatorOptions.MaxTrustees"/>,
     /// or the same NodeId is already designated.
     /// </exception>
+    /// <exception cref="ArgumentException">
+    /// If <paramref name="trusteeDHPublicKey"/> is not exactly
+    /// <see cref="TrusteeDesignation.DHPublicKeyLength"/> bytes.
+    /// </exception>
     Task<RecoveryEvent> DesignateTrusteeAsync(
         string trusteeNodeId,
         ReadOnlyMemory<byte> trusteePublicKey,
+        ReadOnlyMemory<byte> trusteeDHPublicKey,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -153,6 +163,23 @@ public interface IRecoveryCoordinator
     /// Snapshot of the coordinator's state for host UI consumption.
     /// </summary>
     Task<RecoveryStatus> GetStatusAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// W#67 PR 5 — fetch the persisted <see cref="TrusteeEncryptedSeed"/>
+    /// for <paramref name="trusteeNodeId"/>, written previously via
+    /// <see cref="SetupTrusteeAsync"/>. The trustee's local Anchor reads
+    /// its own envelope during the approval flow to OpenBox the
+    /// root seed before re-encrypting it toward the recovering device's
+    /// ephemeral DH key.
+    /// </summary>
+    /// <returns>
+    /// The envelope, or <c>null</c> if no setup record exists for this
+    /// trustee NodeId (owner never designated me, or the setup record
+    /// was wiped).
+    /// </returns>
+    Task<TrusteeEncryptedSeed?> GetTrusteeEncryptedSeedAsync(
+        string trusteeNodeId,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
