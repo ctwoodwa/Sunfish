@@ -27,7 +27,7 @@ reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-ha
 **Fate of existing .NET work:**
 - `blocks-crew-comms` (2,291 LOC) — KEPT, primary differentiator (ERPNext has no chat)
 - `kernel-sync`, `kernel-crdt`, `kernel-lease` — KEPT, central to local-first value
-- `blocks-accounting` (979 LOC) → becomes ERPNext API adapter
+- `blocks-financial-ledger` (979 LOC) → becomes ERPNext API adapter
 - `blocks-leases` (1,107 LOC) → becomes ERPNext API adapter
 - `blocks-forms` (32 LOC stub) → may be superseded by ERPNext native forms
 
@@ -35,7 +35,7 @@ reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-ha
 
 | Collaborator | Access | Sync |
 |---|---|---|
-| Accountant | Read/write blocks-accounting (reconciliation) | Peer node — Headscale Tier 2, bidirectional |
+| Accountant | Read/write blocks-financial-ledger (reconciliation) | Peer node — Headscale Tier 2, bidirectional |
 | CPA | Read-only accounting + tax reporting | Bridge read-only account or snapshot export |
 | Tenants | Read own lease + messages | Magic-link portal on Bridge; no install |
 

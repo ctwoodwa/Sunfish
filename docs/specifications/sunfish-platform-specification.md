@@ -1035,12 +1035,12 @@ The repository has a separate tactical migration plan (`docs/superpowers/plans/2
 **In scope:**
 - **Bridge accelerator completion**: all MVP features from §6 (leases, rent, inspections, maintenance, vendors, accounting, tax).
 - **Domain schemas**: `lease`, `tenant`, `unit`, `inspection`, `workorder`, `deficiency`, `quote`, `invoice`, `payment`, `depreciation-schedule`.
-- **Domain blocks**: `blocks-leases`, `blocks-inspections`, `blocks-maintenance`, `blocks-accounting` (light), `blocks-tax` (reporting stubs).
+- **Domain blocks**: `blocks-leases`, `blocks-inspections`, `blocks-maintenance`, `blocks-financial-ledger` (light), `blocks-tax` (reporting stubs).
 - **Integrations**: Plaid (bank feeds), DocuSign (lease signing), Twilio (tenant notifications), accounting exports (QuickBooks Online, Xero).
 - **Compliance pack**: fair-housing audit trail, HUD-friendly reporting, state-level inspection report templates.
 
 **Deliverables:**
-- NuGet: `Sunfish.Blocks.Leases`, `Sunfish.Blocks.Inspections`, `Sunfish.Blocks.Maintenance`, `Sunfish.Blocks.Accounting`.
+- NuGet: `Sunfish.Blocks.Leases`, `Sunfish.Blocks.Inspections`, `Sunfish.Blocks.Maintenance`, `Sunfish.Blocks.FinancialLedger`.
 - Bridge accelerator deployable as a Docker Compose or Aspire stack (§11).
 - Docs: property manager user guide, integration guide.
 

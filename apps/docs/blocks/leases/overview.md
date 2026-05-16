@@ -127,7 +127,7 @@ await foreach (var l in svc.ListAsync(new ListLeasesQuery { Phase = LeasePhase.D
 - Phase transitions (`Draft → AwaitingSignature → Executed → Active → Renewed/Terminated`).
 - Document upload, blob-store linking (`IBlobStore`), and e-signature audit trail.
 - Commencement-date triggers, renewal workflows, and termination reason codes.
-- Rent-ledger hookup to `blocks-accounting`.
+- Rent-ledger hookup to `blocks-financial-ledger`.
 - Parties as first-class module entities (persistence-backed party CRUD).
 
 ## Related ADRs

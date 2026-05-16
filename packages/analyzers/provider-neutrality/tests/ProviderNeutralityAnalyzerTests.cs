@@ -45,8 +45,8 @@ namespace N { class C { } }
 ";
         var expected = new DiagnosticResult(Diagnostics.ProviderNeutralityViolation)
             .WithLocation(0)
-            .WithArguments("Stripe", "Sunfish.Blocks.Accounting");
-        return RunAsync("Sunfish.Blocks.Accounting", source, expected);
+            .WithArguments("Stripe", "Sunfish.Blocks.FinancialLedger");
+        return RunAsync("Sunfish.Blocks.FinancialLedger", source, expected);
     }
 
     [Fact]
@@ -73,8 +73,8 @@ namespace N { class C { } }
 ";
         var expected = new DiagnosticResult(Diagnostics.ProviderNeutralityViolation)
             .WithLocation(0)
-            .WithArguments("SendGrid.Helpers.Mail", "Sunfish.Blocks.Accounting");
-        return RunAsync("Sunfish.Blocks.Accounting", source, expected);
+            .WithArguments("SendGrid.Helpers.Mail", "Sunfish.Blocks.FinancialLedger");
+        return RunAsync("Sunfish.Blocks.FinancialLedger", source, expected);
     }
 
     [Fact]
@@ -107,8 +107,8 @@ namespace N
 ";
         var expected = new DiagnosticResult(Diagnostics.ProviderNeutralityViolation)
             .WithLocation(0)
-            .WithArguments("Stripe.PaymentIntent", "Sunfish.Blocks.Accounting");
-        return RunAsync("Sunfish.Blocks.Accounting", source, expected);
+            .WithArguments("Stripe.PaymentIntent", "Sunfish.Blocks.FinancialLedger");
+        return RunAsync("Sunfish.Blocks.FinancialLedger", source, expected);
     }
 
     [Fact]
@@ -122,8 +122,8 @@ namespace N { class C { } }
 ";
         var expected = new DiagnosticResult(Diagnostics.ProviderNeutralityViolation)
             .WithLocation(0)
-            .WithArguments("Stripe.PaymentIntent", "Sunfish.Blocks.Accounting");
-        return RunAsync("Sunfish.Blocks.Accounting", source, expected);
+            .WithArguments("Stripe.PaymentIntent", "Sunfish.Blocks.FinancialLedger");
+        return RunAsync("Sunfish.Blocks.FinancialLedger", source, expected);
     }
 
     // === Negative: rule does NOT fire in providers-* ===
@@ -177,7 +177,7 @@ using Stripe;
 
 namespace N { class C { } }
 ";
-        return RunAsync("Sunfish.Blocks.Accounting.Tests", source);
+        return RunAsync("Sunfish.Blocks.FinancialLedger.Tests", source);
     }
 
     // === Negative: non-vendor namespaces are silent ===
@@ -192,7 +192,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace N { class C { } }
 ";
-        return RunAsync("Sunfish.Blocks.Accounting", source);
+        return RunAsync("Sunfish.Blocks.FinancialLedger", source);
     }
 
     [Fact]
@@ -206,6 +206,6 @@ using PlaidFake.Banking;
 
 namespace N { class C { } }
 ";
-        return RunAsync("Sunfish.Blocks.Accounting", source);
+        return RunAsync("Sunfish.Blocks.FinancialLedger", source);
     }
 }

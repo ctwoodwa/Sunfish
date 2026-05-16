@@ -113,7 +113,7 @@ intake when the relevant milestone lands:
   export as a first-class operation (ADR 0012).
 - **Bundle selection** — which bundles does Anchor compose? For the
   small-landlord reference vertical: `blocks-rent-collection`,
-  `blocks-leases`, `blocks-maintenance`, `blocks-accounting`. For
+  `blocks-leases`, `blocks-maintenance`, `blocks-financial-ledger`. For
   small-medical-office: TBD.
 - **Report catalog** — ties to ADR 0021 (reporting pipeline policy);
   Anchor is the natural home to demo the PDF / XLSX / DOCX / PPTX / CSV

@@ -12,7 +12,7 @@
 **Estimated effort:** ~10–14h sunfish-PM (rename + schema extensions + posting algorithm + chart seed + importer entry-point + ~40–55 tests + docs)
 **PR count:** 6 PRs (one mechanical rename + five additive feature PRs)
 **Pre-merge council:** NOT required (substrate scope; mirrors the W#34/W#35/W#36 substrate-only pattern). Standard COB self-audit applies.
-**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep -E "^blocks-(financial|accounting)"` — confirms `blocks-accounting/` exists (target of rename) and `blocks-financial-ledger/` does not yet exist.
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep -E "^blocks-(financial|accounting)"` — confirms `blocks-financial-ledger/` exists (target of rename) and `blocks-financial-ledger/` does not yet exist.
 
 ---
 
@@ -39,7 +39,7 @@ Phase 1 critical path.
 
 Per the 2026-05-16 ratification ruling:
 
-- **Decision 1:** `blocks-accounting` **renames to** `blocks-financial-ledger`.
+- **Decision 1:** `blocks-financial-ledger` **renames to** `blocks-financial-ledger`.
   The existing C# implementation (`GLAccount`, `JournalEntry`,
   `JournalEntryLine`, `DepreciationSchedule`) is preserved and extended in
   place. **The first PR under this hand-off is the rename PR.** Subsequent
@@ -64,9 +64,9 @@ Per the 2026-05-16 ratification ruling:
    (`_shared/engineering/erpnext-to-anchor-migration-importer-spec.md`)
    Pass 1 + Pass 3 require `GLAccount` and `JournalEntry` to be the
    first entities the importer can write to.
-3. **Existing code reuse.** `blocks-accounting/` is already on main with
+3. **Existing code reuse.** `blocks-financial-ledger/` is already on main with
    the canonical `JournalEntry` immutability + balance invariant
-   (`Sunfish.Blocks.Accounting.Models.JournalEntry`'s constructor enforces
+   (`Sunfish.Blocks.FinancialLedger.Models.JournalEntry`'s constructor enforces
    `Σ debits == Σ credits` via `ArgumentException`). Extension on top of
    working code beats greenfield greenwash.
 4. **`apps/docs` precedent.** Cluster docs already follow the
@@ -79,10 +79,10 @@ Per the 2026-05-16 ratification ruling:
 
 1. **Verify rename clean state.**
    ```bash
-   ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/blocks-accounting/
+   ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/blocks-financial-ledger/
    ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep blocks-financial
    ```
-   Expected: `blocks-accounting/` exists; nothing matching `blocks-financial-*`.
+   Expected: `blocks-financial-ledger/` exists; nothing matching `blocks-financial-*`.
 
 2. **Read the naming-ratification ruling.**
    File: `coordination/inbox/xo-ruling-2026-05-16T17-15Z-cob-naming-ratifications.md`.
@@ -97,24 +97,24 @@ Per the 2026-05-16 ratification ruling:
    a separate housekeeping PR). The hand-off is `ready-to-build` even with
    `status: Proposed` because the CO directive in the inbox is operative.
 
-4. **Confirm no parallel-session PRs touch `blocks-accounting/`.**
+4. **Confirm no parallel-session PRs touch `blocks-financial-ledger/`.**
    ```bash
-   gh pr list --state open --search "blocks-accounting in:title,body"
+   gh pr list --state open --search "blocks-financial-ledger in:title,body"
    gh pr list --state open --search "blocks-financial in:title,body"
    ```
    Expected: empty. If anything is open, file `cob-question-*` before
    starting PR 1.
 
-5. **Check existing consumers of `blocks-accounting`.**
+5. **Check existing consumers of `blocks-financial-ledger`.**
    ```bash
-   grep -rln "Sunfish.Blocks.Accounting" /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ /Users/christopherwood/Projects/SunfishSoftware/Sunfish/apps/ /Users/christopherwood/Projects/SunfishSoftware/Sunfish/accelerators/
-   grep -rln "blocks-accounting" /Users/christopherwood/Projects/SunfishSoftware/Sunfish/ --include="*.csproj"
+   grep -rln "Sunfish.Blocks.FinancialLedger" /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ /Users/christopherwood/Projects/SunfishSoftware/Sunfish/apps/ /Users/christopherwood/Projects/SunfishSoftware/Sunfish/accelerators/
+   grep -rln "blocks-financial-ledger" /Users/christopherwood/Projects/SunfishSoftware/Sunfish/ --include="*.csproj"
    ```
    Expected: a small set of consumer projects (likely `blocks-rent-collection`,
    `accelerators/anchor/`, `apps/docs/`). PR 1 must update every match.
 
-6. **Read the existing `blocks-accounting/` types.**
-   File: `packages/blocks-accounting/Models/GLAccount.cs` (today's shape is
+6. **Read the existing `blocks-financial-ledger/` types.**
+   File: `packages/blocks-financial-ledger/Models/GLAccount.cs` (today's shape is
    minimal — `Id, Code, Name, Type, ParentAccountId`). Field extensions in
    PR 2 add the Stage 02 design's fields without breaking the existing
    constructor signature (positional record params remain; new params are
@@ -134,29 +134,29 @@ last.
 
 ---
 
-### PR 1 — Rename `blocks-accounting → blocks-financial-ledger` (mechanical)
+### PR 1 — Rename `blocks-financial-ledger → blocks-financial-ledger` (mechanical)
 
 **Estimated effort:** ~30–60 minutes
 **Scope:** rename only; no behavior change; no new types; no new tests
-**Commit subject:** `chore(blocks): rename blocks-accounting to blocks-financial-ledger`
+**Commit subject:** `chore(blocks): rename blocks-financial-ledger to blocks-financial-ledger`
 **Branch:** `cob/blocks-financial-ledger-rename`
 
 #### File operations
 
 ```bash
 # 1. Directory rename
-git mv packages/blocks-accounting packages/blocks-financial-ledger
+git mv packages/blocks-financial-ledger packages/blocks-financial-ledger
 
 # 2. csproj rename
-git mv packages/blocks-financial-ledger/Sunfish.Blocks.Accounting.csproj \
+git mv packages/blocks-financial-ledger/Sunfish.Blocks.FinancialLedger.csproj \
        packages/blocks-financial-ledger/Sunfish.Blocks.FinancialLedger.csproj
-git mv packages/blocks-financial-ledger/tests/Sunfish.Blocks.Accounting.Tests.csproj \
+git mv packages/blocks-financial-ledger/tests/Sunfish.Blocks.FinancialLedger.Tests.csproj \
        packages/blocks-financial-ledger/tests/Sunfish.Blocks.FinancialLedger.Tests.csproj
 ```
 
 #### Namespace updates
 
-Rename `Sunfish.Blocks.Accounting` → `Sunfish.Blocks.FinancialLedger` across:
+Rename `Sunfish.Blocks.FinancialLedger` → `Sunfish.Blocks.FinancialLedger` across:
 
 - All `.cs` files inside `packages/blocks-financial-ledger/`
   (Models / Services / DependencyInjection / Localization / tests subfolders).
@@ -173,7 +173,7 @@ Rename `Sunfish.Blocks.Accounting` → `Sunfish.Blocks.FinancialLedger` across:
 Every consumer `*.csproj` that has:
 
 ```xml
-<ProjectReference Include="..\..\packages\blocks-accounting\Sunfish.Blocks.Accounting.csproj" />
+<ProjectReference Include="..\..\packages\blocks-financial-ledger\Sunfish.Blocks.FinancialLedger.csproj" />
 ```
 
 becomes:
@@ -187,7 +187,7 @@ becomes:
 Update project paths + project names + GUIDs as needed via `dotnet sln` commands:
 
 ```bash
-dotnet sln remove packages/blocks-accounting/Sunfish.Blocks.Accounting.csproj 2>/dev/null || true
+dotnet sln remove packages/blocks-financial-ledger/Sunfish.Blocks.FinancialLedger.csproj 2>/dev/null || true
 dotnet sln add packages/blocks-financial-ledger/Sunfish.Blocks.FinancialLedger.csproj
 # Repeat for the .Tests.csproj
 ```
@@ -197,23 +197,23 @@ dotnet sln add packages/blocks-financial-ledger/Sunfish.Blocks.FinancialLedger.c
 - `dotnet build` succeeds across the solution.
 - `dotnet test packages/blocks-financial-ledger/tests/` passes (existing
   tests should be unchanged in behavior).
-- `grep -r "blocks-accounting" packages/ accelerators/ apps/ tests/` returns
+- `grep -r "blocks-financial-ledger" packages/ accelerators/ apps/ tests/` returns
   zero hits (other than possibly a CHANGELOG-type historical reference, which
   is acceptable; archive/note in the PR description).
-- `grep -r "Sunfish.Blocks.Accounting" packages/ accelerators/ apps/ tests/`
+- `grep -r "Sunfish.Blocks.FinancialLedger" packages/ accelerators/ apps/ tests/`
   returns zero hits.
 
 #### PR description template
 
 ```
-Rename blocks-accounting → blocks-financial-ledger per
+Rename blocks-financial-ledger → blocks-financial-ledger per
 xo-ruling-2026-05-16T17-15Z-cob-naming-ratifications.md Decision 1.
 
 This is a mechanical rename. No behavior changes. No new types. No new tests.
 
-- `packages/blocks-accounting/` → `packages/blocks-financial-ledger/`
-- `Sunfish.Blocks.Accounting.csproj` → `Sunfish.Blocks.FinancialLedger.csproj`
-- Namespace `Sunfish.Blocks.Accounting` → `Sunfish.Blocks.FinancialLedger`
+- `packages/blocks-financial-ledger/` → `packages/blocks-financial-ledger/`
+- `Sunfish.Blocks.FinancialLedger.csproj` → `Sunfish.Blocks.FinancialLedger.csproj`
+- Namespace `Sunfish.Blocks.FinancialLedger` → `Sunfish.Blocks.FinancialLedger`
 - N consumers updated (list).
 
 Brings the existing GL primitive package under the canonical
@@ -1354,8 +1354,8 @@ Verify before PR 2.
 ### 6. Loro / SQLite write-path conflict (any PR)
 
 If PR 4-6 trips over an existing Loro CRDT integration in the
-`blocks-accounting → blocks-financial-ledger` package (post-rename),
-note that **the existing `blocks-accounting` is in-memory only as of
+`blocks-financial-ledger → blocks-financial-ledger` package (post-rename),
+note that **the existing `blocks-financial-ledger` is in-memory only as of
 2026-05-16** — there is no SQLite persistence layer in the package
 today. PR 4 introduces SQLite-side persistence via the
 `JournalPostingService`. If a sibling PR (e.g., from a parallel session)
@@ -1432,12 +1432,12 @@ path can proceed:
 
 **Existing on origin/main (verified 2026-05-16):**
 
-- `packages/blocks-accounting/` (target of PR 1 rename) ✓
-- `Sunfish.Blocks.Accounting.Models.GLAccount` (extended in PR 2) ✓
-- `Sunfish.Blocks.Accounting.Models.GLAccountType` (kept as-is) ✓
-- `Sunfish.Blocks.Accounting.Models.JournalEntry` (extended in PR 3) ✓
-- `Sunfish.Blocks.Accounting.Models.JournalEntryLine` (extended in PR 3) ✓
-- `Sunfish.Blocks.Accounting.Models.DepreciationSchedule` (preserved
+- `packages/blocks-financial-ledger/` (target of PR 1 rename) ✓
+- `Sunfish.Blocks.FinancialLedger.Models.GLAccount` (extended in PR 2) ✓
+- `Sunfish.Blocks.FinancialLedger.Models.GLAccountType` (kept as-is) ✓
+- `Sunfish.Blocks.FinancialLedger.Models.JournalEntry` (extended in PR 3) ✓
+- `Sunfish.Blocks.FinancialLedger.Models.JournalEntryLine` (extended in PR 3) ✓
+- `Sunfish.Blocks.FinancialLedger.Models.DepreciationSchedule` (preserved
   unchanged through rename — depreciation work is a separate hand-off) ✓
 - ADR 0088 §1 (Path II + 7-cluster decomposition) ✓
 - `coordination/inbox/xo-ruling-2026-05-16T17-15Z-cob-naming-ratifications.md` ✓
@@ -1448,7 +1448,7 @@ path can proceed:
 
 **Introduced by this hand-off** (ship across PRs 2-6):
 
-- Package rename: `blocks-accounting → blocks-financial-ledger`
+- Package rename: `blocks-financial-ledger → blocks-financial-ledger`
 - New types: `ChartOfAccountsId`, `ChartOfAccounts`, `AccountSubtype`,
   `NormalBalance`, `FiscalPeriodId`, `JournalEntryStatus`,
   `JournalEntrySource`, `PostError`, `PostResult`, `ChartTemplate`,

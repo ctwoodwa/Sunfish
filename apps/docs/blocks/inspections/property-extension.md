@@ -95,7 +95,7 @@ are intentional for the first slice; tenancy-pairing (which move-in matches whic
 across multiple tenancies on the same unit) is a Phase 2.2 enhancement gated on the leasing-pipeline state machine.
 
 Consumed downstream by security-deposit reconciliation (Phase 2 commercial scope; lives in
-`blocks-rent-collection` or `blocks-accounting`).
+`blocks-rent-collection` or `blocks-financial-ledger`).
 
 ## What's not in this extension (deferred to follow-up hand-offs)
 

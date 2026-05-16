@@ -18,7 +18,7 @@ keywords:
 
 The `blocks-tax-reporting` package produces structured, stage-aware tax reports from domain data. It ships three report bodies (`ScheduleEBody`, `Form1099NecBody`, `StatePersonalPropertyBody`) under a common discriminated `TaxReportBody` base, a state-machine service that moves reports through the Draft → Finalized → Signed (→ Amended → Superseded) lifecycle, canonical-JSON content hashing for integrity, and a plain-text renderer for previewing reports.
 
-The block is intentionally standalone. It does not read from `blocks-accounting` directly — consumers translate journal entries (or other domain data) into the block's opaque input DTOs. This keeps tax-reporting independently mergeable alongside accounting work.
+The block is intentionally standalone. It does not read from `blocks-financial-ledger` directly — consumers translate journal entries (or other domain data) into the block's opaque input DTOs. This keeps tax-reporting independently mergeable alongside accounting work.
 
 ## Package path
 
@@ -55,7 +55,7 @@ services.AddInMemoryTaxReporting();
 
 Registers a singleton `ITaxReportingService` backed by `InMemoryTaxReportingService`, plus a singleton `ITaxReportTextRenderer` backed by `TaxReportTextRenderer`. `TaxReportCanonicalJson` is a static helper and needs no registration.
 
-## Independence from `blocks-accounting`
+## Independence from `blocks-financial-ledger`
 
 `ITaxReportingService` accepts opaque input DTOs (`ScheduleEGenerationRequest`, `Nec1099GenerationRequest`). Consumers translate their domain data (e.g. accounting journal entries) into those DTOs in their application code. This keeps the two blocks orthogonal and independently mergeable.
 
@@ -123,7 +123,7 @@ var signed = await svc.SignAsync(final.Id, "approver@example.com:2026-04-21", ct
 
 ## Independence from other blocks
 
-The block accepts opaque input DTOs and does not read from any other block. Consumers translate their domain data (`blocks-accounting` journal entries, `blocks-rent-collection` invoices, a spreadsheet import) into `SchedulePropertyRow` or `Nec1099Recipient` records in application code. This keeps the block free of cross-block coupling and allows it to ship on its own cadence.
+The block accepts opaque input DTOs and does not read from any other block. Consumers translate their domain data (`blocks-financial-ledger` journal entries, `blocks-rent-collection` invoices, a spreadsheet import) into `SchedulePropertyRow` or `Nec1099Recipient` records in application code. This keeps the block free of cross-block coupling and allows it to ship on its own cadence.
 
 ## ADRs in effect
 
