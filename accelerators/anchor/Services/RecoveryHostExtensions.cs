@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Sunfish.Anchor.Services;
@@ -30,6 +31,12 @@ public static class RecoveryHostExtensions
             services.AddOptions<RecoveryHostOptions>(); // defaults
 
         services.AddSingleton<IRecoveryCompletionHandler, AnchorRecoveryCompletionHandler>();
+        // W#67 PR 4 — IEphemeralRecoveryKeyStore default. MauiProgram
+        // registers the SecureStorage-backed impl BEFORE calling this
+        // extension; TryAdd preserves that production binding while
+        // letting tests + non-MAUI hosts (CI, dev-mode bootstrap) fall
+        // back to the in-memory fake.
+        services.TryAddSingleton<IEphemeralRecoveryKeyStore, InMemoryEphemeralRecoveryKeyStore>();
         services.AddHostedService<RecoveryGracePollingService>();
         return services;
     }

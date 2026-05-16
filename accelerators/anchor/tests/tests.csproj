@@ -73,6 +73,11 @@
     <Compile Include="..\Services\AnchorRecoveryCompletionHandler.cs" Link="Anchor\AnchorRecoveryCompletionHandler.cs" />
     <Compile Include="..\Services\RecoveryHostOptions.cs" Link="Anchor\RecoveryHostOptions.cs" />
     <Compile Include="..\Services\RecoveryGracePollingService.cs" Link="Anchor\RecoveryGracePollingService.cs" />
+    <!-- W#67 PR 4 — IEphemeralRecoveryKeyStore + in-memory impl are MAUI-free;
+         the MAUI SecureStorage-backed implementation lives in the Anchor csproj
+         and is registered in MauiProgram (production binding). -->
+    <Compile Include="..\Services\IEphemeralRecoveryKeyStore.cs" Link="Anchor\IEphemeralRecoveryKeyStore.cs" />
+    <Compile Include="..\Services\InMemoryEphemeralRecoveryKeyStore.cs" Link="Anchor\InMemoryEphemeralRecoveryKeyStore.cs" />
     <!-- W#66 — RecoveryAttestationSubmitter composes W#65 ISessionSignerAccessor
          with IRecoveryCoordinator; MAUI-free (no Razor / no MAUI deps). -->
     <Compile Include="..\Services\RecoveryAttestationSubmitter.cs" Link="Anchor\RecoveryAttestationSubmitter.cs" />
