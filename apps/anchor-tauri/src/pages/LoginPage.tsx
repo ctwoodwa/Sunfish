@@ -38,15 +38,28 @@ export function LoginPage() {
       // attacker-supplied token) ends up in Stronghold and the app silently
       // 401-spirals with no surfaced cause. Use `Authorization: Bearer` so we
       // exercise the same auth path the sync code uses, not just cookies.
+      //
+      // CRITICAL: must use the absolute Bridge URL via `get_bridge_url`. A
+      // relative `/api/v1/whoami` only proxies to Bridge under `tauri:dev`
+      // (Vite proxy); the bundled build's Tauri asset handler returns 200
+      // (SPA fallback) for unknown paths, making relative probes a false
+      // positive. Caught by manual smoke test 2026-05-16.
+      let bridgeUrl: string
+      try {
+        bridgeUrl = await invoke<string>('get_bridge_url')
+      } catch (err) {
+        setError(`Anchor could not resolve the Bridge URL: ${err instanceof Error ? err.message : String(err)}`)
+        return
+      }
       let probe: Response
       try {
-        probe = await fetch('/api/v1/whoami', {
+        probe = await fetch(`${bridgeUrl}/api/v1/whoami`, {
           method: 'GET',
           headers: { Authorization: `Bearer ${trimmed}` },
         })
       } catch (netErr) {
         const msg = netErr instanceof Error ? netErr.message : String(netErr)
-        setError(`Could not reach Bridge to validate token: ${msg}`)
+        setError(`Could not reach Bridge at ${bridgeUrl}: ${msg}`)
         return
       }
       if (!probe.ok) {

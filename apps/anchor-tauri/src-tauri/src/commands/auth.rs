@@ -35,6 +35,21 @@ impl KeychainStatus {
     }
 }
 
+/// Tauri-managed handle for the Bridge base URL the app was launched against.
+/// Exposed to JS via `get_bridge_url` so the LoginPage can do its A1.3 whoami
+/// probe with an absolute URL — relative paths like `/api/v1/whoami` work only
+/// in `tauri:dev` mode (Vite proxy) and silently fall through to the SPA asset
+/// handler in the bundled build, causing false-positive 200 responses.
+pub struct BridgeUrl(pub String);
+
+/// Returns the active Bridge base URL (e.g., `http://localhost:7080`). The JS
+/// LoginPage joins this with `/api/v1/whoami` so the Bearer-token probe hits
+/// Bridge directly, not the Tauri asset fallback.
+#[tauri::command]
+pub async fn get_bridge_url(state: tauri::State<'_, BridgeUrl>) -> Result<String, String> {
+    Ok(state.0.clone())
+}
+
 /// Update the active Bridge auth token. Called by the frontend after reading
 /// from Stronghold on boot, or after the user pastes a token in the LoginPage.
 /// Empty string clears the token (logout path).

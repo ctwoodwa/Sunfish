@@ -144,6 +144,14 @@ pub fn run() {
             let auth_arc = Arc::clone(&auth_state.0);
             app.manage(auth_state);
 
+            // Bridge URL state. Exposes the active base URL to JS via
+            // `get_bridge_url` so the LoginPage A1.3 probe uses an absolute URL
+            // — relative `/api/v1/whoami` works only via the Vite proxy in
+            // `tauri:dev`; the bundled build's Tauri asset handler returns 200
+            // (SPA fallback) for unknown paths, making the relative probe a
+            // false positive. Caught by manual smoke test 2026-05-16.
+            app.manage(commands::auth::BridgeUrl(bridge_url.clone()));
+
             // Background pull sync on startup. Reads token fresh per HTTP call.
             let pool_clone = pool.clone();
             let bridge_url_clone = bridge_url.clone();
@@ -183,6 +191,7 @@ pub fn run() {
             commands::auth::set_bridge_token,
             commands::auth::has_bridge_token,
             commands::auth::keychain_status,
+            commands::auth::get_bridge_url,
             commands::cache::get_cached_properties,
             commands::cache::get_cached_leases,
             commands::cache::get_cached_payments,
