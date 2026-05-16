@@ -46,6 +46,14 @@
                     <span class="bi bi-grid-1x2-fill" aria-hidden="true"></span> Cockpit
                 </NavLink>
             </div>
+            @* W#63 Phase 1 — ADR 0046 recovery status surface. Other 4
+               recovery pages (TrusteeSetup / InitiateRecovery /
+               ApproveRecovery / PaperKey) deferred pending UX ruling. *@
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="recovery/status">
+                    <span class="bi bi-shield-lock" aria-hidden="true"></span> Recovery
+                </NavLink>
+            </div>
             @* W#51 Phase 4 — Quarterdeck entry-point surface (ADR 0080).
                Root navigation landing; DepartmentNavPanel owns the main
                landmark + department links + skip-link. *@
