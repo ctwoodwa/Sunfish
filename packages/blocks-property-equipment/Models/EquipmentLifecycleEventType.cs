@@ -31,4 +31,11 @@ public enum EquipmentLifecycleEventType
 
     /// <summary>Free-text notes were updated.</summary>
     NotesUpdated,
+
+    /// <summary>
+    /// A vehicle trip was recorded against this equipment. Emitted by
+    /// <see cref="Services.ITripStore.AppendAsync"/> for equipment with
+    /// <see cref="EquipmentClass.Vehicle"/>.
+    /// </summary>
+    MileageRecorded,
 }

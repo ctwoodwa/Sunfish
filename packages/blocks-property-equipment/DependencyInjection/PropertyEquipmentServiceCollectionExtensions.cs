@@ -15,6 +15,7 @@ public static class PropertyEquipmentServiceCollectionExtensions
     /// <list type="bullet">
     ///   <item><see cref="IEquipmentLifecycleEventStore"/> → <see cref="InMemoryEquipmentLifecycleEventStore"/></item>
     ///   <item><see cref="IEquipmentRepository"/> → <see cref="InMemoryEquipmentRepository"/> (depends on the event store for soft-delete emission)</item>
+    ///   <item><see cref="ITripStore"/> → <see cref="InMemoryTripStore"/> (W#61; depends on the equipment repository to update <c>VehicleMetadata.CurrentOdometer</c>)</item>
     ///   <item><see cref="ISunfishEntityModule"/> → <see cref="PropertyEquipmentEntityModule"/></item>
     /// </list>
     /// Suitable for testing, prototyping, and kitchen-sink demos. Replace
@@ -29,6 +30,7 @@ public static class PropertyEquipmentServiceCollectionExtensions
 
         services.AddSingleton<IEquipmentLifecycleEventStore, InMemoryEquipmentLifecycleEventStore>();
         services.AddSingleton<IEquipmentRepository, InMemoryEquipmentRepository>();
+        services.AddSingleton<ITripStore, InMemoryTripStore>();
         services.AddSingleton<ISunfishEntityModule, PropertyEquipmentEntityModule>();
 
         return services;
