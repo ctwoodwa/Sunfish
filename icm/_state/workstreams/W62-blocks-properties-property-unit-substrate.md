@@ -2,35 +2,35 @@
 sort_order: 71
 number: 62
 slug: blocks-properties-property-unit-substrate
-title: "PropertyUnit substrate — additive extension of `blocks-properties`; ships `PropertyUnit` entity + `IPropertyUnitRepository`; unblocks W#29 Phase 1.5 (real property-detail aggregation) and WorkOrder.PropertyId FK"
-status: "building"
-status_cell: "`building` — **Phase 1 PR #860 merged**; **Phase 2 PR #861 merged**; **Phase 3 PR #862 merged 2026-05-16** (WorkOrder.PropertyId? nullable FK + cockpit open-WO count wired); Phase 4 (docs + ledger flip) remaining — flip W#62 → built"
+title: "**PropertyUnit substrate** (blocks-properties additive extension; `sunfish-feature-change` pipeline) — closes the Lease/Inspection FK gap; unblocked W#29 Phase 1.5 + Phase 5"
+status: "built"
+status_cell: "`built` — All 4 phases merged. PR 1 (#860) PropertyUnit entity + IPropertyUnitRepository + InMemory + EFCore + DI. PR 2 (#861) wired W#29 Phase 1.5 PropertyDetail aggregation (active lease + last inspection via PropertyUnit join). PR 3 (#862) added WorkOrder.PropertyId FK + ListWorkOrdersQuery.PropertyId + cockpit open-WO count. PR 4 (this) docs + ledger flip."
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`icm/_state/handoffs/blocks-properties-property-unit-substrate-stage06-handoff.md`"
+reference_cell: "`icm/_state/handoffs/blocks-properties-property-unit-substrate-stage06-handoff.md` + `apps/docs/blocks/properties/property-unit.md` + `apps/docs/blocks/properties/property-aggregation.md`"
 ---
 
 ## Notes
 
-**Hand-off ready 2026-05-16.** `Property.cs` first-slice explicitly deferred `PropertyUnit`
-to a follow-up hand-off (see comment in the file). W#62 delivers that follow-up.
+**Authored 2026-05-16 in response to the W#29 PR 2 halt** (`Lease`/`Inspection`/`WorkOrder` lacked the FKs needed to aggregate per property). `Property.cs` doc-comment explicitly deferred `PropertyUnit` to a follow-up; W#62 is that follow-up.
 
-**Root cause discovered in W#29 Phase 2:** `blocks-leases` (`Lease.UnitId: EntityId`) and
-`blocks-inspections` (`Inspection.UnitId: EntityId`) reference units, but there is no
-`IPropertyUnitRepository` to resolve `PropertyId → UnitId[]`. W#29 Phase 2 shipped with
-stubbed aggregation fields pending W#62.
+**Surface added:**
 
-Phase 1: `UnitStatus` enum + `PropertyUnit` entity (`EntityId`-based ID with scheme `"unit"`)
-+ `IPropertyUnitRepository` + `InMemoryPropertyUnitRepository` + EFCore entity-module +
-DI registration + 5 unit tests (~3-4h).
+- `Sunfish.Blocks.Properties.Models.PropertyUnit` — `IMustHaveTenant`; `EntityId` scheme `"unit"`; `PropertyId` FK; `UnitNumber` + `Bedrooms?` + `Bathrooms?` + `SquareFootage?` + `Status` (Available/Occupied/MaintenanceHold) + `CreatedAt` + `Notes?`. Static `NewId(tenant)` factory matches the `EntityId UnitId` FK shape already used by `blocks-leases` and `blocks-inspections`.
+- `Sunfish.Blocks.Properties.Services.IPropertyUnitRepository` — `GetByIdAsync`, `ListByPropertyAsync`, `ListByTenantAsync`, `UpsertAsync`; tenant-scoped on every call.
+- `InMemoryPropertyUnitRepository` — `ConcurrentDictionary<(TenantId, EntityId), PropertyUnit>` backing.
+- `PropertyUnitEntityConfiguration` — `properties_property_unit` table; string-converted `EntityId` / `PropertyId` / `TenantId`; indexes on `(TenantId, PropertyId)` + `(TenantId)`.
 
-Phase 2 (W#29 Phase 1.5): Upgrade `PropertyDetailEndpoint.cs` to real aggregation via
-`IPropertyUnitRepository.ListByPropertyAsync` → lease + inspection in-memory joins (~2-3h).
+**API-change surface (additive, no breaking):**
 
-Phase 3: `WorkOrder.PropertyId?` nullable FK + `ListWorkOrdersQuery.PropertyId` filter +
-open-WO count wired in cockpit (~2-3h).
+- `WorkOrder.PropertyId` nullable (existing call sites + AcceptQuote auto-WO path compile unchanged).
+- `CreateWorkOrderRequest.PropertyId` nullable; `InMemoryMaintenanceService.CreateWorkOrderAsync` flows it.
+- `ListWorkOrdersQuery.PropertyId` nullable filter; honored by `InMemoryMaintenanceService.ListWorkOrdersAsync`.
 
-Phase 4: Docs + ledger flip (~30min).
+**Consumer:** Bridge `PropertyDetailEndpoint` (W#29 PR 2 + 1.5 + 3 upgrade path) and `DashboardEndpoint` (W#29 PR 5) both walk the new join layer. Equipment continues to query directly via `IEquipmentRepository.ListByPropertyAsync`.
 
-**Unblocks:** W#29 Phase 1.5 (property-detail real aggregation) + W#29 Phase 5 (dashboard
-property-level KPIs). Also enables future W#22/W#25/W#27 joins on PropertyUnit.
+**Tests:** 5/5 unit tests on `IPropertyUnitRepository` (PR 1); 3/3 cockpit aggregation tests (PR 2 — active lease + last inspection + cross-property isolation); 1 cockpit count test (PR 3 — Draft/Sent count; Cancelled excluded; other-property excluded); 121/121 blocks-maintenance tests passed without regression after `WorkOrder.PropertyId` addition.
+
+**Deferred:** EFCore index on `WorkOrder.(TenantId, PropertyId)` — blocks-maintenance has no EFCore module today (in-memory only); index lands alongside the module when introduced.
+
+**Pipeline:** ICM `sunfish-feature-change` variant; built 4 PRs in ~6h.
