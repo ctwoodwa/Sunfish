@@ -6,6 +6,7 @@ using Sunfish.Anchor.Services;
 using Sunfish.Blocks.CrewComms.DependencyInjection;
 using Sunfish.Blocks.Properties.DependencyInjection;
 using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
+using Sunfish.Blocks.Maintenance.DependencyInjection;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Foundation.IdentityAtlas;
 using Sunfish.Foundation.Transport.DependencyInjection;
@@ -228,6 +229,8 @@ public static class MauiProgram
 		// W#29 Phase 2 — property detail page reads equipment via
 		// IEquipmentRepository. Same in-memory swap-out story as properties.
 		builder.Services.AddInMemoryPropertyEquipment();
+		// W#29 Phase 3 — work-orders pages read IMaintenanceService.
+		builder.Services.AddInMemoryMaintenance();
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();
