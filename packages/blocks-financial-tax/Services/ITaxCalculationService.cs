@@ -66,14 +66,34 @@ public sealed record TaxCalculationInput(
 /// the rounding residual).
 /// </param>
 /// <param name="Error">Non-<see cref="TaxCalculationError.None"/> on failure.</param>
-/// <param name="Detail">Optional human-readable context (e.g. which jurisdictions had no rate).</param>
+/// <param name="Detail">
+/// <b>Internal / operator-facing only.</b> Carries identifiers
+/// (TaxCodeId, jurisdiction names, account ids) that help diagnose
+/// calculation failures in logs + admin UI. <b>Not safe to surface
+/// to end-users without redaction</b> — leakage of internal graph
+/// shape.
+/// </param>
+/// <param name="CalculatedAtUtc">
+/// Wall-clock when the calculation ran. Downstream audit trails
+/// (journal-entry attribution, Schedule E rollup) persist this so a
+/// year-later reconstruction can prove which rate-snapshot applied.
+/// </param>
+/// <param name="TaxCodeVersion">
+/// The <see cref="TaxCode.Version"/> at calc time. Combined with
+/// <see cref="TaxRateBreakdownLine.TaxRateId"/> + <see cref="CalculatedAtUtc"/>
+/// it lets a historical query identify the exact code-state used,
+/// even if the code was edited (with version bumped) after the fact.
+/// Zero for failure results (no code resolved).
+/// </param>
 public sealed record TaxCalculationResult(
     decimal SubtotalIn,
     decimal TaxAmount,
     decimal TotalIn,
     IReadOnlyList<TaxRateBreakdownLine> Breakdown,
     TaxCalculationError Error,
-    string? Detail);
+    string? Detail,
+    DateTimeOffset CalculatedAtUtc,
+    int TaxCodeVersion);
 
 /// <summary>
 /// One row of the per-rate breakdown — the data the downstream GL
@@ -111,6 +131,14 @@ public enum TaxCalculationError
     NoApplicableRates,
     /// <summary>The code is <see cref="TaxApplication.Inclusive"/> and the subtotal is zero — division-by-zero guard.</summary>
     InclusiveWithZeroSubtotal,
+    /// <summary>
+    /// <see cref="TaxCalculationInput.Subtotal"/> is negative. Engine
+    /// rejects so credit-memo / reversal flows must use an explicit
+    /// reversal path rather than feeding negative subtotals into the
+    /// standard calc engine (silent negative-tax production is a
+    /// fiscal hazard).
+    /// </summary>
+    InvalidSubtotal,
     /// <summary>Forward-compat: a new <see cref="TaxApplication"/> enum member exists that this engine doesn't know how to apply.</summary>
     UnknownApplication,
 }

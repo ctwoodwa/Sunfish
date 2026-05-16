@@ -40,11 +40,23 @@ public sealed class TaxCalculationService : ITaxCalculationService
     {
         if (input is null) throw new ArgumentNullException(nameof(input));
 
+        // Reject negative subtotals up front. Silent negative-tax
+        // production on negative inputs is a fiscal hazard: callers
+        // doing credit-memo / reversal flows must use an explicit
+        // reversal path rather than feeding a negative subtotal into
+        // the standard engine.
+        if (input.Subtotal < 0m)
+        {
+            return Fail(input, TaxCalculationError.InvalidSubtotal,
+                $"Subtotal {input.Subtotal} must be >= 0; credit-memo flows must use an explicit reversal path.",
+                taxCodeVersion: 0);
+        }
+
         var code = await _codes.GetAsync(input.TaxCodeId, cancellationToken).ConfigureAwait(false);
         if (code is null)
         {
             return Fail(input, TaxCalculationError.TaxCodeNotFound,
-                $"TaxCodeId {input.TaxCodeId} not found.");
+                $"TaxCodeId {input.TaxCodeId} not found.", taxCodeVersion: 0);
         }
 
         // Exempt codes short-circuit: zero tax, empty breakdown, no
@@ -58,18 +70,23 @@ public sealed class TaxCalculationService : ITaxCalculationService
                 TotalIn: input.Subtotal,
                 Breakdown: Array.Empty<TaxRateBreakdownLine>(),
                 Error: TaxCalculationError.None,
-                Detail: null);
+                Detail: null,
+                CalculatedAtUtc: DateTimeOffset.UtcNow,
+                TaxCodeVersion: code.Version);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         var jurisdictions = await _jurisdictions.ResolveAsync(input.Location, cancellationToken).ConfigureAwait(false);
         var jurisdictionIds = jurisdictions.Select(j => j.Id).ToList();
+        cancellationToken.ThrowIfCancellationRequested();
         var applicableRates = await _rates.GetActiveRatesAsync(
             code.Id, input.TransactionDate, jurisdictionIds, cancellationToken).ConfigureAwait(false);
 
         if (applicableRates.Count == 0)
         {
             return Fail(input, TaxCalculationError.NoApplicableRates,
-                $"No active rates for code {code.Code} on {input.TransactionDate} in jurisdictions [{string.Join(",", jurisdictions.Select(j => j.Name))}].");
+                $"No active rates for code {code.Code} on {input.TransactionDate} in jurisdictions [{string.Join(",", jurisdictions.Select(j => j.Name))}].",
+                taxCodeVersion: code.Version);
         }
 
         // Pair each rate with its jurisdiction for breakdown metadata.
@@ -80,22 +97,50 @@ public sealed class TaxCalculationService : ITaxCalculationService
 
         return code.Application switch
         {
-            TaxApplication.OnSubtotal => ApplyOnSubtotal(input, withJur),
-            TaxApplication.Compound => ApplyCompound(input, withJur),
-            TaxApplication.Inclusive => input.Subtotal == 0m
-                ? Fail(input, TaxCalculationError.InclusiveWithZeroSubtotal,
-                       "Inclusive application requires non-zero subtotal (avoid /0).")
-                : ApplyInclusive(input, withJur),
+            TaxApplication.OnSubtotal => ApplyOnSubtotal(input, withJur, code.Version),
+            TaxApplication.Compound => ApplyCompound(input, withJur, code.Version),
+            TaxApplication.Inclusive => InclusiveGuard(input, withJur, code)
+                ?? ApplyInclusive(input, withJur, code.Version),
             _ => Fail(input, TaxCalculationError.UnknownApplication,
-                     $"TaxApplication.{code.Application} not implemented."),
+                     $"TaxApplication.{code.Application} not implemented.",
+                     taxCodeVersion: code.Version),
         };
+    }
+
+    /// <summary>
+    /// Inclusive-mode pre-checks. Returns a populated failure result
+    /// or <c>null</c> to proceed with <see cref="ApplyInclusive"/>.
+    /// Guards both zero subtotal (would divide by zero) and an
+    /// all-zero rate set (mathematically defined but semantically
+    /// indistinguishable from <see cref="TaxKind.Exempt"/>, which
+    /// would confuse downstream GL audits).
+    /// </summary>
+    private static TaxCalculationResult? InclusiveGuard(
+        TaxCalculationInput input,
+        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates,
+        TaxCode code)
+    {
+        if (input.Subtotal == 0m)
+        {
+            return Fail(input, TaxCalculationError.InclusiveWithZeroSubtotal,
+                "Inclusive application requires non-zero subtotal (avoid /0).",
+                taxCodeVersion: code.Version);
+        }
+        if (rates.Sum(t => t.Rate.RatePercent) == 0m)
+        {
+            return Fail(input, TaxCalculationError.NoApplicableRates,
+                "Inclusive application requires at least one non-zero rate (else use Exempt code).",
+                taxCodeVersion: code.Version);
+        }
+        return null;
     }
 
     // ── OnSubtotal: tax = subtotal * rate (each rate independently) ──────────
 
     private static TaxCalculationResult ApplyOnSubtotal(
         TaxCalculationInput input,
-        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates)
+        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates,
+        int taxCodeVersion)
     {
         var breakdown = new List<TaxRateBreakdownLine>(capacity: rates.Count);
         decimal totalTax = 0m;
@@ -118,7 +163,9 @@ public sealed class TaxCalculationService : ITaxCalculationService
             TotalIn: input.Subtotal + totalTax,
             Breakdown: breakdown,
             Error: TaxCalculationError.None,
-            Detail: null);
+            Detail: null,
+            CalculatedAtUtc: DateTimeOffset.UtcNow,
+            TaxCodeVersion: taxCodeVersion);
     }
 
     // ── Compound: tax_i = (subtotal + sum of prior taxes) * rate_i ───────────
@@ -126,7 +173,8 @@ public sealed class TaxCalculationService : ITaxCalculationService
 
     private static TaxCalculationResult ApplyCompound(
         TaxCalculationInput input,
-        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates)
+        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates,
+        int taxCodeVersion)
     {
         var ordered = rates
             .OrderBy(t => t.Jur.Level.OrderIndex())
@@ -156,7 +204,9 @@ public sealed class TaxCalculationService : ITaxCalculationService
             TotalIn: input.Subtotal + totalTax,
             Breakdown: breakdown,
             Error: TaxCalculationError.None,
-            Detail: null);
+            Detail: null,
+            CalculatedAtUtc: DateTimeOffset.UtcNow,
+            TaxCodeVersion: taxCodeVersion);
     }
 
     // ── Inclusive: subtotal already includes tax; back it out. ───────────────
@@ -167,8 +217,11 @@ public sealed class TaxCalculationService : ITaxCalculationService
 
     private static TaxCalculationResult ApplyInclusive(
         TaxCalculationInput input,
-        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates)
+        IReadOnlyList<(TaxRate Rate, TaxJurisdiction Jur)> rates,
+        int taxCodeVersion)
     {
+        // Caller (InclusiveGuard) already rejects subtotal == 0 and
+        // totalRatePct == 0; both arithmetic divisions below are safe.
         var totalRatePct = rates.Sum(t => t.Rate.RatePercent);
         var totalRate = totalRatePct / 100m;
         var totalTax = RoundMinor(input.Subtotal * totalRate / (1m + totalRate));
@@ -188,12 +241,8 @@ public sealed class TaxCalculationService : ITaxCalculationService
             }
             else
             {
-                // Pro-rate by share-of-total-rate. Guard against /0
-                // even though the caller-side InclusiveWithZeroSubtotal
-                // check should make totalRatePct > 0 here.
-                share = totalRatePct == 0m
-                    ? 0m
-                    : RoundMinor(totalTax * (r.RatePercent / totalRatePct));
+                // Pro-rate by share-of-total-rate.
+                share = RoundMinor(totalTax * (r.RatePercent / totalRatePct));
                 allocated += share;
             }
             breakdown.Add(new TaxRateBreakdownLine(
@@ -213,7 +262,9 @@ public sealed class TaxCalculationService : ITaxCalculationService
             TotalIn: input.Subtotal,
             Breakdown: breakdown,
             Error: TaxCalculationError.None,
-            Detail: null);
+            Detail: null,
+            CalculatedAtUtc: DateTimeOffset.UtcNow,
+            TaxCodeVersion: taxCodeVersion);
     }
 
     /// <summary>
@@ -229,11 +280,14 @@ public sealed class TaxCalculationService : ITaxCalculationService
     private static TaxCalculationResult Fail(
         TaxCalculationInput input,
         TaxCalculationError error,
-        string? detail) =>
+        string? detail,
+        int taxCodeVersion) =>
         new(SubtotalIn: input.Subtotal,
             TaxAmount: 0m,
             TotalIn: input.Subtotal,
             Breakdown: Array.Empty<TaxRateBreakdownLine>(),
             Error: error,
-            Detail: detail);
+            Detail: detail,
+            CalculatedAtUtc: DateTimeOffset.UtcNow,
+            TaxCodeVersion: taxCodeVersion);
 }

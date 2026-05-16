@@ -91,6 +91,43 @@ public class TaxCalculationServiceTests
     }
 
     [Fact]
+    public async Task Calculate_NegativeSubtotal_ReturnsInvalidSubtotal_AndDoesNotProduceNegativeTax()
+    {
+        // Council-review finding (MEDIUM): negative subtotal silently
+        // produced negative tax. Engine now rejects up front.
+        var fx = new Fixture();
+        var state = await fx.SeedJurisdictionAsync(JurisdictionLevel.State, region: "US-VA", name: "Virginia");
+        var code = await fx.SeedCodeAsync();
+        await fx.SeedRateAsync(code.Id, state.Id, 5m, D(2026, 1, 1));
+
+        var result = await fx.Service.CalculateAsync(new TaxCalculationInput(
+            code.Id, -100m, D(2026, 6, 1), USVA()));
+
+        Assert.Equal(TaxCalculationError.InvalidSubtotal, result.Error);
+        Assert.Equal(0m, result.TaxAmount);
+        Assert.Empty(result.Breakdown);
+    }
+
+    [Fact]
+    public async Task Calculate_Inclusive_AllZeroRates_ReturnsNoApplicableRates_AndDoesNotMasqueradeAsExempt()
+    {
+        // Council-review finding (LOW): an Inclusive code with all
+        // zero-rate rows used to succeed silently (totalTax=0,
+        // preTaxBase=subtotal) — indistinguishable from Exempt and
+        // confusing in GL audits. Engine now rejects.
+        var fx = new Fixture();
+        var state = await fx.SeedJurisdictionAsync(JurisdictionLevel.State, region: "US-VA", name: "Virginia");
+        var code = await fx.SeedCodeAsync("US-VA-INCL-ZERO", TaxKind.Sales, TaxApplication.Inclusive);
+        await fx.SeedRateAsync(code.Id, state.Id, 0m, D(2026, 1, 1));
+
+        var result = await fx.Service.CalculateAsync(new TaxCalculationInput(
+            code.Id, 100m, D(2026, 6, 1), USVA()));
+
+        Assert.Equal(TaxCalculationError.NoApplicableRates, result.Error);
+        Assert.Equal(0m, result.TaxAmount);
+    }
+
+    [Fact]
     public async Task Calculate_ExemptCode_ReturnsZeroTaxAndEmptyBreakdown()
     {
         var fx = new Fixture();
