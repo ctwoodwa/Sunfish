@@ -42,10 +42,12 @@ public sealed class InMemoryFiscalYearRepository : IFiscalYearRepository
     public Task<bool> UpdateAsync(FiscalYear fiscalYear, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fiscalYear);
-        // CAS pattern — see InMemoryFiscalPeriodRepository.UpdateAsync.
+        // Version-based CAS — see InMemoryFiscalPeriodRepository.UpdateAsync.
         while (true)
         {
             if (!_byId.TryGetValue(fiscalYear.Id, out var current))
+                return Task.FromResult(false);
+            if (fiscalYear.Version != current.Version + 1)
                 return Task.FromResult(false);
             if (_byId.TryUpdate(fiscalYear.Id, fiscalYear, current))
                 return Task.FromResult(true);

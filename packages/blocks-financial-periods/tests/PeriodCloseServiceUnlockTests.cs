@@ -9,75 +9,67 @@ using static Sunfish.Blocks.FinancialPeriods.Tests.PeriodCloseServiceSoftCloseTe
 namespace Sunfish.Blocks.FinancialPeriods.Tests;
 
 /// <summary>
-/// W#60 P4 — coverage for <see cref="PeriodCloseService.ReopenAsync"/>
-/// per Stage 02 §6.5(a) reopen-soft path (admin + audit memo).
+/// W#60 P4 PR 3a — coverage for <see cref="PeriodCloseService.UnlockAsync"/>
+/// per Stage 02 §8.5 row 3 reverse path.
 /// </summary>
-public sealed class PeriodCloseServiceReopenTests
+public sealed class PeriodCloseServiceUnlockTests
 {
     private static readonly ChartOfAccountsId Chart = ChartOfAccountsId.NewId();
 
     [Fact]
-    public async Task Reopen_SoftClosedPeriod_TransitionsToOpen()
+    public async Task Unlock_LockedPeriod_TransitionsToSoftClosed()
     {
-        var h = new ReopenHarness();
-        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.SoftClosed);
+        var h = new UnlockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
 
-        var result = await h.Sut.ReopenAsync(period.Id, auditMemo: "year-end correction");
+        var result = await h.Sut.UnlockAsync(period.Id, auditMemo: "audit reopen");
 
         Assert.True(result.IsSuccess, result.Detail);
-        Assert.Equal(FiscalPeriodStatus.Open, result.Period!.Status);
-        Assert.Null(result.Period.SoftClosedAtUtc);
+        Assert.Equal(FiscalPeriodStatus.SoftClosed, result.Period!.Status);
+        Assert.Null(result.Period.LockedAtUtc);
     }
 
     [Fact]
-    public async Task Reopen_EmptyAuditMemo_ReturnsAuditMemoRequired()
+    public async Task Unlock_EmptyAuditMemo_ReturnsAuditMemoRequired()
     {
-        var h = new ReopenHarness();
-        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.SoftClosed);
+        var h = new UnlockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
 
-        var result = await h.Sut.ReopenAsync(period.Id, auditMemo: "   ");
+        var result = await h.Sut.UnlockAsync(period.Id, auditMemo: "   ");
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PeriodCloseError.AuditMemoRequired, result.Error);
     }
 
     [Fact]
-    public async Task Reopen_LockedPeriod_ReturnsPeriodLocked()
+    public async Task Unlock_OpenPeriod_ReturnsPeriodNotLocked()
     {
-        // Reopen-from-Locked is PR 3's unlock-with-audit path; PR 2
-        // rejects the call with PeriodLocked.
-        var h = new ReopenHarness();
-        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
-
-        var result = await h.Sut.ReopenAsync(period.Id, auditMemo: "explanation");
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(PeriodCloseError.PeriodLocked, result.Error);
-    }
-
-    [Fact]
-    public async Task Reopen_AlreadyOpenPeriod_ReturnsPeriodNotSoftClosed()
-    {
-        // Distinguish from PeriodLocked so a stale-UI double-reopen
-        // surfaces a meaningful error.
-        var h = new ReopenHarness();
+        var h = new UnlockHarness();
         var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Open);
 
-        var result = await h.Sut.ReopenAsync(period.Id, auditMemo: "second click");
+        var result = await h.Sut.UnlockAsync(period.Id, auditMemo: "x");
 
         Assert.False(result.IsSuccess);
-        Assert.Equal(PeriodCloseError.PeriodNotSoftClosed, result.Error);
+        Assert.Equal(PeriodCloseError.PeriodNotLocked, result.Error);
     }
 
     [Fact]
-    public async Task Reopen_PeriodInClosedFy_ReturnsFiscalYearAlreadyClosed()
+    public async Task Unlock_SoftClosedPeriod_ReturnsPeriodNotLocked()
     {
-        var h = new ReopenHarness();
-        var (fy, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.SoftClosed);
-        // Force the FY into Closed state without going through the
-        // (PR 3b) FiscalYearCloseService — direct repo mutation models
-        // "year was closed in a prior session" for this test. Bump
-        // Version so the repo's version-CAS accepts the write.
+        var h = new UnlockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.SoftClosed);
+
+        var result = await h.Sut.UnlockAsync(period.Id, auditMemo: "x");
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(PeriodCloseError.PeriodNotLocked, result.Error);
+    }
+
+    [Fact]
+    public async Task Unlock_PeriodInClosedFy_ReturnsFiscalYearAlreadyClosed()
+    {
+        var h = new UnlockHarness();
+        var (fy, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
         await h.Years.UpdateAsync(fy with
         {
             Status      = FiscalYearStatus.Closed,
@@ -85,42 +77,56 @@ public sealed class PeriodCloseServiceReopenTests
             Version     = fy.Version + 1,
         });
 
-        var result = await h.Sut.ReopenAsync(period.Id, auditMemo: "after-year-end fix");
+        var result = await h.Sut.UnlockAsync(period.Id, auditMemo: "year-end-after");
 
         Assert.False(result.IsSuccess);
         Assert.Equal(PeriodCloseError.FiscalYearAlreadyClosed, result.Error);
     }
 
     [Fact]
-    public async Task Reopen_EmitsPeriodOpenedEvent_WithReopenReason()
+    public async Task Unlock_EmitsPeriodOpenedEvent_WithUnlockReason()
     {
-        var h = new ReopenHarness();
-        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.SoftClosed);
+        var h = new UnlockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
 
-        await h.Sut.ReopenAsync(period.Id, auditMemo: "missed accrual adjustment");
+        await h.Sut.UnlockAsync(period.Id, auditMemo: "SEC audit clarification");
 
         var evt = Assert.Single(h.Events.Published.OfType<PeriodOpened>().ToList());
         Assert.Equal(period.Id, evt.PeriodId);
         Assert.NotNull(evt.Reason);
-        Assert.Contains("missed accrual adjustment", evt.Reason!);
+        Assert.StartsWith("Unlocked by admin:", evt.Reason!);
+        Assert.Contains("SEC audit clarification", evt.Reason!);
+    }
+
+    [Fact]
+    public async Task Unlock_BumpsVersion()
+    {
+        var h = new UnlockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
+        var before = period.Version;
+
+        var result = await h.Sut.UnlockAsync(period.Id, "memo");
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(before + 1, result.Period!.Version);
     }
 
     // ----- harness ---------------------------------------------------
 
-    private sealed class ReopenHarness
+    private sealed class UnlockHarness
     {
         public InMemoryFiscalPeriodRepository Periods { get; } = new();
         public InMemoryFiscalYearRepository Years { get; } = new();
         public CapturingEventPublisher Events { get; } = new();
         public PeriodCloseService Sut { get; }
 
-        public ReopenHarness()
+        public UnlockHarness()
         {
             Sut = new PeriodCloseService(Periods, Years, Events, TimeProvider.System);
         }
 
         public async Task<(FiscalYear Year, FiscalPeriod Period)> SeedAsync(
-            FiscalPeriodStatus periodStatus = FiscalPeriodStatus.SoftClosed)
+            FiscalPeriodStatus periodStatus = FiscalPeriodStatus.Locked)
         {
             var fy = FiscalYear.CreateOpen(
                 FiscalYearId.NewId(), Chart, "2026",

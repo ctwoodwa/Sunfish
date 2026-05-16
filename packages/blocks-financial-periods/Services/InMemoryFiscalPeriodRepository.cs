@@ -53,15 +53,19 @@ public sealed class InMemoryFiscalPeriodRepository : IFiscalPeriodRepository
     public Task<bool> UpdateAsync(FiscalPeriod period, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(period);
-        // Compare-and-swap against the current row to keep the
-        // ContainsKey + assign from racing under Singleton lifetime.
-        // Returns false when the row was deleted between fetch +
-        // update; the caller (PeriodCloseService) treats false as a
-        // logical not-found and surfaces PeriodNotFound on the next
-        // pass.
+        // Optimistic-concurrency compare-and-swap: the incoming row
+        // must carry Version == stored.Version + 1 (caller bumped on
+        // mutation). Returns false if (a) the row was deleted between
+        // fetch + write or (b) another writer raced ahead and bumped
+        // the stored Version. The caller (PeriodCloseService /
+        // FiscalYearCloseService) surfaces ConcurrentUpdate when
+        // appropriate; the row-deleted case is treated as
+        // PeriodNotFound on the caller's next pass.
         while (true)
         {
             if (!_byId.TryGetValue(period.Id, out var current))
+                return Task.FromResult(false);
+            if (period.Version != current.Version + 1)
                 return Task.FromResult(false);
             if (_byId.TryUpdate(period.Id, period, current))
                 return Task.FromResult(true);
