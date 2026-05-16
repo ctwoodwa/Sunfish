@@ -125,6 +125,10 @@ for await (const file of walk(REPO_ROOT)) {
   const lines = content.split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    // Line-level suppression: trailing `// css-lp:ignore` opts out of all rules.
+    // Use only when the rendering target (e.g. @react-pdf/renderer) has its own
+    // physical-coordinate CSS subset and does not support logical-property syntax.
+    if (line.includes('// css-lp:ignore')) continue;
     for (const rule of RULES) {
       const match = line.match(rule.pattern);
       if (match) {

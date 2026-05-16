@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
   footer: {
     position: 'absolute',
     bottom: 40,
-    left: 48,
-    right: 48,
+    left: 48, // css-lp:ignore — react-pdf uses physical coords; inset-inline-* unsupported
+    right: 48, // css-lp:ignore
     borderTop: '0.5pt solid #e2e8f0',
     paddingTop: 10,
   },
