@@ -254,6 +254,12 @@ public static class MauiProgram
 			_ => new Sunfish.Foundation.Recovery.FixedDisputerValidator(System.Array.Empty<byte[]>()));
 		builder.Services.AddSingleton<Sunfish.Foundation.Recovery.IRecoveryCoordinator,
 									  Sunfish.Foundation.Recovery.RecoveryCoordinator>();
+		// W#63 Phase 2 — recovery-host pipeline. Registers
+		// IRecoveryCompletionHandler + RecoveryGracePollingService that
+		// polls EvaluateGracePeriodAsync on a 60s cadence (per XO ruling
+		// 2026-05-16 §c — IRecoveryCoordinator has no event subscription;
+		// events return synchronously from each coordinator method).
+		builder.Services.AddAnchorRecoveryHost(builder.Configuration);
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();
