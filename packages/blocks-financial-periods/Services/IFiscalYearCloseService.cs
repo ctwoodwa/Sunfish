@@ -22,11 +22,24 @@ namespace Sunfish.Blocks.FinancialPeriods.Services;
 /// </list>
 /// </summary>
 /// <remarks>
+/// <para>
 /// <b>Authorization warning:</b> callers MUST enforce
 /// <c>FinancialAdmin</c> role gating before invoking
 /// <see cref="CloseFiscalYearAsync"/> / <see cref="ReopenFiscalYearAsync"/>;
 /// this service does NOT consult <c>IUserContext</c> directly. Same
 /// discipline as <see cref="IPeriodCloseService"/>.
+/// </para>
+/// <para>
+/// <b>Posting-service role requirement:</b> the injected
+/// <c>IJournalPostingService</c> MUST be constructed against an
+/// <c>IUserContext</c> carrying the <c>FinancialAdmin</c> role (or
+/// the equivalent system actor) — the closing JE's
+/// <c>entryDate = fy.EndDate</c> falls inside a SoftClosed period by
+/// the time it posts (step 1 auto-soft-closes all open periods), and
+/// only admin posts bypass the period gate. A host wiring a
+/// per-request scoped <c>IUserContext</c> from an HTTP principal
+/// will see the closing JE rejected as <c>PeriodSoftClosed</c>.
+/// </para>
 /// </remarks>
 public interface IFiscalYearCloseService
 {

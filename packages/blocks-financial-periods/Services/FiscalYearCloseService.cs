@@ -144,10 +144,14 @@ public sealed class FiscalYearCloseService : IFiscalYearCloseService
                 notes: "Net loss to retained earnings"));
         }
 
-        JournalEntryId? closingEntryId = null;
-        if (closingLines.Count > 0)
+        // Step 3 — build + post the closing JE. Idempotency guard:
+        // if a prior partial-failure already posted the closing JE
+        // (fy.ClosingJournalEntryId non-null), reuse that id and skip
+        // re-posting. This prevents the addendum-D2 retry path from
+        // double-posting after a mid-step-4 lock failure.
+        JournalEntryId? closingEntryId = fy.ClosingJournalEntryId;
+        if (closingEntryId is null && closingLines.Count > 0)
         {
-            // Step 3 — build + post the closing JE.
             var closingEntry = new JournalEntry(
                 id: JournalEntryId.NewId(),
                 entryDate: fy.EndDate,
@@ -194,10 +198,15 @@ public sealed class FiscalYearCloseService : IFiscalYearCloseService
         if (!await _years.UpdateAsync(closedFy, cancellationToken).ConfigureAwait(false))
             return new FiscalYearCloseResult(fy, closingEntryId, FiscalYearCloseError.ConcurrentUpdate, null);
 
-        // Step 5 — emit YearClosed + YearEndRolloverCompleted.
+        // Step 5 — emit YearClosed + YearEndRolloverCompleted using the
+        // §3.1 catalog idempotency-key format (`year-closed:{fyId}` /
+        // `year-end-rollover:{fyId}`). Periods/Year events use the
+        // catalog format directly; PeriodSoftClosed/PeriodOpened/
+        // PeriodLocked carry the wider {eventType}|{tenant}|… format
+        // pending XO ruling reconciliation per cob-question-22-25Z.
         await PublishAsync(
             "Financial.YearClosed",
-            $"Financial.YearClosed|{_tenantId.Value ?? TenantId.System.Value}|{closedFy.Id.Value}",
+            $"year-closed:{closedFy.Id.Value}",
             new YearClosed(
                 FiscalYearId:          closedFy.Id,
                 ChartId:               closedFy.ChartId,
@@ -206,7 +215,7 @@ public sealed class FiscalYearCloseService : IFiscalYearCloseService
 
         await PublishAsync(
             "Financial.YearEndRolloverCompleted",
-            $"Financial.YearEndRolloverCompleted|{_tenantId.Value ?? TenantId.System.Value}|{closedFy.Id.Value}",
+            $"year-end-rollover:{closedFy.Id.Value}",
             new YearEndRolloverCompleted(
                 FiscalYearId:          closedFy.Id,
                 ChartId:               closedFy.ChartId,
@@ -234,37 +243,29 @@ public sealed class FiscalYearCloseService : IFiscalYearCloseService
         if (fy.Status == FiscalYearStatus.Open)
             return new FiscalYearCloseResult(fy, null, FiscalYearCloseError.FiscalYearAlreadyOpen, null);
 
-        // Step 1 — post a reversal of the closing JE if one exists.
+        // Step 1 — if the closed FY has an associated closing JE,
+        // reopen is GAAP-broken until we can post a reversal. The
+        // reverse-by-id helper lands in PR 3d (needs sibling ledger
+        // surface). Reject loudly with closingId in Detail so the
+        // admin workflow can choose to (a) wait for PR 3d, or (b)
+        // post a manual reversal then re-invoke reopen on a FY whose
+        // ClosingJournalEntryId has been nulled.
         if (fy.ClosingJournalEntryId is { } closingId)
         {
-            // The reversal JE is constructed by the caller's policy in
-            // a follow-on PR (PR 3d). For now, ReopenFiscalYearAsync
-            // assumes the reversal will be posted separately by an
-            // admin workflow + this method just flips state. This is a
-            // deliberate scope-bound: synthesizing the reversal needs
-            // the JournalPostingService to expose a reverse-by-id
-            // helper (sibling ledger PR not yet shipped).
-            //
-            // Document the gap so the addendum tracks it for PR 3d.
-            //
-            // Surface the closingId in the Detail so the admin
-            // workflow can post the reversal themselves.
-            _ = closingId;
+            return new FiscalYearCloseResult(fy, closingId,
+                FiscalYearCloseError.ReversalEntryFailed,
+                $"Reopen requires reversal of closing JE {closingId.Value}; "
+                + "the reverse-by-id helper ships in PR 3d (addendum). "
+                + "Manual workaround: post the reversal entry, then null "
+                + "FiscalYear.ClosingJournalEntryId, then re-invoke reopen.");
         }
 
-        // Step 2 — unlock all locked periods back to SoftClosed.
+        // Step 2 — flip FY → Open BEFORE unlocking periods so
+        // PeriodCloseService.UnlockAsync's FY-Closed gate does not
+        // reject every call. Partial-failure window: addendum D2
+        // (non-transactional; failures leave FY=Open with some
+        // periods still Locked — operator can re-invoke reopen).
         var periods = await _periods.GetByFiscalYearAsync(fy.Id, cancellationToken).ConfigureAwait(false);
-        foreach (var p in periods.Where(p => p.Status == FiscalPeriodStatus.Locked))
-        {
-            // Inner-FY check is preserved by PeriodCloseService.UnlockAsync,
-            // but we are about to flip FY → Open below; pass the audit
-            // memo through so the emitted PeriodOpened reason carries
-            // the reopen context.
-            // Temporarily flip FY → Open so PeriodCloseService.UnlockAsync
-            // doesn't reject with FiscalYearAlreadyClosed; we re-stamp
-            // ClosedAtUtc + Version below.
-            // NOTE: simpler approach — flip FY first, then unlock.
-        }
 
         var now = new Instant(_time.GetUtcNow());
         var reopenedFy = fy with
@@ -291,11 +292,13 @@ public sealed class FiscalYearCloseService : IFiscalYearCloseService
         // Emit YearClosed-reverse signal as a YearClosed event with
         // ClosingJournalEntryId = null and the audit memo conveyed via
         // CorrelationId for trace. (The cross-cluster catalog does not
-        // yet define Financial.YearReopened — file the addendum if
-        // consumers need a distinct event-type.)
+        // yet define Financial.YearReopened — addendum entry tracks
+        // adding it in the foundation-events sweep PR.) Idempotency
+        // key suffix `:reopen` distinguishes the reopen emission from
+        // the original close emission for the same FY.
         await PublishAsync(
             "Financial.YearClosed",
-            $"Financial.YearClosed|{_tenantId.Value ?? TenantId.System.Value}|{reopenedFy.Id.Value}|reopen",
+            $"year-closed:{reopenedFy.Id.Value}:reopen",
             new YearClosed(
                 FiscalYearId:          reopenedFy.Id,
                 ChartId:               reopenedFy.ChartId,

@@ -240,6 +240,56 @@ public sealed class FiscalYearCloseServiceTests
     }
 
     [Fact]
+    public async Task ReopenFY_WithClosingJE_ReturnsReversalEntryFailed()
+    {
+        // B1 (PR 3c council): until PR 3d ships the sibling-ledger
+        // reverse-by-id helper, reopen cannot post the reversal — it
+        // must reject loudly with closingId in Detail so the operator
+        // doesn't end up with a phantom zero-out in the ledger.
+        var h = new Harness();
+        var (rentRev, _, _) = await h.SeedChartWithRetainedEarningsAsync();
+        var (fy, _) = await h.SeedYearWithMonthlyPeriodsAsync();
+        h.Balances.Seed(rentRev.Id, -500m);
+        var closeResult = await h.Sut.CloseFiscalYearAsync(fy.Id);
+        Assert.True(closeResult.IsSuccess, closeResult.Detail);
+        Assert.NotNull(closeResult.ClosingEntryId);
+
+        var reopen = await h.Sut.ReopenFiscalYearAsync(fy.Id, auditMemo: "needs reversal");
+
+        Assert.False(reopen.IsSuccess);
+        Assert.Equal(FiscalYearCloseError.ReversalEntryFailed, reopen.Error);
+        Assert.NotNull(reopen.Detail);
+        Assert.Contains(closeResult.ClosingEntryId!.Value.Value, reopen.Detail!);
+    }
+
+    [Fact]
+    public async Task CloseFY_RetryAfterPartialFailure_DoesNotDoublePostClosingEntry()
+    {
+        // M2 (PR 3c council): if a prior invocation posted the closing
+        // JE but failed mid-lock-loop, the second invocation must
+        // reuse the stored ClosingJournalEntryId instead of posting a
+        // second JE. Simulated here by pre-seeding the FY with a
+        // fake-but-set ClosingJournalEntryId and proving the retry
+        // doesn't post a second entry.
+        var h = new Harness();
+        var (rentRev, _, _) = await h.SeedChartWithRetainedEarningsAsync();
+        var (fy, _) = await h.SeedYearWithMonthlyPeriodsAsync();
+        h.Balances.Seed(rentRev.Id, -200m);
+        var phantomJEId = JournalEntryId.NewId();
+        await h.Years.UpdateAsync(fy with
+        {
+            ClosingJournalEntryId = phantomJEId,
+            Version               = fy.Version + 1,
+        });
+
+        var result = await h.Sut.CloseFiscalYearAsync(fy.Id);
+
+        Assert.True(result.IsSuccess, result.Detail);
+        Assert.Equal(phantomJEId, result.ClosingEntryId);
+        Assert.Empty(h.Store.Snapshot()); // no NEW JE posted
+    }
+
+    [Fact]
     public async Task ReopenFY_FlipsPeriodsLockedToSoftClosed()
     {
         var h = new Harness();

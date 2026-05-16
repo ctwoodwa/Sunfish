@@ -4,11 +4,16 @@ using Sunfish.Blocks.FinancialLedger.Models;
 namespace Sunfish.Blocks.FinancialPeriods.Services;
 
 /// <summary>
-/// In-memory <see cref="IBalanceComputer"/> for tests: returns a
-/// caller-seeded balance per <see cref="GLAccountId"/>; ignores the
-/// as-of date. Sufficient for the year-end-close happy + edge paths;
-/// the SQLite-backed production implementation (lands with the
-/// persistence wiring) does the real sum-query.
+/// <b>TESTS ONLY.</b> In-memory <see cref="IBalanceComputer"/>:
+/// returns a caller-seeded balance per <see cref="GLAccountId"/>;
+/// ignores the as-of date entirely. Sufficient for the year-end-close
+/// happy + edge paths; kitchen-sink demos + production hosts MUST
+/// wire the SQLite-backed implementation (lands with the persistence
+/// wiring) so as-of filtering + prior-year roll-over isolation work
+/// correctly. The InMemory fake intentionally collapses every date
+/// to the same seeded value — if a demo accidentally uses this, the
+/// year-end close will sweep lifetime balances into the current FY's
+/// retained earnings (addendum M3).
 /// </summary>
 public sealed class InMemoryBalanceComputer : IBalanceComputer
 {
