@@ -63,6 +63,16 @@ public sealed class RecoveryCoordinatorState
     /// </summary>
     public byte[]? LastEventHash { get; init; }
 
+    /// <summary>
+    /// W#67 / ADR 0046-A6 — per-trustee root-seed envelopes set up at
+    /// trustee-designation time via <see cref="IRecoveryCoordinator.SetupTrusteeAsync"/>.
+    /// Keyed by trustee NodeId. The trustee's local Anchor reads its own
+    /// entry during the approval flow to re-encrypt the seed toward
+    /// the recovering device's ephemeral X25519 public key.
+    /// </summary>
+    public IReadOnlyDictionary<string, TrusteeEncryptedSeed> TrusteeEncryptedSeeds { get; init; }
+        = new Dictionary<string, TrusteeEncryptedSeed>(StringComparer.Ordinal);
+
     /// <summary>An empty initial state (no trustees, no request).</summary>
     public static RecoveryCoordinatorState Empty { get; } = new RecoveryCoordinatorState();
 }
