@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.FinancialTax</PackageId>
+    <Description>Tax-domain entities (TaxJurisdiction hierarchy, TaxCode, TaxRate history, TaxFormLineMap) and calculation engine (OnSubtotal / Compound / Inclusive) for Sunfish — first pass, in-memory services and stable contracts; persistence + UI ship in later hand-offs.</Description>
+    <PackageTags>tax;sales-tax;vat;jurisdiction;tax-form-line-map;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.FinancialTax.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\blocks-financial-ledger\Sunfish.Blocks.FinancialLedger.csproj" />
+  </ItemGroup>
+</Project>
