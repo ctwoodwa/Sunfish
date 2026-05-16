@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from 'react-error-boundary'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { PropertiesPage } from '@/pages/PropertiesPage'
 import { LeasesPage } from '@/pages/LeasesPage'
 import { LeaseDetailPage } from '@/pages/LeaseDetailPage'
@@ -10,6 +10,17 @@ import { AccountingPage } from '@/pages/AccountingPage'
 import { CrewCommsPage } from '@/pages/CrewCommsPage'
 import { MaintenancePage } from '@/pages/MaintenancePage'
 import { SyncStateBadge } from '@sunfish/ui-react'
+
+// Dev-only PDF preview route. import.meta.env.DEV is a build-time
+// literal so the lazy import — and the react-pdf renderer it pulls
+// in — tree-shake completely out of production bundles.
+const InternalReportsPreviewPage = import.meta.env.DEV
+  ? lazy(() =>
+      import('@/pages/InternalReportsPreviewPage').then((m) => ({
+        default: m.InternalReportsPreviewPage,
+      })),
+    )
+  : null
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -150,6 +161,16 @@ function AppLayout() {
           <Route path="/accounting" element={<AccountingPage />} />
           <Route path="/comms" element={<CrewCommsPage />} />
           <Route path="/maintenance" element={<MaintenancePage />} />
+          {import.meta.env.DEV && InternalReportsPreviewPage && (
+            <Route
+              path="/internal/reports-preview"
+              element={
+                <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading…</div>}>
+                  <InternalReportsPreviewPage />
+                </Suspense>
+              }
+            />
+          )}
         </Routes>
       </main>
     </div>
