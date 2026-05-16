@@ -220,7 +220,8 @@ public record DashboardDto(
 
 ## Halt conditions
 
-- If `ILeaseRepository`, `IWorkOrderService`, or `IInspectionsService` lack cross-property query methods needed for the dashboard, STOP and file a `cob-question-*.md` naming the missing method + the interface file — do not add it without a research ruling.
+- **PR 5 (Dashboard) gates on W#62.** `IPropertyUnitRepository.ListByPropertyAsync` (units for a property), `WorkOrder.PropertyId` FK, and cross-property inspection lookup all come from W#62 (`blocks-properties-property-unit-substrate-stage06-handoff.md`). Do NOT start PR 5 until W#62 PR 1+2+3 are merged. PRs 3 and 4 are unaffected; ship them while W#62 builds. The existing halt condition below remains for any other missing service method that is NOT covered by W#62.
+- If `ILeaseRepository`, `IWorkOrderService`, or `IInspectionsService` lack cross-property query methods needed for the dashboard **beyond what W#62 provides**, STOP and file a `cob-question-*.md` naming the missing method + the interface file — do not add it without a research ruling.
 - If existing Anchor layout/nav pattern changes are needed beyond adding pages, STOP and confirm with research session — avoid breaking the existing pages (Home, TeamSwitcher, CrewChat, Onboarding).
 - Receipts integration: defer entirely — W#26 is blocked. Do not stub receipt views.
 
