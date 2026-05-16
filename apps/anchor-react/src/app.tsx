@@ -13,6 +13,7 @@ import { RentRoll } from '@/pages/RentRoll'
 import { PLReport } from '@/pages/PLReport'
 import { CockpitLayout } from '@/cockpit/CockpitLayout'
 import { PropertySelector } from '@/cockpit/PropertySelector'
+import { PropertyDetailView } from '@/cockpit/properties/PropertyDetailView'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -169,6 +170,7 @@ function AppLayout() {
           <Route path="/reports/profit-loss" element={<PLReport />} />
           <Route path="/cockpit" element={<CockpitLayout />}>
             <Route index element={<PropertySelector />} />
+            <Route path=":propertyId" element={<PropertyDetailView />} />
           </Route>
         </Routes>
       </main>

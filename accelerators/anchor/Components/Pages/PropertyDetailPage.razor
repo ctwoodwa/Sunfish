@@ -1,0 +1,163 @@
+@page "/cockpit/properties/{PropertyIdValue}"
+@layout CockpitLayout
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Properties.Models
+@using Sunfish.Blocks.Properties.Services
+@using Sunfish.Blocks.PropertyEquipment.Models
+@using Sunfish.Blocks.PropertyEquipment.Services
+@using Sunfish.Foundation.Assets.Common
+@inject IPropertyRepository Properties
+@inject IEquipmentRepository Equipment
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>@(_property?.DisplayName ?? "Property") · Cockpit</PageTitle>
+
+@* W#29 Phase 2 — Property detail page. Renders the property card and
+   equipment list from local-first repositories. The active-lease /
+   open-work-order-count / last-inspection fields the React + Bridge
+   surface stub to null are not surfaced here at all — once W#62
+   (PropertyUnit substrate) lands and the Phase 1.5 hand-off upgrades
+   the data path, this page grows the additional sections. *@
+
+@if (_loadError is not null)
+{
+    <div class="cockpit-detail-error">
+        <strong>Failed to load property.</strong>
+        <p>@_loadError</p>
+        <a class="cockpit-detail-link" href="cockpit">← Back to cockpit</a>
+    </div>
+}
+else if (_property is null && !_notFound)
+{
+    <p class="cockpit-detail-loading">Loading property…</p>
+}
+else if (_notFound)
+{
+    <div class="cockpit-detail-empty">
+        <h2>Property not found</h2>
+        <p>This property is not in your tenant's scope.</p>
+        <a class="cockpit-detail-link" href="cockpit">← Back to cockpit</a>
+    </div>
+}
+else
+{
+    <header class="cockpit-detail-header">
+        <a class="cockpit-detail-link" href="cockpit">← Back to cockpit</a>
+        <h1>@_property!.DisplayName</h1>
+        <p class="cockpit-detail-meta">@FormatAddress(_property) · @_property.Kind</p>
+    </header>
+
+    <section class="cockpit-detail-section">
+        <h2>Equipment</h2>
+        @if (_equipment.Count == 0)
+        {
+            <p class="cockpit-detail-empty-msg">No equipment recorded for this property.</p>
+        }
+        else
+        {
+            <ul class="cockpit-equipment-list">
+                @foreach (var e in _equipment)
+                {
+                    <li class="cockpit-equipment-row">
+                        <span class="cockpit-equipment-name">@e.DisplayName</span>
+                        <span class="cockpit-equipment-meta">
+                            @e.Class
+                            @if (!string.IsNullOrEmpty(e.Make)) { <text> · @e.Make</text> }
+                            @if (!string.IsNullOrEmpty(e.Model)) { <text> @e.Model</text> }
+                            @if (!string.IsNullOrEmpty(e.LocationInProperty)) { <text> · @e.LocationInProperty</text> }
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    @* Lease / Work-Order / Inspection sections deferred to Phase 1.5
+       (after W#62 PropertyUnit substrate ships). The hand-off DTO shape
+       reserves these fields server-side; the React side renders empty
+       placeholders. Anchor omits them entirely until the data is real. *@
+}
+
+@code {
+    [Parameter] public string? PropertyIdValue { get; set; }
+
+    private Property? _property;
+    private IReadOnlyList<Equipment> _equipment = Array.Empty<Equipment>();
+    private bool _notFound;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded)
+        {
+            Nav.NavigateTo("/onboarding", replace: true);
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null;
+        _notFound = false;
+        _property = null;
+        _equipment = Array.Empty<Equipment>();
+
+        if (string.IsNullOrWhiteSpace(PropertyIdValue))
+        {
+            _notFound = true;
+            return;
+        }
+
+        try
+        {
+            var tenant = new TenantId(Session.TeamId ?? "anchor-tenant");
+            var typedId = new PropertyId(PropertyIdValue);
+
+            _property = await Properties.GetByIdAsync(tenant, typedId, default);
+            if (_property is null)
+            {
+                _notFound = true;
+                return;
+            }
+
+            _equipment = await Equipment.ListByPropertyAsync(tenant, typedId, includeDisposed: false, default);
+        }
+        catch (Exception ex)
+        {
+            _loadError = ex.Message;
+        }
+    }
+
+    private static string FormatAddress(Property p)
+    {
+        var a = p.Address;
+        return string.IsNullOrWhiteSpace(a.Line2)
+            ? $"{a.Line1}, {a.City}, {a.Region} {a.PostalCode}"
+            : $"{a.Line1} {a.Line2}, {a.City}, {a.Region} {a.PostalCode}";
+    }
+}
+
+<style>
+    .cockpit-detail-loading { color: #6b7280; padding: 3rem 0; text-align: center; }
+    .cockpit-detail-error { padding: 1rem 1.25rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 0.5rem; }
+    .cockpit-detail-error p { margin: 0.5rem 0 0.75rem; color: #4b5563; }
+    .cockpit-detail-empty { padding: 3rem 1.5rem; text-align: center; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .cockpit-detail-empty h2 { font-size: 1.125rem; margin: 0 0 0.5rem; }
+    .cockpit-detail-empty p { color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem; }
+    .cockpit-detail-link { color: #2563eb; font-size: 0.875rem; text-decoration: none; }
+    .cockpit-detail-link:hover { text-decoration: underline; }
+    .cockpit-detail-header { margin-bottom: 1.5rem; }
+    .cockpit-detail-header h1 { font-size: 1.5rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .cockpit-detail-meta { color: #6b7280; font-size: 0.875rem; margin: 0; }
+    .cockpit-detail-section { padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .cockpit-detail-section h2 { font-size: 1rem; margin: 0 0 0.75rem; }
+    .cockpit-detail-empty-msg { color: #6b7280; font-size: 0.875rem; margin: 0; }
+    .cockpit-equipment-list { list-style: none; padding: 0; margin: 0; }
+    .cockpit-equipment-row { display: flex; flex-direction: column; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
+    .cockpit-equipment-row:last-child { border-bottom: 0; }
+    .cockpit-equipment-name { font-weight: 500; color: #111827; }
+    .cockpit-equipment-meta { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
+</style>
