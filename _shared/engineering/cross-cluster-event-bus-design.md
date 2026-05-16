@@ -240,6 +240,7 @@ Compiled from the five Stage 02 design docs. Columns:
 | `Financial.PeriodLocked` | reports, work | `{ periodId, chartId }` | `period-locked:{periodId}` (one-shot — periods cannot be unlocked) |
 | `Financial.PeriodReopened` | reports, work | `{ periodId, chartId, reopenedByPrincipalId, occurredAt }` | `period-reopened:{periodId}:{occurredAtTicks}` (re-fire safe) |
 | `Financial.YearClosed` | reports | `{ fyId, chartId, closingEntryId }` | `year-closed:{fyId}` |
+| `Financial.YearEndRolloverCompleted` | reports, work | `{ fyId, chartId, closingEntryId, netIncome, incomeAccountsClosed, expenseAccountsClosed }` | `year-end-rollover:{fyId}` |
 | `Financial.BudgetVarianceExceeded` | work, reports | `{ budgetId, projectId?, category, variance, variancePercent }` | `budget-variance:{budgetId}:{category}:{periodId}` |
 
 ### 3.2 `Work.*` events

@@ -92,6 +92,74 @@ PR 3's `closeFiscalYear` algorithm needs:
 
 ---
 
+## Deferred to PR 3d (year-end close follow-ups) — added by PR 3c council
+
+### D7 — Reopen reversal-JE synthesis
+
+**Source:** PR 3c .NET-architect council B1.
+
+`FiscalYearCloseService.ReopenFiscalYearAsync` shipped in PR 3c with a
+hard reject when `FiscalYear.ClosingJournalEntryId` is non-null —
+it cannot post the reversal yet because the sibling ledger lacks a
+`JournalPostingService.ReverseByIdAsync(JournalEntryId, ...)` helper.
+The error returned is `ReversalEntryFailed` with Detail naming the
+closing-JE id so the operator can post the reversal manually.
+
+**Action in PR 3d:**
+
+1. Sibling ledger adds `IJournalPostingService.ReverseByIdAsync` that
+   constructs a reversal JE (each line debit↔credit swapped, same
+   accounts + chart) and posts it with `SourceKind = Reversal`,
+   `ReversalOf = originalId`.
+2. `FiscalYearCloseService.ReopenFiscalYearAsync` calls it (with the
+   FinancialAdmin-bypass `IUserContext`), captures the reversal-JE
+   id, then flips FY → Open + unlocks periods + emits
+   `Financial.YearClosed` with `ClosingJournalEntryId = reversalId`
+   (or a new `Financial.YearReopened` event-type — catalog row TBD).
+3. Update `ReopenFY_WithClosingJE_ReturnsReversalEntryFailed` test to
+   instead assert the successful reversal flow.
+
+### D8 — Step 4 + Reopen Step 2 transactional atomicity
+
+**Source:** PR 3c .NET-architect council M1 + M2 (subsumes D2).
+
+PR 3c's Step 4 lock loop + ReopenFiscalYearAsync's unlock loop are
+both non-transactional. Mid-loop failures leave the ledger in a
+partially-locked / partially-unlocked state. PR 3c added an
+idempotency guard so retrying after a partial lock loop reuses the
+existing closing JE; the unlock-loop side still needs the equivalent.
+
+**Action in PR 3d (or PR 5 alongside the SQLite repo migration):**
+
+1. Add `IFiscalYearRepository.BeginTransactionAsync` (or the outbox
+   pattern per D2) so Step 4 + the reopen unlock loop atomically
+   commit-or-rollback.
+2. Add ConcurrentUpdate retry on the FY update so a mid-flight admin
+   chart edit doesn't poison the close.
+
+### D9 — `IBalanceComputer` prior-FY isolation
+
+**Source:** PR 3c .NET-architect council M3.
+
+`InMemoryBalanceComputer.ComputeAsOfAsync` ignores `asOfDate`; the
+SQLite-backed prod impl will correctly sum entries through the
+cutoff. But year-end close needs a stronger pre-condition: the
+immediately-prior FY (if any) MUST be Closed before close runs —
+otherwise prior years' unzeroed Revenue/Expense balances will sweep
+into the current FY's retained-earnings rollover.
+
+**Action in PR 3d:**
+
+1. `FiscalYearCloseService.CloseFiscalYearAsync` validates that the
+   prior-period FY for the same chart is `Closed` (or absent); returns
+   a new `FiscalYearCloseError.PriorFiscalYearNotClosed` otherwise.
+2. New test exercises the precondition.
+3. Update `InMemoryBalanceComputer` to optionally take a per-account-
+   per-date balance dict (instead of the lifetime-only seed) so the
+   test can model the as-of behaviour.
+
+---
+
 ## Deferred to PR 5 (Anchor + Bridge UI surfaces)
 
 ### D4 — Role-gate enforcement at the wiring layer
