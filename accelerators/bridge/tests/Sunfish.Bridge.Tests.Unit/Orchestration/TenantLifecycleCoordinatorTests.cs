@@ -177,6 +177,17 @@ public sealed class TenantLifecycleCoordinatorTests
                 }
                 await Task.Delay(20);
             }
+
+            // Re-check after the loop exits. Without this, a call landing in
+            // the window between the final poll and the throw is reported as
+            // "observed N" in the timeout message while the wait still fails —
+            // the CI flake symptom of "Timed out waiting for 1; observed 1."
+            if (Calls.Count(c => c.Op == op) >= minCount)
+            {
+                _ = StateChanged;
+                return;
+            }
+
             throw new TimeoutException(
                 $"Timed out waiting for {minCount} {op} call(s); observed {Calls.Count(c => c.Op == op)}.");
         }
