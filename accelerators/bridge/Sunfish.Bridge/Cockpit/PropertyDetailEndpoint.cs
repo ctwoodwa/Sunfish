@@ -4,6 +4,8 @@ using Sunfish.Blocks.Inspections.Models;
 using Sunfish.Blocks.Inspections.Services;
 using Sunfish.Blocks.Leases.Models;
 using Sunfish.Blocks.Leases.Services;
+using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Blocks.Maintenance.Services;
 using Sunfish.Blocks.Properties.Models;
 using Sunfish.Blocks.Properties.Services;
 using Sunfish.Blocks.PropertyEquipment.Models;
@@ -46,6 +48,7 @@ public static class PropertyDetailEndpoint
         IEquipmentRepository equipment,
         ILeaseService leases,
         IInspectionsService inspections,
+        IMaintenanceService maintenance,
         CancellationToken ct)
     {
         TenantId tenant = tenantContext.TenantId;
@@ -101,15 +104,24 @@ public static class PropertyDetailEndpoint
             }
         }
 
+        // W#62 PR 3 — open-work-order count via the new PropertyId filter on
+        // ListWorkOrdersQuery. "Open" excludes terminal states (Closed,
+        // Cancelled) so the cockpit count reflects live obligations.
+        var openCount = 0;
+        await foreach (var wo in maintenance.ListWorkOrdersAsync(
+            new ListWorkOrdersQuery { PropertyId = typedId }, ct).ConfigureAwait(false))
+        {
+            if (wo.Status is WorkOrderStatus.Closed or WorkOrderStatus.Cancelled) continue;
+            openCount++;
+        }
+
         var dto = new PropertyDetailDto(
             PropertyId:           property.Id.Value,
             DisplayAddress:       FormatAddress(property),
             Kind:                 property.Kind.ToString(),
             Equipment:            equipmentRows.Select(MapEquipment).ToArray(),
             ActiveLease:          activeLease,
-            // Stubbed — W#62 PR 3 adds WorkOrder.PropertyId + the filter that
-            // converts this to a real count.
-            OpenWorkOrderCount:   0,
+            OpenWorkOrderCount:   openCount,
             LastInspectionDate:   lastInspectionDate,
             LastInspectionResult: lastInspectionResult);
 
@@ -136,9 +148,11 @@ public static class PropertyDetailEndpoint
 
 /// <summary>
 /// Wire format for the property-detail endpoint. Shape per W#29 hand-off PR 2.
-/// W#62 Phase 2 (this PR) populates <see cref="ActiveLease"/>,
-/// <see cref="LastInspectionDate"/>, and <see cref="LastInspectionResult"/>;
-/// <see cref="OpenWorkOrderCount"/> remains stubbed until W#62 PR 3.
+/// W#62 Phase 2 populated <see cref="ActiveLease"/>,
+/// <see cref="LastInspectionDate"/>, and <see cref="LastInspectionResult"/>.
+/// W#62 Phase 3 (this PR) populates <see cref="OpenWorkOrderCount"/> from the
+/// new <c>WorkOrder.PropertyId</c> FK + <c>ListWorkOrdersQuery.PropertyId</c>
+/// filter; all four hand-off DTO fields are now live.
 /// </summary>
 public record PropertyDetailDto(
     string PropertyId,

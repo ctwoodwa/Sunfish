@@ -1,4 +1,5 @@
 using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Blocks.Properties.Models;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Integrations.Payments;
 
@@ -28,6 +29,14 @@ public sealed record CreateWorkOrderRequest
 
     /// <summary>The date on which the work is scheduled.</summary>
     public required DateOnly ScheduledDate { get; init; }
+
+    /// <summary>
+    /// W#62 PR 3 — property this work order is for. Nullable so existing
+    /// call sites that haven't been updated still compile; new cockpit
+    /// aggregation surfaces (open-WO count per property; W#29 PR 5
+    /// dashboard) rely on this being set.
+    /// </summary>
+    public PropertyId? PropertyId { get; init; }
 
     /// <summary>Estimated cost of the work; <see langword="null"/> when not yet estimated.</summary>
     public Money? EstimatedCost { get; init; }
