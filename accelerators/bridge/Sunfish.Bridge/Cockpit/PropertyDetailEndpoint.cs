@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
+using Sunfish.Blocks.Inspections.Models;
+using Sunfish.Blocks.Inspections.Services;
+using Sunfish.Blocks.Leases.Models;
+using Sunfish.Blocks.Leases.Services;
 using Sunfish.Blocks.Properties.Models;
 using Sunfish.Blocks.Properties.Services;
 using Sunfish.Blocks.PropertyEquipment.Models;
@@ -10,15 +14,19 @@ using Sunfish.Foundation.Authorization;
 namespace Sunfish.Bridge.Cockpit;
 
 /// <summary>
-/// W#29 Phase 2 — owner cockpit property detail endpoint.
+/// W#29 Phase 2 (initial stubbed) + W#29 Phase 1.5 / W#62 Phase 2 (this
+/// upgrade) — owner cockpit property detail endpoint.
 ///
-/// Aggregates a Property's card, equipment list, and (stubbed for now)
-/// lease / work-order / inspection summaries. Per XO ruling on
-/// 2026-05-16: lease + WO + inspection aggregation is stubbed because
-/// the source services lack PropertyId / unit-join surface — the
-/// authoritative fix is workstream W#62 (PropertyUnit substrate).
-/// `PropertyDetailDto` shape stays exactly as the hand-off specifies;
-/// the stub fields return null/0 with comments naming the upgrade path.
+/// Aggregates a Property's card, equipment list, active lease, last
+/// inspection, and open-work-order count. With W#62 PR 1
+/// (PropertyUnit substrate) landed, the lease + inspection paths are
+/// now live: walk Property → PropertyUnit → {Lease, Inspection} via
+/// `IPropertyUnitRepository.ListByPropertyAsync` + in-memory filter on
+/// the EntityId UnitId already carried on Lease / Inspection.
+///
+/// <c>OpenWorkOrderCount</c> remains stubbed at 0 until W#62 PR 3 adds
+/// `WorkOrder.PropertyId` + `ListWorkOrdersQuery.PropertyId`. This
+/// endpoint will then drop the stub for a real count.
 /// </summary>
 public static class PropertyDetailEndpoint
 {
@@ -34,7 +42,10 @@ public static class PropertyDetailEndpoint
         string propertyId,
         ITenantContext tenantContext,
         IPropertyRepository properties,
+        IPropertyUnitRepository units,
         IEquipmentRepository equipment,
+        ILeaseService leases,
+        IInspectionsService inspections,
         CancellationToken ct)
     {
         TenantId tenant = tenantContext.TenantId;
@@ -46,16 +57,61 @@ public static class PropertyDetailEndpoint
 
         var equipmentRows = await equipment.ListByPropertyAsync(tenant, typedId, includeDisposed: false, ct).ConfigureAwait(false);
 
+        // W#62 Phase 2 aggregation. Walk Property → Units → {Lease, Inspection}.
+        // Empty-units short-circuit keeps the query free of pointless full-tenant
+        // scans on properties that have no units yet (e.g., land parcels).
+        var propertyUnits = await units.ListByPropertyAsync(tenant, typedId, ct).ConfigureAwait(false);
+        var unitIds = propertyUnits.Select(u => u.Id).ToHashSet();
+
+        LeaseSummaryDto? activeLease = null;
+        DateOnly? lastInspectionDate = null;
+        string? lastInspectionResult = null;
+
+        if (unitIds.Count > 0)
+        {
+            // Active lease — first match wins; multi-active per property is an
+            // edge case (multi-unit property where each unit has its own active
+            // lease) we surface as "any active lease" for the Phase 1.5 cut.
+            await foreach (var lease in leases.ListAsync(new ListLeasesQuery { Phase = LeasePhase.Active }, ct).ConfigureAwait(false))
+            {
+                if (!unitIds.Contains(lease.UnitId)) continue;
+                activeLease = new LeaseSummaryDto(
+                    LeaseId:           lease.Id.Value,
+                    TenantDisplayName: lease.Tenants.Count > 0 ? lease.Tenants[0].Value : "(no tenant)",
+                    MonthlyRent:       lease.MonthlyRent,
+                    EndDate:           lease.EndDate);
+                break;
+            }
+
+            // Last inspection on any unit — sort by ScheduledDate descending.
+            // We post-filter on UnitId because ListInspectionsQuery has a UnitId
+            // filter but it only matches one unit at a time; cheaper to fetch
+            // all-for-tenant and filter in memory than loop per-unit.
+            Inspection? latest = null;
+            await foreach (var inspection in inspections.ListInspectionsAsync(new ListInspectionsQuery(), ct).ConfigureAwait(false))
+            {
+                if (!unitIds.Contains(inspection.UnitId)) continue;
+                if (latest is null || inspection.ScheduledDate > latest.ScheduledDate)
+                    latest = inspection;
+            }
+            if (latest is not null)
+            {
+                lastInspectionDate   = latest.ScheduledDate;
+                lastInspectionResult = latest.Phase.ToString();
+            }
+        }
+
         var dto = new PropertyDetailDto(
             PropertyId:           property.Id.Value,
             DisplayAddress:       FormatAddress(property),
             Kind:                 property.Kind.ToString(),
             Equipment:            equipmentRows.Select(MapEquipment).ToArray(),
-            // Stubbed — W#62 PropertyUnit substrate required before real aggregation.
-            ActiveLease:          null,
+            ActiveLease:          activeLease,
+            // Stubbed — W#62 PR 3 adds WorkOrder.PropertyId + the filter that
+            // converts this to a real count.
             OpenWorkOrderCount:   0,
-            LastInspectionDate:   null,
-            LastInspectionResult: null);
+            LastInspectionDate:   lastInspectionDate,
+            LastInspectionResult: lastInspectionResult);
 
         return TypedResults.Ok(dto);
     }
@@ -79,9 +135,10 @@ public static class PropertyDetailEndpoint
 }
 
 /// <summary>
-/// Wire format for the property-detail endpoint. Shape per W#29 hand-off
-/// PR 2; lease/WO/inspection fields are stubbed until W#62 (PropertyUnit
-/// substrate) lands the real aggregation surface.
+/// Wire format for the property-detail endpoint. Shape per W#29 hand-off PR 2.
+/// W#62 Phase 2 (this PR) populates <see cref="ActiveLease"/>,
+/// <see cref="LastInspectionDate"/>, and <see cref="LastInspectionResult"/>;
+/// <see cref="OpenWorkOrderCount"/> remains stubbed until W#62 PR 3.
 /// </summary>
 public record PropertyDetailDto(
     string PropertyId,
@@ -104,9 +161,9 @@ public record EquipmentSummaryDto(
     string? LocationInProperty);
 
 /// <summary>
-/// Lease summary embedded in the property detail. W#62 will populate this
-/// from the active lease for the property; until then the endpoint returns
-/// <c>null</c> for <c>ActiveLease</c>.
+/// Lease summary embedded in the property detail. Populated from the
+/// first <see cref="LeasePhase.Active"/> lease whose <c>UnitId</c> belongs
+/// to the property.
 /// </summary>
 public record LeaseSummaryDto(
     string LeaseId,

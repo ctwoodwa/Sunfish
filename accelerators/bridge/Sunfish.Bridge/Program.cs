@@ -36,6 +36,8 @@ using Sunfish.Bridge.Cockpit;
 using Sunfish.Bridge.Features.Identity;
 using Sunfish.Blocks.Properties.DependencyInjection;
 using Sunfish.Blocks.Maintenance.DependencyInjection;
+using Sunfish.Blocks.Leases.DependencyInjection;
+using Sunfish.Blocks.Inspections.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.Integrations;
 using Sunfish.Blocks.ShipsOffice;
@@ -435,6 +437,10 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     builder.Services.AddInMemoryProperties();
     // W#29 Phase 3 — cockpit work-orders endpoints resolve IMaintenanceService.
     builder.Services.AddInMemoryMaintenance();
+    // W#62 Phase 2 — cockpit property-detail aggregation reads
+    // ILeaseService + IInspectionsService and joins on PropertyUnit.UnitId.
+    builder.Services.AddInMemoryLeases();
+    builder.Services.AddInMemoryInspections();
 
     // W#60 Phase 2 — ERPNext proxy layer.
     builder.Services.Configure<ERPNextOptions>(
