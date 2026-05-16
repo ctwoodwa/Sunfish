@@ -254,6 +254,12 @@ public static class MauiProgram
 			_ => new Sunfish.Foundation.Recovery.FixedDisputerValidator(System.Array.Empty<byte[]>()));
 		builder.Services.AddSingleton<Sunfish.Foundation.Recovery.IRecoveryCoordinator,
 									  Sunfish.Foundation.Recovery.RecoveryCoordinator>();
+		// W#67 PR 4 — production binding for the ephemeral X25519 private
+		// key the recovery flow needs. Registered BEFORE
+		// AddAnchorRecoveryHost so its TryAddSingleton fallback to
+		// InMemoryEphemeralRecoveryKeyStore is suppressed in production.
+		builder.Services.AddSingleton<Sunfish.Anchor.Services.IEphemeralRecoveryKeyStore,
+									  Sunfish.Anchor.Services.MauiSecureStorageEphemeralRecoveryKeyStore>();
 		// W#63 Phase 2 — recovery-host pipeline. Registers
 		// IRecoveryCompletionHandler + RecoveryGracePollingService that
 		// polls EvaluateGracePeriodAsync on a 60s cadence (per XO ruling

@@ -42,7 +42,7 @@ public sealed class RecoveryGracePollingServiceTests
         await svc.StopAsync(CancellationToken.None);
 
         await completion.Received(1).HandleAsync(
-            Arg.Is<RecoveryEvent>(e => e != null && e.Type == RecoveryEventType.RecoveryCompleted),
+            Arg.Is<RecoveryCompletionResult>(r => r != null && r.Event.Type == RecoveryEventType.RecoveryCompleted),
             Arg.Any<CancellationToken>());
     }
 
@@ -63,7 +63,7 @@ public sealed class RecoveryGracePollingServiceTests
         await svc.StopAsync(CancellationToken.None);
 
         await completion.DidNotReceive().HandleAsync(
-            Arg.Any<RecoveryEvent>(), Arg.Any<CancellationToken>());
+            Arg.Any<RecoveryCompletionResult>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class RecoveryGracePollingServiceTests
         await svc.StopAsync(CancellationToken.None);
 
         await completion.DidNotReceive().HandleAsync(
-            Arg.Any<RecoveryEvent>(), Arg.Any<CancellationToken>());
+            Arg.Any<RecoveryCompletionResult>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class RecoveryGracePollingServiceTests
         // After Stop, the loop is cancelled; no dispatcher calls.
         await Task.Delay(50);
         await completion.DidNotReceive().HandleAsync(
-            Arg.Any<RecoveryEvent>(), Arg.Any<CancellationToken>());
+            Arg.Any<RecoveryCompletionResult>(), Arg.Any<CancellationToken>());
 
         await svc.DisposeAsync();
     }
@@ -135,7 +135,7 @@ public sealed class RecoveryGracePollingServiceTests
         await svc.DisposeAsync();
 
         await completion.Received().HandleAsync(
-            Arg.Is<RecoveryEvent>(e => e != null && e.Type == RecoveryEventType.RecoveryCompleted),
+            Arg.Is<RecoveryCompletionResult>(r => r != null && r.Event.Type == RecoveryEventType.RecoveryCompleted),
             Arg.Any<CancellationToken>());
     }
 

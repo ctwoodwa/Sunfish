@@ -5,6 +5,7 @@
 @inject IRecoveryCoordinator Recovery
 @inject IEd25519Signer Signer
 @inject IX25519KeyAgreement DhAgreement
+@inject IEphemeralRecoveryKeyStore EphemeralKeyStore
 @inject AnchorSessionService Session
 @inject NavigationManager Nav
 
@@ -69,14 +70,24 @@
         try
         {
             // Generate an ephemeral Ed25519 keypair for this recovery attempt
-            // only (signs the request) AND an ephemeral X25519 keypair (the
-            // public key trustees re-encrypt their held root seed to per
-            // ADR 0046-A6 / W#67). The private keys never leave the page in
-            // the current build; W#67 PR 5 persists the X25519 private key to
-            // SecureStorage so the recovery completion handler can decrypt
-            // the trustee-delivered seed envelopes.
+            // (signs the request) AND an ephemeral X25519 keypair (per ADR
+            // 0046-A6 — trustees re-encrypt their held root seed to this
+            // X25519 public key). The Ed25519 private key never leaves the
+            // page. The X25519 private key is persisted to the
+            // IEphemeralRecoveryKeyStore so AnchorRecoveryCompletionHandler
+            // can OpenBox the trustee-delivered seed envelopes after the
+            // grace window elapses; it is removed on successful rekey.
             var (ephemeralPub, ephemeralPriv) = Signer.GenerateKeyPair();
-            var (ephX25519Pub, _ephX25519Priv) = DhAgreement.GenerateKeyPair();
+            var (ephX25519Pub, ephX25519Priv) = DhAgreement.GenerateKeyPair();
+            // Persist the X25519 private key BEFORE submitting so the
+            // completion handler can read it back. If InitiateRecoveryAsync
+            // throws (already-pending request, store I/O), remove the key
+            // so it doesn't linger in SecureStorage without a flow that
+            // can consume it (council finding BLOCKING-5).
+            await EphemeralKeyStore.SetAsync(
+                IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName,
+                ephX25519Priv,
+                default);
             var request = RecoveryRequest.Create(
                 requestingNodeId:     Session.NodeId,
                 ephemeralPublicKey:   ephemeralPub,
@@ -85,7 +96,16 @@
                 requestedAt:          DateTimeOffset.UtcNow,
                 signer:               Signer);
 
-            await Recovery.InitiateRecoveryAsync(request, default);
+            try
+            {
+                await Recovery.InitiateRecoveryAsync(request, default);
+            }
+            catch
+            {
+                await EphemeralKeyStore.RemoveAsync(
+                    IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName, default);
+                throw;
+            }
             _submitted = true;
         }
         catch (Exception ex)

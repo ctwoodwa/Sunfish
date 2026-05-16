@@ -12,15 +12,22 @@ namespace Sunfish.Anchor.Services;
 /// they're returned synchronously from <see cref="IRecoveryCoordinator"/> method
 /// calls. <see cref="RecoveryGracePollingService"/> polls
 /// <see cref="IRecoveryCoordinator.EvaluateGracePeriodAsync"/> and invokes this
-/// handler when the return is a non-null <see cref="RecoveryEventType.RecoveryCompleted"/>.
+/// handler when the return is a non-null
+/// <see cref="RecoveryCompletionResult"/> whose <c>Event.Type</c> is
+/// <see cref="RecoveryEventType.RecoveryCompleted"/>.
+///
+/// W#67 PR 4 — the handler signature now takes a full
+/// <see cref="RecoveryCompletionResult"/> (was just <c>RecoveryEvent</c>) so
+/// it can access the trustee attestations needed to decrypt the seed
+/// envelopes per ADR 0046-A6.
 /// </summary>
 public interface IRecoveryCompletionHandler
 {
     /// <summary>
-    /// Handle a <see cref="RecoveryEventType.RecoveryCompleted"/> event.
+    /// Handle a <see cref="RecoveryEventType.RecoveryCompleted"/> result.
     /// Implementations are expected to be idempotent — the polling service
     /// may dispatch the same event twice if a tight failure window straddles
     /// a restart.
     /// </summary>
-    Task HandleAsync(RecoveryEvent completedEvent, CancellationToken cancellationToken);
+    Task HandleAsync(RecoveryCompletionResult completionResult, CancellationToken cancellationToken);
 }
