@@ -606,16 +606,27 @@ for Phases 1/2/3. Security-engineering subagent for Phase 2 (Bridge multi-tenant
 **FAILED triggers:** React velocity slower than Blazor; OpenAPI→TypeScript client maintenance > hand-authored types; Tauri fails on ARM Surface Pro (fallback: browser PWA); Phase 2 exceeds 4 calendar months.
 
 **Numbering note:** W#46–W#59 registered in session memory 2026-05-06–2026-05-11 are in `icm/_state/workstreams/` on `main` but were absent from the working tree at the time this file was authored. W#60 skips ahead to avoid collision with those source files. |
-| 61 | Vehicle Equipment Subtype + Trip Records — additive extension of `blocks-property-equipment`; ships `VehicleMetadata`, `TripRecord`, `ITripStore`, `MileageRecorded` lifecycle event type; unblocks W#23.5 iOS Mileage capture flow | `ready-to-build` — hand-off authored 2026-05-15; no prerequisites; immediately buildable; ~3-5h / 2 PRs | sunfish-PM | `icm/_state/handoffs/property-equipment-vehicle-trip-records-stage06-handoff.md` | **Hand-off ready 2026-05-15.** Additive extension to `blocks-property-equipment` (W#24, built).
-`EquipmentClass.Vehicle` was reserved in the first-slice hand-off with a note that
-"Vehicle subtype + Trip events gated on follow-up hand-off." This is that follow-up.
+| 61 | **Vehicle Equipment Subtype + Trip Records** (additive extension of `blocks-property-equipment`; `sunfish-feature-change` pipeline) — `VehicleMetadata`, `TripRecord`, `ITripStore`, `MileageRecorded`; unblocks W#23.5 iOS Mileage capture | `built` — Phase 1 + 2 in one PR. `VehicleMetadata` + `TripRecord` + `TripRecordId` + `MileageRecorded` lifecycle event; `ITripStore` + `InMemoryTripStore` (negative-miles guard + parent-odometer update); EFCore `TripRecord` configuration with `(TenantId, EquipmentId)` + `(TenantId, PropertyId)` indexes + `VehicleMetadata` owned complex type on Equipment; DI registers `ITripStore`. 6 trip-store unit tests + 39 full equipment suite (no regressions). | sunfish-PM | `icm/_state/handoffs/property-equipment-vehicle-trip-records-stage06-handoff.md` + `apps/docs/blocks/property-equipment/vehicle-trip-records.md` | Additive extension to `blocks-property-equipment` (W#24, built). `EquipmentClass.Vehicle` was a reserved discriminator with a doc-comment promising "full subtype (VIN, mileage Trip events) gated on follow-up hand-off." W#61 ships that follow-up.
 
-Phase 1: `VehicleMetadata` record + `VehicleData` field on `Equipment` + `TripRecordId` +
-`TripRecord` entity + `ITripStore` + `InMemoryTripStore` + `MileageRecorded` enum value +
-EFCore entity-module extension + DI registration + 5 unit tests (~2-3h).
-Phase 2: docs + ledger flip (~30min).
+**Surface added:**
 
-**Unblocks:** W#23.5 (iOS Mileage capture flow hand-off can be authored once this ships). |
+- `Sunfish.Blocks.PropertyEquipment.Models.VehicleMetadata` — VIN, Make, Model, Year, LicensePlate, CurrentOdometer. Optional on `Equipment.VehicleData`; non-null only when `Class == Vehicle`.
+- `Sunfish.Blocks.PropertyEquipment.Models.TripRecord` — `IMustHaveTenant`; append-only mileage log keyed on `EquipmentId` + `PropertyId`; computed `Miles` clamped to ≥ 0.
+- `Sunfish.Blocks.PropertyEquipment.Models.TripRecordId` — string-backed strong type with `NewId()` + `JsonConverter`.
+- `EquipmentLifecycleEventType.MileageRecorded` — new event-type discriminator.
+- `Sunfish.Blocks.PropertyEquipment.Services.ITripStore` + `InMemoryTripStore` — append-only contract with negative-miles guard; parent vehicle's `CurrentOdometer` follows the latest `EndOdometer`.
+- `Data/TripRecordEntityConfiguration` — `property_equipment_trip_record` table; string-converted ids; indexes on `(TenantId, EquipmentId)` + `(TenantId, PropertyId)`.
+- `Data/EquipmentEntityConfiguration` extended — `VehicleMetadata` mapped via `OwnsOne` (precision 12,2 on `CurrentOdometer`).
+
+**DI:** `AddInMemoryPropertyEquipment()` now also registers `ITripStore` → `InMemoryTripStore`.
+
+**Tests:** 6 W#61 unit tests in `TripRecordStoreTests` (append + get-for-equipment; Miles positive case; Miles guard case; GetAsync null on unknown; CurrentOdometer follows latest; AppendAsync throws on Start>End). 39/39 full property-equipment suite passes (no regression).
+
+**Unblocks:** W#23.5 iOS Mileage capture flow (gated on this surface).
+
+**Deferred:** EFCore migration script (no migration tooling in the package today).
+
+**Pipeline:** ICM `sunfish-feature-change` variant; built in ~3h (1 PR with code + docs + ledger). |
 | 62 | **PropertyUnit substrate** (blocks-properties additive extension; `sunfish-feature-change` pipeline) — closes the Lease/Inspection FK gap; unblocked W#29 Phase 1.5 + Phase 5 | `built` — All 4 phases merged. PR 1 (#860) PropertyUnit entity + IPropertyUnitRepository + InMemory + EFCore + DI. PR 2 (#861) wired W#29 Phase 1.5 PropertyDetail aggregation (active lease + last inspection via PropertyUnit join). PR 3 (#862) added WorkOrder.PropertyId FK + ListWorkOrdersQuery.PropertyId + cockpit open-WO count. PR 4 (this) docs + ledger flip. | sunfish-PM | `icm/_state/handoffs/blocks-properties-property-unit-substrate-stage06-handoff.md` + `apps/docs/blocks/properties/property-unit.md` + `apps/docs/blocks/properties/property-aggregation.md` | **Authored 2026-05-16 in response to the W#29 PR 2 halt** (`Lease`/`Inspection`/`WorkOrder` lacked the FKs needed to aggregate per property). `Property.cs` doc-comment explicitly deferred `PropertyUnit` to a follow-up; W#62 is that follow-up.
 
 **Surface added:**
