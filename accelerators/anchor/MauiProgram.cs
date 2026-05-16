@@ -237,6 +237,24 @@ public static class MauiProgram
 		builder.Services.AddInMemoryLeases();
 		builder.Services.AddInMemoryInspections();
 
+		// W#63 Phase 1 — ADR 0046 recovery substrate. RecoveryCoordinator
+		// owns the multi-sig social-recovery state machine; consumed by
+		// `RecoveryStatusPage.razor`. The other 4 hand-off pages
+		// (TrusteeSetup / InitiateRecovery / ApproveRecovery / PaperKey)
+		// are deferred pending an XO ruling on trustee-pubkey acquisition
+		// + ephemeral-signing UX (cob-question 2026-05-16).
+		// FixedDisputerValidator with an empty key set — Phase 1
+		// placeholder; real validator queries the keystore for the owner's
+		// other-device public keys once W#37 ITenantSecurityPolicy ships.
+		builder.Services.AddSingleton<Sunfish.Foundation.Recovery.IRecoveryStateStore,
+									  Sunfish.Foundation.Recovery.InMemoryRecoveryStateStore>();
+		builder.Services.AddSingleton<Sunfish.Foundation.Recovery.IRecoveryClock,
+									  Sunfish.Foundation.Recovery.SystemRecoveryClock>();
+		builder.Services.AddSingleton<Sunfish.Foundation.Recovery.IDisputerValidator>(
+			_ => new Sunfish.Foundation.Recovery.FixedDisputerValidator(System.Array.Empty<byte[]>()));
+		builder.Services.AddSingleton<Sunfish.Foundation.Recovery.IRecoveryCoordinator,
+									  Sunfish.Foundation.Recovery.RecoveryCoordinator>();
+
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();
 		builder.Services.AddManagedRelayPeerDiscovery(opts =>

@@ -1,0 +1,96 @@
+@page "/recovery/paper-key"
+@using Sunfish.Foundation.Recovery
+@inject NavigationManager Nav
+
+<PageTitle>Paper Key Recovery · Sunfish Anchor</PageTitle>
+
+@* W#63 Phase 1 — paper-key recovery surface (ADR 0046 alternate path
+   when trustees aren't reachable). PaperKeyDerivation.FromMnemonic returns
+   the root seed; the recovery rekey is wired in Phase 2 via
+   RecoveryGracePollingService.IRecoveryCompletionHandler — until then
+   this page validates the mnemonic but does NOT trigger the rekey. *@
+
+<div class="recovery-paper">
+    <header>
+        <a class="recovery-paper__link" href="recovery/status">← Back to recovery status</a>
+        <h1>Paper key recovery</h1>
+        <p class="recovery-paper__hint">
+            Enter the 24-word BIP-39 paper key you saved when onboarding.
+            This is the alternate recovery path when trustees are unreachable.
+        </p>
+    </header>
+
+    <form @onsubmit="OnValidateAsync" @onsubmit:preventDefault>
+        <label>
+            <span>Paper key (24 words, space-separated)</span>
+            <textarea @bind="_mnemonic" rows="4"
+                      placeholder="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"></textarea>
+        </label>
+        <button type="submit" disabled="@(_busy || string.IsNullOrWhiteSpace(_mnemonic))">
+            @(_busy ? "Validating…" : "Validate")
+        </button>
+    </form>
+
+    @if (_error is not null)
+    {
+        <p class="recovery-paper__error">@_error</p>
+    }
+
+    @if (_validatedSeedLength is { } len)
+    {
+        <section class="recovery-paper__success">
+            <strong>Paper key validates.</strong>
+            <p>Recovered a @len-byte root seed.</p>
+            <p class="recovery-paper__hint">
+                Database rekey from this seed is wired in W#63 Phase 2 via the
+                <code>RecoveryGracePollingService</code> completion handler.
+                Until then this page only validates the mnemonic.
+            </p>
+        </section>
+    }
+</div>
+
+@code {
+    private string _mnemonic = "";
+    private string? _error;
+    private int? _validatedSeedLength;
+    private bool _busy;
+
+    private Task OnValidateAsync()
+    {
+        _error = null; _validatedSeedLength = null;
+        _busy = true;
+        try
+        {
+            var seed = PaperKeyDerivation.FromMnemonic(_mnemonic.Trim());
+            _validatedSeedLength = seed.Length;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Mnemonic invalid: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+        return Task.CompletedTask;
+    }
+}
+
+<style>
+    .recovery-paper { max-width: 720px; margin: 0 auto; padding: 1rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .recovery-paper__link { color: #2563eb; font-size: 0.875rem; text-decoration: none; }
+    .recovery-paper__link:hover { text-decoration: underline; }
+    .recovery-paper h1 { font-size: 1.75rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .recovery-paper__hint { color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem; line-height: 1.5; }
+    .recovery-paper form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; }
+    .recovery-paper label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: #374151; }
+    .recovery-paper textarea { padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-family: Consolas, Menlo, monospace; font-size: 0.875rem; resize: vertical; }
+    .recovery-paper button { padding: 0.5rem 1rem; background: #2563eb; color: #fff; border: 0; border-radius: 0.25rem; font-size: 0.875rem; cursor: pointer; align-self: flex-start; }
+    .recovery-paper button:hover:not(:disabled) { background: #1d4ed8; }
+    .recovery-paper button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .recovery-paper__error { padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 0.25rem; font-size: 0.875rem; margin: 1rem 0 0; }
+    .recovery-paper__success { margin-top: 1rem; padding: 1rem 1.25rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.5rem; color: #047857; font-size: 0.875rem; }
+    .recovery-paper__success strong { display: block; margin-bottom: 0.25rem; }
+    .recovery-paper__success code { font-family: Consolas, Menlo, monospace; }
+</style>

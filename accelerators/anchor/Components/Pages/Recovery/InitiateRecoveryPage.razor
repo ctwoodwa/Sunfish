@@ -1,0 +1,110 @@
+@page "/recovery/initiate"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Recovery
+@using Sunfish.Kernel.Security.Crypto
+@inject IRecoveryCoordinator Recovery
+@inject IEd25519Signer Signer
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Initiate Recovery · Sunfish Anchor</PageTitle>
+
+@* W#63 Phase 1 — start a recovery request from a new device.
+   Generates an ephemeral Ed25519 keypair on click and submits a signed
+   RecoveryRequest. Routes to the status page on success so the operator
+   can watch quorum + grace progress. *@
+
+<div class="recovery-initiate">
+    <header>
+        <a class="recovery-initiate__link" href="recovery/status">← Back to recovery status</a>
+        <h1>Initiate recovery</h1>
+        <p class="recovery-initiate__hint">
+            You're on a new device. This will request recovery from your designated trustees.
+            They will receive your request and need to approve it before the grace window opens.
+        </p>
+    </header>
+
+    @if (Session.NodeId is null)
+    {
+        <p class="recovery-initiate__warn">
+            You must complete onboarding before requesting recovery. Visit <a href="onboarding">onboarding</a> first.
+        </p>
+    }
+    else
+    {
+        <section class="recovery-initiate__panel">
+            <p>Requesting node: <code>@Session.NodeId</code></p>
+            <button type="button" disabled="@_busy" @onclick="OnInitiateAsync">
+                @(_busy ? "Submitting request…" : "Send recovery request")
+            </button>
+        </section>
+
+        @if (_error is not null)
+        {
+            <p class="recovery-initiate__error">@_error</p>
+        }
+
+        @if (_submitted)
+        {
+            <section class="recovery-initiate__success">
+                <strong>Recovery request submitted.</strong>
+                <p>Trustees can now attest. <a href="recovery/status">Track progress on the status page.</a></p>
+            </section>
+        }
+    }
+</div>
+
+@code {
+    private string? _error;
+    private bool _busy;
+    private bool _submitted;
+
+    private async Task OnInitiateAsync()
+    {
+        _error = null; _submitted = false;
+        if (Session.NodeId is null) return;
+
+        _busy = true;
+        try
+        {
+            // Generate an ephemeral keypair for this recovery attempt only.
+            // The private key never leaves the page; the public key + signature
+            // ride on the RecoveryRequest record.
+            var (ephemeralPub, ephemeralPriv) = Signer.GenerateKeyPair();
+            var request = RecoveryRequest.Create(
+                requestingNodeId:     Session.NodeId,
+                ephemeralPublicKey:   ephemeralPub,
+                ephemeralPrivateKey:  ephemeralPriv,
+                requestedAt:          DateTimeOffset.UtcNow,
+                signer:               Signer);
+
+            await Recovery.InitiateRecoveryAsync(request, default);
+            _submitted = true;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}
+
+<style>
+    .recovery-initiate { max-width: 720px; margin: 0 auto; padding: 1rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .recovery-initiate__link { color: #2563eb; font-size: 0.875rem; text-decoration: none; }
+    .recovery-initiate__link:hover { text-decoration: underline; }
+    .recovery-initiate h1 { font-size: 1.75rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .recovery-initiate__hint { color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem; line-height: 1.5; }
+    .recovery-initiate__panel { padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .recovery-initiate__panel code { font-family: Consolas, Menlo, monospace; font-size: 0.875rem; color: #111827; }
+    .recovery-initiate__panel button { padding: 0.5rem 1rem; background: #2563eb; color: #fff; border: 0; border-radius: 0.25rem; font-size: 0.875rem; cursor: pointer; }
+    .recovery-initiate__panel button:hover:not(:disabled) { background: #1d4ed8; }
+    .recovery-initiate__panel button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .recovery-initiate__warn { padding: 1rem; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 0.5rem; }
+    .recovery-initiate__error { padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 0.25rem; font-size: 0.875rem; margin: 1rem 0 0; }
+    .recovery-initiate__success { margin-top: 1rem; padding: 1rem 1.25rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.5rem; color: #047857; font-size: 0.875rem; }
+    .recovery-initiate__success strong { display: block; margin-bottom: 0.25rem; }
+</style>

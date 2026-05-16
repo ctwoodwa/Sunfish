@@ -1,0 +1,136 @@
+@page "/recovery/status"
+@using Sunfish.Anchor.Services
+@using Sunfish.Foundation.Recovery
+@inject IRecoveryCoordinator Recovery
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+@implements IDisposable
+
+<PageTitle>Recovery Status · Sunfish Anchor</PageTitle>
+
+@* W#63 / ADR 0046 Phase 1 — recovery status surface. Reads
+   IRecoveryCoordinator.GetStatusAsync and renders the state machine
+   progress. The other 4 recovery pages (TrusteeSetup, InitiateRecovery,
+   ApproveRecovery, PaperKey) are scaffold stubs in this folder — their
+   form construction requires trustee-pubkey acquisition + ephemeral
+   signing flows whose UX is still being designed (see XO inbox
+   cob-question 2026-05-16). *@
+
+<div class="recovery-status">
+    @if (_loadError is not null)
+    {
+        <div class="recovery-status__error">
+            <strong>Failed to load recovery status.</strong>
+            <p>@_loadError</p>
+        </div>
+    }
+    else if (_status is null)
+    {
+        <p class="recovery-status__loading">Loading status…</p>
+    }
+    else
+    {
+        <header>
+            <h1>Recovery</h1>
+            <p class="recovery-status__kind">
+                State: <strong>@_status.Kind</strong>
+            </p>
+        </header>
+
+        @if (_status.Kind == RecoveryStatusKind.NoRequest)
+        {
+            <section class="recovery-status__section">
+                <p>No recovery request is in flight.</p>
+                <p class="recovery-status__hint">
+                    If you've lost access on another device, start a recovery from the new device via
+                    <a href="recovery/initiate">Initiate recovery</a>.
+                </p>
+            </section>
+        }
+        else
+        {
+            <section class="recovery-status__section">
+                <dl>
+                    <dt>Quorum progress</dt>
+                    <dd>@_status.AttestationsReceived of @_status.QuorumThreshold trustee attestations</dd>
+
+                    @if (_status.GracePeriodStartedAt is { } start)
+                    {
+                        <dt>Grace window started</dt>
+                        <dd>@start.ToLocalTime()</dd>
+                    }
+                    @if (_status.GracePeriodElapsesAt is { } elapse)
+                    {
+                        <dt>Grace window ends</dt>
+                        <dd>@elapse.ToLocalTime() (@(((elapse - DateTimeOffset.UtcNow).TotalDays).ToString("F1")) days remaining)</dd>
+                    }
+                </dl>
+            </section>
+
+            @if (_status.Kind == RecoveryStatusKind.GracePeriodActive)
+            {
+                <section class="recovery-status__section recovery-status__section--warn">
+                    <p>If this recovery wasn't requested by you, dispute it before the grace window ends:</p>
+                    <a class="recovery-status__action" href="recovery/approve">Open trustee actions</a>
+                </section>
+            }
+            else if (_status.Kind == RecoveryStatusKind.Completed)
+            {
+                <section class="recovery-status__section recovery-status__section--ok">
+                    <p>Recovery complete — database rekey will land via the recovery hosted service (W#63 Phase 2).</p>
+                </section>
+            }
+            else if (_status.Kind == RecoveryStatusKind.Disputed)
+            {
+                <section class="recovery-status__section recovery-status__section--warn">
+                    <p>The pending recovery was disputed. Re-initiate from the new device if recovery is still required.</p>
+                </section>
+            }
+        }
+    }
+</div>
+
+@code {
+    private RecoveryStatus? _status;
+    private string? _loadError;
+    private Timer? _pollTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        // Poll every 5 seconds while the page is mounted (per hand-off Phase 1).
+        _pollTimer = new Timer(async _ => await InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); }),
+            null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null;
+        try
+        {
+            _status = await Recovery.GetStatusAsync(default);
+        }
+        catch (Exception ex)
+        {
+            _loadError = ex.Message;
+        }
+    }
+
+    public void Dispose() => _pollTimer?.Dispose();
+}
+
+<style>
+    .recovery-status { max-width: 720px; margin: 0 auto; padding: 1rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .recovery-status header h1 { font-size: 1.75rem; margin: 0 0 0.25rem; letter-spacing: -0.01em; }
+    .recovery-status__kind { color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem; }
+    .recovery-status__loading { color: #6b7280; padding: 2rem 0; text-align: center; }
+    .recovery-status__error { padding: 1rem 1.25rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 0.5rem; }
+    .recovery-status__section { padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; margin: 0.75rem 0; }
+    .recovery-status__section--warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .recovery-status__section--ok { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+    .recovery-status__hint { color: #6b7280; font-size: 0.875rem; margin: 0.5rem 0 0; }
+    .recovery-status__action { display: inline-block; margin-top: 0.5rem; padding: 0.5rem 1rem; background: #2563eb; color: #fff; border-radius: 0.25rem; text-decoration: none; font-size: 0.875rem; }
+    .recovery-status dl { display: grid; grid-template-columns: auto 1fr; column-gap: 1rem; row-gap: 0.25rem; margin: 0; font-size: 0.875rem; }
+    .recovery-status dt { color: #6b7280; font-weight: 500; }
+    .recovery-status dd { margin: 0; color: #111827; }
+</style>
