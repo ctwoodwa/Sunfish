@@ -1,7 +1,7 @@
 ---
 id: 46
 title: "Social Recovery Seed-Delivery Protocol (Phase 2 key-transport for #48a)"
-status: Proposed
+status: Accepted
 date: 2026-05-16
 tier: foundation
 concern:
