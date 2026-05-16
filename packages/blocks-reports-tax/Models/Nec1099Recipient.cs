@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// A single recipient row on a Form 1099-NEC (Nonemployee Compensation).

@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sunfish.Blocks.TaxReporting.Models;
+using Sunfish.Blocks.Reports.Tax.Models;
 
-namespace Sunfish.Blocks.TaxReporting.Services;
+namespace Sunfish.Blocks.Reports.Tax.Services;
 
 /// <summary>
 /// Produces a canonical (deterministic) JSON serialization of a <see cref="TaxReportBody"/>

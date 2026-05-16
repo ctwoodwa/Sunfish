@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// Lifecycle status of a <see cref="TaxReport"/>.

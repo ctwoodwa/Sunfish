@@ -1,6 +1,6 @@
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// A tax report record. Immutable after finalization; use <c>with</c> expressions for state transitions.

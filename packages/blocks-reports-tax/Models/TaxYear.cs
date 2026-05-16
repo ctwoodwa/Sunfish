@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// A validated tax year value. Must be in the range 2020–2100.

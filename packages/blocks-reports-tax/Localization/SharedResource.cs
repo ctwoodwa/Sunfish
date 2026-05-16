@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Localization;
+namespace Sunfish.Blocks.Reports.Tax.Localization;
 
 /// <summary>
 /// Marker type for the blocks-tax-reporting shared localized strings — package-scoped

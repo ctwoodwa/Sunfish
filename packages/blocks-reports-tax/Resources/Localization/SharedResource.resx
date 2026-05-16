@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
-    Sunfish.Blocks.TaxReporting SharedResource — source locale (en-US).
+    Sunfish.Blocks.Reports.Tax SharedResource — source locale (en-US).
     Wave 2 cluster-A skeleton bundle. One pilot string per package proves the
     cascade; remaining keys carry generic-but-package-scoped phrasing so the
     bundle is shippable as-is. Plan 6 replaces these with full translator-grade

@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// A single line item on a state personal-property tax return.

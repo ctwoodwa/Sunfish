@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>Opaque identifier for a <see cref="TaxReport"/>. Wire form: plain string (UUID recommended).</summary>
 [JsonConverter(typeof(TaxReportIdJsonConverter))]

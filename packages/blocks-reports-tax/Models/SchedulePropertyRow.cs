@@ -1,6 +1,6 @@
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// Per-property income and expense data for IRS Schedule E (§199A-aligned).

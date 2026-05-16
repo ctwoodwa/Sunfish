@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using Sunfish.Blocks.TaxReporting.Models;
+using Sunfish.Blocks.Reports.Tax.Models;
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.TaxReporting.Services;
+namespace Sunfish.Blocks.Reports.Tax.Services;
 
 /// <summary>
 /// Thread-safe, in-memory implementation of <see cref="ITaxReportingService"/>.

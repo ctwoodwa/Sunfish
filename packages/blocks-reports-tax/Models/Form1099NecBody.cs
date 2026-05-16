@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// Body for IRS Form 1099-NEC — Nonemployee Compensation.

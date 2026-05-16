@@ -1,4 +1,4 @@
-namespace Sunfish.Blocks.TaxReporting.Models;
+namespace Sunfish.Blocks.Reports.Tax.Models;
 
 /// <summary>
 /// Sealed abstract base for all tax-report body types. Discriminated via <see cref="TaxReportKind"/>.

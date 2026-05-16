@@ -1,4 +1,4 @@
-# Sunfish.Blocks.TaxReporting
+# Sunfish.Blocks.Reports.Tax
 
 Tax-reporting block — entity types for IRS Schedule E + 1099-NEC + state personal-property forms; in-memory service; canonical-JSON signed-hash export; text renderer.
 

@@ -1,6 +1,6 @@
-using Sunfish.Blocks.TaxReporting.Models;
+using Sunfish.Blocks.Reports.Tax.Models;
 
-namespace Sunfish.Blocks.TaxReporting.Rendering;
+namespace Sunfish.Blocks.Reports.Tax.Rendering;
 
 /// <summary>
 /// Produces a human-readable plain-text representation of a <see cref="TaxReport"/>.

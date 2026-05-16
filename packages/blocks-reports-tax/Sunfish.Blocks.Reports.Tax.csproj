@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>Sunfish.Blocks.TaxReporting</PackageId>
+    <PackageId>Sunfish.Blocks.Reports.Tax</PackageId>
     <Description>Tax-reporting entities (Schedule E, 1099-NEC, state personal property), in-memory service, canonical-JSON signed-hash export, and text renderer for Sunfish — first pass, Option B (templates + signed-hash export only). Defers: per-jurisdiction state forms, PDF rendering, e-filing, automatic JE rollup.</Description>
     <PackageTags>tax;reporting;schedule-e;1099-nec;personal-property;blocks;domain;sunfish</PackageTags>
     <Nullable>enable</Nullable>
@@ -17,7 +17,7 @@
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Sunfish.Blocks.TaxReporting.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Blocks.Reports.Tax.Tests" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />

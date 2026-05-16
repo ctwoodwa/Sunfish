@@ -1,8 +1,8 @@
-using Sunfish.Blocks.TaxReporting.Models;
-using Sunfish.Blocks.TaxReporting.Services;
+using Sunfish.Blocks.Reports.Tax.Models;
+using Sunfish.Blocks.Reports.Tax.Services;
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.TaxReporting.Tests;
+namespace Sunfish.Blocks.Reports.Tax.Tests;
 
 public sealed class TaxReportingServiceTests
 {

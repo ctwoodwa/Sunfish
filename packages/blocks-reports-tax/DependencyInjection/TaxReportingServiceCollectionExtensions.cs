@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Sunfish.Blocks.TaxReporting.Rendering;
-using Sunfish.Blocks.TaxReporting.Services;
+using Sunfish.Blocks.Reports.Tax.Rendering;
+using Sunfish.Blocks.Reports.Tax.Services;
 using Sunfish.Foundation.Localization;
 
-namespace Sunfish.Blocks.TaxReporting.DependencyInjection;
+namespace Sunfish.Blocks.Reports.Tax.DependencyInjection;
 
 /// <summary>
 /// Extension methods for registering tax-reporting services in a

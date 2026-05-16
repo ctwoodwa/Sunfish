@@ -1,7 +1,7 @@
-using Sunfish.Blocks.TaxReporting.Models;
+using Sunfish.Blocks.Reports.Tax.Models;
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.TaxReporting.Services;
+namespace Sunfish.Blocks.Reports.Tax.Services;
 
 /// <summary>
 /// Input model for generating a Schedule E tax report via

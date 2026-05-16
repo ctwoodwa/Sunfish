@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- Sunfish.Blocks.TaxReporting SharedResource — Arabic (Saudi Arabia) satellite. RTL locale.
+  <!-- Sunfish.Blocks.Reports.Tax SharedResource — Arabic (Saudi Arabia) satellite. RTL locale.
        Wave 2 cluster-A skeleton bundle. Plan 6 replaces these with full translator-grade
        ar-SA copy and adds the rest of the per-block UI strings. -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">

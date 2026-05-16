@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Sunfish.Blocks.TaxReporting.Tests</AssemblyName>
+    <AssemblyName>Sunfish.Blocks.Reports.Tax.Tests</AssemblyName>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -13,6 +13,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sunfish.Blocks.TaxReporting.csproj" />
+    <ProjectReference Include="..\Sunfish.Blocks.Reports.Tax.csproj" />
   </ItemGroup>
 </Project>

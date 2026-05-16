@@ -1,7 +1,7 @@
 using System.Text;
-using Sunfish.Blocks.TaxReporting.Models;
+using Sunfish.Blocks.Reports.Tax.Models;
 
-namespace Sunfish.Blocks.TaxReporting.Rendering;
+namespace Sunfish.Blocks.Reports.Tax.Rendering;
 
 /// <summary>
 /// Default implementation of <see cref="ITaxReportTextRenderer"/>.

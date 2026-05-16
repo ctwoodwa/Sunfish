@@ -1,6 +1,6 @@
-using Sunfish.Blocks.TaxReporting.Models;
+using Sunfish.Blocks.Reports.Tax.Models;
 
-namespace Sunfish.Blocks.TaxReporting.Services;
+namespace Sunfish.Blocks.Reports.Tax.Services;
 
 /// <summary>
 /// Core service contract for the tax-reporting domain.
