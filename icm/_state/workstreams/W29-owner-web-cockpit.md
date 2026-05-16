@@ -3,8 +3,8 @@ sort_order: 28
 number: 29
 slug: owner-web-cockpit
 title: "Owner Web Cockpit (cluster module)"
-status: "ready-to-build"
-status_cell: "`ready-to-build` — hand-off authored 2026-05-15; Phase 1 covers Properties + Equipment + Inspections + Leases + Work Orders + Vendors + Dashboard (all built modules); Receipts/Messaging deferred to Phase 2; multi-actor permissions matrix resolved (OQ1)"
+status: "building"
+status_cell: "`building` — **Phase 1 PR #853 merged 2026-05-16** (nav shell + property selector + auth policy); **Phase 2 PR #857 merged 2026-05-16** (property detail page + stubbed aggregation); **Phase 3 PR #858 merged 2026-05-16** (work-orders list + detail); **Phase 4 PR #859 draft** (vendors list + detail + 1099 readiness); Phase 5 (Dashboard) gated on W#62 PropertyUnit substrate"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/00_intake/output/property-owner-cockpit-intake-2026-04-28.md` + `icm/_state/handoffs/property-owner-cockpit-stage06-handoff.md`"
