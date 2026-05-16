@@ -14,6 +14,15 @@
 | 14:50 | W#60 registered in active-workstreams.md + changelog entry | icm/_state/active-workstreams.md | W#60 design-in-flight; numbering skips W#46–59 (claimed in session memory, not yet in ledger) | ~2k |
 | 15:10 | Phase 1 PASS — W#60 Phase 2 hand-off authored; W#60 → ready-to-build | icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md, icm/_state/workstreams/W60-*.md | 5-phase/5-PR hand-off: Bridge ERPNext proxy + React 19/Vite/Tailwind/shadcn/ui + 6 screens + @sunfish/ui-react | ~5k |
 
+## Session: 2026-05-15/16 XO /loop (post-compact resume)
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 03:48 | W#60 P4+P5 status_cell update + ledger regenerated | W60-*.md, active-workstreams.md | P4 (collab, gated P3 PASS) + P5 (@sunfish/contracts PR1 independent) noted; committed | ~3k |
+| 03:48 | W#23 P7 → IPA sideload; W#47 → built; ledger regenerated | property-ios-field-app-stage06-handoff.md, W47-*.md | TestFlight replaced with Xcode IPA sideload per Apple Developer constraint; committed | ~3k |
+| 03:48 | Committed CLAUDE.md dev session + husky worktree fix + package.json deps | CLAUDE.md, .husky/commit-msg, package.json | 5 sessions in org chart; commitlint now worktree-aware; committed | ~2k |
+| 03:48 | Committed tokens.json reformat + MdnsPeerTransport test fix | tokens.json, MdnsPeerTransportTests.cs | JSON expanded to multi-line; FakeTimeProvider injected in test; committed | ~1k |
+
 ## Session: 2026-04-27 01:22 (Windows)
 
 | Time | Action | File(s) | Outcome | ~Tokens |
@@ -7095,3 +7104,358 @@
 | 14:55 | Edited icm/_state/workstreams/W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md | 2→2 lines | ~57 |
 | 15:43 | Created icm/_state/handoffs/property-ios-field-app-stage06-w23-6-work-order-response-handoff.md | — | ~2174 |
 | 16:16 | Created icm/_state/handoffs/property-ios-field-app-stage06-w23-3-inspections-handoff.md | — | ~3006 |
+
+## Session: 2026-05-15 16:50
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:55 | Created icm/_state/handoffs/property-ios-field-app-stage06-w23-4-signatures-handoff.md | — | ~3775 |
+| 17:02 | Committed W#23.4 Signatures hand-off; assessed queue (2 unblocked ready-to-build: W#23+W#29; W#23.2/3/4/6 pre-authored gated) | icm/_state/handoffs/property-ios-field-app-stage06-w23-4-signatures-handoff.md | queue healthy; CO actions: ADR 0068 flip → W#37, ADR 0086 flip → W#60 P3 | ~12k |
+| 19:58 | Edited ../../../../../tmp/wt-style-grid-dark/packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | modified not() | ~656 |
+| 20:00 | Created ../coordination/inbox/cob-question-2026-05-15T07-15Z-datagrid-checkbox-input-class.md | — | ~245 |
+| 20:01 | Style audit rung-3: PR #849 dialog buttons (merged), PR #851 anchor README, PR #852 datagrid dark mode (draft); flagged P0-3 checkbox interface to XO | accelerators/anchor/README.md, packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss, +css | done | ~3k |
+| 20:39 | Created ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitPermissions.cs | — | ~973 |
+| 20:39 | Created ../../../../../tmp/wt-w29-p1/accelerators/anchor/Cockpit/CockpitPermissions.cs | — | ~977 |
+| 20:40 | Created ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | — | ~949 |
+| 20:41 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→4 lines | ~41 |
+| 20:41 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | 2→7 lines | ~93 |
+| 20:41 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+8 lines) | ~201 |
+| 20:42 | Created ../../../../../tmp/wt-w29-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/CockpitEndpointsTests.cs | — | ~1328 |
+| 20:43 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | 8→8 lines | ~71 |
+| 20:43 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | 7→8 lines | ~84 |
+| 20:43 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/CockpitEndpointsTests.cs | 2→2 lines | ~61 |
+| 20:43 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/CockpitEndpointsTests.cs | modified new() | ~152 |
+| 20:44 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/CockpitEndpointsTests.cs | modified CockpitPolicy_Is_Registered_With_Authenticated_User_Requirement() | ~171 |
+| 20:44 | Edited ../../../../../tmp/wt-w29-p1/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/CockpitEndpointsTests.cs | 2→3 lines | ~30 |
+| 20:47 | Created ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/cockpit/api.ts | — | ~265 |
+| 20:47 | Created ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/cockpit/CockpitLayout.tsx | — | ~617 |
+| 20:47 | Created ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/cockpit/PropertySelector.tsx | — | ~783 |
+| 20:47 | Edited ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/app.tsx | added 2 import(s) | ~59 |
+| 20:48 | Edited ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/app.tsx | expanded (+8 lines) | ~156 |
+| 20:48 | Edited ../../../../../tmp/wt-w29-p1/apps/anchor-react/src/app.tsx | 4→7 lines | ~111 |
+| 20:49 | Created ../../../../../tmp/wt-w29-p1/accelerators/anchor/Components/Pages/CockpitLayout.razor | — | ~601 |
+| 20:50 | Created ../../../../../tmp/wt-w29-p1/accelerators/anchor/Components/Pages/CockpitPropertySelectorPage.razor | — | ~1326 |
+| 20:50 | Edited ../../../../../tmp/wt-w29-p1/accelerators/anchor/Components/Pages/CockpitPropertySelectorPage.razor | modified OnInitializedAsync() | ~206 |
+| 20:51 | Edited ../../../../../tmp/wt-w29-p1/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+7 lines) | ~249 |
+| 20:51 | Edited ../../../../../tmp/wt-w29-p1/accelerators/anchor/MauiProgram.cs | expanded (+6 lines) | ~99 |
+| 20:51 | Edited ../../../../../tmp/wt-w29-p1/accelerators/anchor/MauiProgram.cs | 1→2 lines | ~28 |
+| 20:52 | Edited ../../../../../tmp/wt-w29-p1/accelerators/anchor/Sunfish.Anchor.csproj | 2→4 lines | ~114 |
+| 20:55 | W#29 PR 1 (#853 draft) — cockpit nav shell + property selector + auth across Anchor+Bridge+React; 12 unit tests pass; Bridge+Anchor builds clean | accelerators/{anchor,bridge}/Cockpit/, apps/anchor-react/src/cockpit/ | done | ~10k |
+| 21:00 | Resolved cob-question on DataGridCheckboxInputClass — ruled mandatory abstract api-change fast-track single PR; ruling beacon dropped to inbox | coordination/inbox/xo-ruling-2026-05-15T20-54Z-datagrid-checkbox-input-class.md | question archived | ~6k |
+| 21:23 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-core/Contracts/ISunfishCssProvider.cs | expanded (+8 lines) | ~159 |
+| 21:23 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Providers/Bootstrap/BootstrapCssProvider.cs | expanded (+6 lines) | ~156 |
+| 21:23 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Providers/FluentUI/FluentUICssProvider.cs | 3→8 lines | ~107 |
+| 21:23 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Providers/Material/MaterialCssProvider.cs | 3→7 lines | ~84 |
+| 21:24 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor | modified if() | ~206 |
+| 21:24 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs | added 1 condition(s) | ~297 |
+| 21:24 | Edited ../../../../../tmp/wt-checkbox-p03/accelerators/bridge/Sunfish.Bridge.Client/Services/ProviderSwitcher.cs | 3→4 lines | ~50 |
+| 21:24 | Edited ../../../../../tmp/wt-checkbox-p03/apps/kitchen-sink/Services/ProviderSwitcher.cs | 3→4 lines | ~50 |
+| 21:25 | Edited ../../../../../tmp/wt-checkbox-p03/packages/ui-adapters-blazor/tests/Stubs.cs | 2→3 lines | ~51 |
+| 21:29 | PR #854 (draft) — DataGridCheckboxInputClass on ISunfishCssProvider per XO ruling; 9 files; 4/4 DataGrid tests pass; ui-adapters-blazor + Bridge.Client + kitchen-sink build clean | packages/ui-core/Contracts/ISunfishCssProvider.cs, +3 providers + Stubs.cs + 2 ProviderSwitchers + 2 grid files | done | ~3k |
+| 21:29 | Created icm/_state/handoffs/property-equipment-vehicle-trip-records-stage06-handoff.md | — | ~2280 |
+| 21:29 | Created icm/_state/workstreams/W61-vehicle-equipment-subtype-trip-records.md | — | ~337 |
+| 21:10 | W#61 Vehicle/Trip substrate hand-off authored + ready-to-build; queue now W#23+W#61+W#37; W#61 unblocks W#23.5 iOS Mileage | icm/_state/handoffs/property-equipment-vehicle-trip-records-stage06-handoff.md | committed b9f73272 | ~8k |
+
+## Session: 2026-05-16 21:32
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:38 | Created icm/_state/handoffs/property-ios-field-app-stage06-w23-5-mileage-handoff.md | — | ~4325 |
+| 21:38 | Created icm/_state/workstreams/W23.5-ios-mileage-capture-flow.md | — | ~425 |
+| 21:40 | Edited icm/_state/workstreams/W23-ios-field-capture-app-substrate-v1.md | inline fix | ~89 |
+| 21:40 | Edited icm/_state/workstreams/W23-ios-field-capture-app-substrate-v1.md | "icm/_state/handoffs/prope" → "property-ios-field-app-st" | ~199 |
+| 21:41 | Pre-authored W#23.5 iOS Mileage capture-flow hand-off; deleted invalid W23.5.md sub-workstream file; updated W23.md capture-flow notes; regenerated ledger; committed 0ca422ef | property-ios-field-app-stage06-w23-5-mileage-handoff.md | success | ~500 |
+| 21:58 | Created ../coordination/inbox/cob-question-2026-05-16T01-55Z-w29-p2-no-property-aggregation-path.md | — | ~415 |
+| 21:59 | Edited ../../../../../tmp/wt-bridge-flaky-fix/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Orchestration/TenantLifecycleCoordinatorTests.cs | added 1 condition(s) | ~327 |
+| 22:01 | Halted W#29 P2 (Lease/WO/Inspection have no PropertyId — halt-condition triggered; cob-question filed); shipped PR #856 (flaky TenantLifecycleCoordinator WaitForCallAsync race fix) | accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Orchestration/TenantLifecycleCoordinatorTests.cs | done | ~2k |
+| 22:14 | Created ../coordination/inbox/xo-ruling-2026-05-16T02-20Z-w29-p2-property-aggregation.md | — | ~952 |
+| 22:17 | Created icm/_state/handoffs/blocks-properties-property-unit-substrate-stage06-handoff.md | — | ~4226 |
+| 22:18 | Created icm/_state/workstreams/W62-blocks-properties-property-unit-substrate.md | — | ~488 |
+| 22:18 | Issued W#29 Phase 2 aggregation ruling; archived COB question; authored W#62 PropertyUnit substrate hand-off; committed 6cd542b7 | blocks-properties-property-unit-substrate-stage06-handoff.md | success | ~600 |
+| 22:28 | Created ../../../../../tmp/wt-w29-p2/accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs | — | ~1198 |
+| 22:29 | Edited ../../../../../tmp/wt-w29-p2/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | modified MapCockpitEndpoints() | ~136 |
+| 22:29 | Created ../../../../../tmp/wt-w29-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | — | ~1601 |
+| 22:29 | Edited ../../../../../tmp/wt-w29-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | inline fix | ~30 |
+| 22:31 | Edited ../../../../../tmp/wt-w29-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | inline fix | ~26 |
+| 22:32 | Edited ../../../../../tmp/wt-w29-p2/accelerators/anchor/Sunfish.Anchor.csproj | 3→5 lines | ~143 |
+| 22:33 | Edited ../../../../../tmp/wt-w29-p2/accelerators/anchor/MauiProgram.cs | 7→10 lines | ~148 |
+| 22:33 | Edited ../../../../../tmp/wt-w29-p2/accelerators/anchor/MauiProgram.cs | 2→3 lines | ~44 |
+| 22:33 | Created ../../../../../tmp/wt-w29-p2/accelerators/anchor/Components/Pages/PropertyDetailPage.razor | — | ~1719 |
+| 22:34 | Edited ../../../../../tmp/wt-w29-p2/apps/anchor-react/src/cockpit/api.ts | added 2 condition(s) | ~548 |
+| 22:34 | Created ../../../../../tmp/wt-w29-p2/apps/anchor-react/src/cockpit/properties/PropertyDetailView.tsx | — | ~1188 |
+| 22:34 | Edited ../../../../../tmp/wt-w29-p2/apps/anchor-react/src/app.tsx | added 1 import(s) | ~73 |
+| 22:35 | Edited ../../../../../tmp/wt-w29-p2/apps/anchor-react/src/app.tsx | 3→4 lines | ~61 |
+| 22:38 | XO ruling on P2 halt: ship stubbed aggregation; PR #857 W#29 P2 (draft) — PropertyDetailEndpoint + Anchor PropertyDetailPage + React PropertyDetailView; 3 tests pass; all builds clean; lease/WO/inspection stubbed pending W#62 | accelerators/anchor/Components/Pages/PropertyDetailPage.razor, +Bridge, +apps | done | ~9k |
+| 22:51 | Edited icm/_state/handoffs/property-owner-cockpit-stage06-handoff.md | 1→2 lines | ~203 |
+| 22:52 | Amended W#29 hand-off with Phase 5 → W#62 gate note; committed e79e6e0a | property-owner-cockpit-stage06-handoff.md | success | ~50 |
+| 23:06 | Created ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/WorkOrdersEndpoint.cs | — | ~1821 |
+| 23:07 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/WorkOrdersEndpoint.cs | 9→10 lines | ~244 |
+| 23:07 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/WorkOrdersEndpoint.cs | inline fix | ~16 |
+| 23:07 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/WorkOrdersEndpoint.cs | 3→3 lines | ~76 |
+| 23:08 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | 3→4 lines | ~49 |
+| 23:08 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Program.cs | 3→5 lines | ~58 |
+| 23:08 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→2 lines | ~29 |
+| 23:08 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 2→4 lines | ~105 |
+| 23:11 | Created ../../../../../tmp/wt-w29-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/WorkOrdersEndpointTests.cs | — | ~1738 |
+| 23:12 | Edited ../../../../../tmp/wt-w29-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/WorkOrdersEndpointTests.cs | 8→8 lines | ~128 |
+| 23:13 | Edited ../../../../../tmp/wt-w29-p3/apps/anchor-react/src/cockpit/api.ts | added 9 condition(s) | ~759 |
+| 23:14 | Created ../../../../../tmp/wt-w29-p3/apps/anchor-react/src/cockpit/work-orders/WorkOrderListView.tsx | — | ~1583 |
+| 23:14 | Created ../../../../../tmp/wt-w29-p3/apps/anchor-react/src/cockpit/work-orders/WorkOrderDetailView.tsx | — | ~1543 |
+| 23:15 | Created ../../../../../tmp/wt-w29-p3/accelerators/anchor/Components/Pages/WorkOrders/WorkOrderListPage.razor | — | ~1368 |
+| 23:15 | Created ../../../../../tmp/wt-w29-p3/accelerators/anchor/Components/Pages/WorkOrders/WorkOrderDetailPage.razor | — | ~1758 |
+| 23:16 | Edited ../../../../../tmp/wt-w29-p3/accelerators/anchor/MauiProgram.cs | 3→4 lines | ~55 |
+| 23:16 | Edited ../../../../../tmp/wt-w29-p3/accelerators/anchor/MauiProgram.cs | 3→5 lines | ~78 |
+| 23:16 | Edited ../../../../../tmp/wt-w29-p3/accelerators/anchor/Sunfish.Anchor.csproj | 3→5 lines | ~138 |
+| 23:17 | Edited ../../../../../tmp/wt-w29-p3/accelerators/anchor/Components/Pages/CockpitLayout.razor | 4→6 lines | ~70 |
+| 23:17 | Edited ../../../../../tmp/wt-w29-p3/apps/anchor-react/src/cockpit/CockpitLayout.tsx | 3→3 lines | ~30 |
+| 23:18 | Edited ../../../../../tmp/wt-w29-p3/apps/anchor-react/src/app.tsx | added 2 import(s) | ~67 |
+| 23:18 | Edited ../../../../../tmp/wt-w29-p3/apps/anchor-react/src/app.tsx | 4→6 lines | ~107 |
+| 23:21 | PR #858 (W#29 P3 draft) — WorkOrdersEndpoint (list+detail) + Anchor pages + React views; 15 files, 5 tests pass; all builds clean; property filter omitted per XO ruling | accelerators/anchor/Components/Pages/WorkOrders/, +Bridge Cockpit/, +apps work-orders/ | done | ~13k |
+
+## Session: 2026-05-16 23:46
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:46 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~196 |
+| 23:46 | Edited icm/_state/workstreams/W60-erpnext-composition-pivot-react-ui.md | inline fix | ~96 |
+| 23:48 | Created ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | — | ~2159 |
+| 23:49 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified HandleListVendorsAsync() | ~130 |
+| 23:49 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified foreach() | ~38 |
+| 23:49 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified HandleGetVendorDetailAsync() | ~184 |
+| 23:49 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified ResolveW9StatusAsync() | ~122 |
+| 23:50 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | 4→5 lines | ~32 |
+| 23:52 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | 5→6 lines | ~75 |
+| 23:52 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | 6→6 lines | ~88 |
+| 23:52 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | inline fix | ~23 |
+| 23:52 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | 5→9 lines | ~132 |
+| 23:53 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified HandleListVendorsAsync() | ~69 |
+| 23:53 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified foreach() | ~48 |
+| 23:53 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | ResolveW9StatusAsync() → ResolveW9Status() | ~147 |
+| 23:53 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | reduced (-9 lines) | ~30 |
+| 23:54 | Created ../../../../../tmp/wt-w29-p4/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/VendorsEndpointTests.cs | — | ~2868 |
+| 23:55 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | modified rule() | ~204 |
+| 23:55 | Edited ../../../../../tmp/wt-w29-p4/accelerators/bridge/Sunfish.Bridge/Cockpit/VendorsEndpoint.cs | 5→3 lines | ~26 |
+| 23:56 | Created ../../../../../tmp/wt-w29-p4/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/VendorsEndpointTests.cs | — | ~1702 |
+| 23:57 | Edited ../../../../../tmp/wt-w29-p4/apps/anchor-react/src/cockpit/api.ts | added 3 condition(s) | ~560 |
+| 23:58 | Created ../../../../../tmp/wt-w29-p4/apps/anchor-react/src/cockpit/vendors/VendorListView.tsx | — | ~1148 |
+| 23:58 | Created ../../../../../tmp/wt-w29-p4/apps/anchor-react/src/cockpit/vendors/VendorDetailView.tsx | — | ~1475 |
+| 23:58 | Edited ../../../../../tmp/wt-w29-p4/apps/anchor-react/src/app.tsx | added 2 import(s) | ~100 |
+| 23:59 | Edited ../../../../../tmp/wt-w29-p4/apps/anchor-react/src/app.tsx | 6→8 lines | ~148 |
+| 23:59 | Edited ../../../../../tmp/wt-w29-p4/apps/anchor-react/src/cockpit/CockpitLayout.tsx | 3→3 lines | ~28 |
+| 00:00 | Created ../../../../../tmp/wt-w29-p4/accelerators/anchor/Components/Pages/Vendors/VendorListPage.razor | — | ~1671 |
+| 00:00 | Created ../../../../../tmp/wt-w29-p4/accelerators/anchor/Components/Pages/Vendors/VendorDetailPage.razor | — | ~1690 |
+| 00:00 | Edited ../../../../../tmp/wt-w29-p4/accelerators/anchor/Components/Pages/CockpitLayout.razor | 4→6 lines | ~77 |
+| 00:03 | PR #859 (W#29 P4 draft) — VendorsEndpoint with 1099 readiness rule + Anchor pages + React views; 11 files, 9 tests pass; W9 chip uses binary on-file heuristic to avoid encryption substrate | accelerators/anchor/Components/Pages/Vendors/, +Bridge Cockpit/, +apps vendors/ | done | ~11k |
+| 00:20 | Edited icm/_state/workstreams/W29-owner-web-cockpit.md | 2→2 lines | ~109 |
+| 00:22 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~24 |
+| 00:22 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~170 |
+| 00:23 | Edited icm/_state/MASTER-PLAN.md | modified workstreams() | ~815 |
+| 00:23 | Edited icm/_state/MASTER-PLAN.md | modified layer() | ~482 |
+| 00:23 | Edited icm/_state/MASTER-PLAN.md | 12→9 lines | ~168 |
+| 00:24 | Edited icm/_state/MASTER-PLAN.md | expanded (+9 lines) | ~390 |
+| 00:25 | Edited icm/_state/MASTER-PLAN.md | 3→5 lines | ~89 |
+| 00:25 | Edited icm/_state/MASTER-PLAN.md | 2→3 lines | ~56 |
+| 00:25 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~22 |
+| 00:28 | Created icm/_state/handoffs/anchor-recovery-host-integration-stage06-handoff.md | — | ~3185 |
+| 00:28 | Edited icm/_state/handoffs/anchor-recovery-host-integration-stage06-handoff.md | reduced (-13 lines) | ~42 |
+| 00:29 | Created icm/_state/workstreams/W63-anchor-recovery-host-integration.md | — | ~392 |
+
+| 04:55 | Loop iteration complete — queue depth 6 ready-to-build; W#29 → building; MASTER-PLAN W#60 pivot refresh; W#63 G6 hand-off authored | multiple | All committed | ~15k |
+| 00:30 | Created ../../../../../tmp/wt-w62-p1/packages/blocks-properties/Models/UnitStatus.cs | — | ~108 |
+| 00:30 | Created ../../../../../tmp/wt-w62-p1/packages/blocks-properties/Models/PropertyUnit.cs | — | ~691 |
+| 00:30 | Created ../../../../../tmp/wt-w62-p1/packages/blocks-properties/Services/IPropertyUnitRepository.cs | — | ~369 |
+| 00:30 | Created ../../../../../tmp/wt-w62-p1/packages/blocks-properties/Services/InMemoryPropertyUnitRepository.cs | — | ~514 |
+| 00:31 | Created ../../../../../tmp/wt-w62-p1/packages/blocks-properties/Data/PropertyUnitEntityConfiguration.cs | — | ~659 |
+| 00:31 | Edited ../../../../../tmp/wt-w62-p1/packages/blocks-properties/DependencyInjection/PropertiesServiceCollectionExtensions.cs | modified AddInMemoryProperties() | ~334 |
+| 00:31 | Created ../../../../../tmp/wt-w62-p1/packages/blocks-properties/tests/InMemoryPropertyUnitRepositoryTests.cs | — | ~872 |
+| 00:33 | PR #860 (W#62 P1 draft) — PropertyUnit entity + IPropertyUnitRepository + InMemory + EFCore + DI; 5/5 tests pass; unblocks W#29 P5 + Phase 1.5 | packages/blocks-properties/{Models,Services,Data,DependencyInjection,tests}/ | done | ~6k |
+| 01:00 | Edited icm/_state/workstreams/W62-blocks-properties-property-unit-substrate.md | 2→2 lines | ~81 |
+| 01:00 | Edited icm/_state/workstreams/W29-owner-web-cockpit.md | inline fix | ~58 |
+| 01:01 | Created ../../../../../tmp/wt-w62-p2/accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs | — | ~1974 |
+| 01:01 | Edited ../../../../../tmp/wt-w62-p2/accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 3→6 lines | ~151 |
+| 01:02 | Edited ../../../../../tmp/wt-w62-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 4→8 lines | ~107 |
+| 01:02 | Edited ../../../../../tmp/wt-w62-p2/accelerators/bridge/Sunfish.Bridge/Program.cs | 1→3 lines | ~42 |
+| 05:20 | Loop check — W#62 P1 + W#29 P4 ledger updates committed; ADR 0086 Proposed still (CO action); PR #855 vite 5→8 needs CO review; queue healthy at 4 rtb | workstreams | steady state | ~3k |
+| 01:05 | Created ../../../../../tmp/wt-w62-p2/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | — | ~3362 |
+| 01:07 | PR #861 (W#62 P2 draft) — real property-detail aggregation (lease + inspection via PropertyUnit join); +3 aggregation tests; 6/6 pass; ILeaseService+IInspectionsService wired in Bridge DI | accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs, Program.cs, .csproj, tests | done | ~5k |
+| 01:33 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Models/WorkOrder.cs | 4→5 lines | ~60 |
+| 01:34 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Models/WorkOrder.cs | expanded (+9 lines) | ~182 |
+| 01:34 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Services/ListWorkOrdersQuery.cs | 3→4 lines | ~35 |
+| 01:34 | Edited icm/_state/workstreams/W62-blocks-properties-property-unit-substrate.md | inline fix | ~97 |
+| 01:34 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Services/ListWorkOrdersQuery.cs | expanded (+7 lines) | ~148 |
+| 01:34 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Services/InMemoryMaintenanceService.cs | added 1 condition(s) | ~114 |
+| 01:35 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs | 5→7 lines | ~75 |
+| 01:35 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs | 9→10 lines | ~115 |
+| 01:35 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs | added 1 condition(s) | ~277 |
+| 01:36 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/Sunfish.Bridge/Cockpit/PropertyDetailEndpoint.cs | 6→8 lines | ~121 |
+| 05:55 | Loop check — W#62 P2 (#861) ledger update committed; W#29 P5 spec verified adequate; queue 4 rtb; no new work | steady state | — | ~2k |
+| 01:37 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | inline fix | ~25 |
+| 01:37 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | inline fix | ~31 |
+| 01:38 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | modified CallHandlerOk() | ~411 |
+| 01:38 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | 5→6 lines | ~52 |
+| 01:38 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | added 1 condition(s) | ~789 |
+| 01:39 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Services/CreateWorkOrderRequest.cs | 3→4 lines | ~45 |
+| 01:39 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Services/CreateWorkOrderRequest.cs | expanded (+8 lines) | ~166 |
+| 01:39 | Edited ../../../../../tmp/wt-w62-p3/packages/blocks-maintenance/Services/InMemoryMaintenanceService.cs | 15→17 lines | ~182 |
+| 01:40 | Edited ../../../../../tmp/wt-w62-p3/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/PropertyDetailEndpointTests.cs | 3→5 lines | ~53 |
+| 01:42 | PR #862 (W#62 P3 draft) — WorkOrder.PropertyId FK + filter + cockpit count; 7/7 PropertyDetail + 121/121 maintenance tests pass; unblocks W#29 P5 Dashboard | packages/blocks-maintenance/, Bridge/Cockpit/PropertyDetailEndpoint.cs | done | ~5k |
+| 02:08 | Edited icm/_state/MASTER-PLAN.md | 2→2 lines | ~278 |
+| 02:08 | Edited icm/_state/MASTER-PLAN.md | 3→3 lines | ~82 |
+| 02:08 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~55 |
+| 02:08 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~28 |
+| 02:09 | Created ../../../../../tmp/wt-w29-p5/accelerators/bridge/Sunfish.Bridge/Cockpit/DashboardEndpoint.cs | — | ~1812 |
+| 02:09 | Created icm/00_intake/output/2026-05-16_ws-c-d-erpnext-native-decision.md | — | ~940 |
+| 02:09 | Edited ../../../../../tmp/wt-w29-p5/accelerators/bridge/Sunfish.Bridge/Cockpit/CockpitEndpoints.cs | 5→6 lines | ~40 |
+| 06:30 | WS-C/D superseded analysis — MASTER-PLAN + intake note committed; W#62 P3 draft in review; queue 4 rtb | icm/MASTER-PLAN.md, intake | — | ~4k |
+| 02:10 | Created ../../../../../tmp/wt-w29-p5/accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Cockpit/DashboardEndpointTests.cs | — | ~3395 |
+| 02:12 | Edited ../../../../../tmp/wt-w29-p5/apps/anchor-react/src/cockpit/api.ts | added 2 condition(s) | ~313 |
+| 02:12 | Created ../../../../../tmp/wt-w29-p5/apps/anchor-react/src/cockpit/DashboardView.tsx | — | ~1322 |
+| 02:13 | Edited ../../../../../tmp/wt-w29-p5/apps/anchor-react/src/app.tsx | added 1 import(s) | ~72 |
+| 02:13 | Edited ../../../../../tmp/wt-w29-p5/apps/anchor-react/src/app.tsx | 4→5 lines | ~90 |
+| 02:14 | Edited ../../../../../tmp/wt-w29-p5/apps/anchor-react/src/cockpit/properties/PropertyDetailView.tsx | expanded (+8 lines) | ~189 |
+| 02:14 | Created ../../../../../tmp/wt-w29-p5/accelerators/anchor/Components/Pages/PropertyDashboardPage.razor | — | ~2427 |
+| 02:15 | Edited ../../../../../tmp/wt-w29-p5/accelerators/anchor/MauiProgram.cs | 4→7 lines | ~83 |
+| 02:15 | Edited ../../../../../tmp/wt-w29-p5/accelerators/anchor/MauiProgram.cs | 1→3 lines | ~42 |
+| 02:15 | Edited ../../../../../tmp/wt-w29-p5/accelerators/anchor/Sunfish.Anchor.csproj | 3→6 lines | ~156 |
+| 02:16 | Edited ../../../../../tmp/wt-w29-p5/accelerators/anchor/Components/Pages/PropertyDetailPage.razor | 5→8 lines | ~127 |
+| 02:16 | Edited ../../../../../tmp/wt-w29-p5/accelerators/anchor/Components/Pages/PropertyDetailPage.razor | 1→2 lines | ~59 |
+| 02:20 | PR #863 (W#29 P5 draft) — Dashboard: vacancy/renewal/WO rollup/overdue inspections; 5/5 tests pass; all 6 hand-off DTO widgets live in Bridge+Anchor+React | accelerators/{bridge,anchor}/, apps/anchor-react/src/cockpit/DashboardView.tsx | done | ~10k |
+| 02:41 | Edited icm/_state/workstreams/W62-blocks-properties-property-unit-substrate.md | inline fix | ~66 |
+| 02:42 | Edited icm/_state/workstreams/W29-owner-web-cockpit.md | inline fix | ~70 |
+
+## Session: 2026-05-16 02:45
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:45 | Edited icm/_state/workstreams/W08-phase-1-g6-trustee-orchestration.md | 15→17 lines | ~336 |
+| 02:48 | Created ../../../../../tmp/wt-w62-p4/apps/docs/blocks/properties/property-unit.md | — | ~1081 |
+| 02:48 | Created ../../../../../tmp/wt-w62-p4/apps/docs/blocks/properties/property-aggregation.md | — | ~1064 |
+| 02:48 | Created ../../../../../tmp/wt-w62-p4/apps/docs/blocks/properties/toc.yml | — | ~44 |
+| 02:48 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~35 |
+| 02:49 | Created ../../../../../tmp/wt-w62-p4/icm/_state/workstreams/W62-blocks-properties-property-unit-substrate.md | — | ~863 |
+| 02:50 | Edited ../../../../../tmp/wt-w62-p4/icm/_state/workstreams/W29-owner-web-cockpit.md | modified matrix() | ~694 |
+| 02:50 | Created ../../../../../tmp/wt-w62-p4/apps/docs/blocks/cockpit/overview.md | — | ~1168 |
+| 02:51 | Created ../../../../../tmp/wt-w62-p4/apps/docs/blocks/cockpit/permissions.md | — | ~883 |
+| 02:51 | Created ../../../../../tmp/wt-w62-p4/apps/docs/blocks/cockpit/toc.yml | — | ~25 |
+| 02:51 | Edited ../../../../../tmp/wt-w62-p4/apps/docs/blocks/toc.yml | 4→6 lines | ~34 |
+| 02:52 | PR #864 — W#29 + W#62 combined finalization: cockpit + properties docs (4 pages), W#62 row created built, W#29 row design-in-flight→built, render-ledger regenerated; both workstreams closed | apps/docs/blocks/{cockpit,properties}/, icm/_state/workstreams/W29+W62 | done | ~7k |
+| 02:52 | Created icm/_state/handoffs/phase-1-g7-conformance-scan-stage07-handoff.md | — | ~2288 |
+| 02:52 | Edited icm/_state/workstreams/W07-phase-1-g7-conformance-scan.md | 10→14 lines | ~290 |
+| 02:52 | Created ../coordination/inbox/cob-idle-2026-05-16T02-42Z-w29-w62-complete.md | — | ~154 |
+| 05:00 | Flipped W#8 G6 substrate to built; updated MASTER-PLAN Phase 1 G6 velocity note; authored W#7 G7 conformance scan hand-off | W08, W07, MASTER-PLAN, active-workstreams.md | Committed; queue depth 3 (W#61+W#63+W#23 P6); G7 scan gated on W#63 | ~4k |
+| 03:24 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Models/VehicleMetadata.cs | — | ~337 |
+| 03:24 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Models/TripRecordId.cs | — | ~336 |
+| 03:24 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Models/TripRecord.cs | — | ~571 |
+| 03:24 | Edited ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Models/EquipmentLifecycleEventType.cs | expanded (+7 lines) | ~87 |
+| 03:25 | Edited ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Models/Equipment.cs | expanded (+7 lines) | ~138 |
+| 03:25 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Services/ITripStore.cs | — | ~370 |
+| 03:25 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Services/InMemoryTripStore.cs | — | ~873 |
+| 03:25 | Edited ../../../../../tmp/wt-w61/packages/blocks-property-equipment/DependencyInjection/PropertyEquipmentServiceCollectionExtensions.cs | modified AddInMemoryPropertyEquipment() | ~417 |
+| 03:26 | Edited ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Data/EquipmentEntityConfiguration.cs | expanded (+16 lines) | ~338 |
+| 03:26 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/Data/TripRecordEntityConfiguration.cs | — | ~651 |
+| 03:27 | Created ../../../../../tmp/wt-w61/packages/blocks-property-equipment/tests/TripRecordStoreTests.cs | — | ~1296 |
+| 03:27 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~60 |
+| 03:27 | Edited icm/_state/MASTER-PLAN.md | inline fix | ~37 |
+| 03:28 | Created ../../../../../tmp/wt-w61/apps/docs/blocks/property-equipment/vehicle-trip-records.md | — | ~966 |
+| 05:30 | Synced W#29+W#62 built from main (PR #864); clarified WS-E = W#20 phases 4-9; flagged PR #855 vite 5→8 for CO review | W29, W62, MASTER-PLAN | Queue healthy at 3 items; CO actions: ADR 0086/0068/0055 acceptance; PR #855 | ~2k |
+| 03:28 | Edited ../../../../../tmp/wt-w61/apps/docs/blocks/property-equipment/toc.yml | 3→5 lines | ~31 |
+| 03:28 | Created ../../../../../tmp/wt-w61/icm/_state/workstreams/W61-property-equipment-vehicle-trip-records.md | — | ~795 |
+| 03:29 | PR #865 (W#61 draft) — VehicleMetadata+TripRecord+ITripStore+MileageRecorded in 1 PR (code+docs+ledger); 6 W#61 tests + 39/39 full suite pass; unblocks W#23.5 iOS Mileage | packages/blocks-property-equipment/, apps/docs/, icm/_state/workstreams/W61 | done | ~6k |
+| 03:57 | Created ../../../../../tmp/wt-w63-p1/accelerators/anchor/Components/Pages/Recovery/RecoveryStatusPage.razor | — | ~1574 |
+| 03:58 | Edited ../../../../../tmp/wt-w63-p1/accelerators/anchor/MauiProgram.cs | expanded (+18 lines) | ~362 |
+| 03:59 | Edited ../../../../../tmp/wt-w63-p1/accelerators/anchor/Components/Layout/NavMenu.razor | expanded (+8 lines) | ~225 |
+| 04:01 | Created ../coordination/inbox/cob-question-2026-05-16T03-26Z-w63-recovery-pages-ux-gap.md | — | ~664 |
+| 04:02 | Created icm/_state/workstreams/W64-erpnext-company-team-context-binding.md | — | ~550 |
+| 04:02 | PR #866 (W#63 P1 minimal draft) — RecoveryCoordinator DI + RecoveryStatusPage read-only; cob-question filed on 4-page UX gap + Phase 2 OnEventRaised mismatch | accelerators/anchor/Components/Pages/Recovery/, MauiProgram.cs, NavMenu.razor | done | ~4k |
+| 04:04 | Edited icm/_state/workstreams/W64-erpnext-company-team-context-binding.md | modified finding() | ~582 |
+| 06:00 | W#61 built (PR #865 — VehicleMetadata+TripRecord); W#64 design-in-flight filed (WS-A cockpit entity binding); architecture finding: cockpit uses blocks-properties not ERPNext directly; CO decision A vs B needed | W61, W64, active-workstreams | Queue: W#63+W#23 P6 (2 items); CO: ADR 0086/0068/0055 + PR #855 + W#64 decision | ~3k |
+| 04:30 | Created ../../../../../tmp/wt-w63-p1/accelerators/anchor/Components/Pages/Recovery/TrusteeSetupPage.razor | — | ~1803 |
+| 04:31 | Created ../../../../../tmp/wt-w63-p1/accelerators/anchor/Components/Pages/Recovery/InitiateRecoveryPage.razor | — | ~1308 |
+| 04:31 | Created ../../../../../tmp/wt-w63-p1/accelerators/anchor/Components/Pages/Recovery/PaperKeyPage.razor | — | ~1200 |
+| 04:32 | Created ../../../../../tmp/wt-w63-p1/accelerators/anchor/Components/Pages/Recovery/ApproveRecoveryPage.razor | — | ~1026 |
+| 04:34 | Created ../coordination/inbox/cob-question-2026-05-16T04-42Z-kernel-security-session-signer-accessor.md | — | ~432 |
+| 04:35 | PR #866 extended — W#63 P1 complete: 4 more recovery pages (TrusteeSetup + InitiateRecovery + PaperKey + ApproveRecovery placeholder); kernel-security session-signer accessor cob-question filed | accelerators/anchor/Components/Pages/Recovery/ | done | ~10k |
+| 04:37 | Created icm/_state/handoffs/kernel-security-session-signer-accessor-stage06-handoff.md | — | ~2064 |
+
+## Session: 2026-05-16 04:40
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 04:40 | Created icm/_state/workstreams/W65-kernel-security-session-signer-accessor.md | — | ~542 |
+
+| 04:41 | W#65 workstream + hand-off filed; COB question archived; ledger regenerated | W65-kernel-security-session-signer-accessor.md, kernel-security-session-signer-accessor-stage06-handoff.md | committed de2a7611; queue: W#63+W#65 ready-to-build; inbox clear | ~12k |
+| 05:04 | Created ../../../../../tmp/wt-w63-p2/accelerators/anchor/Services/IRecoveryCompletionHandler.cs | — | ~323 |
+| 05:04 | Created ../../../../../tmp/wt-w63-p2/accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs | — | ~717 |
+| 05:04 | Created ../../../../../tmp/wt-w63-p2/accelerators/anchor/Services/RecoveryHostOptions.cs | — | ~194 |
+| 05:05 | Created ../../../../../tmp/wt-w63-p2/accelerators/anchor/Services/RecoveryGracePollingService.cs | — | ~989 |
+| 05:05 | Created ../../../../../tmp/wt-w63-p2/accelerators/anchor/Services/RecoveryHostExtensions.cs | — | ~368 |
+| 05:05 | Edited ../../../../../tmp/wt-w63-p2/accelerators/anchor/MauiProgram.cs | expanded (+6 lines) | ~201 |
+| 05:06 | Edited ../../../../../tmp/wt-w63-p2/accelerators/anchor/tests/tests.csproj | expanded (+6 lines) | ~245 |
+| 05:06 | Created ../../../../../tmp/wt-w63-p2/accelerators/anchor/tests/RecoveryGracePollingServiceTests.cs | — | ~1654 |
+| 05:08 | Edited ../../../../../tmp/wt-w63-p2/accelerators/anchor/tests/RecoveryGracePollingServiceTests.cs | inline fix | ~27 |
+| 05:11 | Created ../../../../../tmp/wt-w63-p2/icm/_state/workstreams/W63-anchor-recovery-host-integration.md | — | ~1124 |
+| 05:12 | PR #867 (W#63 P2+P3 draft) — RecoveryGracePollingService IHostedService polling per XO ruling §c; AnchorRecoveryCompletionHandler stubs rekey+audit pending IEncryptedStore.RotateKey + session-signer accessor; 5/5 tests; ledger W#63=built (closes G6, MASTER-PLAN G-1 Phase 1 done) | accelerators/anchor/Services/, tests, icm/_state/workstreams/W63 | done | ~6k |
+| 05:16 | Created icm/_state/handoffs/anchor-approve-recovery-page-live-attestation-stage06-handoff.md | — | ~2636 |
+| 05:16 | Created icm/_state/workstreams/W66-anchor-approve-recovery-page-live-attestation.md | — | ~417 |
+
+| 05:15 | W#66 pre-authored (ApproveRecoveryPage live attestation; blocked on W#65); W#63 P2+3 in DRAFT PR #867 CI pending | W66-anchor-approve-recovery-page-live-attestation.md, anchor-approve-recovery-page-live-attestation-stage06-handoff.md | committed e7e90db5 | ~8k |
+| 05:40 | Created ../../../../../tmp/wt-w65/packages/kernel-security/Session/IBoundEd25519Signer.cs | — | ~246 |
+| 05:40 | Created ../../../../../tmp/wt-w65/packages/kernel-security/Session/ISessionSignerAccessor.cs | — | ~268 |
+| 05:40 | Created ../../../../../tmp/wt-w65/packages/kernel-security/Session/DefaultBoundEd25519Signer.cs | — | ~342 |
+| 05:41 | Created ../../../../../tmp/wt-w65/packages/kernel-security/Session/DefaultSessionSignerAccessor.cs | — | ~637 |
+| 05:42 | Edited ../../../../../tmp/wt-w65/packages/kernel-runtime/Session/DefaultSessionSignerAccessor.cs | 5→6 lines | ~51 |
+| 05:43 | Edited ../../../../../tmp/wt-w65/packages/kernel-runtime/DependencyInjection/ServiceCollectionExtensions.cs | modified AddSunfishKernelRuntime() | ~202 |
+| 05:43 | Created icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md | — | ~2838 |
+| 05:43 | Edited icm/_state/workstreams/W07-phase-1-g7-conformance-scan.md | 2→2 lines | ~69 |
+| 05:43 | Edited icm/_state/workstreams/W07-phase-1-g7-conformance-scan.md | 5→7 lines | ~153 |
+| 05:43 | Edited icm/_state/workstreams/W63-anchor-recovery-host-integration.md | 2→2 lines | ~64 |
+| 05:44 | Created ../../../../../tmp/wt-w65/packages/kernel-runtime/tests/SessionSignerAccessorTests.cs | — | ~1386 |
+| 05:45 | Edited ../../../../../tmp/wt-w65/packages/kernel-security/Session/DefaultBoundEd25519Signer.cs | 9→9 lines | ~83 |
+
+| 05:42 | G7 scan complete: G1-G5 PASS, G6 PARTIAL (rekey stub + ApprovePage placeholder); W#7+W#63 → built; correction: IEncryptedStore.RotateKeyAsync EXISTS on SqlCipherEncryptedStore — PR #867 body was wrong | icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md | committed 7ddd9d0b | ~15k |
+| 05:46 | Created ../../../../../tmp/wt-w65/packages/kernel-runtime/tests/SessionSignerAccessorTests.cs | — | ~1498 |
+| 05:48 | Created ../../../../../tmp/wt-w65/icm/_state/workstreams/W65-kernel-security-session-signer-accessor.md | — | ~969 |
+
+## Session: 2026-05-16 05:51
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 05:52 | Created ../coordination/inbox/cob-idle-2026-05-16T05-58Z-w65-shipped-queue-dry.md | — | ~200 |
+| 05:55 | Created ../../../../../tmp/wt-w63-followup/icm/_state/handoffs/w63-approve-recovery-session-signer-stage06-handoff.md | — | ~2289 |
+| 06:19 | Edited icm/_state/workstreams/W66-anchor-approve-recovery-page-live-attestation.md | 4→4 lines | ~150 |
+| 06:19 | Edited icm/_state/workstreams/W66-anchor-approve-recovery-page-live-attestation.md | 5→7 lines | ~238 |
+
+| 06:19 | Reconciled W#66 with PR #869 (COB hand-off); removed duplicate XO hand-off; noted G6-A rekey gap requires design research (key material not in RecoveryCompleted event); W#65 PR #868 CI all-green DRAFT | W66-anchor-approve-recovery-page-live-attestation.md | committed 3f6a5a73 | ~8k |
+| 06:23 | Created ../../../../../tmp/wt-w66/accelerators/anchor/Services/RecoveryAttestationSubmitter.cs | — | ~1118 |
+| 06:24 | Created ../../../../../tmp/wt-w66/accelerators/anchor/Components/Pages/Recovery/ApproveRecoveryPage.razor | — | ~1516 |
+| 06:25 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/Services/RecoveryAttestationSubmitter.cs | inline fix | ~22 |
+| 06:25 | Created ../../../../../tmp/wt-w66/accelerators/anchor/tests/RecoveryAttestationSubmitterTests.cs | — | ~2488 |
+| 06:25 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/tests/RecoveryAttestationSubmitterTests.cs | 2→1 lines | ~5 |
+| 06:26 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/tests/RecoveryAttestationSubmitterTests.cs | modified FakeTimeProvider() | ~271 |
+| 06:26 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/tests/tests.csproj | 2→5 lines | ~108 |
+| 06:27 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/MauiProgram.cs | expanded (+6 lines) | ~132 |
+| 06:28 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/tests/RecoveryAttestationSubmitterTests.cs | 5→5 lines | ~53 |
+| 06:28 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/tests/RecoveryAttestationSubmitterTests.cs | 6→6 lines | ~76 |
+| 06:29 | Created ../../../../../tmp/wt-w66/icm/_state/workstreams/W66-anchor-approve-recovery-page-live-attestation.md | — | ~1160 |
+| 06:53 | Edited icm/_state/workstreams/W65-kernel-security-session-signer-accessor.md | 2→2 lines | ~66 |
+| 06:53 | Edited icm/_state/workstreams/W66-anchor-approve-recovery-page-live-attestation.md | 2→2 lines | ~49 |
+
+| 06:54 | W#65 → built (PR #868+#869 merged); W#66 → building (PR #870 CI fail: missing @using Microsoft.Extensions.Logging; PR comment posted fix) | W65+W66 workstream source files | committed 2ead9b5c | ~5k |
+
+## Session: 2026-05-16 06:56
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 06:56 | Edited ../../../../../tmp/wt-w66/accelerators/anchor/Components/Pages/Recovery/ApproveRecoveryPage.razor | 4→5 lines | ~44 |
+| 07:07 | Created icm/_state/workstreams/W67-g6a-social-recovery-seed-delivery-protocol.md | — | ~1428 |
+| 07:07 | Edited icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md | 4→6 lines | ~444 |
+| 07:07 | Edited icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md | 2→2 lines | ~66 |
+| 07:08 | Edited icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md | inline fix | ~80 |
+| 07:08 | Edited icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md | 4→4 lines | ~141 |
+| 07:10 | W#67 filed (design-in-flight) + G7 report corrected: G6-A = protocol gap not missing API; W#66 PR #870 CI running | W67 file + g7 report | committed 8116b420 | ~800 |
+| 07:10 | Discovered: IEncryptedStore.RotateKeyAsync EXISTS (line 73 foundation-localfirst); PR #867 handler comment was wrong; true gap = RecoveryCompleted carries no key material | AnchorRecoveryCompletionHandler.cs | research | ~600 |
+| 07:15 | Created docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md | — | ~4532 |
+| 07:18 | Edited icm/_state/workstreams/W66-anchor-approve-recovery-page-live-attestation.md | 2→2 lines | ~51 |
+| 07:18 | Edited icm/_state/workstreams/W67-g6a-social-recovery-seed-delivery-protocol.md | "accelerators/anchor/Servi" → "docs/adrs/0046-a6-social-" | ~108 |
+| 07:18 | Security council review PR #870 — APPROVED (3 minor items, none blocking); PR merged; W#66 flipped built; G6-B gap CLOSED | W66 workstream | merged PR #870 | ~600 |
+| 07:18 | ADR 0046-A6 drafted: seed delivery protocol (full-copy per trustee, IX25519KeyAgreement Box/OpenBox, EphemeralDHPublicKey in RecoveryRequest, EncryptedSeedEnvelope in TrusteeAttestation); W#67 reference updated | docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md | drafted | ~1200 |

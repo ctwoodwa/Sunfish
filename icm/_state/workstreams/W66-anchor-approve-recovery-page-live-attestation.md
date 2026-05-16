@@ -3,8 +3,8 @@ sort_order: 75
 number: 66
 slug: anchor-approve-recovery-page-live-attestation
 title: "W#66 — Anchor ApproveRecoveryPage live attestation submission"
-status: "building"
-status_cell: "`building` — PR #870 DRAFT 2026-05-16; CI failing: missing `@using Microsoft.Extensions.Logging` in ApproveRecoveryPage.razor; one-line fix pending"
+status: "built"
+status_cell: "`built` — PR #870 merged 2026-05-16; `RecoveryAttestationSubmitter.cs` + live `ApproveRecoveryPage.razor` + 5 tests; security council APPROVED; G6-B gap CLOSED"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/w63-approve-recovery-session-signer-stage06-handoff.md` (PR #869) + `accelerators/anchor/Components/Pages/Recovery/ApproveRecoveryPage.razor` + `packages/foundation-recovery/TrusteeAttestation.cs`"
