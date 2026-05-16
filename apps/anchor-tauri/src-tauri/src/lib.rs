@@ -83,6 +83,19 @@ pub fn run() {
     let key_arc_for_closure = Arc::clone(&key_arc);
 
     tauri::Builder::default()
+        // Single-instance must be registered FIRST per the plugin docs — it has
+        // to intercept the second-launch IPC before any other plugin spins up.
+        // Without this, every Start Menu / taskbar / .lnk click on Anchor spawns
+        // a fresh process + webview, so a leftover instance gives the user two
+        // (or more) Anchor windows. On second launch this callback fires inside
+        // the EXISTING process and just refocuses the primary window.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_shell::init())
         .plugin(
             tauri_plugin_stronghold::Builder::new(move |_password_from_js| {

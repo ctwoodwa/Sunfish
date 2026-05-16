@@ -55,16 +55,16 @@ function AppErrorFallback({ error, resetErrorBoundary }: { error: Error; resetEr
   }, [error])
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="rounded-lg border border-red-200 bg-red-50 p-8 max-w-md w-full">
-        <h2 className="text-xl font-bold text-red-700">Something went wrong</h2>
-        <p className="mt-2 text-sm text-gray-600">{error.message}</p>
+    <div className="flex min-h-screen items-center justify-center p-6 bg-background text-foreground">
+      <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-8 max-w-md w-full">
+        <h2 className="text-xl font-bold text-destructive">Something went wrong</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
         <button
           onClick={() => {
             queryClient.clear()
             resetErrorBoundary()
           }}
-          className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+          className="mt-4 rounded bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
         >
           Retry
         </button>
@@ -103,16 +103,16 @@ function AppLayout() {
   }, [setActiveCompany, setAvailableCompanies, setAuth])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       <OfflineBanner />
-      <header className="border-b border-gray-200">
+      <header className="border-b border-border">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <nav className="flex items-center gap-6 text-sm">
-            <span className="font-semibold text-gray-900">Sunfish</span>
+            <span className="font-semibold text-foreground">Sunfish</span>
             <NavLink
               to="/properties"
               className={({ isActive }) =>
-                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+                isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               }
             >
               Properties
@@ -120,7 +120,7 @@ function AppLayout() {
             <NavLink
               to="/leases"
               className={({ isActive }) =>
-                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+                isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               }
             >
               Leases
@@ -128,7 +128,7 @@ function AppLayout() {
             <NavLink
               to="/rent"
               className={({ isActive }) =>
-                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+                isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               }
             >
               Rent
@@ -136,7 +136,7 @@ function AppLayout() {
             <NavLink
               to="/accounting"
               className={({ isActive }) =>
-                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+                isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               }
             >
               Accounting
@@ -144,7 +144,7 @@ function AppLayout() {
             <NavLink
               to="/comms"
               className={({ isActive }) =>
-                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+                isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               }
             >
               Comms
@@ -152,7 +152,7 @@ function AppLayout() {
             <NavLink
               to="/maintenance"
               className={({ isActive }) =>
-                isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'
+                isActive ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               }
             >
               Maintenance
@@ -164,7 +164,7 @@ function AppLayout() {
             <button
               type="button"
               onClick={onLogout}
-              className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-muted"
             >
               Logout
             </button>
