@@ -25,7 +25,7 @@ export function CockpitLayout() {
           <CockpitNavLink to="/cockpit/work-orders">
             Work Orders
           </CockpitNavLink>
-          <CockpitNavLink to="/cockpit/vendors" disabled>
+          <CockpitNavLink to="/cockpit/vendors">
             Vendors
           </CockpitNavLink>
           <CockpitNavLink to="/cockpit/dashboard" disabled>

@@ -16,6 +16,8 @@ import { PropertySelector } from '@/cockpit/PropertySelector'
 import { PropertyDetailView } from '@/cockpit/properties/PropertyDetailView'
 import { WorkOrderListView } from '@/cockpit/work-orders/WorkOrderListView'
 import { WorkOrderDetailView } from '@/cockpit/work-orders/WorkOrderDetailView'
+import { VendorListView } from '@/cockpit/vendors/VendorListView'
+import { VendorDetailView } from '@/cockpit/vendors/VendorDetailView'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { CompanySwitcher } from '@/components/CompanySwitcher'
 import { useCompanyStore } from '@/stores/companyStore'
@@ -174,6 +176,8 @@ function AppLayout() {
             <Route index element={<PropertySelector />} />
             <Route path="work-orders" element={<WorkOrderListView />} />
             <Route path="work-orders/:workOrderId" element={<WorkOrderDetailView />} />
+            <Route path="vendors" element={<VendorListView />} />
+            <Route path="vendors/:vendorId" element={<VendorDetailView />} />
             <Route path=":propertyId" element={<PropertyDetailView />} />
           </Route>
         </Routes>

@@ -1,0 +1,140 @@
+@page "/cockpit/vendors"
+@layout CockpitLayout
+@using Sunfish.Anchor.Services
+@using Sunfish.Blocks.Maintenance.Models
+@using Sunfish.Blocks.Maintenance.Services
+@inject IMaintenanceService Maintenance
+@inject AnchorSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Vendors · Cockpit</PageTitle>
+
+@* W#29 Phase 4 — vendors list. W-9 status uses the binary
+   on-file/awaiting heuristic (full W9Document resolution requires the
+   tenant-key + encryption substrate, out of scope for the cockpit
+   read-only surface). YTD payments sum completed work orders'
+   TotalCost for the current year. *@
+
+<header class="cockpit-vendor-header">
+    <h1>Vendors</h1>
+    <p class="cockpit-vendor-meta">@_rows.Count @(_rows.Count == 1 ? "vendor" : "vendors")</p>
+</header>
+
+@if (_loadError is not null)
+{
+    <div class="cockpit-vendor-error">
+        <strong>Failed to load vendors.</strong>
+        <p>@_loadError</p>
+    </div>
+}
+else if (_rows.Count == 0)
+{
+    <p class="cockpit-vendor-empty">No vendors yet.</p>
+}
+else
+{
+    <table class="cockpit-vendor-table">
+        <thead>
+            <tr>
+                <th>Vendor</th>
+                <th>Specialty</th>
+                <th>W-9</th>
+                <th class="right">YTD Payments</th>
+                <th>1099?</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _rows)
+            {
+                var captured = row;
+                <tr class="cockpit-vendor-row" @onclick="() => OpenDetail(captured.Vendor.Id)">
+                    <td class="cockpit-vendor-name">
+                        @captured.Vendor.DisplayName
+                        <div class="cockpit-vendor-substate">@captured.Vendor.OnboardingState</div>
+                    </td>
+                    <td>@(captured.Vendor.Specialties.Count > 0 ? string.Join(", ", captured.Vendor.Specialties.Select(s => s.ToString())) : "—")</td>
+                    <td><span class="cockpit-vendor-chip cockpit-vendor-chip--@(captured.W9Status.ToLowerInvariant().Replace(" ", "-"))">@captured.W9Status</span></td>
+                    <td class="right">$@captured.YtdPayments.ToString("F2")</td>
+                    <td>
+                        @if (captured.NeedsForm1099)
+                        {
+                            <span class="cockpit-vendor-chip cockpit-vendor-chip--warn" title="W-9 missing and YTD payments exceed $600">⚠ 1099 required</span>
+                        }
+                        else
+                        {
+                            <span class="cockpit-vendor-muted">—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private const decimal Form1099Threshold = 600m;
+    private record Row(Vendor Vendor, string W9Status, decimal YtdPayments, bool NeedsForm1099);
+    private List<Row> _rows = new();
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsOnboarded) { Nav.NavigateTo("/onboarding", replace: true); return; }
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null; _rows.Clear();
+        try
+        {
+            var vendors = new List<Vendor>();
+            await foreach (var v in Maintenance.ListVendorsAsync(ListVendorsQuery.Empty, default))
+                vendors.Add(v);
+
+            var year = DateTime.UtcNow.Year;
+            var ytd = new Dictionary<string, decimal>(StringComparer.Ordinal);
+            await foreach (var wo in Maintenance.ListWorkOrdersAsync(ListWorkOrdersQuery.Empty, default))
+            {
+                if (wo.CompletedDate?.Year != year) continue;
+                if (wo.TotalCost is null) continue;
+                var key = wo.AssignedVendorId.Value;
+                var amount = wo.TotalCost.Value.Amount;
+                ytd[key] = ytd.TryGetValue(key, out var p) ? p + amount : amount;
+            }
+
+            foreach (var v in vendors)
+            {
+                var status = v.W9 is null ? "Awaiting" : "On file";
+                var y      = ytd.TryGetValue(v.Id.Value, out var a) ? a : 0m;
+                var needs  = v.OnboardingState == VendorOnboardingState.Active && v.W9 is null && y > Form1099Threshold;
+                _rows.Add(new Row(v, status, y, needs));
+            }
+        }
+        catch (Exception ex) { _loadError = ex.Message; }
+    }
+
+    private void OpenDetail(VendorId id) => Nav.NavigateTo($"/cockpit/vendors/{Uri.EscapeDataString(id.Value)}");
+}
+
+<style>
+    .cockpit-vendor-header { margin-bottom: 1.25rem; }
+    .cockpit-vendor-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; letter-spacing: -0.01em; }
+    .cockpit-vendor-meta { color: #6b7280; font-size: 0.875rem; margin: 0; }
+    .cockpit-vendor-error { padding: 1rem; border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 0.5rem; }
+    .cockpit-vendor-empty { color: #6b7280; padding: 2rem 0; text-align: center; }
+    .cockpit-vendor-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; font-size: 0.875rem; }
+    .cockpit-vendor-table thead { background: #f9fafb; }
+    .cockpit-vendor-table th { padding: 0.5rem 0.75rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; }
+    .cockpit-vendor-table th.right, .cockpit-vendor-table td.right { text-align: right; }
+    .cockpit-vendor-row { cursor: pointer; border-top: 1px solid #f3f4f6; }
+    .cockpit-vendor-row:hover { background: #f9fafb; }
+    .cockpit-vendor-row td { padding: 0.5rem 0.75rem; color: #374151; }
+    .cockpit-vendor-name { font-weight: 500; color: #2563eb; }
+    .cockpit-vendor-substate { font-size: 0.75rem; color: #6b7280; font-weight: 400; }
+    .cockpit-vendor-chip { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; }
+    .cockpit-vendor-chip--on-file { background: #ecfdf5; color: #047857; }
+    .cockpit-vendor-chip--awaiting { background: #f3f4f6; color: #1f2937; }
+    .cockpit-vendor-chip--warn { background: #fffbeb; color: #92400e; font-weight: 500; }
+    .cockpit-vendor-muted { color: #9ca3af; font-size: 0.75rem; }
+</style>

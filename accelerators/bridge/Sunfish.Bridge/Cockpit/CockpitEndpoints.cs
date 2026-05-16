@@ -53,6 +53,7 @@ public static class CockpitEndpoints
         group.MapGet("/properties", HandleListPropertiesAsync).WithName("CockpitListProperties");
         group.MapPropertyDetail();
         group.MapWorkOrders();
+        group.MapVendors();
         return app;
     }
 
