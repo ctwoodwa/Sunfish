@@ -19,6 +19,49 @@
   --color-input: hsl(214.3 31.8% 91.4%);
   --color-ring: hsl(221.2 83.2% 53.3%);
   --radius: 0.5rem;
+
+  /* Semantic palette extensions for warning, success, finance, status,
+     priority. shadcn doesn't ship these by default; we add them so the
+     pages that need them stop using raw Tailwind palette names. Dark-
+     mode variants land alongside the rest of the dark theme in a
+     follow-up — until then these resolve to their light values in both
+     modes. */
+  --color-warning: hsl(38 92% 50%);
+  --color-warning-foreground: hsl(48 96% 12%);
+  --color-success: hsl(142 71% 45%);
+  --color-success-foreground: hsl(0 0% 100%);
+
+  /* Financial UI conventionally carries its own palette so a green P&L
+     row stays green-coded even if `success` semantics shift elsewhere. */
+  --color-financial-positive: hsl(142 71% 30%);
+  --color-financial-negative: hsl(0 71% 41%);
+
+  /* Connection / presence indicators. status-offline is intentionally
+     neutral-grey rather than `muted` so it reads as "off" rather than
+     "decorative". */
+  --color-status-online: hsl(142 71% 45%);
+  --color-status-offline: hsl(215 14% 65%);
+
+  /* Maintenance ticket priority + status (replaces MaintenancePage's
+     PRIORITY_COLORS / STATUS_COLORS const maps). Each pairs a background
+     with a foreground so badge text passes contrast in light mode. */
+  --color-priority-low:        hsl(142 65% 92%);
+  --color-priority-low-fg:     hsl(142 71% 28%);
+  --color-priority-medium:     hsl(48 96% 88%);
+  --color-priority-medium-fg:  hsl(38 92% 30%);
+  --color-priority-high:       hsl(25 95% 88%);
+  --color-priority-high-fg:    hsl(20 90% 30%);
+  --color-priority-urgent:     hsl(0 87% 90%);
+  --color-priority-urgent-fg:  hsl(0 71% 35%);
+
+  --color-status-open:           hsl(217 90% 92%);
+  --color-status-open-fg:        hsl(221 83% 35%);
+  --color-status-in-progress:    hsl(280 60% 92%);
+  --color-status-in-progress-fg: hsl(270 60% 35%);
+  --color-status-resolved:       hsl(142 65% 92%);
+  --color-status-resolved-fg:    hsl(142 71% 28%);
+  --color-status-closed:         hsl(215 25% 92%);
+  --color-status-closed-fg:      hsl(215 25% 27%);
 }
 
 *,

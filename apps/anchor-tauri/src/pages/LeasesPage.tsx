@@ -21,8 +21,8 @@ export function LeasesPage() {
 
   if (isError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6">
-        <p className="font-semibold text-red-700">Failed to load leases</p>
+      <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6">
+        <p className="font-semibold text-destructive">Failed to load leases</p>
         <p className="mt-1 text-sm text-gray-600">{error.message}</p>
         <button
           onClick={() => void refetch()}
@@ -55,11 +55,11 @@ export function LeasesPage() {
       </div>
 
       {expiringLeases.length > 0 && (
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <p className="font-semibold text-amber-800">
+        <div className="mb-6 rounded-lg border border-warning/20 bg-warning/10 p-4">
+          <p className="font-semibold text-warning">
             {expiringLeases.length} lease{expiringLeases.length > 1 ? 's' : ''} expiring within 60 days
           </p>
-          <ul className="mt-1 list-disc pl-5 text-sm text-amber-700">
+          <ul className="mt-1 list-disc pl-5 text-sm text-warning">
             {expiringLeases.map((l) => (
               <li key={l.name}>
                 {l.tenant} — {l.property} ({daysUntilExpiry(l.end_date)} days)
@@ -87,7 +87,7 @@ export function LeasesPage() {
               const days = daysUntilExpiry(l.end_date)
               const expiringSoon = l.status === 'Active' && days < 60
               return (
-                <tr key={l.name} className={expiringSoon ? 'bg-amber-50' : undefined}>
+                <tr key={l.name} className={expiringSoon ? 'bg-warning/10' : undefined}>
                   <td className="px-4 py-3 font-medium text-gray-900">{l.tenant}</td>
                   <td className="px-4 py-3 text-gray-600">
                     {l.property}
