@@ -189,6 +189,18 @@ public sealed class UnixSocketSyncDaemonTransport : ISyncDaemonTransport
             }
             catch { /* bind will surface the real error */ }
 
+            // Ensure the parent directory exists. On macOS the kernel
+            // returns EADDRNOTAVAIL ("Can't assign requested address")
+            // when binding a Unix-domain socket whose parent path does
+            // not exist; Linux is laxer but the behaviour is undefined,
+            // so create the parent unconditionally. No-op when it
+            // already exists.
+            var parentDir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(parentDir))
+            {
+                Directory.CreateDirectory(parentDir);
+            }
+
             _listener = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
             _listener.Bind(new UnixDomainSocketEndPoint(path));
             _listener.Listen(backlog: 32);
