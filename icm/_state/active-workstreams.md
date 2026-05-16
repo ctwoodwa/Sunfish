@@ -586,6 +586,16 @@ for Phases 1/2/3. Security-engineering subagent for Phase 2 (Bridge multi-tenant
 **FAILED triggers:** React velocity slower than Blazor; OpenAPI→TypeScript client maintenance > hand-authored types; Tauri fails on ARM Surface Pro (fallback: browser PWA); Phase 2 exceeds 4 calendar months.
 
 **Numbering note:** W#46–W#59 registered in session memory 2026-05-06–2026-05-11 are in `icm/_state/workstreams/` on `main` but were absent from the working tree at the time this file was authored. W#60 skips ahead to avoid collision with those source files. |
+| 61 | Vehicle Equipment Subtype + Trip Records — additive extension of `blocks-property-equipment`; ships `VehicleMetadata`, `TripRecord`, `ITripStore`, `MileageRecorded` lifecycle event type; unblocks W#23.5 iOS Mileage capture flow | `ready-to-build` — hand-off authored 2026-05-15; no prerequisites; immediately buildable; ~3-5h / 2 PRs | sunfish-PM | `icm/_state/handoffs/property-equipment-vehicle-trip-records-stage06-handoff.md` | **Hand-off ready 2026-05-15.** Additive extension to `blocks-property-equipment` (W#24, built).
+`EquipmentClass.Vehicle` was reserved in the first-slice hand-off with a note that
+"Vehicle subtype + Trip events gated on follow-up hand-off." This is that follow-up.
+
+Phase 1: `VehicleMetadata` record + `VehicleData` field on `Equipment` + `TripRecordId` +
+`TripRecord` entity + `ITripStore` + `InMemoryTripStore` + `MileageRecorded` enum value +
+EFCore entity-module extension + DI registration + 5 unit tests (~2-3h).
+Phase 2: docs + ledger flip (~30min).
+
+**Unblocks:** W#23.5 (iOS Mileage capture flow hand-off can be authored once this ships). |
 
 ---
 
