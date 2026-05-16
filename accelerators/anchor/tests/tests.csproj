@@ -67,6 +67,12 @@
     <!-- W#47 Phase 3 — regression observer is MAUI-free (depends only on
          IMissionEnvelopeProvider + IMinimumSpecResolver from foundation-mission-space). -->
     <Compile Include="..\Services\SystemRequirementsRegressionObserver.cs" Link="Anchor\SystemRequirementsRegressionObserver.cs" />
+    <!-- W#63 Phase 2 — recovery-host pipeline is MAUI-free (depends only on
+         foundation-recovery + Microsoft.Extensions.Hosting/Logging/Options). -->
+    <Compile Include="..\Services\IRecoveryCompletionHandler.cs" Link="Anchor\IRecoveryCompletionHandler.cs" />
+    <Compile Include="..\Services\AnchorRecoveryCompletionHandler.cs" Link="Anchor\AnchorRecoveryCompletionHandler.cs" />
+    <Compile Include="..\Services\RecoveryHostOptions.cs" Link="Anchor\RecoveryHostOptions.cs" />
+    <Compile Include="..\Services\RecoveryGracePollingService.cs" Link="Anchor\RecoveryGracePollingService.cs" />
   </ItemGroup>
 
   <ItemGroup>
