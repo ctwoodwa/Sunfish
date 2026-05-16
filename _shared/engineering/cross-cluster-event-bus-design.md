@@ -63,7 +63,6 @@ interface DomainEventEnvelope<TPayload> {
 
   // Timing
   occurredAt: Date;                  // wall-clock at event creation
-  recordedAtUtc: Date;               // wall-clock at write to event-store
 
   // Scope
   tenantId: Id<Tenant>;              // tenant scope; cross-tenant events forbidden
@@ -72,10 +71,6 @@ interface DomainEventEnvelope<TPayload> {
   // Causality
   causationId?: Id<DomainEvent>;     // the event that caused this one (if any)
   correlationId?: string;            // tracks a logical workflow across many events
-
-  // Provenance
-  producerCluster: ClusterName;      // "financial" | "work" | "people" | ...
-  producerEntity?: { kind: string; id: string };  // optional pointer to source entity
 
   // Idempotency
   idempotencyKey: string;            // derived from event semantics; see §4
@@ -98,9 +93,12 @@ type EventTypeName = string;         // pattern: `${ClusterName-titlecase}.${Pas
 - **`schemaVersion`** — semver; consumers check compatibility before
   deserializing the payload. Breaking payload changes increment the
   major version; additive changes increment minor.
-- **`occurredAt` vs `recordedAtUtc`** — for backdated events (a
+- **`occurredAt`** — wall-clock at event creation. For backdated events (a
   Tenant.moveInDate set in the past creates a `TenantActivated` event with
-  `occurredAt = moveInDate` and `recordedAtUtc = now()`).
+  `occurredAt = moveInDate`), this carries the semantic time. Store-side
+  write-time (`recorded_at_utc`) is tracked as a denormalization column in
+  the SQLite event-store table (§Storage shape) — NOT a producer-envelope
+  field. Producers don't set it.
 - **`tenantId`** — never null; cross-tenant events are forbidden (§14 of
   crdt-friendly-schema-conventions.md).
 - **`originatingReplicaId`** — provenance for audit and for cross-replica
@@ -110,12 +108,18 @@ type EventTypeName = string;         // pattern: `${ClusterName-titlecase}.${Pas
 - **`correlationId`** — a logical workflow ID. A lease execution might
   span `LeaseExecuted` → `TenantActivated` → `RentInvoiceScheduled` →
   `PartyRoleOpened`; all four share a `correlationId`.
-- **`producerCluster` + `producerEntity`** — debugging + audit. Not used
-  for routing.
 - **`idempotencyKey`** — per §4, every event has a deterministic key
   derived from its semantic identity. Used to deduplicate replays and
   cross-replica re-emission.
 - **`payload`** — event-specific; defined in §3 per event type.
+
+**Store-side denormalization columns (NOT producer-envelope fields):** the
+SQLite `domain_events` table adds `recorded_at_utc` (write-time), and may
+add `producer_cluster` / `producer_entity_kind` / `producer_entity_id`
+columns derived at insertion-time from `eventType` parsing + payload
+inspection — for query performance + audit / debugging. Producers never
+set these; the store layer computes them on append. See §Storage shape
+below for the schema.
 
 ### Storage shape
 
@@ -232,8 +236,9 @@ Compiled from the five Stage 02 design docs. Columns:
 | `Financial.BillRecorded` | work, reports | `{ billId, vendorId, totalAmount, dueDate, projectId? }` | `bill-recorded:{billId}` |
 | `Financial.PaymentApplied` | people, reports | `{ paymentId, applicationId, targetKind: 'invoice'\|'bill', targetId, amount }` | `payment-applied:{applicationId}` |
 | `Financial.PaymentUnapplied` | people, reports | `{ paymentId, applicationId, reversalEntryId }` | `payment-unapplied:{applicationId}` |
-| `Financial.PeriodSoftClosed` | reports, work | `{ periodId, chartId, closedByPrincipalId }` | `period-soft-closed:{periodId}` |
-| `Financial.PeriodLocked` | reports, work | `{ periodId, chartId }` | `period-locked:{periodId}` |
+| `Financial.PeriodSoftClosed` | reports, work | `{ periodId, chartId, closedByPrincipalId, occurredAt }` | `period-soft-closed:{periodId}:{occurredAtTicks}` (re-fire safe — periods CAN be reopened then soft-closed again) |
+| `Financial.PeriodLocked` | reports, work | `{ periodId, chartId }` | `period-locked:{periodId}` (one-shot — periods cannot be unlocked) |
+| `Financial.PeriodReopened` | reports, work | `{ periodId, chartId, reopenedByPrincipalId, occurredAt }` | `period-reopened:{periodId}:{occurredAtTicks}` (re-fire safe) |
 | `Financial.YearClosed` | reports | `{ fyId, chartId, closingEntryId }` | `year-closed:{fyId}` |
 | `Financial.BudgetVarianceExceeded` | work, reports | `{ budgetId, projectId?, category, variance, variancePercent }` | `budget-variance:{budgetId}:{category}:{periodId}` |
 
