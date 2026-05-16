@@ -1,29 +1,48 @@
 namespace Sunfish.Blocks.FinancialPeriods.Services;
 
 /// <summary>
-/// Cross-cluster event-publication seam. Minimal local interface per the
-/// hand-off "ship a local interface if the foundation/kernel-events home
-/// isn't ratified yet" fallback. When the canonical home lands, this
-/// interface relocates and consumers of
-/// <see cref="DependencyInjection.ServiceCollectionExtensions"/>
-/// re-wire to the upstream package.
+/// Cross-cluster event-publication seam carrying the canonical envelope
+/// per <c>_shared/engineering/cross-cluster-event-bus-design.md</c> §1.
+/// Local copy in this cluster per
+/// <c>xo-ruling-2026-05-16T21-12Z-cob-event-publisher-home.md</c>; when
+/// <c>foundation-events</c> ships the canonical
+/// <c>Sunfish.Foundation.Events.IDomainEventPublisher</c>, the
+/// per-cluster migration sweep re-namespaces consumers to the upstream
+/// substrate and deletes this declaration.
 /// </summary>
+/// <remarks>
+/// <b>DI registration discipline:</b> the periods package + the
+/// canonical foundation-events package both register via
+/// <c>services.TryAddSingleton&lt;IDomainEventPublisher, …&gt;()</c>.
+/// Host composition roots that wire foundation-events FIRST (before
+/// invoking <c>AddBlocksFinancialPeriods()</c>) leave the canonical
+/// impl in place; the periods package's
+/// <c>TryAddSingleton&lt;…, NoopDomainEventPublisher&gt;</c> is a
+/// no-op when the canonical is already registered. This is what makes
+/// the eventual one-line sweep PR work without ordering hazards.
+/// </remarks>
 public interface IDomainEventPublisher
 {
     /// <summary>
-    /// Publish a domain event payload. Implementations decide whether to
-    /// deliver synchronously, enqueue, or no-op.
+    /// Publish a domain event wrapped in the canonical envelope.
+    /// Implementations decide whether to deliver synchronously,
+    /// enqueue, persist to an outbox, or no-op.
     /// </summary>
-    Task PublishAsync<TPayload>(TPayload payload, CancellationToken cancellationToken = default);
+    Task PublishAsync<TPayload>(
+        DomainEventEnvelope<TPayload> envelope,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
 /// No-op publisher used as the default registration until the canonical
-/// event-bus home is wired. Consumers can substitute via DI.
+/// foundation-events substrate impl is wired. Consumes the envelope and
+/// discards.
 /// </summary>
 public sealed class NoopDomainEventPublisher : IDomainEventPublisher
 {
     /// <inheritdoc />
-    public Task PublishAsync<TPayload>(TPayload payload, CancellationToken cancellationToken = default)
+    public Task PublishAsync<TPayload>(
+        DomainEventEnvelope<TPayload> envelope,
+        CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 }

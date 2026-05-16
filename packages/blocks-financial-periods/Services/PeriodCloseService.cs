@@ -6,27 +6,45 @@ using Sunfish.Foundation.Assets.Common;
 namespace Sunfish.Blocks.FinancialPeriods.Services;
 
 /// <summary>
-/// Default <see cref="IPeriodCloseService"/> per Stage 02 §6.5(a). PR 2
-/// covers soft-close + reopen-soft; hard-close + year-end rollover are
-/// PR 3.
+/// Default <see cref="IPeriodCloseService"/> per Stage 02 §6.5(a) +
+/// §8.5 row 3. PR 2 shipped soft-close + reopen-soft; PR 3a added
+/// lock + unlock + the <see cref="FiscalPeriod.Version"/> CAS;
+/// PR 3b wraps all event emission in the canonical
+/// <see cref="DomainEventEnvelope{TPayload}"/> per
+/// <c>xo-ruling-2026-05-16T21-12Z-cob-event-publisher-home.md</c>.
 /// </summary>
 public sealed class PeriodCloseService : IPeriodCloseService
 {
+    private const int PayloadSchemaVersion = 1;
+
     private readonly IFiscalPeriodRepository _periods;
     private readonly IFiscalYearRepository _years;
     private readonly IDomainEventPublisher _events;
     private readonly TimeProvider _time;
+    private readonly TenantId _tenantId;
+    private readonly ReplicaId _replicaId;
 
+    /// <summary>
+    /// Construct a <see cref="PeriodCloseService"/>. The
+    /// <paramref name="tenantId"/> + <paramref name="replicaId"/>
+    /// flow into emitted event envelopes; production hosts supply the
+    /// active tenant + replica from their context surfaces, tests
+    /// default both to the system sentinels.
+    /// </summary>
     public PeriodCloseService(
         IFiscalPeriodRepository periods,
         IFiscalYearRepository years,
         IDomainEventPublisher events,
-        TimeProvider time)
+        TimeProvider time,
+        TenantId? tenantId = null,
+        ReplicaId? replicaId = null)
     {
-        _periods = periods ?? throw new ArgumentNullException(nameof(periods));
-        _years   = years   ?? throw new ArgumentNullException(nameof(years));
-        _events  = events  ?? throw new ArgumentNullException(nameof(events));
-        _time    = time    ?? throw new ArgumentNullException(nameof(time));
+        _periods   = periods ?? throw new ArgumentNullException(nameof(periods));
+        _years     = years   ?? throw new ArgumentNullException(nameof(years));
+        _events    = events  ?? throw new ArgumentNullException(nameof(events));
+        _time      = time    ?? throw new ArgumentNullException(nameof(time));
+        _tenantId  = tenantId  ?? TenantId.System;
+        _replicaId = replicaId ?? ReplicaId.System;
     }
 
     /// <inheritdoc />
@@ -54,7 +72,9 @@ public sealed class PeriodCloseService : IPeriodCloseService
         if (!await _periods.UpdateAsync(updated, cancellationToken).ConfigureAwait(false))
             return new PeriodCloseResult(period, PeriodCloseError.ConcurrentUpdate, null);
 
-        await _events.PublishAsync(
+        await PublishAsync(
+            "Financial.PeriodSoftClosed",
+            IdempotencyKey("Financial.PeriodSoftClosed", updated.Id, FiscalPeriodStatus.SoftClosed),
             new PeriodSoftClosed(
                 PeriodId:            updated.Id,
                 ChartId:             updated.ChartId,
@@ -76,8 +96,6 @@ public sealed class PeriodCloseService : IPeriodCloseService
         var period = await _periods.GetAsync(periodId, cancellationToken).ConfigureAwait(false);
         if (period is null)
             return new PeriodCloseResult(null, PeriodCloseError.PeriodNotFound, periodId.Value);
-        // Distinguish Open (already-reopened — surface caller mistake)
-        // from Locked (PR 3's unlock-with-audit owns that path).
         if (period.Status == FiscalPeriodStatus.Open)
             return new PeriodCloseResult(period, PeriodCloseError.PeriodNotSoftClosed, null);
         if (period.Status != FiscalPeriodStatus.SoftClosed)
@@ -97,7 +115,9 @@ public sealed class PeriodCloseService : IPeriodCloseService
         if (!await _periods.UpdateAsync(updated, cancellationToken).ConfigureAwait(false))
             return new PeriodCloseResult(period, PeriodCloseError.ConcurrentUpdate, null);
 
-        await _events.PublishAsync(
+        await PublishAsync(
+            "Financial.PeriodOpened",
+            IdempotencyKey("Financial.PeriodOpened", updated.Id, FiscalPeriodStatus.Open),
             new PeriodOpened(
                 PeriodId: updated.Id,
                 ChartId:  updated.ChartId,
@@ -119,14 +139,6 @@ public sealed class PeriodCloseService : IPeriodCloseService
             return new PeriodCloseResult(period, PeriodCloseError.PeriodAlreadyLocked, null);
 
         var now = new Instant(_time.GetUtcNow());
-        // Lock is canonically valid for SoftClosed periods (Stage 02
-        // §8.5 row 3); an Open period auto-soft-closes inline so the
-        // PR 3b year-end batch can lock in one call. The auto path is
-        // remembered so we can emit PeriodSoftClosed *before*
-        // PeriodLocked — downstream consumers (AR aging snapshots,
-        // reports cluster) that gate on soft-close must see the
-        // intermediate transition even when both state changes
-        // collapse into one CAS step.
         var autoSoftClosing = period.Status == FiscalPeriodStatus.Open;
         var softClosedAt = period.SoftClosedAtUtc ?? now;
 
@@ -143,14 +155,18 @@ public sealed class PeriodCloseService : IPeriodCloseService
 
         if (autoSoftClosing)
         {
-            await _events.PublishAsync(
+            await PublishAsync(
+                "Financial.PeriodSoftClosed",
+                IdempotencyKey("Financial.PeriodSoftClosed", updated.Id, FiscalPeriodStatus.SoftClosed),
                 new PeriodSoftClosed(
                     PeriodId:            updated.Id,
                     ChartId:             updated.ChartId,
                     ClosedByPrincipalId: null),
                 cancellationToken).ConfigureAwait(false);
         }
-        await _events.PublishAsync(
+        await PublishAsync(
+            "Financial.PeriodLocked",
+            IdempotencyKey("Financial.PeriodLocked", updated.Id, FiscalPeriodStatus.Locked),
             new PeriodLocked(PeriodId: updated.Id, ChartId: updated.ChartId),
             cancellationToken).ConfigureAwait(false);
 
@@ -176,13 +192,6 @@ public sealed class PeriodCloseService : IPeriodCloseService
         if (fy is { Status: FiscalYearStatus.Closed })
             return new PeriodCloseResult(period, PeriodCloseError.FiscalYearAlreadyClosed, null);
 
-        // Unlock returns to SoftClosed (not Open) — the admin who
-        // unlocks still owes a separate ReopenAsync if they actually
-        // want to permit non-admin posts. Stage 02 §8.5 row 3 reverse
-        // path. Re-stamp SoftClosedAtUtc to the unlock instant so the
-        // audit trail reflects the new soft-close start (the original
-        // soft-close instant was preserved through the lock window
-        // but is now stale for downstream consumers).
         var unlockedAt = new Instant(_time.GetUtcNow());
         var updated = period with
         {
@@ -195,9 +204,15 @@ public sealed class PeriodCloseService : IPeriodCloseService
         if (!await _periods.UpdateAsync(updated, cancellationToken).ConfigureAwait(false))
             return new PeriodCloseResult(period, PeriodCloseError.ConcurrentUpdate, null);
 
-        // Emit PeriodOpened with the unlock memo as the reason so
-        // observers see the audit string in the cross-cluster bus.
-        await _events.PublishAsync(
+        // Unlock emits PeriodOpened (reusing the event type per the
+        // catalog convention; consumers distinguish via the Reason
+        // prefix "Unlocked by admin:" vs "Reopened by admin:"). The
+        // idempotency key includes the SoftClosed status target so the
+        // unlock event is distinct from a Reopen-to-Open emission for
+        // the same period.
+        await PublishAsync(
+            "Financial.PeriodOpened",
+            IdempotencyKey("Financial.PeriodOpened", updated.Id, FiscalPeriodStatus.SoftClosed),
             new PeriodOpened(
                 PeriodId: updated.Id,
                 ChartId:  updated.ChartId,
@@ -206,4 +221,36 @@ public sealed class PeriodCloseService : IPeriodCloseService
 
         return new PeriodCloseResult(updated, PeriodCloseError.None, null);
     }
+
+    private Task PublishAsync<TPayload>(
+        string eventType,
+        string idempotencyKey,
+        TPayload payload,
+        CancellationToken cancellationToken)
+    {
+        var envelope = new DomainEventEnvelope<TPayload>
+        {
+            // EventId is an interim UUIDv7-as-GUID-string (sortable by
+            // mint-time, satisfies the §1 eventId sortability intent).
+            // foundation-events will mint real ULID Crockford-base32
+            // strings; the swap is value-shape-only — consumers must
+            // treat EventId as opaque string.
+            EventId              = Guid.CreateVersion7().ToString(),
+            EventType            = eventType,
+            SchemaVersion        = PayloadSchemaVersion,
+            OccurredAt           = _time.GetUtcNow(),
+            TenantId             = _tenantId,
+            OriginatingReplicaId = _replicaId,
+            IdempotencyKey       = idempotencyKey,
+            Payload              = payload,
+        };
+        return _events.PublishAsync(envelope, cancellationToken);
+    }
+
+    private string IdempotencyKey(string eventType, FiscalPeriodId periodId, FiscalPeriodStatus newStatus)
+        // Per xo-ruling-2026-05-16T21-12Z idempotency-key convention
+        // for periods. Falls back to TenantId.System.Value (not a bare
+        // literal) for default-constructed TenantIds — keeps the
+        // canonical sentinel literal in one place.
+        => $"{eventType}|{_tenantId.Value ?? TenantId.System.Value}|{periodId.Value}|{newStatus}";
 }
