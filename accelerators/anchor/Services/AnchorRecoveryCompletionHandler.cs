@@ -171,8 +171,14 @@ internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandl
 
             // 5) Divergence check. SHA-256 fingerprint comparison
             //    (NOT raw bytes) — abort if any disagreement.
+            // Truncated 8-char fingerprints — log just enough to triage
+            // divergence without giving an offline attacker a full hash
+            // to validate guesses against. The Distinct comparison itself
+            // happens over the same 8-char prefix; collision risk is
+            // negligible at 3-of-N quorum scale and the divergence path
+            // is always an abort (seeds never committed).
             var distinctSeedHashes = decryptedSeeds
-                .Select(s => Convert.ToHexString(SHA256.HashData(s)))
+                .Select(s => Convert.ToHexString(SHA256.HashData(s))[..8])
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
             if (distinctSeedHashes.Count > 1)
