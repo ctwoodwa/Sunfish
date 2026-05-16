@@ -27,6 +27,13 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton<IPluginRegistry, PluginRegistry>();
         services.TryAddSingleton<INodeHost, NodeHost>();
+        // W#65 — session-signer accessor. Implementation lives here (not in
+        // kernel-security) because it depends on IActiveTeamAccessor; the
+        // interface lives in kernel-security so consumers can take a
+        // kernel-security-only dependency.
+        services.TryAddSingleton<
+            Sunfish.Kernel.Security.Session.ISessionSignerAccessor,
+            Sunfish.Kernel.Runtime.Session.DefaultSessionSignerAccessor>();
         return services;
     }
 
