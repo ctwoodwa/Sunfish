@@ -34,6 +34,15 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A trustee designation or revocation was applied to the trustee set.</summary>
     public static readonly AuditEventType TrusteeSetChanged = new("TrusteeSetChanged");
 
+    /// <summary>
+    /// W#67 / ADR 0046-A6 — emitted by <c>AnchorRecoveryCompletionHandler</c>
+    /// after the seed-delivery protocol completes (success OR documented
+    /// abort). Payload carries
+    /// <see cref="Payloads.RecoveryRekeyPayload"/> with attestation /
+    /// decryption counts + the SQLCipher rekey outcome.
+    /// </summary>
+    public static readonly AuditEventType RecoveryRekey = new("RecoveryRekey");
+
     // ===== Phase 2 commercial scope (placeholders; concrete payloads land
     //       when each subsystem ships) =====
 
