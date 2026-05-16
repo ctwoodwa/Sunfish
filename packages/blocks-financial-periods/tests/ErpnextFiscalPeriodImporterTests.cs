@@ -83,6 +83,29 @@ public sealed class ErpnextFiscalPeriodImporterTests
     }
 
     [Fact]
+    public async Task SynthesizePeriods_ShortYear_LastPeriodTruncatedToFyEnd()
+    {
+        // 9-month FY (Jan 1 → Sep 15) — FiscalPeriodFactory clips the
+        // last monthly period to fy.EndDate. Validates the synthesized
+        // set passes the collection validator with a non-month-aligned
+        // end.
+        var h = new Harness();
+        var fy = FiscalYear.CreateOpen(
+            FiscalYearId.NewId(), Chart, "2026-short",
+            new DateOnly(2026, 1, 1), new DateOnly(2026, 9, 15));
+        await h.Years.InsertAsync(fy);
+
+        var outcomes = await h.Sut.SynthesizePeriodsForFiscalYearAsync(fy.Id);
+
+        Assert.NotEmpty(outcomes);
+        Assert.All(outcomes, o => Assert.Equal(ImportAction.Inserted, o.Action));
+        Assert.Equal(new DateOnly(2026, 9, 15), outcomes[^1].Record.EndDate);
+        var validation = FiscalPeriodCollectionValidator.Validate(
+            fy, outcomes.Select(o => o.Record).ToList());
+        Assert.True(validation.IsValid, string.Join(" | ", validation.Errors));
+    }
+
+    [Fact]
     public async Task SynthesizePeriods_UnknownFy_ReturnsEmpty()
     {
         var h = new Harness();

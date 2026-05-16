@@ -21,6 +21,7 @@ namespace Sunfish.Blocks.FinancialPeriods.Models;
 /// <param name="CreatedAtUtc">Creation timestamp.</param>
 /// <param name="Version">Optimistic-concurrency token bumped on every mutation by <c>IFiscalYearCloseService</c> (PR 3b); the repository uses it as the compare-and-swap predicate to surface concurrent-update races between admin sessions.</param>
 /// <param name="ExternalRef">Optional external-system reference (e.g., ERPNext <c>Fiscal Year.name</c>) carried for round-trip provenance + idempotent import. Null when the FY was created locally. Set by the ERPNext importer in PR 4; queried via <c>IFiscalYearRepository.GetByExternalRefAsync</c>.</param>
+/// <param name="ExternalModifiedAtUtc">External-system version timestamp paired with <see cref="ExternalRef"/> — e.g., ERPNext <c>modified</c>. Persisted on the row so a re-import after process restart correctly decides Skipped-vs-Updated without relying on in-process caches. Null when no external version is known.</param>
 public sealed record FiscalYear(
     FiscalYearId Id,
     ChartOfAccountsId ChartId,
@@ -32,7 +33,8 @@ public sealed record FiscalYear(
     JournalEntryId? ClosingJournalEntryId,
     Instant CreatedAtUtc,
     int Version = 0,
-    string? ExternalRef = null)
+    string? ExternalRef = null,
+    Instant? ExternalModifiedAtUtc = null)
 {
     /// <summary>
     /// Build a fresh <see cref="FiscalYear"/> in the
@@ -45,7 +47,9 @@ public sealed record FiscalYear(
         string label,
         DateOnly startDate,
         DateOnly endDate,
-        Instant? createdAtUtc = null)
+        Instant? createdAtUtc = null,
+        string? externalRef = null,
+        Instant? externalModifiedAtUtc = null)
         => new(
             Id:                    id,
             ChartId:               chartId,
@@ -56,7 +60,9 @@ public sealed record FiscalYear(
             ClosedAtUtc:           null,
             ClosingJournalEntryId: null,
             CreatedAtUtc:          createdAtUtc ?? Instant.Now,
-            Version:               0);
+            Version:               0,
+            ExternalRef:           externalRef,
+            ExternalModifiedAtUtc: externalModifiedAtUtc);
 
     /// <summary>
     /// Per Stage 02 §3.15 — run the shape invariants over this fiscal

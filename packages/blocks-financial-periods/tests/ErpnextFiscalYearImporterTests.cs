@@ -104,6 +104,31 @@ public sealed class ErpnextFiscalYearImporterTests
         Assert.Equal(ImportAction.Updated, refreshed.Action);
         // Status must stay Closed — importer does NOT reopen.
         Assert.Equal(FiscalYearStatus.Closed, refreshed.Record.Status);
+        // ClosedAtUtc must be preserved by the `with` clone — guard
+        // against a future regression that sets ClosedAtUtc = null in
+        // the update path.
+        Assert.NotNull(refreshed.Record.ClosedAtUtc);
+    }
+
+    [Fact]
+    public async Task Upsert_MalformedModified_ThrowsFormatException()
+    {
+        var h = new Harness();
+        var source = NewSource("FY 2026", "not-a-timestamp");
+
+        await Assert.ThrowsAsync<FormatException>(
+            () => h.Sut.UpsertFromErpnextAsync(source, Chart));
+    }
+
+    [Fact]
+    public async Task Upsert_AcceptsFrappeMicrosecondsFormat()
+    {
+        var h = new Harness();
+        var source = NewSource("FY 2026", "2026-04-15 10:00:00.123456");
+
+        var outcome = await h.Sut.UpsertFromErpnextAsync(source, Chart);
+
+        Assert.Equal(ImportAction.Inserted, outcome.Action);
     }
 
     [Fact]
