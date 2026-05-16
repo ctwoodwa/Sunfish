@@ -212,6 +212,48 @@ public sealed class RecoveryCoordinatorTests
     }
 
     [Fact]
+    public async Task DesignateTrustee_RejectsWrongLengthDHKey()
+    {
+        var f = NewFixture();
+        var trustee = NewTrustee(f.Signer, 1);
+        var tooShortDh = new byte[TrusteeDesignation.DHPublicKeyLength - 1];
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, tooShortDh));
+    }
+
+    [Fact]
+    public async Task GetTrusteeEncryptedSeedAsync_ReturnsNullForUnknownTrustee()
+    {
+        var f = NewFixture();
+        var result = await f.Coordinator.GetTrusteeEncryptedSeedAsync("never-designated-node");
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task RevokeTrustee_WipesPersistedSeedEnvelope()
+    {
+        // Council MAJOR-2: orphan seed envelopes after revocation
+        // must NOT remain on disk — a future compromise of the revoked
+        // trustee's DH key would otherwise decrypt the owner's root seed.
+        var f = NewFixture();
+        var trustee = NewTrustee(f.Signer, 1);
+        await f.Coordinator.DesignateTrusteeAsync(trustee.NodeId, trustee.Pub, TrusteeDH);
+        await f.Coordinator.SetupTrusteeAsync(trustee.NodeId,
+            new TrusteeEncryptedSeed(
+                TrusteeNodeId:           trustee.NodeId,
+                OwnerEphX25519PublicKey: new byte[32],
+                Ciphertext:              SeedCT,
+                Nonce:                   SeedNonce));
+        Assert.NotNull(await f.Coordinator.GetTrusteeEncryptedSeedAsync(trustee.NodeId));
+
+        await f.Coordinator.RevokeTrusteeAsync(trustee.NodeId);
+
+        var afterRevoke = await f.Coordinator.GetTrusteeEncryptedSeedAsync(trustee.NodeId);
+        Assert.Null(afterRevoke);
+    }
+
+    [Fact]
     public async Task SubmitAttestation_DropsWhenTrusteeDHKeyMismatch()
     {
         // W#67 PR 5 MAJOR-2 binding — designate the trustee with one

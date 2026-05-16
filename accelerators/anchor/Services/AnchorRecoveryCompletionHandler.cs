@@ -43,14 +43,17 @@ namespace Sunfish.Anchor.Services;
 ///  10. Clears the ephemeral private key and zeros all in-memory
 ///      seed buffers (try/finally guarantees this on ALL exit paths).
 ///
-/// <b>Deferred to W#67 PR 5/6:</b>
-///   - Bind <c>TrusteeDHPublicKey</c> to the designated trustee record
-///     (currently the handler accepts whatever DH key the attestation
-///     carries — security-engineering council 2026-05-16 MAJOR finding).
-///   - Multi-team rekey sweep (this PR: detect + fail loud).
+/// <b>Status of previously-deferred items:</b>
+///   - TrusteeDHPublicKey binding — CLOSED by W#67 PR 5: the coordinator's
+///     SubmitAttestationAsync FixedTimeEquals-checks the attestation's
+///     TrusteeDHPublicKey against the designation's DHPublicKey and
+///     drops on mismatch before the handler ever sees the attestation.
+///   - Multi-team rekey sweep — STILL DEFERRED (this handler: detect +
+///     fail loud).
 ///   - Typed <c>RecoveryRekey</c> audit event via <c>IAuditTrail</c>
-///     (sub-pattern #48f) — currently logged via <see cref="ILogger"/>.
-///   - <c>ISyncDaemon.AnnounceIdentityRotation</c>.
+///     (sub-pattern #48f) — STILL DEFERRED to PR 6; logged via
+///     <see cref="ILogger"/> for now.
+///   - <c>ISyncDaemon.AnnounceIdentityRotation</c> — STILL DEFERRED.
 /// </summary>
 internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandler
 {

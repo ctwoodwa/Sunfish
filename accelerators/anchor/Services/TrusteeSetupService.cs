@@ -93,11 +93,19 @@ public sealed class TrusteeSetupService
             await _recovery.SetupTrusteeAsync(trusteeNodeId, envelope, cancellationToken)
                 .ConfigureAwait(false);
 
+            // Council MAJOR-3: surface BOTH fingerprints so the owner
+            // can verbally cross-check with the trustee. Ed25519 vs
+            // X25519 paste-swap (both 32 bytes) would otherwise be
+            // invisible until the trustee's attestation is silently
+            // dropped at recovery time.
             var dhFingerprint = Convert.ToHexString(
                 SHA256.HashData(trusteeDHPublicKey))[..16];
+            var edFingerprint = Convert.ToHexString(
+                SHA256.HashData(trusteeEd25519PublicKey))[..16];
             return new TrusteeSetupOutcome(
-                TrusteeNodeId:           trusteeNodeId,
-                TrusteeDHFingerprintHex: dhFingerprint);
+                TrusteeNodeId:                 trusteeNodeId,
+                TrusteeDHFingerprintHex:       dhFingerprint,
+                TrusteeEd25519FingerprintHex:  edFingerprint);
         }
         finally
         {
@@ -110,9 +118,12 @@ public sealed class TrusteeSetupService
 
 /// <summary>
 /// Outcome of <see cref="TrusteeSetupService.DesignateAndDistributeAsync"/>
-/// — the trustee NodeId and the 16-char SHA-256 fingerprint of their
-/// DH public key (for verbal confirmation with the trustee).
+/// — the trustee NodeId and the 16-char SHA-256 fingerprints of BOTH
+/// their Ed25519 (signing) and X25519 (DH) public keys, for verbal
+/// cross-confirmation with the trustee (detects paste-swap between the
+/// two same-length 32-byte fields).
 /// </summary>
 public sealed record TrusteeSetupOutcome(
     string TrusteeNodeId,
-    string TrusteeDHFingerprintHex);
+    string TrusteeDHFingerprintHex,
+    string TrusteeEd25519FingerprintHex);

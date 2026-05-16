@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Security.Cryptography;
+using NSec.Cryptography;
 using Sunfish.Foundation.Recovery;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Crypto;
@@ -90,6 +91,23 @@ public sealed class RecoveryAttestationSubmitter
                 Accepted: false, QuorumReached: false, GracePeriodStartedAt: null);
         }
 
+        // 1a) Envelope wire-format validation. A malformed
+        //    TrusteeEncryptedSeed (corrupted state-store, partial
+        //    write) would otherwise escape OpenBox as ArgumentException
+        //    and surface its raw "X25519 public key must be 32 bytes
+        //    (was N)" to the user. Council BLOCKING-1: drop silently
+        //    here, log nothing user-visible.
+        if (envelope.OwnerEphX25519PublicKey is null
+            || envelope.OwnerEphX25519PublicKey.Length != _keyAgreement.PublicKeyLength
+            || envelope.Ciphertext is null
+            || envelope.Ciphertext.Length != TrusteeAttestation.SeedEnvelopeCiphertextLength
+            || envelope.Nonce is null
+            || envelope.Nonce.Length != _keyAgreement.NonceLength)
+        {
+            return new AttestationSubmissionResult(
+                Accepted: false, QuorumReached: false, GracePeriodStartedAt: null);
+        }
+
         // 2) Derive the trustee's per-team X25519 keypair. The PUBLIC
         //    half MUST match what the owner recorded in
         //    TrusteeDesignation.DHPublicKey (MAJOR-2 binding, enforced
@@ -97,11 +115,23 @@ public sealed class RecoveryAttestationSubmitter
         //    what we use to OpenBox the owner-delivered envelope.
         var active = _activeTeam.Active
             ?? throw new InvalidOperationException(
-                "RecoveryAttestationSubmitter: no active team — cannot derive trustee X25519 keypair.");
+                "No active team selected. Pick a team before approving recovery.");
         var rootSeed = await _rootSeedProvider.GetRootSeedAsync(cancellationToken).ConfigureAwait(false);
         var teamId   = active.TeamId.Value.ToString("D");
+        // Council MAJOR-1: derive the private key ONCE here and compute
+        // the public key inline via NSec to avoid the orphan private-key
+        // copy that DeriveX25519PublicKey would otherwise leave on the
+        // GC heap (DeriveX25519PublicKey calls DeriveX25519PrivateKey
+        // internally; the intermediate buffer is not zeroed). Our local
+        // trusteeDhPriv IS zeroed in the finally block.
         var trusteeDhPriv = _x25519SubkeyDerivation.DeriveX25519PrivateKey(rootSeed, teamId);
-        var trusteeDhPub  = _x25519SubkeyDerivation.DeriveX25519PublicKey(rootSeed, teamId);
+        byte[] trusteeDhPub;
+        using (var importedKey = Key.Import(
+            KeyAgreementAlgorithm.X25519, trusteeDhPriv, KeyBlobFormat.RawPrivateKey,
+            new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextExport }))
+        {
+            trusteeDhPub = importedKey.Export(KeyBlobFormat.RawPublicKey);
+        }
 
         byte[]? recoveredSeed = null;
         byte[]? reEncryptedCiphertext = null;
@@ -125,6 +155,15 @@ public sealed class RecoveryAttestationSubmitter
             }
             catch (CryptographicException)
             {
+                return new AttestationSubmissionResult(
+                    Accepted: false, QuorumReached: false, GracePeriodStartedAt: null);
+            }
+            catch (ArgumentException)
+            {
+                // Belt-and-braces against any wire-format mismatch
+                // that slipped past the upfront envelope validation
+                // (e.g., NSec internal length-check failure on
+                // platform-specific implementations).
                 return new AttestationSubmissionResult(
                     Accepted: false, QuorumReached: false, GracePeriodStartedAt: null);
             }

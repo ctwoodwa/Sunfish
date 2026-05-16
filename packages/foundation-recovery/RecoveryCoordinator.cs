@@ -132,6 +132,16 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
             var trustees = new Dictionary<string, TrusteeDesignation>(state.Trustees, StringComparer.Ordinal);
             trustees.Remove(trusteeNodeId);
 
+            // W#67 PR 5 council MAJOR-2: also wipe the trustee's
+            // persisted seed envelope. The ciphertext is encrypted to
+            // the revoked trustee's DH long-term key; leaving it on
+            // disk means a future compromise of that trustee's DH
+            // private half (the very threat motivating revocation) can
+            // decrypt it and recover the owner's root seed.
+            var seeds = new Dictionary<string, TrusteeEncryptedSeed>(
+                state.TrusteeEncryptedSeeds, StringComparer.Ordinal);
+            seeds.Remove(trusteeNodeId);
+
             var now = _clock.UtcNow();
             var (evt, hashAfter) = AppendEvent(
                 state,
@@ -141,7 +151,10 @@ public sealed class RecoveryCoordinator : IRecoveryCoordinator
                 occurredAt: now,
                 detail: BuildDetail());
 
-            var next = CloneStateWith(state, trustees: trustees, lastEventHash: hashAfter);
+            var next = CloneStateWith(state,
+                trustees: trustees,
+                lastEventHash: hashAfter,
+                trusteeEncryptedSeeds: seeds);
             await _store.SaveAsync(next, cancellationToken).ConfigureAwait(false);
             return evt;
         }
