@@ -147,16 +147,17 @@ Location: `apps/tenant-portal/` — standalone Vite + React + `@sunfish/ui-react
 
 ---
 
-## PR 5 — Ledger flip + deployment guide
+## PR 5 — Ledger flip + deployment guide + Windows arch-detection download page
 
-**Location:** `README.md` + `docker-compose.prod.yml` + ICM ledger
+**Location:** `README.md` + `docker-compose.prod.yml` + ICM ledger + download page
 
 **Deliverables:**
 - `docker-compose.prod.yml` — ERPNext + MariaDB + Redis + Sunfish Bridge (ASP.NET) + Nextcloud; persistent volumes; environment variable placeholders
 - `README.md` section "Self-hosting" — `docker-compose up -d`; domain/TLS config notes; ERPNext first-run setup; estimated time: 20 minutes
+- **Windows installer arch-detection page** (XO ruling 2026-05-16 T11-45Z): a `/download` or `/install` page in `apps/docs/` (or Bridge static) that uses `navigator.userAgentData.getHighEntropyValues(['architecture'])` (UA-string fallback) to surface the correct download link (`_x64-setup.exe` vs `arm64-setup.exe`); manual arch toggle included. VS Code / Discord / Slack pattern. Multi-arch MSIX/WiX deferred until Windows-ARM test device on tailnet. Note the Anchor Tauri x64 + ARM64 artifacts built by dev-win; link both from the page.
 - `icm/_state/workstreams/W60-*.md` — flip `status: "building"` → `status: "built"` for Phase 4; run `render-ledger.py`
 
-**PASS gate:** New landlord following `README` can have ERPNext + Bridge running in under 20 minutes.
+**PASS gate:** New landlord following `README` can have ERPNext + Bridge running in under 20 minutes. Windows download page shows correct installer for host CPU without user needing to know their architecture.
 
 ---
 
