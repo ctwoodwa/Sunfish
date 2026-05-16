@@ -59,7 +59,8 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 ### G-1 done conditions (concrete, revised 2026-05-16)
 
 **Phase 1:**
-- [ ] G6 host integration + Razor UI shipped (Anchor on Windows VM — `Foundation.Recovery` wire-up)
+- [x] `Foundation.Recovery` package split built (W#15 + W#32 both `built`)
+- [ ] G6 host integration + Razor UI shipped (Anchor on Windows VM — hand-off not yet authored; immediately authorable)
 - [ ] G7 conformance baseline scan committed under `icm/01_discovery/output/`
 
 **ERPNext layer (W#60):**
@@ -70,8 +71,10 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 - [ ] W#60 P5 PASS — @sunfish/contracts published; rent roll + P&L + Schedule-E accessible
 
 **Phase 2 Sunfish-layer workstreams:**
-- [ ] ADR 0052 (Outbound messaging) accepted + WS-E built (blocks-crew-comms → SendGrid bridge)
-- [ ] ADR 0051 (Payments event-forwarding contract) accepted + WS-D built (Stripe → ERPNext forwarding)
+- [x] ADR 0051 (Payments) Accepted 2026-04-28
+- [x] ADR 0052 (Outbound messaging) Accepted 2026-04-28
+- [ ] WS-E built (blocks-crew-comms → SendGrid outbound bridge; ADR 0052 accepted, hand-off needed)
+- [ ] WS-D built (Stripe → ERPNext payment forwarding; ADR 0051 accepted, hand-off needed)
 - [ ] WS-A built (Anchor team-context bound to ERPNext entities for 6-entity setup)
 - [ ] WS-C built (Plaid → ERPNext bank import; offline local cache of reconciled data)
 - [ ] WS-H built (spouse co-ownership + recovery)
@@ -176,7 +179,7 @@ User on Pro Max ($200/mo). Recent overnight automation run consumed ~830K tokens
 | W#60 P4 (Collaboration — accountant peer + CPA + tenant) | gated on P3 PASS | 2-3 weeks after P3 |
 | W#60 P5 (@sunfish/contracts + reporting) | PR 1 buildable now; PR 2+ gated on P2 (done) | 1-2 weeks |
 | Phase 2 Sunfish-layer (WS-A, C, D, E, H) | ~18-28 PRs; WS-E and WS-H have no hands-off yet | 3-5 weeks |
-| ADR 0051 + 0052 drafting | XO research, ~2 sessions | 1 week |
+| ~~ADR 0051 + 0052 drafting~~ | ~~XO research~~ | ✅ Both Accepted 2026-04-28 |
 | Business validation cycle | BDFL-time-bound; first real rent-collection cycle | 2-4 weeks real-world |
 
 **Estimated G-1 MVP-ready: 8-14 weeks from now** (mid-July to late-August 2026), assuming:
