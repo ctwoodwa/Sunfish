@@ -4,7 +4,7 @@ number: 51
 slug: quarterdeck-entry-point-surface
 title: "**Quarterdeck Entry-Point Surface** (ADR 0080; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "built"
-status_cell: "`built` — ALL 4 PHASES COMPLETE 2026-05-13. Phase 1 PR #651 + Phase 2 PRs #670+#689 + Phase 3a PR #805 + Phase 3b PR #807 + **Phase 4 PR #809** — `QuarterdeckPage` wired in Anchor + `AddSunfishQuarterdeck()` + `apps/docs/foundation/quarterdeck/overview.md` + changelog entry. W#51 CLOSED."
+status_cell: "`built` — all 4 phases shipped 2026-05-13 (PRs #651+#670+#689+#805+#807+#809); QuarterdeckPage + AlertTicker + WatchStatus + DepartmentNav + Search + MissionEnvelope panels; Anchor wired; pipeline closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0080-quarterdeck-entry-point.md` (PR #574 merged)"

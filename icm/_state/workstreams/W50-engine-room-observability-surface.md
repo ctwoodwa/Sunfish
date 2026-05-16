@@ -4,7 +4,7 @@ number: 50
 slug: engine-room-observability-surface
 title: "**Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "built"
-status_cell: "`built` + **CO Approved 2026-05-13** (all 4 phases shipped: P1 #626 + P2a #696 + P2b #790 + P3a #797 + P3b #800 + P4 Anchor wiring + docs + ledger close; pipeline closed)"
+status_cell: "`built` — all 4 phases shipped 2026-05-13 (PRs #626+#696+#790+#797+#800+#802); MainPropulsion + DamageControl + QaWorkshop Blazor panels + Anchor wiring + Bridge wiring + docs; pipeline closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0079-engine-room-observability.md` (PR #572 merged) + `icm/_state/handoffs/engine-room-observability-stage06-handoff.md` + `packages/foundation-engine-room/` (P1 merged)"

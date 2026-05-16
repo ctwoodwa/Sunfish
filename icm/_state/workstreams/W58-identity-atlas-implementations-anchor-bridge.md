@@ -4,7 +4,7 @@ number: 58
 slug: identity-atlas-implementations-anchor-bridge
 title: "**Identity Atlas Implementations** (ADR 0066 §Phase 3; W#53 Phase 3-deferred; `sunfish-feature-change` pipeline) — Anchor + Bridge `IIdentityAtlasSurface` concrete implementations + five WCAG-conformant identity pages"
 status: "built"
-status_cell: "`built` — **All 4 phases MERGED 2026-05-13** (P1a #763 + P1b #764 + P2 #767 + P3 #795 + P4 #799): AnchorIdentityAtlasSurface + BridgeIdentityAtlasSurface + 5 Anchor Blazor pages + 5 Bridge Blazor pages + 5 Bridge React TSX pages + IDiffPreview confirmation on 3 mutation pages + `IdentityTypes.ts` + `apps/docs/wcag/identity-atlas.md`; WCAG/a11y councils PASS-WITH-AMENDMENTS applied. Pipeline closed."
+status_cell: "`built` — all 4 phases shipped 2026-05-13 (PRs #763+#764+#767+#795+#799); 5 Anchor Blazor + 5 Bridge Blazor + 5 React TSX identity pages + IDiffPreview + WCAG docs; ledger close PR #799; pipeline closed"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/identity-atlas-implementations-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` §Phase 3 + `packages/ui-core/Wayfinder/Identity/` (contracts on origin/main)"
