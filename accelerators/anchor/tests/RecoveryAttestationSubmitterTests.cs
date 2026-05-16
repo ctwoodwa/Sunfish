@@ -83,7 +83,10 @@ public sealed class RecoveryAttestationSubmitterTests
 
         var hash = TrusteeAttestation.HashOf(request);
         var expectedCanonical = TrusteeAttestation.CanonicalBytesForSigning(
-            TrusteeNodeId, hash, attestedAt);
+            TrusteeNodeId, hash, attestedAt,
+            new byte[TrusteeAttestation.TrusteeDHPublicKeyLength],
+            new byte[TrusteeAttestation.SeedEnvelopeCiphertextLength],
+            new byte[TrusteeAttestation.SeedEnvelopeNonceLength]);
 
         Assert.NotNull(signedBytes);
         Assert.Equal(expectedCanonical, signedBytes);
@@ -197,12 +200,14 @@ public sealed class RecoveryAttestationSubmitterTests
         // (the coordinator is faked); the submitter only reads the
         // request's hashable fields.
         var ephemeralPub  = new byte[32];
+        var ephemeralDH   = new byte[RecoveryRequest.EphemeralDHPublicKeyLength];
         var signature     = new byte[64];
         return new RecoveryRequest(
-            RequestingNodeId:    "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
-            EphemeralPublicKey:  ephemeralPub,
-            RequestedAt:         new DateTimeOffset(2026, 5, 16, 11, 0, 0, TimeSpan.Zero),
-            Signature:           signature);
+            RequestingNodeId:     "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
+            EphemeralPublicKey:   ephemeralPub,
+            EphemeralDHPublicKey: ephemeralDH,
+            RequestedAt:          new DateTimeOffset(2026, 5, 16, 11, 0, 0, TimeSpan.Zero),
+            Signature:            signature);
     }
 
     private static RecoveryEvent NewEvent(RecoveryEventType type, DateTimeOffset occurredAt) =>

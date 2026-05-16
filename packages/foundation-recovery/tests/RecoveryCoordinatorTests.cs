@@ -11,6 +11,14 @@ namespace Sunfish.Foundation.Recovery.Tests;
 /// </summary>
 public sealed class RecoveryCoordinatorTests
 {
+    // W#67 placeholder fields — protocol-correct byte lengths but
+    // zero-filled, since these tests cover coordinator state-machine
+    // semantics, not the seed-envelope encryption (that's PR 4+5).
+    private static readonly byte[] EphDH       = new byte[RecoveryRequest.EphemeralDHPublicKeyLength];
+    private static readonly byte[] TrusteeDH   = new byte[TrusteeAttestation.TrusteeDHPublicKeyLength];
+    private static readonly byte[] SeedCT      = new byte[TrusteeAttestation.SeedEnvelopeCiphertextLength];
+    private static readonly byte[] SeedNonce   = new byte[TrusteeAttestation.SeedEnvelopeNonceLength];
+
     private sealed class TestClock : IRecoveryClock
     {
         public DateTimeOffset Now { get; set; } = new DateTimeOffset(2026, 5, 1, 12, 0, 0, TimeSpan.Zero);
@@ -44,11 +52,12 @@ public sealed class RecoveryCoordinatorTests
     {
         var (pub, priv) = signer.GenerateKeyPair();
         var req = RecoveryRequest.Create(
-            requestingNodeId: "new-device-node",
-            ephemeralPublicKey: pub,
-            ephemeralPrivateKey: priv,
-            requestedAt: clock.UtcNow(),
-            signer: signer);
+            requestingNodeId:     "new-device-node",
+            ephemeralPublicKey:   pub,
+            ephemeralDHPublicKey: EphDH,
+            ephemeralPrivateKey:  priv,
+            requestedAt:          clock.UtcNow(),
+            signer:               signer);
         return (req, pub, priv);
     }
 
@@ -171,7 +180,8 @@ public sealed class RecoveryCoordinatorTests
         var (req1, _, _) = BuildRequest(f.Signer, f.Clock);
         await f.Coordinator.InitiateRecoveryAsync(req1);
         var attestation = TrusteeAttestation.Create(
-            req1, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer);
+            req1, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer,
+            TrusteeDH, SeedCT, SeedNonce);
         await f.Coordinator.SubmitAttestationAsync(attestation);
         f.Clock.Advance(TimeSpan.FromHours(2));
         await f.Coordinator.EvaluateGracePeriodAsync();
@@ -192,7 +202,8 @@ public sealed class RecoveryCoordinatorTests
 
         var stranger = NewTrustee(f.Signer, 99);
         var attestation = TrusteeAttestation.Create(
-            request, stranger.NodeId, stranger.Pub, stranger.Priv, f.Clock.UtcNow(), f.Signer);
+            request, stranger.NodeId, stranger.Pub, stranger.Priv, f.Clock.UtcNow(), f.Signer,
+            TrusteeDH, SeedCT, SeedNonce);
 
         var outcome = await f.Coordinator.SubmitAttestationAsync(attestation);
 
@@ -210,12 +221,14 @@ public sealed class RecoveryCoordinatorTests
         await f.Coordinator.InitiateRecoveryAsync(request);
 
         var att1 = TrusteeAttestation.Create(
-            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer);
+            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer,
+            TrusteeDH, SeedCT, SeedNonce);
         var first = await f.Coordinator.SubmitAttestationAsync(att1);
         Assert.True(first.Accepted);
 
         var att2 = TrusteeAttestation.Create(
-            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow().AddSeconds(1), f.Signer);
+            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow().AddSeconds(1), f.Signer,
+            TrusteeDH, SeedCT, SeedNonce);
         var second = await f.Coordinator.SubmitAttestationAsync(att2);
         Assert.False(second.Accepted);
     }
@@ -508,8 +521,8 @@ public sealed class RecoveryCoordinatorTests
         var (request, _, _) = BuildRequest(signer, clock);
         await coordinatorA.InitiateRecoveryAsync(request);
 
-        var att1 = TrusteeAttestation.Create(request, trustees[0].NodeId, trustees[0].Pub, trustees[0].Priv, clock.UtcNow(), signer);
-        var att2 = TrusteeAttestation.Create(request, trustees[1].NodeId, trustees[1].Pub, trustees[1].Priv, clock.UtcNow(), signer);
+        var att1 = TrusteeAttestation.Create(request, trustees[0].NodeId, trustees[0].Pub, trustees[0].Priv, clock.UtcNow(), signer, TrusteeDH, SeedCT, SeedNonce);
+        var att2 = TrusteeAttestation.Create(request, trustees[1].NodeId, trustees[1].Pub, trustees[1].Priv, clock.UtcNow(), signer, TrusteeDH, SeedCT, SeedNonce);
         await coordinatorA.SubmitAttestationAsync(att1);
         await coordinatorA.SubmitAttestationAsync(att2);
 
@@ -548,6 +561,7 @@ public sealed class RecoveryCoordinatorTests
     private static TrusteeAttestation MakeAttestation(Fixture f, RecoveryRequest request, (string NodeId, byte[] Pub, byte[] Priv) trustee)
     {
         return TrusteeAttestation.Create(
-            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer);
+            request, trustee.NodeId, trustee.Pub, trustee.Priv, f.Clock.UtcNow(), f.Signer,
+            TrusteeDH, SeedCT, SeedNonce);
     }
 }

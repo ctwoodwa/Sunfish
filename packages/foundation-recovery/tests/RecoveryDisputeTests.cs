@@ -10,6 +10,8 @@ namespace Sunfish.Foundation.Recovery.Tests;
 /// </summary>
 public sealed class RecoveryDisputeTests
 {
+    private static readonly byte[] EphDH = new byte[RecoveryRequest.EphemeralDHPublicKeyLength];
+
     private static RecoveryRequest BuildRequest(
         Ed25519Signer signer,
         out byte[] devicePub,
@@ -17,11 +19,12 @@ public sealed class RecoveryDisputeTests
     {
         (devicePub, devicePriv) = signer.GenerateKeyPair();
         return RecoveryRequest.Create(
-            requestingNodeId: "new-device-node",
-            ephemeralPublicKey: devicePub,
-            ephemeralPrivateKey: devicePriv,
-            requestedAt: DateTimeOffset.UtcNow,
-            signer: signer);
+            requestingNodeId:     "new-device-node",
+            ephemeralPublicKey:   devicePub,
+            ephemeralDHPublicKey: EphDH,
+            ephemeralPrivateKey:  devicePriv,
+            requestedAt:          DateTimeOffset.UtcNow,
+            signer:               signer);
     }
 
     [Fact]
