@@ -3,8 +3,8 @@ sort_order: 74
 number: 65
 slug: kernel-security-session-signer-accessor
 title: "W#65 — kernel-security `ISessionSignerAccessor` + `IBoundEd25519Signer`"
-status: "ready-to-build"
-status_cell: "`ready-to-build` — hand-off authored 2026-05-16 at `icm/_state/handoffs/kernel-security-session-signer-accessor-stage06-handoff.md`; immediately buildable"
+status: "built"
+status_cell: "`built` — PR #868 merged 2026-05-16; `ISessionSignerAccessor` + `IBoundEd25519Signer` + `DefaultSessionSignerAccessor` + `DefaultBoundEd25519Signer` in `kernel-security/Session/`; DI wired via `AddKernelSecurity()`"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/kernel-security-session-signer-accessor-stage06-handoff.md` + `packages/kernel-security/Crypto/IEd25519Signer.cs` + `packages/kernel-security/Keys/ITeamSubkeyDerivation.cs` + `packages/kernel-security/Keys/IRootSeedProvider.cs`"
