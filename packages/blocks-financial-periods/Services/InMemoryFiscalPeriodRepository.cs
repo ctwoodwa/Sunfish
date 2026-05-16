@@ -53,10 +53,19 @@ public sealed class InMemoryFiscalPeriodRepository : IFiscalPeriodRepository
     public Task<bool> UpdateAsync(FiscalPeriod period, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(period);
-        if (!_byId.ContainsKey(period.Id))
-            return Task.FromResult(false);
-        _byId[period.Id] = period;
-        return Task.FromResult(true);
+        // Compare-and-swap against the current row to keep the
+        // ContainsKey + assign from racing under Singleton lifetime.
+        // Returns false when the row was deleted between fetch +
+        // update; the caller (PeriodCloseService) treats false as a
+        // logical not-found and surfaces PeriodNotFound on the next
+        // pass.
+        while (true)
+        {
+            if (!_byId.TryGetValue(period.Id, out var current))
+                return Task.FromResult(false);
+            if (_byId.TryUpdate(period.Id, period, current))
+                return Task.FromResult(true);
+        }
     }
 
     /// <inheritdoc />

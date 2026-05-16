@@ -17,9 +17,12 @@ namespace Sunfish.Blocks.FinancialPeriods.Services;
 /// advance state locally.
 /// </para>
 /// <para>
-/// Role-gating (e.g., admin-only reopen) is the caller's responsibility
-/// — this service intentionally does not consult <c>IUserContext</c>
-/// directly, so caller layers can choose their own authorization model.
+/// <b>Authorization warning:</b> callers MUST enforce <c>FinancialAdmin</c>
+/// role gating before invoking <see cref="SoftCloseAsync"/> /
+/// <see cref="ReopenAsync"/>; this service intentionally does NOT consult
+/// <c>IUserContext</c> directly so caller layers can choose their own
+/// authorization model (UI middleware, MediatR pipeline, attribute, etc.).
+/// Wiring at the Anchor / Bridge UI surface must gate these methods.
 /// </para>
 /// </remarks>
 public interface IPeriodCloseService
@@ -29,8 +32,17 @@ public interface IPeriodCloseService
     /// while admins (FinancialAdmin role, gated by the caller) may still
     /// post. Reversals remain allowed per Stage 02 §6.1 Phase 4.
     /// </summary>
+    /// <param name="periodId">Period to soft-close.</param>
+    /// <param name="closedByPrincipalId">
+    /// Identifier of the principal performing the close; flows into the
+    /// emitted <c>Financial.PeriodSoftClosed</c> event for audit-trail
+    /// reconstruction. Pass <c>null</c> only for non-interactive callers
+    /// (background close jobs, migration replays).
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     Task<PeriodCloseResult> SoftCloseAsync(
         FiscalPeriodId periodId,
+        string? closedByPrincipalId = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

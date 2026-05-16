@@ -43,7 +43,12 @@ public sealed class SqlitePeriodResolver : IPeriodResolver
                 FiscalPeriodStatus.Open       => IPeriodResolver.Status.Open,
                 FiscalPeriodStatus.SoftClosed => IPeriodResolver.Status.SoftClosed,
                 FiscalPeriodStatus.Locked     => IPeriodResolver.Status.Locked,
-                _                             => IPeriodResolver.Status.Open,
+                // Fail-closed on an unknown enum case — silently
+                // reporting Open would open the posting-gate for a
+                // future status the ledger doesn't know how to handle.
+                _                             => throw new InvalidOperationException(
+                    $"Unhandled FiscalPeriodStatus '{period.Status}' for period {period.Id.Value}; "
+                    + "SqlitePeriodResolver.Status switch must be extended to cover the new case."),
             });
     }
 }

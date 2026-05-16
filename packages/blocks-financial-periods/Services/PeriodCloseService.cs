@@ -32,6 +32,7 @@ public sealed class PeriodCloseService : IPeriodCloseService
     /// <inheritdoc />
     public async Task<PeriodCloseResult> SoftCloseAsync(
         FiscalPeriodId periodId,
+        string? closedByPrincipalId = null,
         CancellationToken cancellationToken = default)
     {
         var period = await _periods.GetAsync(periodId, cancellationToken).ConfigureAwait(false);
@@ -54,7 +55,7 @@ public sealed class PeriodCloseService : IPeriodCloseService
             new PeriodSoftClosed(
                 PeriodId:            updated.Id,
                 ChartId:             updated.ChartId,
-                ClosedByPrincipalId: null),
+                ClosedByPrincipalId: closedByPrincipalId),
             cancellationToken).ConfigureAwait(false);
 
         return new PeriodCloseResult(updated, PeriodCloseError.None, null);
@@ -72,8 +73,11 @@ public sealed class PeriodCloseService : IPeriodCloseService
         var period = await _periods.GetAsync(periodId, cancellationToken).ConfigureAwait(false);
         if (period is null)
             return new PeriodCloseResult(null, PeriodCloseError.PeriodNotFound, periodId.Value);
+        // Distinguish Open (already-reopened — surface caller mistake)
+        // from Locked (PR 3's unlock-with-audit owns that path).
+        if (period.Status == FiscalPeriodStatus.Open)
+            return new PeriodCloseResult(period, PeriodCloseError.PeriodNotSoftClosed, null);
         if (period.Status != FiscalPeriodStatus.SoftClosed)
-            // Reopen-from-Locked is PR 3's unlock-with-audit path.
             return new PeriodCloseResult(period, PeriodCloseError.PeriodLocked, null);
 
         var fy = await _years.GetAsync(period.FiscalYearId, cancellationToken).ConfigureAwait(false);

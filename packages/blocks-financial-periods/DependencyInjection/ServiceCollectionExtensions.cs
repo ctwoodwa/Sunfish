@@ -44,6 +44,17 @@ public static class ServiceCollectionExtensions
     /// ERPNext migration dry-runs. Production hosts replace these with
     /// the SQLite-backed implementations.
     /// </summary>
+    /// <remarks>
+    /// The <c>InMemory*</c> repositories are registered as
+    /// <see cref="ServiceLifetime.Singleton"/> deliberately — they hold
+    /// in-process state that must survive scope boundaries to behave
+    /// like a real database for demos. This matches the sibling
+    /// <c>AddInMemoryAccounting</c> precedent in
+    /// <c>blocks-financial-ledger</c>. Concurrent updates use a
+    /// compare-and-swap loop inside the repository
+    /// (<see cref="InMemoryFiscalPeriodRepository.UpdateAsync"/>) to
+    /// keep the Singleton lifetime safe for multi-caller demo flows.
+    /// </remarks>
     public static IServiceCollection AddInMemoryBlocksFinancialPeriods(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

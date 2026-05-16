@@ -91,6 +91,19 @@ public sealed class PeriodCloseServiceSoftCloseTests
         var evt = Assert.Single(h.Events.Published.OfType<PeriodSoftClosed>().ToList());
         Assert.Equal(period.Id, evt.PeriodId);
         Assert.Equal(period.ChartId, evt.ChartId);
+        Assert.Null(evt.ClosedByPrincipalId);
+    }
+
+    [Fact]
+    public async Task SoftClose_PropagatesClosedByPrincipalId_IntoEvent()
+    {
+        var h = new Harness();
+        var (_, period) = await h.SeedYearAndPeriodAsync();
+
+        await h.Sut.SoftCloseAsync(period.Id, closedByPrincipalId: "principal-admin-1");
+
+        var evt = Assert.Single(h.Events.Published.OfType<PeriodSoftClosed>().ToList());
+        Assert.Equal("principal-admin-1", evt.ClosedByPrincipalId);
     }
 
     // ----- harness ---------------------------------------------------
