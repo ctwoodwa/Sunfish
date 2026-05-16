@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sunfish.Foundation.LocalFirst.Encryption;
 using Sunfish.Foundation.Recovery;
 using Sunfish.Kernel.Runtime.Teams;
@@ -17,23 +18,39 @@ namespace Sunfish.Anchor.Services;
 ///   1. Reads the recovering device's ephemeral X25519 private key from
 ///      <see cref="IEphemeralRecoveryKeyStore"/> (persisted by
 ///      <c>InitiateRecoveryPage</c> at request time).
-///   2. Decrypts each trustee attestation's seed envelope via
-///      <see cref="IX25519KeyAgreement.OpenBox"/> using that private key.
-///   3. Aborts if fewer than one envelope decrypts (no recoverable seed).
-///   4. Aborts if the decrypted seeds disagree (divergent-seed audit).
-///   5. Restores the install root seed via
+///   2. Validates envelope lengths on every attestation
+///      (TrusteeDHPub=32 B, Ciphertext=48 B, Nonce=24 B).
+///   3. Decrypts each attestation's seed envelope via
+///      <see cref="IX25519KeyAgreement.OpenBox"/>; skips null returns
+///      (auth-tag mismatch — NEVER throws on tampering).
+///   4. Enforces the configured quorum
+///      (<see cref="RecoveryCoordinatorOptions.QuorumThreshold"/>) on
+///      successful decryptions, NOT just attestation count — a single
+///      rogue trustee whose envelope decrypts must not unilaterally
+///      install a rogue seed.
+///   5. Aborts if the decrypted seeds disagree (divergent-seed audit;
+///      logs SHA-256 fingerprints, not raw seed bytes).
+///   6. Detects multi-team installs and refuses to rekey — single-team
+///      rekey only in this PR; multi-team sweep is a documented gap
+///      (PR 5/6 scope).
+///   7. Derives the new SQLCipher key for the active team upfront
+///      (cheap HKDF) so deriviation failures surface before any
+///      irreversible state mutation.
+///   8. Restores the install root seed via
 ///      <see cref="IRootSeedRestorer.RestoreRootSeedAsync"/>.
-///   6. Derives the new SQLCipher key via
-///      <see cref="ISqlCipherKeyDerivation.DeriveSqlCipherKey"/> and
-///      rotates the active team's encrypted store via
+///   9. Rotates the active team's encrypted store via
 ///      <see cref="IEncryptedStore.RotateKeyAsync"/>.
-///   7. Removes the ephemeral private key from the key store.
+///  10. Clears the ephemeral private key and zeros all in-memory
+///      seed buffers (try/finally guarantees this on ALL exit paths).
 ///
-/// <b>Deferred to W#67 PR 6 (audit + sync broadcast):</b>
-///   - Emit a typed <c>RecoveryRekey</c> audit event via <c>IAuditTrail</c>
+/// <b>Deferred to W#67 PR 5/6:</b>
+///   - Bind <c>TrusteeDHPublicKey</c> to the designated trustee record
+///     (currently the handler accepts whatever DH key the attestation
+///     carries — security-engineering council 2026-05-16 MAJOR finding).
+///   - Multi-team rekey sweep (this PR: detect + fail loud).
+///   - Typed <c>RecoveryRekey</c> audit event via <c>IAuditTrail</c>
 ///     (sub-pattern #48f) — currently logged via <see cref="ILogger"/>.
-///   - Announce the rotated identity to peers via
-///     <c>ISyncDaemon.AnnounceIdentityRotation</c>.
+///   - <c>ISyncDaemon.AnnounceIdentityRotation</c>.
 /// </summary>
 internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandler
 {
@@ -42,6 +59,8 @@ internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandl
     private readonly ISqlCipherKeyDerivation _sqlCipherKeyDerivation;
     private readonly IEphemeralRecoveryKeyStore _ephemeralKeyStore;
     private readonly IActiveTeamAccessor _activeTeam;
+    private readonly ITeamContextFactory _teamFactory;
+    private readonly IOptions<RecoveryCoordinatorOptions> _coordinatorOptions;
     private readonly ILogger<AnchorRecoveryCompletionHandler> _logger;
 
     public AnchorRecoveryCompletionHandler(
@@ -50,6 +69,8 @@ internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandl
         ISqlCipherKeyDerivation sqlCipherKeyDerivation,
         IEphemeralRecoveryKeyStore ephemeralKeyStore,
         IActiveTeamAccessor activeTeam,
+        ITeamContextFactory teamFactory,
+        IOptions<RecoveryCoordinatorOptions> coordinatorOptions,
         ILogger<AnchorRecoveryCompletionHandler> logger)
     {
         _keyAgreement           = keyAgreement           ?? throw new ArgumentNullException(nameof(keyAgreement));
@@ -57,6 +78,8 @@ internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandl
         _sqlCipherKeyDerivation = sqlCipherKeyDerivation ?? throw new ArgumentNullException(nameof(sqlCipherKeyDerivation));
         _ephemeralKeyStore      = ephemeralKeyStore      ?? throw new ArgumentNullException(nameof(ephemeralKeyStore));
         _activeTeam             = activeTeam             ?? throw new ArgumentNullException(nameof(activeTeam));
+        _teamFactory            = teamFactory            ?? throw new ArgumentNullException(nameof(teamFactory));
+        _coordinatorOptions     = coordinatorOptions     ?? throw new ArgumentNullException(nameof(coordinatorOptions));
         _logger                 = logger                 ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -64,115 +87,206 @@ internal sealed class AnchorRecoveryCompletionHandler : IRecoveryCompletionHandl
     {
         ArgumentNullException.ThrowIfNull(completionResult);
         var completedEvent = completionResult.Event;
+        var quorum = Math.Max(1, _coordinatorOptions.Value.QuorumThreshold);
 
-        // 1) Retrieve ephemeral DH private key from the key store. If
-        //    absent, the device's secure storage was wiped between
-        //    initiation and completion — recovery cannot proceed; log
-        //    and return so the polling service doesn't re-attempt.
-        var ephPriv = await _ephemeralKeyStore
-            .GetAsync(IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName, cancellationToken)
-            .ConfigureAwait(false);
-        if (ephPriv is null)
-        {
-            _logger.LogError(
-                "Recovery completion: ephemeral X25519 private key not present at slot {Slot}. "
-                + "Recovery cannot proceed (device wipe or partial state). actor={ActorNodeId}",
-                IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName,
-                completedEvent.ActorNodeId);
-            return;
-        }
-
-        // 2) Decrypt each attestation envelope. Skip null OpenBox
-        //    returns (per IX25519KeyAgreement contract OpenBox returns
-        //    null on auth-tag mismatch — never throws on tampering).
+        // Buffers we need to zero on EVERY exit path. Allocated lazily.
+        byte[]? ephPriv = null;
         var decryptedSeeds = new List<byte[]>(completionResult.Attestations.Count);
-        foreach (var att in completionResult.Attestations)
+        byte[]? recoveredSeed = null;
+        byte[]? sqlCipherKey = null;
+        var ephemeralKeyConsumed = false;
+
+        try
         {
-            var seed = _keyAgreement.OpenBox(
-                ciphertext:             att.EncryptedSeedEnvelopeCiphertext,
-                nonce:                  att.EncryptedSeedEnvelopeNonce,
-                senderPublicKey:        att.TrusteeDHPublicKey,
-                recipientPrivateKey:    ephPriv);
-            if (seed is null)
+            // 1) Retrieve ephemeral DH private key.
+            ephPriv = await _ephemeralKeyStore
+                .GetAsync(IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName, cancellationToken)
+                .ConfigureAwait(false);
+            if (ephPriv is null)
             {
-                _logger.LogWarning(
-                    "Recovery completion: trustee {TrusteeNodeId} envelope failed to decrypt; skipping.",
-                    att.TrusteeNodeId);
-                continue;
+                _logger.LogError(
+                    "Recovery completion: ephemeral X25519 private key not present at slot {Slot}. "
+                    + "Recovery cannot proceed (device wipe or partial state). actor={ActorNodeId}",
+                    IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName,
+                    completedEvent.ActorNodeId);
+                return;
             }
-            decryptedSeeds.Add(seed);
-        }
 
-        // 3) Require at least one successful decryption. With zero
-        //    decryptions we cannot reconstruct the seed; abort + log.
-        if (decryptedSeeds.Count == 0)
-        {
-            _logger.LogError(
-                "Recovery completion: zero trustee envelopes decrypted successfully (of {Count} attestations). Aborting rekey.",
+            // 2) Validate envelope lengths up-front. A malformed envelope
+            //    that bypassed earlier checks would otherwise trip
+            //    KeystoreRootSeedProvider.RestoreRootSeedAsync's
+            //    ArgumentException after we've already touched state.
+            foreach (var att in completionResult.Attestations)
+            {
+                if (att.TrusteeDHPublicKey?.Length != TrusteeAttestation.TrusteeDHPublicKeyLength
+                    || att.EncryptedSeedEnvelopeCiphertext?.Length != TrusteeAttestation.SeedEnvelopeCiphertextLength
+                    || att.EncryptedSeedEnvelopeNonce?.Length != TrusteeAttestation.SeedEnvelopeNonceLength)
+                {
+                    _logger.LogError(
+                        "Recovery completion: trustee {TrusteeNodeId} attestation has malformed envelope "
+                        + "(DHPub={DhLen} CT={CtLen} Nonce={NonceLen}). Aborting rekey — re-attestation required.",
+                        att.TrusteeNodeId,
+                        att.TrusteeDHPublicKey?.Length ?? -1,
+                        att.EncryptedSeedEnvelopeCiphertext?.Length ?? -1,
+                        att.EncryptedSeedEnvelopeNonce?.Length ?? -1);
+                    return;
+                }
+            }
+
+            // 3) Decrypt each envelope. Skip null OpenBox returns
+            //    (per IX25519KeyAgreement contract — never throws on
+            //    tampering). The sender side is the trustee's DH key;
+            //    the recipient side is this device's ephemeral DH key.
+            //    (PR 5 re-encrypts the trustee-held envelope toward
+            //    this device at attestation time; the field names on
+            //    TrusteeAttestation reflect that re-encryption.)
+            foreach (var att in completionResult.Attestations)
+            {
+                var seed = _keyAgreement.OpenBox(
+                    ciphertext:           att.EncryptedSeedEnvelopeCiphertext,
+                    nonce:                att.EncryptedSeedEnvelopeNonce,
+                    senderPublicKey:      att.TrusteeDHPublicKey,
+                    recipientPrivateKey:  ephPriv);
+                if (seed is null)
+                {
+                    _logger.LogWarning(
+                        "Recovery completion: trustee {TrusteeNodeId} envelope failed to decrypt; skipping.",
+                        att.TrusteeNodeId);
+                    continue;
+                }
+                decryptedSeeds.Add(seed);
+            }
+
+            // 4) Enforce QUORUM on successful decryptions — not just
+            //    attestation count. A single rogue trustee whose envelope
+            //    decrypts (when others fail) must not install a rogue seed.
+            if (decryptedSeeds.Count < quorum)
+            {
+                _logger.LogError(
+                    "Recovery completion: only {Successful} of {Total} envelopes decrypted (quorum required: {Quorum}). "
+                    + "Aborting rekey — insufficient trustee coverage to proceed safely.",
+                    decryptedSeeds.Count, completionResult.Attestations.Count, quorum);
+                return;
+            }
+
+            // 5) Divergence check. SHA-256 fingerprint comparison
+            //    (NOT raw bytes) — abort if any disagreement.
+            var distinctSeedHashes = decryptedSeeds
+                .Select(s => Convert.ToHexString(SHA256.HashData(s)))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+            if (distinctSeedHashes.Count > 1)
+            {
+                _logger.LogError(
+                    "Recovery completion: trustee-decrypted seeds DIVERGE across {DistinctCount} distinct values "
+                    + "(SHA-256 fingerprints: {Fingerprints}). Aborting rekey to avoid using an adversarial seed.",
+                    distinctSeedHashes.Count,
+                    string.Join(", ", distinctSeedHashes));
+                return;
+            }
+
+            recoveredSeed = decryptedSeeds[0];
+            if (recoveredSeed.Length != KeystoreRootSeedProvider.SeedLength)
+            {
+                _logger.LogError(
+                    "Recovery completion: recovered seed length is {Length} bytes (expected {Expected}). "
+                    + "Aborting rekey — envelope plaintext does not match the root-seed contract.",
+                    recoveredSeed.Length, KeystoreRootSeedProvider.SeedLength);
+                return;
+            }
+
+            // 6) Multi-team detection. ITeamContextFactory.Active returns
+            //    all materialized team contexts. If more than one is
+            //    materialized, this PR refuses to rekey: rotating only
+            //    the active team would leave the others unable to derive
+            //    their old SQLCipher key after the root-seed restore.
+            //    PR 5/6 will implement the multi-team sweep.
+            var materializedTeams = _teamFactory.Active;
+            if (materializedTeams.Count > 1)
+            {
+                _logger.LogError(
+                    "Recovery completion: {TeamCount} teams materialized; multi-team rekey is not yet implemented "
+                    + "(W#67 PR 5/6 scope). Aborting rekey to avoid bricking non-active teams.",
+                    materializedTeams.Count);
+                return;
+            }
+
+            // 7) Derive new SQLCipher key for the active team. The active
+            //    team's encrypted store is per-team; resolve via its DI
+            //    scope. If no active team is set, restore the root seed
+            //    only (no per-team rekey needed; future team materializations
+            //    will derive from the restored seed).
+            var active = _activeTeam.Active;
+            string? teamId = null;
+            IEncryptedStore? encryptedStore = null;
+            if (active is not null)
+            {
+                teamId = active.TeamId.Value.ToString("D");
+                sqlCipherKey = _sqlCipherKeyDerivation.DeriveSqlCipherKey(recoveredSeed, teamId);
+                encryptedStore = active.Services.GetRequiredService<IEncryptedStore>();
+            }
+
+            // 8) Restore root seed via the W#65 IRootSeedRestorer. After
+            //    this returns, IRootSeedProvider.GetRootSeedAsync returns
+            //    the restored bytes. We restore the seed BEFORE rotating
+            //    because (a) derivation already succeeded for the active
+            //    team's key; (b) rotation failure leaves a recoverable
+            //    state — the next launch can rederive the same key from
+            //    the restored seed and retry rotation. Restoring AFTER
+            //    rotation would invert this: rotation could succeed
+            //    against a stale derivation context if the keystore
+            //    write transiently failed.
+            await _rootSeedRestorer
+                .RestoreRootSeedAsync(recoveredSeed, cancellationToken)
+                .ConfigureAwait(false);
+
+            // 9) Rotate the active team's encrypted store.
+            if (encryptedStore is not null && sqlCipherKey is not null)
+            {
+                await encryptedStore
+                    .RotateKeyAsync(sqlCipherKey, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            // 10) Ephemeral key consumed cleanly; flag so the finally
+            //     block removes it (not just zeros the local copy).
+            ephemeralKeyConsumed = true;
+
+            _logger.LogInformation(
+                "Recovery completion: rekey applied (team={TeamId}, actor={ActorNodeId}, "
+                + "target={TargetNodeId}, occurredAt={OccurredAt}, decryptions={DecryptCount}/{TotalCount}). "
+                + "TODO (W#67 PR 6): emit typed RecoveryRekey audit record + announce identity rotation.",
+                teamId ?? "<no-active-team>",
+                completedEvent.ActorNodeId,
+                completedEvent.TargetNodeId,
+                completedEvent.OccurredAt,
+                decryptedSeeds.Count,
                 completionResult.Attestations.Count);
-            return;
         }
-
-        // 4) Divergence check. If the decrypted seeds disagree, a
-        //    trustee or attacker injected a malicious envelope. Log
-        //    SHA-256 hashes of the distinct seeds — never the raw
-        //    bytes — and abort.
-        var distinctSeedHashes = decryptedSeeds
-            .Select(s => Convert.ToHexString(SHA256.HashData(s)))
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
-        if (distinctSeedHashes.Count > 1)
+        finally
         {
-            _logger.LogError(
-                "Recovery completion: trustee-decrypted seeds DIVERGE across {DistinctCount} distinct values "
-                + "(SHA-256 fingerprints: {Fingerprints}). Aborting rekey to avoid using an adversarial seed.",
-                distinctSeedHashes.Count,
-                string.Join(", ", distinctSeedHashes));
-            return;
+            // Always clear secret material from process memory.
+            if (ephPriv is not null) CryptographicOperations.ZeroMemory(ephPriv);
+            foreach (var seed in decryptedSeeds) CryptographicOperations.ZeroMemory(seed);
+            if (sqlCipherKey is not null) CryptographicOperations.ZeroMemory(sqlCipherKey);
+
+            // Always remove the ephemeral private key from the key store
+            // on EVERY exit path — including aborts, exceptions, and the
+            // success path. The recovery flow is single-use; the
+            // ephemeral key must not survive past this handler call.
+            // Best-effort: cleanup failure is logged but not re-thrown.
+            try
+            {
+                await _ephemeralKeyStore
+                    .RemoveAsync(IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Recovery completion: failed to remove ephemeral key from store after {Outcome}.",
+                    ephemeralKeyConsumed ? "success" : "abort");
+            }
         }
-
-        var recoveredSeed = decryptedSeeds[0];
-
-        // 5) Restore root seed via the W#65 IRootSeedRestorer. After
-        //    this returns, subsequent IRootSeedProvider.GetRootSeedAsync
-        //    calls return the restored bytes.
-        await _rootSeedRestorer
-            .RestoreRootSeedAsync(recoveredSeed, cancellationToken)
-            .ConfigureAwait(false);
-
-        // 6) Derive + rotate the SQLCipher key for the active team. The
-        //    encrypted store is per-team; resolve it from the active
-        //    team's service provider per the kernel-runtime
-        //    DefaultTeamServiceRegistrar registration.
-        var active = _activeTeam.Active;
-        if (active is null)
-        {
-            _logger.LogError(
-                "Recovery completion: no active team; cannot derive a SQLCipher key. Root seed restored but rekey deferred.");
-            return;
-        }
-
-        var teamId = active.TeamId.Value.ToString("D");
-        var sqlCipherKey = _sqlCipherKeyDerivation.DeriveSqlCipherKey(recoveredSeed, teamId);
-        var encryptedStore = active.Services.GetRequiredService<IEncryptedStore>();
-        await encryptedStore
-            .RotateKeyAsync(sqlCipherKey, cancellationToken)
-            .ConfigureAwait(false);
-
-        // 7) Clear the ephemeral private key so it doesn't linger past
-        //    the single-use lifetime of the recovery flow.
-        await _ephemeralKeyStore
-            .RemoveAsync(IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName, cancellationToken)
-            .ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "Recovery completion: SQLCipher rekey applied for team {TeamId} (actor={ActorNodeId}, "
-            + "target={TargetNodeId}, occurredAt={OccurredAt}, attestations={Count}). "
-            + "TODO (W#67 PR 6): emit typed RecoveryRekey audit record + announce identity rotation.",
-            teamId,
-            completedEvent.ActorNodeId,
-            completedEvent.TargetNodeId,
-            completedEvent.OccurredAt,
-            completionResult.Attestations.Count);
     }
 }

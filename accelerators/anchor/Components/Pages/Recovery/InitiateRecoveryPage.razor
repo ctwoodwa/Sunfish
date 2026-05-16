@@ -79,6 +79,11 @@
             // grace window elapses; it is removed on successful rekey.
             var (ephemeralPub, ephemeralPriv) = Signer.GenerateKeyPair();
             var (ephX25519Pub, ephX25519Priv) = DhAgreement.GenerateKeyPair();
+            // Persist the X25519 private key BEFORE submitting so the
+            // completion handler can read it back. If InitiateRecoveryAsync
+            // throws (already-pending request, store I/O), remove the key
+            // so it doesn't linger in SecureStorage without a flow that
+            // can consume it (council finding BLOCKING-5).
             await EphemeralKeyStore.SetAsync(
                 IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName,
                 ephX25519Priv,
@@ -91,7 +96,16 @@
                 requestedAt:          DateTimeOffset.UtcNow,
                 signer:               Signer);
 
-            await Recovery.InitiateRecoveryAsync(request, default);
+            try
+            {
+                await Recovery.InitiateRecoveryAsync(request, default);
+            }
+            catch
+            {
+                await EphemeralKeyStore.RemoveAsync(
+                    IEphemeralRecoveryKeyStore.RecoveryDhPrivateKeyName, default);
+                throw;
+            }
             _submitted = true;
         }
         catch (Exception ex)
