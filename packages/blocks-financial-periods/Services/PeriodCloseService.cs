@@ -119,10 +119,15 @@ public sealed class PeriodCloseService : IPeriodCloseService
             return new PeriodCloseResult(period, PeriodCloseError.PeriodAlreadyLocked, null);
 
         var now = new Instant(_time.GetUtcNow());
-        // Lock is only valid for SoftClosed periods (Stage 02 §8.5 row 3);
-        // an Open period must first SoftClose. Auto-soft-close inline
-        // here so single-step Lock calls don't fail when a hard-close
-        // helper or year-end close passes Open periods.
+        // Lock is canonically valid for SoftClosed periods (Stage 02
+        // §8.5 row 3); an Open period auto-soft-closes inline so the
+        // PR 3b year-end batch can lock in one call. The auto path is
+        // remembered so we can emit PeriodSoftClosed *before*
+        // PeriodLocked — downstream consumers (AR aging snapshots,
+        // reports cluster) that gate on soft-close must see the
+        // intermediate transition even when both state changes
+        // collapse into one CAS step.
+        var autoSoftClosing = period.Status == FiscalPeriodStatus.Open;
         var softClosedAt = period.SoftClosedAtUtc ?? now;
 
         var updated = period with
@@ -136,6 +141,15 @@ public sealed class PeriodCloseService : IPeriodCloseService
         if (!await _periods.UpdateAsync(updated, cancellationToken).ConfigureAwait(false))
             return new PeriodCloseResult(period, PeriodCloseError.ConcurrentUpdate, null);
 
+        if (autoSoftClosing)
+        {
+            await _events.PublishAsync(
+                new PeriodSoftClosed(
+                    PeriodId:            updated.Id,
+                    ChartId:             updated.ChartId,
+                    ClosedByPrincipalId: null),
+                cancellationToken).ConfigureAwait(false);
+        }
         await _events.PublishAsync(
             new PeriodLocked(PeriodId: updated.Id, ChartId: updated.ChartId),
             cancellationToken).ConfigureAwait(false);
@@ -165,12 +179,17 @@ public sealed class PeriodCloseService : IPeriodCloseService
         // Unlock returns to SoftClosed (not Open) — the admin who
         // unlocks still owes a separate ReopenAsync if they actually
         // want to permit non-admin posts. Stage 02 §8.5 row 3 reverse
-        // path.
+        // path. Re-stamp SoftClosedAtUtc to the unlock instant so the
+        // audit trail reflects the new soft-close start (the original
+        // soft-close instant was preserved through the lock window
+        // but is now stale for downstream consumers).
+        var unlockedAt = new Instant(_time.GetUtcNow());
         var updated = period with
         {
-            Status      = FiscalPeriodStatus.SoftClosed,
-            LockedAtUtc = null,
-            Version     = period.Version + 1,
+            Status          = FiscalPeriodStatus.SoftClosed,
+            SoftClosedAtUtc = unlockedAt,
+            LockedAtUtc     = null,
+            Version         = period.Version + 1,
         };
 
         if (!await _periods.UpdateAsync(updated, cancellationToken).ConfigureAwait(false))

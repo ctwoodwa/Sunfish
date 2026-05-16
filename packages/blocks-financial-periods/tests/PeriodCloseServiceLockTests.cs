@@ -85,6 +85,26 @@ public sealed class PeriodCloseServiceLockTests
         var evt = Assert.Single(h.Events.Published.OfType<PeriodLocked>().ToList());
         Assert.Equal(period.Id, evt.PeriodId);
         Assert.Equal(period.ChartId, evt.ChartId);
+        // Direct SoftClosed → Locked does NOT also emit PeriodSoftClosed.
+        Assert.Empty(h.Events.Published.OfType<PeriodSoftClosed>().ToList());
+    }
+
+    [Fact]
+    public async Task Lock_AutoSoftClosesOpen_EmitsBothEventsInOrder()
+    {
+        // M1 (PR 3a council): the auto-soft-close convenience must
+        // still emit PeriodSoftClosed BEFORE PeriodLocked so observers
+        // gating on soft-close (AR aging snapshots, reports cluster)
+        // see the intermediate transition.
+        var h = new LockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Open);
+
+        await h.Sut.LockAsync(period.Id);
+
+        Assert.Collection(
+            h.Events.Published,
+            e => Assert.IsType<PeriodSoftClosed>(e),
+            e => Assert.IsType<PeriodLocked>(e));
     }
 
     [Fact]

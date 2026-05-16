@@ -82,30 +82,47 @@ public sealed class ConcurrentUpdateTests
     [Fact]
     public async Task SoftClose_AfterParallelWriteWonByOtherWindow_ReturnsConcurrentUpdate()
     {
-        var (sut, periods, _, _) = NewHarness();
+        // Service-level race: wrap the repo with a stale-snapshot
+        // resolver so the service reads the pre-mutation row while the
+        // repo holds a fresh one. This is the only way to repro a
+        // CAS-reject at the service layer (a same-process service call
+        // would normally re-fetch and succeed).
+        var periods = new InMemoryFiscalPeriodRepository();
+        var years   = new InMemoryFiscalYearRepository();
+        var events  = new CapturingEventPublisher();
         var (_, period) = await SeedAsync(periods);
 
-        // Simulate parallel session: bump version in the repo behind
-        // the service's back.
-        var parallelWrite = period with
-        {
-            Label   = "concurrent-edit",
-            Version = period.Version + 1,
-        };
+        // Parallel writer bumps to Version + 1 in the repo.
+        var parallelWrite = period with { Label = "edit", Version = period.Version + 1 };
         Assert.True(await periods.UpdateAsync(parallelWrite));
 
-        // Now the service loads the stale baseline (still has Version
-        // = period.Version) and tries to mutate — repo rejects.
-        // We bypass GetAsync to enforce the stale-load scenario by
-        // calling the service after the parallel write has landed; the
-        // service's own GetAsync would refresh, so this test exercises
-        // the path where the repo's CAS catches an issue the
-        // optimistic-load path would miss.
-        // (Service-level race is the same shape; a direct
-        // service-call here would see the post-parallel state and
-        // succeed on the next CAS attempt, which is the right
-        // behaviour. This test asserts the repo's CAS half.)
-        await Task.CompletedTask;
+        // Wrap the period repo so the service sees the stale snapshot.
+        var stalePeriods = new StaleSnapshotFiscalPeriodRepository(periods, staleSnapshot: period);
+        var sut = new PeriodCloseService(stalePeriods, years, events, TimeProvider.System);
+
+        var result = await sut.SoftCloseAsync(period.Id);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(PeriodCloseError.ConcurrentUpdate, result.Error);
+    }
+
+    private sealed class StaleSnapshotFiscalPeriodRepository : IFiscalPeriodRepository
+    {
+        private readonly InMemoryFiscalPeriodRepository _inner;
+        private readonly FiscalPeriod _stale;
+        public StaleSnapshotFiscalPeriodRepository(
+            InMemoryFiscalPeriodRepository inner, FiscalPeriod staleSnapshot)
+        { _inner = inner; _stale = staleSnapshot; }
+        public Task<FiscalPeriod?> GetAsync(FiscalPeriodId id, CancellationToken ct = default)
+            => Task.FromResult<FiscalPeriod?>(id.Equals(_stale.Id) ? _stale : null);
+        public Task<IReadOnlyList<FiscalPeriod>> GetByFiscalYearAsync(FiscalYearId id, CancellationToken ct = default)
+            => _inner.GetByFiscalYearAsync(id, ct);
+        public Task<FiscalPeriod?> FindByChartAndDateAsync(ChartOfAccountsId c, DateOnly d, CancellationToken ct = default)
+            => _inner.FindByChartAndDateAsync(c, d, ct);
+        public Task InsertAsync(FiscalPeriod p, CancellationToken ct = default) => _inner.InsertAsync(p, ct);
+        public Task<bool> UpdateAsync(FiscalPeriod p, CancellationToken ct = default) => _inner.UpdateAsync(p, ct);
+        public Task<FiscalPeriod?> GetByExternalRefAsync(string r, CancellationToken ct = default)
+            => _inner.GetByExternalRefAsync(r, ct);
     }
 
     // ----- helpers ---------------------------------------------------

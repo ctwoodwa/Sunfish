@@ -111,6 +111,24 @@ public sealed class PeriodCloseServiceUnlockTests
         Assert.Equal(before + 1, result.Period!.Version);
     }
 
+    [Fact]
+    public async Task Unlock_ReStampsSoftClosedAtUtc_ToUnlockInstant()
+    {
+        // M2 (PR 3a council): the preserved-from-original SoftClosedAtUtc
+        // would be stale by the time we unlock; re-stamping reflects the
+        // new soft-close start.
+        var h = new UnlockHarness();
+        var (_, period) = await h.SeedAsync(periodStatus: FiscalPeriodStatus.Locked);
+        var prior = period.SoftClosedAtUtc!.Value;
+        await Task.Delay(10);
+
+        var result = await h.Sut.UnlockAsync(period.Id, "audit");
+
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Period!.SoftClosedAtUtc);
+        Assert.True(result.Period.SoftClosedAtUtc!.Value.Value > prior.Value);
+    }
+
     // ----- harness ---------------------------------------------------
 
     private sealed class UnlockHarness

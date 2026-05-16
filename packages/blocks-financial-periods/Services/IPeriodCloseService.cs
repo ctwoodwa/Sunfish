@@ -4,9 +4,9 @@ using Sunfish.Blocks.FinancialPeriods.Models;
 namespace Sunfish.Blocks.FinancialPeriods.Services;
 
 /// <summary>
-/// Period-state transition service per Stage 02 §6.5(a). PR 2 covers
-/// soft-close + reopen-soft; hard-close + year-end rollover land in
-/// PR 3 via <c>IFiscalYearCloseService</c> (not yet defined).
+/// Period-state transition service per Stage 02 §6.5(a) + §8.5 row 3.
+/// PR 2 shipped soft-close + reopen-soft; PR 3a adds lock + unlock;
+/// year-end rollover lands in PR 3b via <c>IFiscalYearCloseService</c>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -19,7 +19,8 @@ namespace Sunfish.Blocks.FinancialPeriods.Services;
 /// <para>
 /// <b>Authorization warning:</b> callers MUST enforce <c>FinancialAdmin</c>
 /// role gating before invoking <see cref="SoftCloseAsync"/> /
-/// <see cref="ReopenAsync"/>; this service intentionally does NOT consult
+/// <see cref="ReopenAsync"/> / <see cref="LockAsync"/> /
+/// <see cref="UnlockAsync"/>; this service intentionally does NOT consult
 /// <c>IUserContext</c> directly so caller layers can choose their own
 /// authorization model (UI middleware, MediatR pipeline, attribute, etc.).
 /// Wiring at the Anchor / Bridge UI surface must gate these methods.
@@ -48,10 +49,42 @@ public interface IPeriodCloseService
     /// <summary>
     /// Reopen a soft-closed period (admin-only, gated by the caller).
     /// Emits <c>Financial.PeriodOpened</c> with the audit memo as the
-    /// reopen reason. Locked → SoftClosed transitions (unlock-with-audit)
-    /// are PR 3's path; this overload only handles SoftClosed → Open.
+    /// reopen reason. This overload only handles SoftClosed → Open;
+    /// Locked → SoftClosed is <see cref="UnlockAsync"/>.
     /// </summary>
     Task<PeriodCloseResult> ReopenAsync(
+        FiscalPeriodId periodId,
+        string auditMemo,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lock the period per Stage 02 §8.5 row 3. SoftClosed → Locked is
+    /// the canonical path; Open → Locked is allowed for convenience
+    /// (auto-soft-closes inline and emits
+    /// <c>Financial.PeriodSoftClosed</c> followed by
+    /// <c>Financial.PeriodLocked</c>) so the PR 3b year-end batch can
+    /// lock periods without two service calls. Already-Locked input
+    /// returns <see cref="PeriodCloseError.PeriodAlreadyLocked"/>.
+    /// </summary>
+    Task<PeriodCloseResult> LockAsync(
+        FiscalPeriodId periodId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Unlock a locked period back to <see cref="FiscalPeriodStatus.SoftClosed"/>
+    /// with an audit memo (admin-only, gated by the caller). Re-stamps
+    /// <c>SoftClosedAtUtc</c> to the wall-clock instant of the unlock
+    /// so the timestamp reflects the new soft-close start. Emits
+    /// <c>Financial.PeriodOpened</c> with
+    /// <c>Reason = "Unlocked by admin: …"</c> (reusing the existing
+    /// event type per the catalog convention; consumers distinguish
+    /// via Reason prefix). To re-open the period for non-admin posts
+    /// after unlock the caller follows up with <see cref="ReopenAsync"/>.
+    /// Rejects when the owning <see cref="FiscalYear"/> is
+    /// <see cref="FiscalYearStatus.Closed"/>; year-level reopen is
+    /// <c>IFiscalYearCloseService.ReopenFiscalYearAsync</c> (PR 3b).
+    /// </summary>
+    Task<PeriodCloseResult> UnlockAsync(
         FiscalPeriodId periodId,
         string auditMemo,
         CancellationToken cancellationToken = default);
