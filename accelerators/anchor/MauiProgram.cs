@@ -7,6 +7,8 @@ using Sunfish.Blocks.CrewComms.DependencyInjection;
 using Sunfish.Blocks.Properties.DependencyInjection;
 using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
 using Sunfish.Blocks.Maintenance.DependencyInjection;
+using Sunfish.Blocks.Leases.DependencyInjection;
+using Sunfish.Blocks.Inspections.DependencyInjection;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Foundation.IdentityAtlas;
 using Sunfish.Foundation.Transport.DependencyInjection;
@@ -231,6 +233,9 @@ public static class MauiProgram
 		builder.Services.AddInMemoryPropertyEquipment();
 		// W#29 Phase 3 — work-orders pages read IMaintenanceService.
 		builder.Services.AddInMemoryMaintenance();
+		// W#29 Phase 5 — dashboard page joins leases + inspections per unit.
+		builder.Services.AddInMemoryLeases();
+		builder.Services.AddInMemoryInspections();
 
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();

@@ -218,3 +218,34 @@ export async function getCockpitVendorDetail(vendorId: string): Promise<CockpitV
   if (!resp.ok) throw new Error(`Failed to load vendor: ${resp.status} ${resp.statusText}`)
   return (await resp.json()) as CockpitVendorDetail
 }
+
+// ── Dashboard (PR 5) ──────────────────────────────────────────────────
+
+export interface CockpitRenewalBucket {
+  withinDays: number
+  count: number
+}
+
+export interface CockpitWorkOrderRollup {
+  open: number
+  inProgress: number
+  blocked: number
+}
+
+export interface CockpitDashboard {
+  totalUnits: number
+  vacantUnits: number
+  upcomingRenewals: CockpitRenewalBucket[]
+  workOrders: CockpitWorkOrderRollup
+  overdueInspectionUnitIds: string[]
+}
+
+export async function getCockpitDashboard(propertyId: string): Promise<CockpitDashboard> {
+  const resp = await fetch(
+    `/api/v1/cockpit/${encodeURIComponent(propertyId)}/dashboard`,
+    { credentials: 'include' },
+  )
+  if (resp.status === 404) throw new Error('Property not found')
+  if (!resp.ok) throw new Error(`Failed to load dashboard: ${resp.status} ${resp.statusText}`)
+  return (await resp.json()) as CockpitDashboard
+}

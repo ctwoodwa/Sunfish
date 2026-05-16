@@ -44,7 +44,10 @@ else
 {
     <header class="cockpit-detail-header">
         <a class="cockpit-detail-link" href="cockpit">← Back to cockpit</a>
-        <h1>@_property!.DisplayName</h1>
+        <div class="cockpit-detail-title-row">
+            <h1>@_property!.DisplayName</h1>
+            <a class="cockpit-detail-link" href="@($"cockpit/properties/{Uri.EscapeDataString(_property.Id.Value)}/dashboard")">View dashboard →</a>
+        </div>
         <p class="cockpit-detail-meta">@FormatAddress(_property) · @_property.Kind</p>
     </header>
 
@@ -151,6 +154,7 @@ else
     .cockpit-detail-link:hover { text-decoration: underline; }
     .cockpit-detail-header { margin-bottom: 1.5rem; }
     .cockpit-detail-header h1 { font-size: 1.5rem; margin: 0.5rem 0 0.25rem; letter-spacing: -0.01em; }
+    .cockpit-detail-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
     .cockpit-detail-meta { color: #6b7280; font-size: 0.875rem; margin: 0; }
     .cockpit-detail-section { padding: 1rem 1.25rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; margin-bottom: 1rem; }
     .cockpit-detail-section h2 { font-size: 1rem; margin: 0 0 0.75rem; }
