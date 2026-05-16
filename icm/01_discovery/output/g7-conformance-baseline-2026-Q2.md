@@ -16,7 +16,7 @@
 | G3 | Bridge posture | **PASS** | rate-limiting + security headers (Phase 2 hardening) |
 | G4 | Anchor↔Bridge WAN relay | **PASS** | — |
 | G5 | Backup orchestration | **PASS** | — |
-| G6 | ADR 0046 recovery flow | **PARTIAL** | SQLCipher rekey stub + ApproveRecoveryPage placeholder |
+| G6 | ADR 0046 recovery flow | **CLOSED** | W#65 + W#66 closed G6-B (ApproveRecoveryPage live); W#67 closed G6-A (SQLCipher rekey via seed-delivery protocol per ADR 0046-A6) |
 
 ---
 
