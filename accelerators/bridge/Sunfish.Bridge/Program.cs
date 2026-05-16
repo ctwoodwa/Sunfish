@@ -32,7 +32,9 @@ using Sunfish.Blocks.PropertyEquipment.DependencyInjection;
 using Sunfish.Bridge.Listings;
 using Sunfish.Bridge.SystemRequirements;
 using Sunfish.Bridge.Reports;
+using Sunfish.Bridge.Cockpit;
 using Sunfish.Bridge.Features.Identity;
+using Sunfish.Blocks.Properties.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.Integrations;
 using Sunfish.Blocks.ShipsOffice;
@@ -181,6 +183,11 @@ app.MapERPNextProxy();
 
 // W#60 Phase 5 — reporting surface (rent roll + P&L + CSV export).
 app.MapReportsEndpoints();
+
+// W#29 Phase 1 — owner cockpit route family. Guarded by CockpitPolicy
+// (authenticated + role in {owner, spouse}). PR 1 ships the property selector
+// only; PR 2–5 attach detail / work-order / vendor / dashboard endpoints.
+app.MapCockpitEndpoints();
 
 // W#60 Phase 2 — caller-identity endpoint consumed by the React SPA.
 // Phase 1 returns a dev stub; Phase 2 wires real OIDC claims via UserService.
@@ -416,7 +423,15 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
                   .AllowAnyMethod()
                   .AllowCredentials());
     });
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(opts => opts.AddCockpitPolicy());
+
+    // W#29 Phase 1 — owner cockpit needs IPropertyRepository to back the
+    // landing-page property selector. Wire the in-memory repo here so PR 1
+    // can ship without standing up a DB-backed implementation; the
+    // BridgeSeeder's demo properties (when added in a follow-up) will
+    // populate it for dev. Production will swap in a persistence-backed
+    // IPropertyRepository — the cockpit endpoints don't care which.
+    builder.Services.AddInMemoryProperties();
 
     // W#60 Phase 2 — ERPNext proxy layer.
     builder.Services.Configure<ERPNextOptions>(

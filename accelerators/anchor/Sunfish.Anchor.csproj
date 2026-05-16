@@ -144,6 +144,8 @@
              Phase 1 G2 adds kernel-crdt for the AnchorCrdtDeltaBridge that
              closes the Wave 2.5 DELTA_STREAM application loop. -->
         <ProjectReference Include="..\..\packages\blocks-crew-comms\Sunfish.Blocks.CrewComms.csproj" />
+        <!-- W#29 Phase 1 — owner cockpit reads property summaries via IPropertyRepository. -->
+        <ProjectReference Include="..\..\packages\blocks-properties\Sunfish.Blocks.Properties.csproj" />
         <ProjectReference Include="..\..\packages\foundation-identity-atlas\Sunfish.Foundation.IdentityAtlas.csproj" />
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
         <ProjectReference Include="..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
