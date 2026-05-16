@@ -236,6 +236,7 @@ function AuthGate() {
       } catch {
         // Command not registered or IPC denied — treat as keychain unavailable
         // for safety; user sees the banner rather than a confusing login loop.
+        if (cancelled) return
         setKeychainError('Anchor could not reach the operating-system credential store.')
         setLoaded(true)
         return

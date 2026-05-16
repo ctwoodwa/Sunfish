@@ -47,12 +47,10 @@ export function LoginPage() {
       } catch (netErr) {
         const msg = netErr instanceof Error ? netErr.message : String(netErr)
         setError(`Could not reach Bridge to validate token: ${msg}`)
-        setSubmitting(false)
         return
       }
       if (!probe.ok) {
         setError(`Bridge rejected the token: ${probe.status} ${probe.statusText}`)
-        setSubmitting(false)
         return
       }
       // Token verified. Persist + advance.
@@ -61,6 +59,7 @@ export function LoginPage() {
       setToken(trimmed)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save token.')
+    } finally {
       setSubmitting(false)
     }
   }
