@@ -1,6 +1,6 @@
 # Master Plan — Sunfish + The Inverted Stack
 
-**Last updated:** 2026-04-28
+**Last updated:** 2026-05-16 (W#60 ERPNext pivot impact on G-1; velocity baseline refresh)
 **Maintained by:** research session (cross-project PM)
 **Cadence:** updated when goal definition, milestone, or velocity baseline materially changes; not on every PR. The dynamic state lives in `active-workstreams.md`; this file is the stable "where we're going."
 
@@ -12,7 +12,7 @@ This effort has **three concurrent goals**, ranked by user priority:
 
 | # | Goal | Repo | Definition of done | Strategic role |
 |---|---|---|---|---|
-| **G-1** | **Business MVP** | Sunfish | BDFL's property management business runs entirely on Sunfish, replacing Wave Accounting + Rentler + bank shared-access. 6 tenants (4 LLCs + holding co + mgmt co), spouse co-ownership active, full monthly cycle (rent → invoice → bank reconciliation → statements → vendor payments) running in production for the BDFL's actual operation. | **Primary.** Proves the local-first paradigm with a real commercial workload. |
+| **G-1** | **Business MVP** | Sunfish | BDFL's property management business runs on Sunfish + ERPNext (composition model per W#60 UPF plan approved 2026-05-11). ERPNext (self-hosted, GPLv3) is the accounting + property engine; Sunfish is the local-first sync + offline + React UI + tenant comms layer. 6 tenants (4 LLCs + holding co + mgmt co), spouse co-ownership active, full monthly cycle (rent → invoice → bank reconciliation → statements → vendor payments) running in production. Accountant peer node (Headscale) and CPA read-only access via Bridge. | **Primary.** Proves the local-first paradigm with a real commercial workload. |
 | **G-2** | **Component library** | Sunfish | Dual-namespace components (Rich vs MVP per ADR 0041) shipped with parity tests passing; style audit synthesis findings (248 findings, 10 themes — `project_style_audit_synthesis_2026_04`) remediated; compat-package expansion (Telerik / Syncfusion / DevExpress / Infragistics — `project_compat_expansion_workstream`) wave landed. | Secondary. Funds + de-risks future commercial customers; book Part IV implementation playbooks pull from this. |
 | **G-3** | **Book — *The Inverted Stack*** | the-inverted-stack | All 20 chapters + preface + epilogue + 4 appendices through `icm/approved` → `icm/assembled`; audiobook pipeline through ACX submission target; published. | Secondary but parallel. Drives architectural rigor (the book commits Sunfish to specific package contracts via `inverted-stack-package-roadmap.md`); commercial-positioning of Sunfish per `project_sunfish_reference_implementation`. |
 
@@ -30,36 +30,60 @@ Per `project_business_mvp_phase_1_progress` memory, G1-G6 substrate is **all mer
 
 **Phase 1 completion estimate:** ~3-5 PRs remaining; ~1 week of focused sunfish-PM work.
 
-### Phase 2 (commercial scope) — ~10% done
+### Phase 2 (commercial scope) — ~15% done
 
-Per `phase-2-commercial-mvp-intake-2026-04-27.md`, 8 workstreams (A-H):
+**⚠ W#60 pivot (2026-05-11) materially changes workstreams A–G.** ERPNext now owns accounting, invoicing, bank reconciliation, and statements. Sunfish wraps it. Original workstream scopes below have been annotated with pivot impact.
+
+| WS | Title | Status | Pivot impact | Estimated PRs |
+|---|---|---|---|---|
+| **A** | Anchor team-context binding for 6 entities | Not started; ERPNext manages multi-entity natively; Sunfish needs team-switch UX wiring to ERPNext entity IDs (ADR 0032) | **Scope reduced** — ERPNext carries the data model; Sunfish adds the UI + team-context selection | 2-3 |
+| **B** | Wave Accounting migration | **SUPERSEDED** — W#60 Phase 1 PASS (CO entered data directly into ERPNext 2026-05-12); no Wave import tool needed | — | 0 |
+| **C** | Bank ingest + reconciliation | **REFORMULATED** — ERPNext bank reconciliation handles this natively; Sunfish role is: offline local cache of reconciled statement data + Plaid token routing to ERPNext import | **Scope shifted** — Plaid integration targets ERPNext REST API, not Sunfish blocks-accounting | 3-5 |
+| **D** | Payments (Stripe + ADR 0051) | **REFORMULATED** — ERPNext records payments; Stripe integration feeds ERPNext; Sunfish's ADR 0051 scope shrinks to outbound-payment event forwarding | **Scope reduced** — ADR 0051 still needed for the event-forwarding contract; impl is an ERPNext Stripe integration | 4-6 |
+| **E** | Outbound messaging (SendGrid + ADR 0052) | Not started; **blocks on ADR 0052 drafting**; scope unchanged (ERPNext has no chat/messaging) | **Unchanged** — `blocks-crew-comms` is Sunfish's primary differentiator over ERPNext | 4-6 |
+| **F** | Audit trail (kernel-audit + Tier 1 retrofit) | **scaffold merged 2026-04-28**; Tier 1 retrofit ready-to-build | Unchanged | 1-2 |
+| **G** | Statement template + monthly job | **SUPERSEDED** — ERPNext generates invoices/statements natively; Sunfish role is React UI display + offline cache | — | 0 |
+| **H** | Spouse co-ownership + recovery (ADR 0046 primitives) | Not started; gated on `Foundation.Recovery` scaffolding | **Unchanged** — cryptographic recovery is Sunfish-layer, not ERPNext | 4-6 |
+
+**W#60 phase workstreams (new, 2026-05-11+):**
 
 | WS | Title | Status | Estimated PRs |
 |---|---|---|---|
-| **A** | Anchor multi-team setup for 6 entities (ADR 0032) | Not started; reuses existing TeamContext | 3-5 |
-| **B** | Wave Accounting one-shot migration tool | Not started | 4-7 |
-| **C** | Bank ingest (`providers-plaid` + reconciliation) | Not started; **blocks on ADR 0013 enforcement gate (C-4)** | 6-10 |
-| **D** | Payments (`providers-stripe` + ADR 0051 contract package) | Not started; **blocks on ADR 0051 drafting** | 8-12 |
-| **E** | Outbound messaging (`providers-sendgrid` + ADR 0052) | Not started; **blocks on ADR 0052 drafting** | 4-6 |
-| **F** | Audit trail (kernel-audit + Tier 1 retrofit) | **scaffold merged 2026-04-28**; Tier 1 retrofit ready-to-build | 1-2 |
-| **G** | Statement template + monthly job | Not started; deferred to ADR 0053 (background jobs); use Quartz shim for now | 3-5 |
-| **H** | Spouse co-ownership + recovery (config on ADR 0046 primitives) | Not started; gated on `Foundation.Recovery` scaffolding | 4-6 |
+| **W#60 P2** | React UI skin (6 screens + @sunfish/ui-react) | **BUILT 2026-05-13** (PRs #731+#732+#751+#752+#757+#758) | done |
+| **W#60 P3** | Tauri v2 offline shell (Surface Pro) | **Ready-to-build** — gated on ADR 0086 Accepted (PR #737 Proposed) | 3-4 |
+| **W#60 P4** | Collaboration (accountant peer + CPA + tenant portal + bank CSV) | **Hand-off authored 2026-05-16** — gated on P3 PASS (CO Surface Pro acceptance) | 5-6 |
+| **W#60 P5** | @sunfish/contracts + rent roll + P&L + Schedule-E | **Hand-off authored 2026-05-16** — PR 1 (@sunfish/contracts) immediately buildable; PR 2+ gated on P2 React UI (done) | 4-5 |
 
-**Phase 2 completion estimate:** ~33-53 PRs remaining.
+**Phase 2 completion estimate (revised):** ~27-41 PRs remaining (down from 33-53 pre-pivot; B and G superseded; C and D scopes reduced).
 
-### G-1 done conditions (concrete)
+### G-1 done conditions (concrete, revised 2026-05-16)
 
-- [ ] Phase 1 G6 host integration + Razor UI shipped (Anchor on Windows VM)
-- [ ] Phase 1 G7 conformance baseline scan committed under `icm/01_discovery/output/`
-- [ ] Phase 2 ADR 0051 (Payments) accepted
-- [ ] Phase 2 ADR 0052 (Outbound messaging) accepted
-- [ ] All 8 Phase 2 workstreams (A-H) shipped
-- [ ] BDFL imports first month of real Wave data; reconciliation matches
-- [ ] BDFL processes first rent collection through `blocks-rent-collection`
-- [ ] BDFL sends first statement via `providers-sendgrid` outbound
-- [ ] Spouse logs in to her own Anchor install with co-owner capabilities
+**Phase 1:**
+- [ ] G6 host integration + Razor UI shipped (Anchor on Windows VM — `Foundation.Recovery` wire-up)
+- [ ] G7 conformance baseline scan committed under `icm/01_discovery/output/`
+
+**ERPNext layer (W#60):**
+- [x] W#60 P1 PASS — ERPNext self-hosted on CO machine; lease + rent payment + ledger confirmed (2026-05-12)
+- [x] W#60 P2 BUILT — React UI (6 screens + @sunfish/ui-react) on main (2026-05-13)
+- [ ] W#60 P3 PASS — CO works offline on Surface Pro 30 min; reconnects; changes appear in ERPNext (gates P4)
+- [ ] W#60 P4 PASS — Accountant peer node syncing; CPA can view year-end data; tenant portal works via magic-link
+- [ ] W#60 P5 PASS — @sunfish/contracts published; rent roll + P&L + Schedule-E accessible
+
+**Phase 2 Sunfish-layer workstreams:**
+- [ ] ADR 0052 (Outbound messaging) accepted + WS-E built (blocks-crew-comms → SendGrid bridge)
+- [ ] ADR 0051 (Payments event-forwarding contract) accepted + WS-D built (Stripe → ERPNext forwarding)
+- [ ] WS-A built (Anchor team-context bound to ERPNext entities for 6-entity setup)
+- [ ] WS-C built (Plaid → ERPNext bank import; offline local cache of reconciled data)
+- [ ] WS-H built (spouse co-ownership + recovery)
+
+**Business validation:**
+- [ ] BDFL processes first rent collection cycle end-to-end (React UI → ERPNext → bank statement)
+- [ ] BDFL sends first tenant communication through blocks-crew-comms
+- [ ] Accountant performs bank reconciliation from their own Anchor node
+- [ ] CPA accesses year-end Schedule-E data via Bridge read-only session
+- [ ] Spouse logs into her own Anchor install with co-owner capabilities
 - [ ] Recovery flow exercised end-to-end (real trustees, real grace period)
-- [ ] Annual cycle dry-run: tax-prep export to advisor via outbound
+- [ ] Annual cycle dry-run: tax-prep export matches accountant's records
 
 ---
 
@@ -121,18 +145,15 @@ Per `phase-2-commercial-mvp-intake-2026-04-27.md`, 8 workstreams (A-H):
 
 ---
 
-## Velocity baseline (calculated 2026-04-28)
+## Velocity baseline (updated 2026-05-16)
 
 ### Sunfish PR throughput
 
-| Date | PRs merged |
-|---|---|
-| 2026-04-28 | 11 (so far) |
-| 2026-04-27 | 22 |
-| 2026-04-26 | 17 |
-| 3-day average | ~17 PRs/day |
+**2026-04-28 baseline:** ~17 PRs/day (3-day average; bursty).
 
-This is **bursty** — a high day driven by overnight subagent dispatches + parallel sessions. Sustainable pace is probably **5-10 substantive PRs/day** when actively working; **0-3 PRs/day** on light days.
+**2026-05-16 refresh:** W#23 + W#29 + W#44–W#62 cluster shipped across 2026-05-04–2026-05-16. Approximate total: 60–80 PRs merged in 18 days → **~4-5 substantive PRs/day sustained**. This is lower than the April burst but more consistent — property-ops cluster (19 workstreams × 3-7 PRs each) plus iOS substrate drove the bulk of the volume.
+
+Velocity is **bursty** — active research+build days hit 8-12 PRs; quiet days hit 0-2. Sustainable pace: **4-6 substantive PRs/day** when actively working.
 
 ### Book throughput
 
@@ -146,16 +167,25 @@ User on Pro Max ($200/mo). Recent overnight automation run consumed ~830K tokens
 
 ## Estimated MVP date — user-business-MVP (G-1)
 
-Based on:
-- Phase 1 remaining: ~3-5 PRs (~1 week)
-- Phase 2 remaining: ~33-53 PRs at 5-10 PRs/day = ~5-10 working days
-- Plus: ADR 0051 + 0052 drafting (research session, ~2 sessions)
-- Plus: real-world data migration + reconciliation testing (BDFL-time-bound)
+**Revised 2026-05-16** (post-W#60 pivot):
 
-**Estimated G-1 MVP-ready: 4-8 weeks** (early-to-mid June 2026), assuming:
-- No major architectural surprises (likely; ADRs are mostly accepted)
-- BDFL allocates time for migration testing + first-month parallel run
+| Track | Remaining work | Time estimate |
+|---|---|---|
+| Phase 1 G6 (Recovery host integration + UI) | ~3-5 PRs; hand-off not yet authored | 1-2 weeks |
+| W#60 P3 (Tauri offline shell) | gated on ADR 0086 Accepted (CO action) | 1-2 weeks after CO flips |
+| W#60 P4 (Collaboration — accountant peer + CPA + tenant) | gated on P3 PASS | 2-3 weeks after P3 |
+| W#60 P5 (@sunfish/contracts + reporting) | PR 1 buildable now; PR 2+ gated on P2 (done) | 1-2 weeks |
+| Phase 2 Sunfish-layer (WS-A, C, D, E, H) | ~18-28 PRs; WS-E and WS-H have no hands-off yet | 3-5 weeks |
+| ADR 0051 + 0052 drafting | XO research, ~2 sessions | 1 week |
+| Business validation cycle | BDFL-time-bound; first real rent-collection cycle | 2-4 weeks real-world |
+
+**Estimated G-1 MVP-ready: 8-14 weeks from now** (mid-July to late-August 2026), assuming:
+- ADR 0086 accepted + CO confirms Surface Pro P3 test within 1-2 weeks
+- ADR 0052 drafted within the next XO cycle
 - sunfish-PM session runs ~3-5 days/week
+- No major blocking surprises in Tauri/Headscale peer connectivity
+
+**The ERPNext pivot accelerated the accounting/invoicing/reconciliation track** (B + G superseded; C + D scopes halved), but adds 3-5 weeks for the W#60 P3/P4 collaboration layer that didn't exist in the original Phase 2 scope. Net effect: roughly timeline-neutral but with a much lower implementation risk profile.
 
 ---
 
