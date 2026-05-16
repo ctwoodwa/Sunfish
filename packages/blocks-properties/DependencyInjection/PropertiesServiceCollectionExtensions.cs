@@ -14,11 +14,12 @@ public static class PropertiesServiceCollectionExtensions
     /// Registers the in-memory properties surface:
     /// <list type="bullet">
     ///   <item><see cref="IPropertyRepository"/> → <see cref="InMemoryPropertyRepository"/></item>
+    ///   <item><see cref="IPropertyUnitRepository"/> → <see cref="InMemoryPropertyUnitRepository"/></item>
     ///   <item><see cref="ISunfishEntityModule"/> → <see cref="PropertiesEntityModule"/></item>
     /// </list>
     /// Suitable for testing, prototyping, and kitchen-sink demos. Replace
-    /// with a persistence-backed <see cref="IPropertyRepository"/> in
-    /// production hosts.
+    /// with a persistence-backed <see cref="IPropertyRepository"/> /
+    /// <see cref="IPropertyUnitRepository"/> in production hosts.
     /// </summary>
     /// <param name="services">The service collection to register into.</param>
     /// <returns>The same <paramref name="services"/> for fluent chaining.</returns>
@@ -27,6 +28,7 @@ public static class PropertiesServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IPropertyRepository, InMemoryPropertyRepository>();
+        services.AddSingleton<IPropertyUnitRepository, InMemoryPropertyUnitRepository>();
         services.AddSingleton<ISunfishEntityModule, PropertiesEntityModule>();
 
         return services;
