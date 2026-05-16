@@ -199,6 +199,10 @@
     <Project Path="packages/blocks-financial-ledger/Sunfish.Blocks.FinancialLedger.csproj" />
     <Project Path="packages/blocks-financial-ledger/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/financial-tax/">
+    <Project Path="packages/blocks-financial-tax/Sunfish.Blocks.FinancialTax.csproj" />
+    <Project Path="packages/blocks-financial-tax/tests/Sunfish.Blocks.FinancialTax.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/reports-tax/">
     <Project Path="packages/blocks-reports-tax/Sunfish.Blocks.Reports.Tax.csproj" />
     <Project Path="packages/blocks-reports-tax/tests/tests.csproj" />
