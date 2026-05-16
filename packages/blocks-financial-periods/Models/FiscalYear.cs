@@ -19,6 +19,7 @@ namespace Sunfish.Blocks.FinancialPeriods.Models;
 /// <param name="ClosedAtUtc">Wall-clock instant the year transitioned to <see cref="FiscalYearStatus.Closed"/>; null while Open.</param>
 /// <param name="ClosingJournalEntryId">FK to the closing journal entry posted at year-end; null while Open or before the closing JE has been synthesized.</param>
 /// <param name="CreatedAtUtc">Creation timestamp.</param>
+/// <param name="Version">Optimistic-concurrency token bumped on every mutation by <c>IFiscalYearCloseService</c> (PR 3b); the repository uses it as the compare-and-swap predicate to surface concurrent-update races between admin sessions.</param>
 public sealed record FiscalYear(
     FiscalYearId Id,
     ChartOfAccountsId ChartId,
@@ -28,11 +29,13 @@ public sealed record FiscalYear(
     FiscalYearStatus Status,
     Instant? ClosedAtUtc,
     JournalEntryId? ClosingJournalEntryId,
-    Instant CreatedAtUtc)
+    Instant CreatedAtUtc,
+    int Version = 0)
 {
     /// <summary>
     /// Build a fresh <see cref="FiscalYear"/> in the
-    /// <see cref="FiscalYearStatus.Open"/> state with null close fields.
+    /// <see cref="FiscalYearStatus.Open"/> state with null close fields
+    /// and <see cref="Version"/> = 0.
     /// </summary>
     public static FiscalYear CreateOpen(
         FiscalYearId id,
@@ -50,7 +53,8 @@ public sealed record FiscalYear(
             Status:                FiscalYearStatus.Open,
             ClosedAtUtc:           null,
             ClosingJournalEntryId: null,
-            CreatedAtUtc:          createdAtUtc ?? Instant.Now);
+            CreatedAtUtc:          createdAtUtc ?? Instant.Now,
+            Version:               0);
 
     /// <summary>
     /// Per Stage 02 §3.15 — run the shape invariants over this fiscal

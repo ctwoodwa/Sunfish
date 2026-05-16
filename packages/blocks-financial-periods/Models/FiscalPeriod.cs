@@ -22,6 +22,7 @@ namespace Sunfish.Blocks.FinancialPeriods.Models;
 /// <param name="LockedAtUtc">Wall-clock instant the period transitioned to Locked; null while Open / SoftClosed.</param>
 /// <param name="ClosingJournalEntryId">FK to the period-close journal entry if one was posted; null otherwise.</param>
 /// <param name="CreatedAtUtc">Creation timestamp.</param>
+/// <param name="Version">Optimistic-concurrency token bumped on every mutation by <c>IPeriodCloseService</c>; the repository uses it as the compare-and-swap predicate to surface <c>PeriodCloseError.ConcurrentUpdate</c> on racing writers (cross-window admin races, batch close jobs).</param>
 public sealed record FiscalPeriod(
     FiscalPeriodId Id,
     ChartOfAccountsId ChartId,
@@ -34,11 +35,13 @@ public sealed record FiscalPeriod(
     Instant? SoftClosedAtUtc,
     Instant? LockedAtUtc,
     JournalEntryId? ClosingJournalEntryId,
-    Instant CreatedAtUtc)
+    Instant CreatedAtUtc,
+    int Version = 0)
 {
     /// <summary>
     /// Build a fresh <see cref="FiscalPeriod"/> in the
-    /// <see cref="FiscalPeriodStatus.Open"/> state with null close fields.
+    /// <see cref="FiscalPeriodStatus.Open"/> state with null close fields
+    /// and <see cref="Version"/> = 0.
     /// </summary>
     public static FiscalPeriod CreateOpen(
         FiscalPeriodId id,
@@ -61,7 +64,8 @@ public sealed record FiscalPeriod(
             SoftClosedAtUtc:       null,
             LockedAtUtc:           null,
             ClosingJournalEntryId: null,
-            CreatedAtUtc:          createdAtUtc ?? Instant.Now);
+            CreatedAtUtc:          createdAtUtc ?? Instant.Now,
+            Version:               0);
 
     /// <summary>
     /// <c>true</c> if <paramref name="date"/> falls within

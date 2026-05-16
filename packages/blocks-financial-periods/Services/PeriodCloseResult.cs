@@ -25,8 +25,27 @@ public enum PeriodCloseError
     /// <summary>The owning <see cref="FiscalYear"/> is <see cref="FiscalYearStatus.Closed"/>; reopen is rejected until the year is reopened.</summary>
     FiscalYearAlreadyClosed,
 
-    /// <summary>Audit memo is required for the reopen path; caller passed a null / whitespace memo.</summary>
+    /// <summary>Audit memo is required for the reopen / unlock path; caller passed a null / whitespace memo.</summary>
     AuditMemoRequired,
+
+    /// <summary>
+    /// The repository rejected the update because the stored
+    /// <see cref="FiscalPeriod.Version"/> did not match the version the
+    /// service loaded — another writer mutated the row between fetch
+    /// and write. Callers should refetch and re-evaluate the
+    /// transition.
+    /// </summary>
+    ConcurrentUpdate,
+
+    /// <summary>
+    /// Soft-close / lock target was already in the expected end state
+    /// (e.g., <c>LockAsync</c> called on an already-Locked period).
+    /// Distinct from <see cref="PeriodAlreadySoftClosed"/> for clarity.
+    /// </summary>
+    PeriodAlreadyLocked,
+
+    /// <summary>Unlock target was not in <see cref="FiscalPeriodStatus.Locked"/>; surfaces a stale caller intent.</summary>
+    PeriodNotLocked,
 }
 
 /// <summary>
