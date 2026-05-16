@@ -4,7 +4,7 @@ number: 7
 slug: phase-1-g7-conformance-scan
 title: "Phase 1 G7 conformance scan"
 status: "built"
-status_cell: "`built` — scan complete 2026-05-16; report at `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md`; verdict: PARTIAL (G1–G5 PASS; G6 PARTIAL — SQLCipher rekey stub + ApproveRecoveryPage placeholder tracked as W#65+W#66)"
+status_cell: "`built` — scan complete 2026-05-16; report at `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md`; verdict: **PASS — 6/6** (G6 fully closed 2026-05-16 by W#65 PR #868 + W#66 PR #870 + W#67 PRs #875–#903)"
 owner: "research"
 owner_cell: "research (XO session — runs the scan; produces report)"
 reference_cell: "`icm/_state/handoffs/phase-1-g7-conformance-scan-stage07-handoff.md` + `icm/05_implementation-plan/output/business-mvp-phase-1-plan-2026-04-26.md`"
@@ -14,8 +14,8 @@ reference_cell: "`icm/_state/handoffs/phase-1-g7-conformance-scan-stage07-handof
 
 **Scan deliverable:** `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` — **COMPLETE 2026-05-16**
 
-Verdict: PARTIAL — G1/G2/G3/G4/G5 all PASS. G6 PARTIAL: core recovery state machine + 5 Razor pages + `RecoveryGracePollingService` all wired; two surfaces deferred:
-- G6-A: SQLCipher rekey stub (pending `IEncryptedStore.RotateKeyAsync` api-change; unowned)
-- G6-B: `ApproveRecoveryPage` placeholder (tracked as W#66, gated on W#65)
+Verdict: **PASS — 6/6.** G1–G6 all PASS. G6 fully closed 2026-05-16:
+- G6-B closed: W#65 (PR #868 `ISessionSignerAccessor`) + W#66 (PR #870 `ApproveRecoveryPage` live attestation)
+- G6-A closed: W#67 6-PR social-recovery chain (PRs #875–#903) — ADR 0046-A6 seed-delivery protocol + `EncryptedSeedShare` + SQLCipher rekey wired
 
 G2 two-node test (`TwoNode_DeltaStream_AppliesToReceiver_CRDT`) confirmed to exist — it was not missing as initially suspected.
