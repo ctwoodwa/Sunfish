@@ -1,3 +1,4 @@
+using Sunfish.Blocks.Properties.Models;
 using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Integrations.Messaging;
@@ -35,6 +36,15 @@ public sealed record WorkOrder
 
     /// <summary>Owning tenant (per <c>IMustHaveTenant</c>).</summary>
     public required TenantId Tenant { get; init; }
+
+    /// <summary>
+    /// Property this work order is associated with. W#62 PR 3 addition.
+    /// Nullable: existing call sites compile without modification, and
+    /// tenant-wide administrative work orders (rare) can leave this unset.
+    /// Cockpit aggregation surfaces (W#29 PR 5 dashboard, property-detail
+    /// open-WO count) filter on this field.
+    /// </summary>
+    public PropertyId? PropertyId { get; init; }
 
     /// <summary>The vendor assigned to perform the work.</summary>
     public required VendorId AssignedVendorId { get; init; }

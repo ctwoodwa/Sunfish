@@ -5,6 +5,8 @@ using Sunfish.Blocks.Inspections.Models;
 using Sunfish.Blocks.Inspections.Services;
 using Sunfish.Blocks.Leases.Models;
 using Sunfish.Blocks.Leases.Services;
+using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Blocks.Maintenance.Services;
 using Sunfish.Blocks.Properties.Models;
 using Sunfish.Blocks.Properties.Services;
 using Sunfish.Blocks.PropertyEquipment.Models;
@@ -34,12 +36,12 @@ public sealed class PropertyDetailEndpointTests
     public async Task GetPropertyDetail_ReturnsPropertyCard_And_Equipment()
     {
         var propId = new PropertyId("PROP-100");
-        var (propRepo, unitRepo, eqRepo, leases, inspections) = NewServices();
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
         await propRepo.UpsertAsync(NewProperty(TestTenant, propId, "100 Mainline Ave", "Lehi", "UT", PropertyKind.MultiUnit));
         await eqRepo.UpsertAsync(NewEquipment(TestTenant, propId, "EQ-1", "Water Heater", EquipmentClass.WaterHeater, "Rheem", "XR50"));
         await eqRepo.UpsertAsync(NewEquipment(TestTenant, propId, "EQ-2", "HVAC", EquipmentClass.HVAC, null, null));
 
-        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections);
+        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections, maintenance);
 
         Assert.Equal("PROP-100", dto.PropertyId);
         Assert.Equal("MultiUnit", dto.Kind);
@@ -58,7 +60,7 @@ public sealed class PropertyDetailEndpointTests
     [Fact]
     public async Task GetPropertyDetail_Returns404_WhenPropertyNotFoundInTenant()
     {
-        var (propRepo, unitRepo, eqRepo, leases, inspections) = NewServices();
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
         var ctx = new TestTenantContext(TestTenant.Value);
 
         var result = await PropertyDetailEndpoint.HandleGetPropertyDetailAsync(
@@ -69,6 +71,7 @@ public sealed class PropertyDetailEndpointTests
             equipment: eqRepo,
             leases: leases,
             inspections: inspections,
+            maintenance: maintenance,
             ct: CancellationToken.None);
 
         Assert.IsType<NotFound>(result.Result);
@@ -81,7 +84,7 @@ public sealed class PropertyDetailEndpointTests
         var other = new TenantId("tenant-other");
         var propId = new PropertyId("PROP-100");
 
-        var (propRepo, unitRepo, eqRepo, leases, inspections) = NewServices();
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
         await propRepo.UpsertAsync(NewProperty(other, propId, "100 Their Way", "Provo", "UT", PropertyKind.SingleFamily));
         var ctx = new TestTenantContext(mine.Value);
 
@@ -93,6 +96,7 @@ public sealed class PropertyDetailEndpointTests
             equipment: eqRepo,
             leases: leases,
             inspections: inspections,
+            maintenance: maintenance,
             ct: CancellationToken.None);
 
         Assert.IsType<NotFound>(result.Result);
@@ -104,7 +108,7 @@ public sealed class PropertyDetailEndpointTests
     public async Task GetPropertyDetail_PopulatesActiveLease_FromUnitJoin()
     {
         var propId = new PropertyId("PROP-200");
-        var (propRepo, unitRepo, eqRepo, leases, inspections) = NewServices();
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
         await propRepo.UpsertAsync(NewProperty(TestTenant, propId, "200 Lease Ln", "Lehi", "UT", PropertyKind.SingleFamily));
 
         // Seed a unit for this property.
@@ -134,7 +138,7 @@ public sealed class PropertyDetailEndpointTests
         await leases.TransitionPhaseAsync(lease.Id, LeasePhase.Executed, ActorId.System);
         await leases.TransitionPhaseAsync(lease.Id, LeasePhase.Active, ActorId.System);
 
-        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections);
+        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections, maintenance);
 
         Assert.NotNull(dto.ActiveLease);
         Assert.Equal(lease.Id.Value, dto.ActiveLease!.LeaseId);
@@ -146,7 +150,7 @@ public sealed class PropertyDetailEndpointTests
     public async Task GetPropertyDetail_PopulatesLastInspectionDate_FromUnitJoin()
     {
         var propId = new PropertyId("PROP-300");
-        var (propRepo, unitRepo, eqRepo, leases, inspections) = NewServices();
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
         await propRepo.UpsertAsync(NewProperty(TestTenant, propId, "300 Insp Way", "Lehi", "UT", PropertyKind.SingleFamily));
 
         var unitId = PropertyUnit.NewId(TestTenant);
@@ -182,7 +186,7 @@ public sealed class PropertyDetailEndpointTests
             ScheduledDate = new DateOnly(2026, 5, 1),
         });
 
-        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections);
+        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections, maintenance);
 
         Assert.Equal(new DateOnly(2026, 5, 1), dto.LastInspectionDate);
         Assert.NotNull(dto.LastInspectionResult);
@@ -193,7 +197,7 @@ public sealed class PropertyDetailEndpointTests
     {
         var propA = new PropertyId("PROP-A");
         var propB = new PropertyId("PROP-B");
-        var (propRepo, unitRepo, eqRepo, leases, inspections) = NewServices();
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
         await propRepo.UpsertAsync(NewProperty(TestTenant, propA, "Prop A", "Lehi", "UT", PropertyKind.SingleFamily));
         await propRepo.UpsertAsync(NewProperty(TestTenant, propB, "Prop B", "Lehi", "UT", PropertyKind.SingleFamily));
 
@@ -216,9 +220,65 @@ public sealed class PropertyDetailEndpointTests
         await leases.TransitionPhaseAsync(leaseB.Id, LeasePhase.Executed, ActorId.System);
         await leases.TransitionPhaseAsync(leaseB.Id, LeasePhase.Active, ActorId.System);
 
-        var dto = await CallHandlerOk(propA.Value, propRepo, unitRepo, eqRepo, leases, inspections);
+        var dto = await CallHandlerOk(propA.Value, propRepo, unitRepo, eqRepo, leases, inspections, maintenance);
 
         Assert.Null(dto.ActiveLease);
+    }
+
+    // ── OpenWorkOrderCount (W#62 Phase 3) ──────────────────────────────────
+
+    [Fact]
+    public async Task GetPropertyDetail_PopulatesOpenWorkOrderCount_FromPropertyFilter()
+    {
+        var propId = new PropertyId("PROP-WO");
+        var (propRepo, unitRepo, eqRepo, leases, inspections, maintenance) = NewServices();
+        await propRepo.UpsertAsync(NewProperty(TestTenant, propId, "WO Way", "Lehi", "UT", PropertyKind.SingleFamily));
+
+        // Two open work orders on this property; one Closed on this property
+        // (must NOT count); one open on a different property (must NOT count).
+        var vendor = await maintenance.CreateVendorAsync(new CreateVendorRequest
+        {
+            DisplayName = "Vendor",
+            Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing),
+        });
+        await SeedWorkOrderAsync(maintenance, vendor.Id, propId, WorkOrderStatus.Draft);
+        await SeedWorkOrderAsync(maintenance, vendor.Id, propId, WorkOrderStatus.Draft);
+        await SeedWorkOrderAsync(maintenance, vendor.Id, propId, terminalStatus: WorkOrderStatus.Cancelled);
+        await SeedWorkOrderAsync(maintenance, vendor.Id, new PropertyId("PROP-OTHER"), WorkOrderStatus.Draft);
+
+        var dto = await CallHandlerOk(propId.Value, propRepo, unitRepo, eqRepo, leases, inspections, maintenance);
+
+        Assert.Equal(2, dto.OpenWorkOrderCount);
+    }
+
+    private static async Task SeedWorkOrderAsync(
+        InMemoryMaintenanceService svc, VendorId vendorId, PropertyId propertyId,
+        WorkOrderStatus? terminalStatus = null, WorkOrderStatus? draftStatus = null)
+    {
+        var req = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
+        {
+            PropertyId             = new EntityId("urn", "sunfish.test", propertyId.Value),
+            RequestedByDisplayName = "Owner",
+            Description            = "Test",
+            Priority               = MaintenancePriority.Normal,
+            RequestedDate          = new DateOnly(2026, 5, 1),
+        });
+        var wo = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest
+        {
+            Tenant           = TestTenant,
+            RequestId        = req.Id,
+            AssignedVendorId = vendorId,
+            ScheduledDate    = new DateOnly(2026, 5, 10),
+            PropertyId       = propertyId,
+        });
+
+        if (terminalStatus == WorkOrderStatus.Cancelled)
+        {
+            // Draft → Sent → Cancelled.
+            await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Sent, CancellationToken.None);
+            await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Cancelled, CancellationToken.None);
+        }
+        _ = draftStatus;
     }
 
     // ── Fixtures ────────────────────────────────────────────────────────────
@@ -228,12 +288,14 @@ public sealed class PropertyDetailEndpointTests
         InMemoryPropertyUnitRepository units,
         InMemoryEquipmentRepository equipment,
         InMemoryLeaseService leases,
-        InMemoryInspectionsService inspections) NewServices()
+        InMemoryInspectionsService inspections,
+        InMemoryMaintenanceService maintenance) NewServices()
         => (new InMemoryPropertyRepository(),
             new InMemoryPropertyUnitRepository(),
             new InMemoryEquipmentRepository(new InMemoryEquipmentLifecycleEventStore()),
             new InMemoryLeaseService(),
-            new InMemoryInspectionsService());
+            new InMemoryInspectionsService(),
+            new InMemoryMaintenanceService());
 
     private static async Task<PropertyDetailDto> CallHandlerOk(
         string propertyId,
@@ -241,7 +303,8 @@ public sealed class PropertyDetailEndpointTests
         IPropertyUnitRepository units,
         IEquipmentRepository equipment,
         ILeaseService leases,
-        IInspectionsService inspections)
+        IInspectionsService inspections,
+        IMaintenanceService maintenance)
     {
         var ctx = new TestTenantContext(TestTenant.Value);
         var result = await PropertyDetailEndpoint.HandleGetPropertyDetailAsync(
@@ -252,6 +315,7 @@ public sealed class PropertyDetailEndpointTests
             equipment: equipment,
             leases: leases,
             inspections: inspections,
+            maintenance: maintenance,
             ct: CancellationToken.None);
 
         var ok = Assert.IsType<Ok<PropertyDetailDto>>(result.Result);

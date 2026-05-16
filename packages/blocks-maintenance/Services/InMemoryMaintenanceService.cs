@@ -487,6 +487,8 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         {
             Id = WorkOrderId.NewId(),
             Tenant = request.Tenant,
+            // W#62 PR 3 — property scoping for cockpit aggregation.
+            PropertyId = request.PropertyId,
             AssignedVendorId = request.AssignedVendorId,
             Status = WorkOrderStatus.Draft,
             ScheduledDate = request.ScheduledDate,
@@ -597,6 +599,10 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
                 continue;
 
             if (query.Status.HasValue && wo.Status != query.Status.Value)
+                continue;
+
+            // W#62 PR 3 — property scoping for cockpit aggregation.
+            if (query.PropertyId.HasValue && wo.PropertyId != query.PropertyId.Value)
                 continue;
 
             yield return wo;

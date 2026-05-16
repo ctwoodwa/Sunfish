@@ -1,4 +1,5 @@
 using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Blocks.Properties.Models;
 
 namespace Sunfish.Blocks.Maintenance.Services;
 
@@ -18,6 +19,13 @@ public sealed record ListWorkOrdersQuery
 
     /// <summary>When set, only work orders with this status are returned.</summary>
     public WorkOrderStatus? Status { get; init; }
+
+    /// <summary>
+    /// When set, only work orders for this property are returned. W#62 PR 3
+    /// addition; backs the cockpit property-detail open-WO count and the
+    /// dashboard's per-property aggregation.
+    /// </summary>
+    public PropertyId? PropertyId { get; init; }
 
     /// <summary>Shared empty query that applies no filters.</summary>
     public static ListWorkOrdersQuery Empty { get; } = new();
