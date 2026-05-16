@@ -200,10 +200,15 @@ function AppLayout() {
 /**
  * W#60 P4 PR 1 — auth boot gate.
  *
- * On mount, attempts to load a previously-stored Bridge auth token from the
- * Stronghold-backed credentialStore. If present: seeds the authStore + informs
- * the Rust side via `set_bridge_token`, then renders the app. If absent or
- * keychain access fails: renders the LoginPage for manual entry.
+ * Two-stage probe on mount:
+ *   1. `keychain_status` (Rust command, council A1.4) — surfaces OS-keychain
+ *      derivation failures from setup time. On error: render a precise banner
+ *      instead of falling through to LoginPage, which would otherwise look
+ *      like a generic "please log in" even when the underlying problem is a
+ *      GPO-locked Credential Manager or denied Keychain Access prompt.
+ *   2. `credentialStore.getToken()` — pulls the persisted Bridge token from
+ *      Stronghold. If present: seeds authStore + informs the Rust state via
+ *      `set_bridge_token`. If absent: renders the LoginPage for manual entry.
  *
  * Subscribes to authStore.token so a successful LoginPage submit (which sets
  * the token) re-renders this component and reveals the app.
@@ -212,10 +217,30 @@ function AuthGate() {
   const token = useAuthStore((s) => s.token)
   const setToken = useAuthStore((s) => s.setToken)
   const [loaded, setLoaded] = useState(false)
+  const [keychainError, setKeychainError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
+      // Step 1 — keychain probe. If derivation failed at setup, don't even
+      // attempt to open Stronghold; the closure would return the sentinel key
+      // and Stronghold would surface an opaque decryption error.
+      try {
+        const status = await invoke<string | null>('keychain_status')
+        if (cancelled) return
+        if (status) {
+          setKeychainError(status)
+          setLoaded(true)
+          return
+        }
+      } catch {
+        // Command not registered or IPC denied — treat as keychain unavailable
+        // for safety; user sees the banner rather than a confusing login loop.
+        setKeychainError('Anchor could not reach the operating-system credential store.')
+        setLoaded(true)
+        return
+      }
+      // Step 2 — load any stored token from Stronghold.
       try {
         const stored = await loadStoredToken()
         if (cancelled) return
@@ -224,7 +249,7 @@ function AuthGate() {
           setToken(stored)
         }
       } catch {
-        // Keychain access or Stronghold init failed — fall through to login.
+        // Stronghold init failed or token absent — fall through to LoginPage.
       } finally {
         if (!cancelled) setLoaded(true)
       }
@@ -235,9 +260,32 @@ function AuthGate() {
   }, [setToken])
 
   if (!loaded) {
-    // Brief splash while we probe Stronghold; avoids the LoginPage flashing
-    // before we know whether there's a stored token.
+    // Brief splash while we probe; avoids the LoginPage flashing on every cold
+    // start before we know whether there's a stored token.
     return <div className="min-h-screen bg-background" />
+  }
+  if (keychainError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6 bg-background text-foreground">
+        <div className="w-full max-w-md space-y-3 rounded-lg border border-destructive/20 bg-destructive/10 p-8">
+          <h2 className="text-lg font-semibold text-destructive">Keychain unavailable</h2>
+          <p className="text-sm text-muted-foreground">
+            Anchor could not access the operating-system credential store needed to
+            secure your Bridge auth token. The application cannot sign you in until
+            this is resolved.
+          </p>
+          <p className="text-xs font-mono text-muted-foreground break-words">
+            {keychainError}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Common causes: Windows Group Policy disabling Credential Manager;
+            macOS Keychain Access denial (try System Settings → Privacy &amp;
+            Security → Keychain Access); a Linux session without an active
+            Secret Service daemon (gnome-keyring / KWallet).
+          </p>
+        </div>
+      </div>
+    )
   }
   if (!token) return <LoginPage />
   return <AppLayout />

@@ -33,6 +33,29 @@ export function LoginPage() {
     setSubmitting(true)
     setError(null)
     try {
+      // Council A1.3 — validate the token against Bridge BEFORE persisting.
+      // Without this, any pasted string (a redirect URL, a JSON fragment, an
+      // attacker-supplied token) ends up in Stronghold and the app silently
+      // 401-spirals with no surfaced cause. Use `Authorization: Bearer` so we
+      // exercise the same auth path the sync code uses, not just cookies.
+      let probe: Response
+      try {
+        probe = await fetch('/api/v1/whoami', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${trimmed}` },
+        })
+      } catch (netErr) {
+        const msg = netErr instanceof Error ? netErr.message : String(netErr)
+        setError(`Could not reach Bridge to validate token: ${msg}`)
+        setSubmitting(false)
+        return
+      }
+      if (!probe.ok) {
+        setError(`Bridge rejected the token: ${probe.status} ${probe.statusText}`)
+        setSubmitting(false)
+        return
+      }
+      // Token verified. Persist + advance.
       await persistToken(trimmed)
       await invoke('set_bridge_token', { token: trimmed })
       setToken(trimmed)

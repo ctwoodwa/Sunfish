@@ -1,11 +1,14 @@
-// W#60 P4 PR 1 — Bridge auth token state management.
+// W#60 P4 PR 1 — Bridge auth token + keychain status state management.
 //
-// Stores the active Bridge auth token in Tauri-managed state so the JS side can
-// load it from Stronghold on boot and update it after login/logout. The actual
-// sync code (`sync::pull`, `sync::push`) currently consumes a token captured at
-// startup from the `BRIDGE_TOKEN` env var — wiring that to read from this state
-// is a follow-up scope-cut from PR 1 (see PR description); for now this command
-// is the JS-facing surface that lets the frontend land the Stronghold flow.
+// AuthToken holds the active Bridge auth token; sync code in `sync::pull` /
+// `sync::push` reads it at each HTTP call so token rotations take effect
+// without restarting the sync task (council R4).
+//
+// KeychainStatus surfaces the outcome of the OS-keychain master-key derivation
+// performed once at setup time. Stored as `Result<(), String>` so the JS side
+// can render a graceful banner if the keychain is unavailable (council A1.4),
+// instead of the previous design that panicked the Tauri process from inside
+// the Stronghold password closure.
 
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -18,6 +21,17 @@ pub struct AuthToken(pub Arc<RwLock<String>>);
 impl AuthToken {
     pub fn new(initial: String) -> Self {
         Self(Arc::new(RwLock::new(initial)))
+    }
+}
+
+/// Status of the OS-keychain master-key derivation performed at setup time.
+/// `Ok` means the key is cached and Stronghold can be opened; `Err` carries
+/// the platform error so the frontend can present a precise diagnostic banner.
+pub struct KeychainStatus(pub Arc<RwLock<Result<(), String>>>);
+
+impl KeychainStatus {
+    pub fn new(result: Result<(), String>) -> Self {
+        Self(Arc::new(RwLock::new(result)))
     }
 }
 
@@ -41,4 +55,19 @@ pub async fn set_bridge_token(
 pub async fn has_bridge_token(state: tauri::State<'_, AuthToken>) -> Result<bool, String> {
     let t = state.0.read().await;
     Ok(!t.is_empty())
+}
+
+/// Returns the keychain derivation status. `None` = healthy (master key is
+/// cached, Stronghold can be opened). `Some(message)` = the keychain could
+/// not be reached at startup and the platform error is surfaced for the JS
+/// banner. Council A1.4.
+#[tauri::command]
+pub async fn keychain_status(
+    state: tauri::State<'_, KeychainStatus>,
+) -> Result<Option<String>, String> {
+    let s = state.0.read().await;
+    match &*s {
+        Ok(()) => Ok(None),
+        Err(e) => Ok(Some(e.clone())),
+    }
 }

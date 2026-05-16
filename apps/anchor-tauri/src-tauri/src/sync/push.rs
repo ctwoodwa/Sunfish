@@ -1,10 +1,13 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use sqlx::{Row, SqlitePool};
+use tokio::sync::RwLock;
 
 pub async fn drain_write_queue(
     pool: &SqlitePool,
     bridge_base_url: &str,
-    auth_token: &str,
+    auth_token: &Arc<RwLock<String>>,
 ) -> anyhow::Result<()> {
     let pending = sqlx::query(
         "SELECT id, doctype, op_type, doc_name, payload_json FROM write_queue
@@ -45,8 +48,11 @@ pub async fn drain_write_queue(
 async fn sync_one_entry(
     row: &sqlx::sqlite::SqliteRow,
     bridge_base_url: &str,
-    auth_token: &str,
+    auth_token: &Arc<RwLock<String>>,
 ) -> anyhow::Result<()> {
+    // W#60 P4 PR 1 (council R4) — read the token fresh per request so
+    // rotation takes effect without restarting the sync task.
+    let token = auth_token.read().await.clone();
     let doctype: &str = row.get("doctype");
     let op_type: &str = row.get("op_type");
     let doc_name: Option<&str> = row.try_get("doc_name").ok().flatten();
@@ -81,7 +87,7 @@ async fn sync_one_entry(
     };
 
     let resp = req
-        .bearer_auth(auth_token)
+        .bearer_auth(&token)
         .json(&body)
         .send()
         .await
@@ -107,7 +113,7 @@ mod tests {
     #[tokio::test]
     async fn drain_empty_queue_is_noop() {
         let pool = test_pool().await;
-        let result = drain_write_queue(&pool, "http://localhost:7080", "").await;
+        let result = drain_write_queue(&pool, "http://localhost:7080", &Arc::new(RwLock::new(String::new()))).await;
         assert!(result.is_ok());
     }
 
@@ -128,7 +134,7 @@ mod tests {
         .unwrap();
 
         // drain with invalid URL — if the already-synced row were picked up, this would fail
-        let result = drain_write_queue(&pool, "http://invalid-host-xyz:9999", "").await;
+        let result = drain_write_queue(&pool, "http://invalid-host-xyz:9999", &Arc::new(RwLock::new(String::new()))).await;
         assert!(result.is_ok(), "drain should succeed when no pending rows");
     }
 
@@ -149,7 +155,7 @@ mod tests {
         .unwrap();
 
         // drain with invalid URL — row should get error recorded, not panic
-        let result = drain_write_queue(&pool, "http://invalid-host-xyz:9999", "").await;
+        let result = drain_write_queue(&pool, "http://invalid-host-xyz:9999", &Arc::new(RwLock::new(String::new()))).await;
         assert!(result.is_ok(), "drain should not propagate per-row errors");
 
         let error: Option<String> =
