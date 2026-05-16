@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using FL = Sunfish.Blocks.FinancialLedger.Models;
 using Sunfish.Blocks.FinancialLedger.Services;
 using Sunfish.Blocks.FinancialTax.Models;
+using Sunfish.Blocks.FinancialTax.Models.Events;
 using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.FinancialTax.Services;
@@ -25,10 +26,12 @@ public sealed class InMemoryTaxRateLookup : ITaxRateLookup
     private readonly ConcurrentDictionary<TaxRateId, TaxRate> _rows = new();
     private readonly ConcurrentDictionary<(TaxCodeId, TaxJurisdictionId), object> _supersedeLocks = new();
     private readonly IAccountResolver _accounts;
+    private readonly IDomainEventPublisher _events;
 
-    public InMemoryTaxRateLookup(IAccountResolver accounts)
+    public InMemoryTaxRateLookup(IAccountResolver accounts, IDomainEventPublisher? events = null)
     {
         _accounts = accounts ?? throw new ArgumentNullException(nameof(accounts));
+        _events = events ?? new NoopDomainEventPublisher();
     }
 
     /// <inheritdoc />
@@ -97,6 +100,15 @@ public sealed class InMemoryTaxRateLookup : ITaxRateLookup
         }
 
         _rows[candidate.Id] = candidate;
+
+        var addedEnvelope = DomainEventEnvelopeFactory.Build(
+            eventType: FinancialTaxEventNames.TaxRateAdded,
+            payload: new TaxRateAdded(
+                candidate.Id, candidate.TaxCodeId, candidate.JurisdictionId,
+                candidate.RatePercent, candidate.EffectiveDate, candidate.PayableAccountId),
+            idempotencyKey: $"{FinancialTaxEventNames.TaxRateAdded}|__system__|{candidate.Id}|added");
+        await _events.PublishAsync(addedEnvelope, cancellationToken).ConfigureAwait(false);
+
         return new TaxRateUpsertResult(candidate, TaxRateValidationError.None, null);
     }
 
@@ -195,6 +207,26 @@ public sealed class InMemoryTaxRateLookup : ITaxRateLookup
             _rows[oldRateExpired.Id] = oldRateExpired;
             _rows[newRate.Id] = newRate;
         }
+
+        // Emit events outside the lock so handlers can't deadlock against
+        // each other. Order is significant: TaxRateExpired before
+        // TaxRateAdded so consumers see the supersede as a transition.
+        var expiredEnvelope = DomainEventEnvelopeFactory.Build(
+            eventType: FinancialTaxEventNames.TaxRateExpired,
+            payload: new TaxRateExpired(
+                oldRateExpired!.Id, oldRateExpired.TaxCodeId, oldRateExpired.JurisdictionId,
+                oldRateExpired.ExpiryDate!.Value),
+            idempotencyKey: $"{FinancialTaxEventNames.TaxRateExpired}|__system__|{oldRateExpired.Id}|expired");
+        await _events.PublishAsync(expiredEnvelope, cancellationToken).ConfigureAwait(false);
+
+        var addedEnvelope = DomainEventEnvelopeFactory.Build(
+            eventType: FinancialTaxEventNames.TaxRateAdded,
+            payload: new TaxRateAdded(
+                newRate!.Id, newRate.TaxCodeId, newRate.JurisdictionId,
+                newRate.RatePercent, newRate.EffectiveDate, newRate.PayableAccountId),
+            idempotencyKey: $"{FinancialTaxEventNames.TaxRateAdded}|__system__|{newRate.Id}|added",
+            causationId: expiredEnvelope.EventId);
+        await _events.PublishAsync(addedEnvelope, cancellationToken).ConfigureAwait(false);
 
         return new TaxRateSupersedeResult(oldRateExpired, newRate, error, detail);
     }

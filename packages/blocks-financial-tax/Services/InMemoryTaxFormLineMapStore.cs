@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using FL = Sunfish.Blocks.FinancialLedger.Models;
 using Sunfish.Blocks.FinancialTax.Models;
+using Sunfish.Blocks.FinancialTax.Models.Events;
 using Sunfish.Blocks.FinancialTax.Seeds;
 using Sunfish.Foundation.Assets.Common;
 
@@ -18,10 +19,23 @@ namespace Sunfish.Blocks.FinancialTax.Services;
 /// return <c>0</c> and don't overwrite. Preserves user edits per
 /// the hand-off's mutability discipline.
 /// </para>
+///
+/// <para>
+/// Emits <c>Reports.TaxFormLineMapEdited</c> on every
+/// <see cref="UpsertAsync"/> that changes an existing row (initial
+/// inserts + seeds do not emit). See <see cref="DomainEventEnvelope{T}"/>
+/// for envelope semantics.
+/// </para>
 /// </summary>
 public sealed class InMemoryTaxFormLineMapStore : ITaxFormLineMapStore
 {
     private readonly ConcurrentDictionary<TaxFormLineMapId, TaxFormLineMap> _rows = new();
+    private readonly IDomainEventPublisher _events;
+
+    public InMemoryTaxFormLineMapStore(IDomainEventPublisher? events = null)
+    {
+        _events = events ?? new NoopDomainEventPublisher();
+    }
 
     /// <inheritdoc />
     public Task<TaxFormLineMap?> GetAsync(TaxFormLineMapId id, CancellationToken cancellationToken = default)
@@ -52,15 +66,36 @@ public sealed class InMemoryTaxFormLineMapStore : ITaxFormLineMapStore
     }
 
     /// <inheritdoc />
-    public Task UpsertAsync(TaxFormLineMap map, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TaxFormLineMap map, CancellationToken cancellationToken = default)
     {
         if (map is null) throw new ArgumentNullException(nameof(map));
         var now = Instant.Now;
-        var stamped = _rows.TryGetValue(map.Id, out var existing)
-            ? map with { UpdatedAtUtc = now, Version = existing.Version + 1 }
+        var existed = _rows.TryGetValue(map.Id, out var existing);
+        var stamped = existed
+            ? map with { UpdatedAtUtc = now, Version = existing!.Version + 1 }
             : map with { CreatedAtUtc = map.CreatedAtUtc ?? now, UpdatedAtUtc = now };
         _rows[stamped.Id] = stamped;
-        return Task.CompletedTask;
+
+        // Only emit on real edits, not on first-insert / seeds — keeps
+        // the seed path quiet (would otherwise produce ~20 events on
+        // SeedScheduleEAsync).
+        if (existed)
+        {
+            var envelope = DomainEventEnvelopeFactory.Build(
+                eventType: FinancialTaxEventNames.TaxFormLineMapEdited,
+                payload: new TaxFormLineMapEdited(
+                    MapId: stamped.Id,
+                    ChartId: stamped.ChartId,
+                    FormKind: stamped.FormKind,
+                    TaxYear: stamped.TaxYear,
+                    Line: stamped.Line,
+                    PriorSelectors: existing!.AccountSelectors,
+                    NewSelectors: stamped.AccountSelectors,
+                    NewVersion: stamped.Version,
+                    EditedByPrincipalId: null),
+                idempotencyKey: $"{FinancialTaxEventNames.TaxFormLineMapEdited}|__system__|{stamped.Id}|v{stamped.Version}");
+            await _events.PublishAsync(envelope, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />

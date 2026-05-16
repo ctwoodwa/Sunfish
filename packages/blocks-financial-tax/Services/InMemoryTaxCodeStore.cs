@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using TaxCodeId = Sunfish.Blocks.FinancialTax.Models.TaxCodeId;
 using FL = Sunfish.Blocks.FinancialLedger.Models;
 using Sunfish.Blocks.FinancialTax.Models;
+using Sunfish.Blocks.FinancialTax.Models.Events;
 using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.FinancialTax.Services;
@@ -10,10 +11,27 @@ namespace Sunfish.Blocks.FinancialTax.Services;
 /// In-memory <see cref="ITaxCodeStore"/> backed by a
 /// <see cref="ConcurrentDictionary{TKey,TValue}"/>. Test- + desktop-
 /// in-process scenarios; SQLite-backed implementation lands later.
+///
+/// <para>
+/// Emits <c>Financial.TaxCodeAdded</c> on first insert and
+/// <c>Financial.TaxCodeUpdated</c> on every subsequent
+/// <see cref="UpsertAsync"/> via the injected
+/// <see cref="IDomainEventPublisher"/>. The default registration is
+/// <see cref="NoopDomainEventPublisher"/>; production composition
+/// roots wire the canonical
+/// <c>Sunfish.Foundation.Events.IDomainEventPublisher</c> when
+/// foundation-events lands.
+/// </para>
 /// </summary>
 public sealed class InMemoryTaxCodeStore : ITaxCodeStore
 {
     private readonly ConcurrentDictionary<TaxCodeId, TaxCode> _rows = new();
+    private readonly IDomainEventPublisher _events;
+
+    public InMemoryTaxCodeStore(IDomainEventPublisher? events = null)
+    {
+        _events = events ?? new NoopDomainEventPublisher();
+    }
 
     /// <inheritdoc />
     public Task<TaxCode?> GetAsync(TaxCodeId id, CancellationToken cancellationToken = default)
@@ -46,15 +64,32 @@ public sealed class InMemoryTaxCodeStore : ITaxCodeStore
     }
 
     /// <inheritdoc />
-    public Task UpsertAsync(TaxCode taxCode, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TaxCode taxCode, CancellationToken cancellationToken = default)
     {
         if (taxCode is null) throw new ArgumentNullException(nameof(taxCode));
         var now = Instant.Now;
-        var stamped = _rows.TryGetValue(taxCode.Id, out var existing)
-            ? taxCode with { UpdatedAtUtc = now, Version = existing.Version + 1 }
+        var existed = _rows.TryGetValue(taxCode.Id, out var existing);
+        var stamped = existed
+            ? taxCode with { UpdatedAtUtc = now, Version = existing!.Version + 1 }
             : taxCode with { CreatedAtUtc = taxCode.CreatedAtUtc ?? now, UpdatedAtUtc = now };
         _rows[stamped.Id] = stamped;
-        return Task.CompletedTask;
+
+        if (existed)
+        {
+            var envelope = DomainEventEnvelopeFactory.Build(
+                eventType: FinancialTaxEventNames.TaxCodeUpdated,
+                payload: new TaxCodeUpdated(stamped.Id, stamped.ChartId, stamped.Version),
+                idempotencyKey: $"{FinancialTaxEventNames.TaxCodeUpdated}|__system__|{stamped.Id}|v{stamped.Version}");
+            await _events.PublishAsync(envelope, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            var envelope = DomainEventEnvelopeFactory.Build(
+                eventType: FinancialTaxEventNames.TaxCodeAdded,
+                payload: new TaxCodeAdded(stamped.Id, stamped.ChartId, stamped.Code, stamped.Kind, stamped.Application),
+                idempotencyKey: $"{FinancialTaxEventNames.TaxCodeAdded}|__system__|{stamped.Id}|added");
+            await _events.PublishAsync(envelope, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
