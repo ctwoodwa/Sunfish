@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.FinancialLedger.Services;
+using Sunfish.Blocks.FinancialPeriods.Migration;
 using Sunfish.Blocks.FinancialPeriods.Services;
 
 namespace Sunfish.Blocks.FinancialPeriods.DependencyInjection;
@@ -37,6 +38,12 @@ public static class ServiceCollectionExtensions
         // Local event-publisher seam until the canonical foundation-
         // events home is ratified (cob-question 22-15Z).
         services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
+
+        // ERPNext importer hooks (PR 4) — synthesize the period set
+        // for an imported FY since ERPNext does not export periods as
+        // a discrete doctype.
+        services.TryAddSingleton<IErpnextFiscalYearImporter, ErpnextFiscalYearImporter>();
+        services.TryAddSingleton<IErpnextFiscalPeriodImporter, ErpnextFiscalPeriodImporter>();
 
         return services;
     }

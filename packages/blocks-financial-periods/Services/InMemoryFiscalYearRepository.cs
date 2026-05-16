@@ -35,6 +35,11 @@ public sealed class InMemoryFiscalYearRepository : IFiscalYearRepository
         if (!_byId.TryAdd(fiscalYear.Id, fiscalYear))
             throw new InvalidOperationException(
                 $"FiscalYear {fiscalYear.Id.Value} already exists.");
+        // Auto-tag the external-ref index when the row carries an
+        // ExternalRef — mirrors the SQLite-backed prod repo which
+        // persists the column on insert without a separate tag call.
+        if (!string.IsNullOrWhiteSpace(fiscalYear.ExternalRef))
+            _byExternalRef[fiscalYear.ExternalRef] = fiscalYear.Id;
         return Task.CompletedTask;
     }
 

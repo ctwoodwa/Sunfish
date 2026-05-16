@@ -20,6 +20,7 @@ namespace Sunfish.Blocks.FinancialPeriods.Models;
 /// <param name="ClosingJournalEntryId">FK to the closing journal entry posted at year-end; null while Open or before the closing JE has been synthesized.</param>
 /// <param name="CreatedAtUtc">Creation timestamp.</param>
 /// <param name="Version">Optimistic-concurrency token bumped on every mutation by <c>IFiscalYearCloseService</c> (PR 3b); the repository uses it as the compare-and-swap predicate to surface concurrent-update races between admin sessions.</param>
+/// <param name="ExternalRef">Optional external-system reference (e.g., ERPNext <c>Fiscal Year.name</c>) carried for round-trip provenance + idempotent import. Null when the FY was created locally. Set by the ERPNext importer in PR 4; queried via <c>IFiscalYearRepository.GetByExternalRefAsync</c>.</param>
 public sealed record FiscalYear(
     FiscalYearId Id,
     ChartOfAccountsId ChartId,
@@ -30,7 +31,8 @@ public sealed record FiscalYear(
     Instant? ClosedAtUtc,
     JournalEntryId? ClosingJournalEntryId,
     Instant CreatedAtUtc,
-    int Version = 0)
+    int Version = 0,
+    string? ExternalRef = null)
 {
     /// <summary>
     /// Build a fresh <see cref="FiscalYear"/> in the
