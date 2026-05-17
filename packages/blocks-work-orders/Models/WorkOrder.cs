@@ -148,6 +148,32 @@ public sealed class WorkOrder
         }
     }
 
+    /// <summary>
+    /// Attach the cross-cluster anchor ids (property / unit / asset /
+    /// deficiency / project / requestedByPartyId) at creation time
+    /// (or shortly after). Anchors are nullable + idempotent —
+    /// repeated calls overwrite. PR 4's service uses this to set
+    /// <see cref="DeficiencyId"/> for the DeficiencyRaised handler's
+    /// idempotency lookup.
+    /// </summary>
+    public void AttachAnchors(
+        Guid? propertyId = null,
+        Guid? unitId = null,
+        Guid? assetId = null,
+        Guid? deficiencyId = null,
+        Guid? projectId = null,
+        Guid? requestedByPartyId = null,
+        DateTimeOffset? updatedAt = null)
+    {
+        PropertyId         = propertyId         ?? PropertyId;
+        UnitId             = unitId             ?? UnitId;
+        AssetId            = assetId            ?? AssetId;
+        DeficiencyId       = deficiencyId       ?? DeficiencyId;
+        ProjectId          = projectId          ?? ProjectId;
+        RequestedByPartyId = requestedByPartyId ?? RequestedByPartyId;
+        UpdatedAt          = updatedAt ?? DateTimeOffset.UtcNow;
+    }
+
     /// <summary>Assign the work order to a party or contractor (or both).</summary>
     public void Assign(Guid? assignedToPartyId, Guid? contractorId, Guid updatedBy, DateTimeOffset? updatedAt = null)
     {
