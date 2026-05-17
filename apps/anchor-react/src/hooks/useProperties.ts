@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { getProperties } from '@/api/erpnext'
+// W#74 PR 1: rebound from ERPNext API to the Bridge /api/v1/properties
+// cluster endpoint. Cache key unchanged so consumers don't re-render.
+import { getProperties } from '@/api/properties'
 import { useCompanyStore } from '@/stores/companyStore'
 
 export function useProperties() {

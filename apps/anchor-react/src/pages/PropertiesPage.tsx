@@ -1,9 +1,10 @@
 import { useProperties } from '@/hooks/useProperties'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { Property } from '@/api/erpnext'
+// W#74 PR 1: rebound from ERPNext API to /api/v1/properties Bridge cluster endpoint.
+import type { PropertySummary } from '@/api/properties'
 
-function statusVariant(status: Property['status']) {
+function statusVariant(status: PropertySummary['status']) {
   switch (status) {
     case 'Active': return 'success' as const
     case 'Vacant': return 'warning' as const
@@ -13,7 +14,8 @@ function statusVariant(status: Property['status']) {
 }
 
 export function PropertiesPage() {
-  const { data: properties, isPending, isError, error, refetch } = useProperties()
+  const { data, isPending, isError, error, refetch } = useProperties()
+  const properties = data?.properties
 
   if (isPending) {
     return (
@@ -41,7 +43,7 @@ export function PropertiesPage() {
   if (!properties?.length) {
     return (
       <div className="flex items-center justify-center h-48 text-gray-500">
-        No properties found. Create your first Property record in ERPNext.
+        No properties found. Add a property in the cockpit to get started.
       </div>
     )
   }
@@ -54,19 +56,19 @@ export function PropertiesPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {properties.map((p) => (
-          <Card key={p.name}>
+          <Card key={p.propertyId}>
             <CardHeader>
               <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-base">{p.property_name}</CardTitle>
+                <CardTitle className="text-base">{p.displayName}</CardTitle>
                 <Badge variant={statusVariant(p.status)}>{p.status}</Badge>
               </div>
               <CardDescription>
-                {[p.address_line_1, p.city, p.state].filter(Boolean).join(', ')}
+                {[p.addressLine1, p.city, p.region].filter(Boolean).join(', ')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-500">
-                {p.units} {p.units === 1 ? 'unit' : 'units'}
+                {p.unitCount} {p.unitCount === 1 ? 'unit' : 'units'}
               </p>
             </CardContent>
           </Card>
