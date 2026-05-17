@@ -447,14 +447,12 @@ public sealed class ValidationPipelineTests
     [InlineData(ShipRole.Captain)]
     [InlineData(ShipRole.XO)]
     [InlineData(ShipRole.EngineerOfficer)]
-    public async Task FloorPolicyValidator_RejectsHighPrivRoleWithEmptyFactorList(ShipRole role)
+    public async Task FloorPolicyValidator_TreatsEmptyFactorList_AsNotConfigured_NotLowAssurance(ShipRole role)
     {
-        // xo-council B1 — factors.All(LowAssuranceFactors.Contains) is
-        // vacuously true on empty list. Empty MFA factor list for a
-        // high-privilege role is even worse than low-assurance-only; it
-        // means no MFA enrolled. Currently caught by the All() vacuous
-        // pass — anchor the behavior with a test so it can't regress
-        // without a conscious code change.
+        // Empty factor list is treated as "not configured" (early-
+        // continue in the rule (b) loop) — same as the absent-key case.
+        // If empty-list should error, that's a new rule beyond ADR
+        // §1.1.4 wording; raise XO clarification first.
         var sut = new FloorPolicyValidator();
         var dict = new Dictionary<ShipRole, IReadOnlyList<MfaFactor>>(
             MfaEnrollmentPolicy.Default.RequiredFactorsByRole)
@@ -466,12 +464,6 @@ public sealed class ValidationPipelineTests
             Mfa = MfaEnrollmentPolicy.Default with { RequiredFactorsByRole = dict }
         };
         var result = await sut.ValidateAsync(bad, Baseline(), Ctx);
-        // The current early-continue on factors.Count == 0 skips the role
-        // — we want the test to FAIL if behavior changes to silently
-        // accept empty, but currently it correctly silently-skips.
-        // Per xo-council, structural-nonsense empty-list should be caught
-        // by schema if it cares. Document that current behavior treats
-        // empty-list as "not configured" (matching the absent-key case).
         Assert.DoesNotContain(result.Findings, f =>
             f.Code == "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY" && f.Message.Contains(role.ToString()));
     }

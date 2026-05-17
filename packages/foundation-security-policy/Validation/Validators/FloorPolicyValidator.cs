@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Sunfish.Foundation.SecurityPolicy.Models;
 using Sunfish.Foundation.Ship.Common;
 
@@ -26,14 +27,17 @@ namespace Sunfish.Foundation.SecurityPolicy.Validation.Validators;
 /// </remarks>
 public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
 {
-    // Calendar-aware floor constants — leap days included to ensure
-    // any 6-year window covers the maximum regulatory minimum per
+    // Calendar-aware floor constants — rounded UP for safety so any
+    // typical 6-year window covers the maximum regulatory minimum per
     // 45 CFR §164.530(j)(2) (2191–2192 calendar days), and any 12-
     // month window covers PCI-DSS §10.5.1 (366d covers leap years).
-    // SOC 2 / GDPR / EU AI Act floors are intentionally NOT enforced
-    // here: ADR Open-Question 3 documents GDPR as processing-
-    // purpose-dependent (no numeric floor), and SOC 2 + EU AI Act
-    // floors are RegulatoryValidator scope (priority 400, PR 3).
+    // Conservative — rejects e.g. a 2191d HIPAA minimum (one-leap-day
+    // window) even though HIPAA accepts it; acceptable per §2.1.2
+    // coarse semantics. SOC 2 / GDPR / EU AI Act floors are
+    // intentionally NOT enforced here: ADR Open-Question 3 documents
+    // GDPR as processing-purpose-dependent (no numeric floor), and
+    // SOC 2 + EU AI Act floors are RegulatoryValidator scope
+    // (priority 400, PR 3).
     private static readonly TimeSpan SixYears = TimeSpan.FromDays(365 * 6 + 2);
     private static readonly TimeSpan TwelveMonths = TimeSpan.FromDays(366);
 
@@ -59,11 +63,15 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
     private static readonly IReadOnlySet<ShipRole> HighPrivilegeRoles =
         new HashSet<ShipRole> { ShipRole.Captain, ShipRole.XO, ShipRole.EngineerOfficer };
 
-    private static readonly IReadOnlySet<AuditEventClass> HipaaFlooredClasses =
-        new HashSet<AuditEventClass> { AuditEventClass.Identity, AuditEventClass.Security, AuditEventClass.Configuration };
+    // Iteration order is deterministic — finding order in
+    // result.Findings is stable, supporting downstream snapshot tests
+    // + PR 3 issuer rendering. Set semantics aren't load-bearing here
+    // (no contains-lookup; only iteration).
+    private static readonly ImmutableArray<AuditEventClass> HipaaFlooredClasses =
+        ImmutableArray.Create(AuditEventClass.Identity, AuditEventClass.Security, AuditEventClass.Configuration);
 
-    private static readonly IReadOnlySet<AuditEventClass> PciDssFlooredClasses =
-        new HashSet<AuditEventClass> { AuditEventClass.Financial, AuditEventClass.Security };
+    private static readonly ImmutableArray<AuditEventClass> PciDssFlooredClasses =
+        ImmutableArray.Create(AuditEventClass.Financial, AuditEventClass.Security);
 
     /// <inheritdoc />
     public SecurityPolicyValidatorPriority Priority => SecurityPolicyValidatorPriority.FloorPolicy;
@@ -149,7 +157,7 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
 
     private static void FloorRetentionClasses(
         AuditRetentionPolicy ar,
-        IReadOnlySet<AuditEventClass> classes,
+        IReadOnlyList<AuditEventClass> classes,
         TimeSpan floor,
         List<SecurityPolicyValidationFinding> findings,
         string codePrefix,
