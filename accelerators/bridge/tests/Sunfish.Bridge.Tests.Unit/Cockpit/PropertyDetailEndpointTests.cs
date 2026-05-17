@@ -15,6 +15,7 @@ using Sunfish.Bridge.Cockpit;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Authorization;
 using Xunit;
+using PartyId = Sunfish.Blocks.People.Foundation.Models.PartyId;
 
 namespace Sunfish.Bridge.Tests.Unit.Cockpit;
 
