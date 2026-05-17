@@ -56,6 +56,14 @@ public sealed class EnforcementTests
         Assert.Equal(TimeSpan.FromHours(2), r.GracePeriodRemaining);
     }
 
+    [Fact]
+    public void PolicyCheckResult_PropertiesAreInitPrivate_FactoryOnlyConstruction()
+    {
+        var prop = typeof(PolicyCheckResult).GetProperty(nameof(PolicyCheckResult.AccessibleMessage))!;
+        var setter = prop.SetMethod!;
+        Assert.True(setter.IsPrivate, "AccessibleMessage init setter must be private to enforce factory-only construction.");
+    }
+
     // --- DefaultSecurityPolicyEnforcer: device attestation ---
 
     [Fact]
@@ -138,12 +146,11 @@ public sealed class EnforcementTests
     {
         // xo-council B2 precedent — caller cannot construct
         // (IsCompliant=true, Violation=MfaEnrollmentRequired).
-        var r = new PolicyCheckResult
-        {
-            Violation         = PolicyViolationKind.MfaEnrollmentRequired,
-            AccessibleMessage = "msg",
-            SuggestedAction   = "suggest",
-        };
+        // S1 tightening (private init) makes the bypass a compile-time
+        // error; this asserts the factory path yields the correct
+        // IsCompliant=false result.
+        var r = PolicyCheckResult.ViolationResult(
+            PolicyViolationKind.MfaEnrollmentRequired, "msg", "suggest");
         Assert.False(r.IsCompliant);
     }
 

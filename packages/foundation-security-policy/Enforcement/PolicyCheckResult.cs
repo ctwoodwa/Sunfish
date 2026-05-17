@@ -18,10 +18,10 @@ namespace Sunfish.Foundation.SecurityPolicy.Enforcement;
 /// </remarks>
 public sealed record PolicyCheckResult
 {
-    public PolicyViolationKind? Violation { get; init; }
-    public string AccessibleMessage { get; init; } = string.Empty;
-    public string SuggestedAction { get; init; } = string.Empty;
-    public System.TimeSpan? GracePeriodRemaining { get; init; }
+    public PolicyViolationKind? Violation { get; private init; }
+    public string AccessibleMessage { get; private init; } = string.Empty;
+    public string SuggestedAction { get; private init; } = string.Empty;
+    public System.TimeSpan? GracePeriodRemaining { get; private init; }
 
     /// <summary>Computed from <see cref="Violation"/> — a caller cannot construct an inconsistent (IsCompliant=true, Violation=set) pair (xo-council B2 precedent).</summary>
     public bool IsCompliant => Violation is null;
