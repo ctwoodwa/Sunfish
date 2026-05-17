@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.FinancialAp.Models;
 using Sunfish.Blocks.FinancialAp.Services;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialAp.DependencyInjection;
 
@@ -25,6 +26,9 @@ public static class FinancialApServiceCollectionExtensions
         services.TryAddSingleton(options);
         services.TryAddSingleton<IBillRepository, InMemoryBillRepository>();
         services.TryAddSingleton<IApAgingService, ApAgingService>();
+        services.TryAddSingleton<ITaxCalculator, NoOpTaxCalculator>();
+        services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
+        services.TryAddSingleton<IBillPostingService, BillPostingService>();
         return services;
     }
 }
