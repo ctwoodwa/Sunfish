@@ -10,9 +10,24 @@ namespace Sunfish.Blocks.Reports;
 /// <c>(ReportKind, paramsType, resultType)</c>.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Keying by all three defends against accidental param/result-type
 /// mismatch at registration time — a common bug source in
 /// generic-dispatch registries.
+/// </para>
+/// <para>
+/// <b>Thread-safety contract.</b> <see cref="Register{TParams,TResult}"/>
+/// is NOT thread-safe; all <see cref="Register{TParams,TResult}"/>
+/// calls MUST complete at DI startup before any
+/// <see cref="Resolve{TParams,TResult}"/> /
+/// <see cref="TryResolve{TParams,TResult}"/> /
+/// <see cref="RegisteredKinds"/> read. Concurrent reads after
+/// startup are safe (lock-free dictionary lookups). The DI extension
+/// <see cref="DependencyInjection.ReportSubstrateServiceCollectionExtensions.AddBlocksReportsSubstrate"/>
+/// registers the type as <c>Singleton</c> and cartridge registrations
+/// happen at host bootstrap — the convention is observed at the
+/// cluster level. Per council SE-2 + A.2 (PR #980 review).
+/// </para>
 /// </remarks>
 public sealed class ReportCartridgeRegistry
 {
@@ -43,7 +58,9 @@ public sealed class ReportCartridgeRegistry
     }
 
     /// <summary>Try-resolve a cartridge by kind + TParams + TResult.</summary>
-    public bool TryResolve<TParams, TResult>(ReportKind kind, out IReportCartridge<TParams, TResult>? cartridge)
+    public bool TryResolve<TParams, TResult>(
+        ReportKind kind,
+        [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out IReportCartridge<TParams, TResult> cartridge)
         where TParams : class
         where TResult : class
     {
