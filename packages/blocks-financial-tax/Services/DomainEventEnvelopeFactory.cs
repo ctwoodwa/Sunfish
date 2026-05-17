@@ -1,4 +1,5 @@
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialTax.Services;
 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.FinancialLedger.Services;
 using Sunfish.Blocks.FinancialPeriods.Migration;
 using Sunfish.Blocks.FinancialPeriods.Services;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialPeriods.DependencyInjection;
 
@@ -35,9 +36,10 @@ public static class ServiceCollectionExtensions
         // ledger's minimal PeriodSnapshot contract.
         services.TryAddSingleton<IPeriodResolver, SqlitePeriodResolver>();
 
-        // Local event-publisher seam until the canonical foundation-
-        // events home is ratified (cob-question 22-15Z).
-        services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
+        // Canonical IDomainEventPublisher is registered by the host's
+        // composition root via Sunfish.Foundation.Events.
+        // ServiceCollectionExtensions.AddFoundationEvents(). The local
+        // Noop fallback was removed in the foundation-events PR 6 sweep.
 
         // ERPNext importer hooks (PR 4) — synthesize the period set
         // for an imported FY since ERPNext does not export periods as

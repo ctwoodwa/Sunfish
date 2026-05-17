@@ -5,6 +5,7 @@ using Sunfish.Blocks.FinancialPeriods.Services;
 using Sunfish.Foundation.Assets.Common;
 using Xunit;
 using static Sunfish.Blocks.FinancialPeriods.Tests.PeriodCloseServiceSoftCloseTests;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialPeriods.Tests;
 

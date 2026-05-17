@@ -5,6 +5,7 @@ using Sunfish.Blocks.FinancialTax.Models;
 using Sunfish.Blocks.FinancialTax.Models.Events;
 using Sunfish.Blocks.FinancialTax.Services;
 using Xunit;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialTax.Tests;
 

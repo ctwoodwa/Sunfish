@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.FinancialTax.Migration;
 using Sunfish.Blocks.FinancialTax.Services;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialTax.DependencyInjection;
 
@@ -19,21 +20,17 @@ public static class FinancialTaxServiceCollectionExtensions
     /// (use <c>TryAdd*</c> in their own composition if needed).
     ///
     /// <para>
-    /// <see cref="IDomainEventPublisher"/> is registered via
-    /// <c>TryAddSingleton</c> with <see cref="NoopDomainEventPublisher"/>
-    /// as the default — so a composition root that wires the
-    /// canonical <c>Sunfish.Foundation.Events.IDomainEventPublisher</c>
-    /// BEFORE invoking this method leaves the canonical in place. The
-    /// future foundation-events sweep PR uses this property to migrate
-    /// every cluster atomically.
+    /// <see cref="IDomainEventPublisher"/> is supplied by the host's
+    /// composition root via
+    /// <c>Sunfish.Foundation.Events.ServiceCollectionExtensions.AddFoundationEvents()</c>.
+    /// The local Noop fallback was removed in the foundation-events
+    /// PR 6 sweep — hosts MUST call <c>AddFoundationEvents()</c>
+    /// before (or after) this method to register the canonical
+    /// publisher.
     /// </para>
     /// </summary>
     public static IServiceCollection AddBlocksFinancialTax(this IServiceCollection services)
     {
-        // Event publisher: TryAdd so foundation-events can pre-register
-        // the canonical impl + we don't clobber it. See xo-ruling-T21-12Z.
-        services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
-
         services.AddSingleton<ITaxJurisdictionStore, InMemoryTaxJurisdictionStore>();
         services.AddSingleton<ITaxJurisdictionResolver, InMemoryTaxJurisdictionResolver>();
         services.AddSingleton<ITaxRateLookup, InMemoryTaxRateLookup>();

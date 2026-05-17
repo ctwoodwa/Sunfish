@@ -4,6 +4,7 @@ using Sunfish.Blocks.FinancialPeriods.Models;
 using Sunfish.Blocks.FinancialPeriods.Services;
 using Sunfish.Foundation.Assets.Common;
 using Xunit;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialPeriods.Tests;
 

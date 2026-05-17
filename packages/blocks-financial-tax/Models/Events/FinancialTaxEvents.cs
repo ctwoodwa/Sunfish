@@ -1,5 +1,6 @@
 using TaxCodeId = Sunfish.Blocks.FinancialTax.Models.TaxCodeId;
 using FL = Sunfish.Blocks.FinancialLedger.Models;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialTax.Models.Events;
 
