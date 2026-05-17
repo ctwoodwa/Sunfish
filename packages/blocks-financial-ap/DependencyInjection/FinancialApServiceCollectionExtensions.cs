@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Blocks.FinancialAp.Migration;
 using Sunfish.Blocks.FinancialAp.Models;
 using Sunfish.Blocks.FinancialAp.Services;
 using Sunfish.Foundation.Events;
@@ -29,6 +30,7 @@ public static class FinancialApServiceCollectionExtensions
         services.TryAddSingleton<ITaxCalculator, NoOpTaxCalculator>();
         services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
         services.TryAddSingleton<IBillPostingService, BillPostingService>();
+        services.TryAddSingleton<IErpnextPurchaseInvoiceImporter, ErpnextPurchaseInvoiceImporter>();
         return services;
     }
 }
