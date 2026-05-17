@@ -72,4 +72,23 @@ public interface ILeaseService
     /// required for the AwaitingSignature → Executed transition.
     /// </summary>
     ValueTask<Lease> SetLandlordAttestationAsync(LeaseId id, SignatureEventId signatureEvent, ActorId actor, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the per-tenant <see cref="LeaseholderDisplay"/> for a
+    /// lease, resolved through
+    /// <c>Sunfish.Blocks.People.Foundation.Services.IPartyReadModel</c>.
+    /// Returns an empty list if the lease does not exist or has no
+    /// tenants. Display names that cannot be resolved (party absent
+    /// from the people cluster, or no read-model wired) come back
+    /// <see langword="null"/> — orphan-tolerant per CRDT §12.
+    /// </summary>
+    /// <param name="leaseId">The lease to query.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>
+    /// One entry per tenant in <see cref="Lease.Tenants"/>; the first
+    /// tenant is reported as <see cref="LeaseHolderRole.PrimaryLeaseholder"/>
+    /// and subsequent tenants as <see cref="LeaseHolderRole.CoLeaseholder"/>
+    /// when no explicit <see cref="LeasePartyRole"/> binding exists.
+    /// </returns>
+    ValueTask<IReadOnlyList<LeaseholderDisplay>> GetLeaseholderDisplaysAsync(LeaseId leaseId, CancellationToken ct = default);
 }

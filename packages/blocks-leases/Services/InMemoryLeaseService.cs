@@ -32,6 +32,8 @@ public sealed class InMemoryLeaseService : ILeaseService
     private readonly IOperationSigner? _signer;
     private readonly TenantId _auditTenant;
     private readonly ILeaseDocumentVersionLog? _documentVersionLog;
+    private readonly Sunfish.Blocks.People.Foundation.Services.IPartyReadModel? _partyReadModel;
+    private readonly ConcurrentDictionary<LeasePartyRoleId, LeasePartyRole> _partyRoles = new();
 
     // W#27 Phase 1: state-machine guards via the public TransitionTable<TState>
     // primitive from blocks-maintenance (ADR 0053 amendment A5).
@@ -57,6 +59,21 @@ public sealed class InMemoryLeaseService : ILeaseService
 
     /// <summary>Creates the service with audit emission + an optional document-version log (W#27 Phase 2). When the log is supplied, <see cref="AppendDocumentVersionAsync"/> persists revisions to it; otherwise the call throws.</summary>
     public InMemoryLeaseService(IAuditTrail auditTrail, IOperationSigner signer, TenantId tenantId, ILeaseDocumentVersionLog? documentVersionLog)
+        : this(auditTrail, signer, tenantId, documentVersionLog, partyReadModel: null) { }
+
+    /// <summary>
+    /// Creates the service with audit emission + optional document-version log
+    /// + optional <see cref="Sunfish.Blocks.People.Foundation.Services.IPartyReadModel"/>
+    /// for the per-lease leaseholder-display read surface. When the read-model is
+    /// absent, <see cref="GetLeaseholderDisplaysAsync"/> returns rows with
+    /// <c>DisplayName: null</c>.
+    /// </summary>
+    public InMemoryLeaseService(
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        TenantId tenantId,
+        ILeaseDocumentVersionLog? documentVersionLog,
+        Sunfish.Blocks.People.Foundation.Services.IPartyReadModel? partyReadModel)
     {
         ArgumentNullException.ThrowIfNull(auditTrail);
         ArgumentNullException.ThrowIfNull(signer);
@@ -68,6 +85,7 @@ public sealed class InMemoryLeaseService : ILeaseService
         _signer = signer;
         _auditTenant = tenantId;
         _documentVersionLog = documentVersionLog;
+        _partyReadModel = partyReadModel;
     }
 
     private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
@@ -320,5 +338,31 @@ public sealed class InMemoryLeaseService : ILeaseService
                     $"Lease '{lease.Id}' cannot transition AwaitingSignature → Executed: tenant '{tenant.Value}' has not signed the latest document version '{latestVersionId.Value}'.");
             }
         }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<IReadOnlyList<LeaseholderDisplay>> GetLeaseholderDisplaysAsync(
+        LeaseId leaseId, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!_store.TryGetValue(leaseId, out var lease)) return Array.Empty<LeaseholderDisplay>();
+
+        var result = new List<LeaseholderDisplay>(lease.Tenants.Count);
+        for (int i = 0; i < lease.Tenants.Count; i++)
+        {
+            var partyId = lease.Tenants[i];
+            // Per CRDT §12 orphan-tolerance: party absent from people
+            // cluster (or no IPartyReadModel wired) → null DisplayName,
+            // not an exception. UI surfaces "Unknown" or similar.
+            string? displayName = null;
+            if (_partyReadModel is not null)
+            {
+                var party = await _partyReadModel.GetByIdAsync(partyId, ct).ConfigureAwait(false);
+                displayName = party?.DisplayName;
+            }
+            var role = i == 0 ? LeaseHolderRole.PrimaryLeaseholder : LeaseHolderRole.CoLeaseholder;
+            result.Add(new LeaseholderDisplay(partyId, displayName, role));
+        }
+        return result;
     }
 }
