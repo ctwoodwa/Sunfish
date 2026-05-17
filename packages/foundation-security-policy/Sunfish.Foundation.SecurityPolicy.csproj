@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Foundation.SecurityPolicy</RootNamespace>
+    <AssemblyName>Sunfish.Foundation.SecurityPolicy</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.SecurityPolicy</PackageId>
+    <Description>Tenant-configurable security policy substrate per ADR 0068 (MFA, device attestation, audit retention, key rotation, recovery contact). PR 1: data-model records + enums. Validation pipeline + audit event types ship in subsequent PRs.</Description>
+    <PackageTags>security;policy;mfa;attestation;retention;tenant;sunfish;foundation</PackageTags>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.SecurityPolicy.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+  </ItemGroup>
+</Project>
