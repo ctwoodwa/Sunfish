@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Blocks.People.Foundation.Migration;
 using Sunfish.Blocks.People.Foundation.Services;
 using Sunfish.Foundation.Events;
 
@@ -32,6 +33,7 @@ public static class PeopleFoundationServiceCollectionExtensions
         services.AddSingleton<InMemoryPartyRepository>();
         services.AddSingleton<IPartyReadModel>(sp => sp.GetRequiredService<InMemoryPartyRepository>());
         services.AddSingleton<IPartyWriteService>(sp => sp.GetRequiredService<InMemoryPartyRepository>());
+        services.AddSingleton<IErpnextPartyImporter, ErpnextPartyImporter>();
         return services;
     }
 }
