@@ -7,7 +7,9 @@ namespace Sunfish.Blocks.WorkProjects.Services;
 /// Approval / Reject surface for <see cref="TimeEntry"/>. Split from
 /// <see cref="ITimeEntryService"/> so callers can gate approval on a
 /// distinct role (e.g., supervisor / project manager) without
-/// granting the broader write permission.
+/// granting the broader write permission. Every method takes
+/// <see cref="TenantId"/> + enforces the H5 cross-tenant gate
+/// (mismatch → <see cref="InvalidOperationException"/>).
 /// </summary>
 public interface ITimeApprovalService
 {
@@ -18,17 +20,22 @@ public interface ITimeApprovalService
     /// <c>IUserContext</c>.
     /// </summary>
     Task<TimeEntry> ApproveAsync(
+        TenantId tenantId,
         TimeEntryId id,
         Guid approverPartyId,
         Instant approvedAt,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Transition Submitted → Rejected with reason.
+    /// Transition Submitted → Rejected with reason. Stores the
+    /// rejecter's party-id on <see cref="TimeEntry.RejectedByPartyId"/>
+    /// (NOT <see cref="TimeEntry.ApprovedByPartyId"/>) so read-side
+    /// projections can distinguish approve vs reject authority.
     /// </summary>
     Task<TimeEntry> RejectAsync(
+        TenantId tenantId,
         TimeEntryId id,
-        Guid approverPartyId,
+        Guid rejecterPartyId,
         Instant rejectedAt,
         string reason,
         CancellationToken cancellationToken = default);

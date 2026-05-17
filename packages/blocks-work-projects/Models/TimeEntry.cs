@@ -36,8 +36,13 @@ public sealed class TimeEntry
     public Instant? SubmittedAt { get; private set; }
     public Guid? ApprovedByPartyId { get; private set; }
     public Instant? ApprovedAt { get; private set; }
+    public Guid? RejectedByPartyId { get; private set; }
+    public Instant? RejectedAt { get; private set; }
     public string? RejectionReason { get; private set; }
     public bool InvoicedFlag { get; private set; }
+
+    /// <summary>Max length of <see cref="Description"/> + <see cref="RejectionReason"/> — DoS guard at the model boundary.</summary>
+    public const int MaxFreeTextLength = 4000;
 
     public Instant CreatedAt { get; private set; }
     public Instant UpdatedAt { get; private set; }
@@ -100,6 +105,10 @@ public sealed class TimeEntry
                 "TimeEntry requires exactly one of (ProjectId, WorkOrderId, MaintenanceTaskId) — "
                 + $"received {targetCount}.");
 
+        if (description is { Length: > MaxFreeTextLength })
+            throw new ArgumentException(
+                $"Description exceeds MaxFreeTextLength={MaxFreeTextLength}.", nameof(description));
+
         return new TimeEntry(id, tenantId, workerPartyId, activityKind, startedAt, billable, createdBy, createdAt)
         {
             ProjectId         = projectId,
@@ -130,9 +139,14 @@ public sealed class TimeEntry
             if (string.IsNullOrWhiteSpace(rateCurrency))
                 throw new ArgumentException(
                     "RateCurrency required when HourlyRate is provided.", nameof(rateCurrency));
+            var normalized = rateCurrency.ToUpperInvariant();
+            if (normalized.Length != 3 || !normalized.All(char.IsAsciiLetterUpper))
+                throw new ArgumentException(
+                    $"RateCurrency '{rateCurrency}' is not a 3-letter ISO-4217 code.", nameof(rateCurrency));
             HourlyRate         = rate;
-            HourlyRateCurrency = rateCurrency.ToUpperInvariant();
-            Amount             = Math.Round(rate * DurationMinutes / 60m, 2);
+            HourlyRateCurrency = normalized;
+            // AwayFromZero rounding — industry-standard money "round half up" for positive amounts.
+            Amount             = Math.Round(rate * DurationMinutes / 60m, 2, MidpointRounding.AwayFromZero);
         }
         UpdatedBy = updatedBy;
         UpdatedAt = endedAt;
@@ -162,6 +176,9 @@ public sealed class TimeEntry
         if (Status != TimeEntryStatus.Open && Status != TimeEntryStatus.Submitted)
             throw new InvalidOperationException(
                 $"Cannot UpdateDescription on a TimeEntry in status {Status} — corrections require a new entry.");
+        if (description is { Length: > MaxFreeTextLength })
+            throw new ArgumentException(
+                $"Description exceeds MaxFreeTextLength={MaxFreeTextLength}.", nameof(description));
         Description = description;
         UpdatedBy   = updatedBy;
         UpdatedAt   = updatedAt;
@@ -182,18 +199,28 @@ public sealed class TimeEntry
         Version          += 1;
     }
 
-    /// <summary>Reject with reason. Callable only by the approval service in this assembly.</summary>
-    internal void Reject(string reason, Guid approverPartyId, Instant rejectedAt)
+    /// <summary>
+    /// Reject with reason. Callable only by the approval service in this
+    /// assembly. Stores <paramref name="rejecterPartyId"/> on
+    /// <see cref="RejectedByPartyId"/> (NOT <see cref="ApprovedByPartyId"/>)
+    /// — read-side projections + UI must distinguish approve vs reject
+    /// authority.
+    /// </summary>
+    internal void Reject(string reason, Guid rejecterPartyId, Instant rejectedAt)
     {
         if (Status != TimeEntryStatus.Submitted)
             throw new InvalidOperationException(
                 $"Cannot Reject a TimeEntry in status {Status}.");
         if (string.IsNullOrWhiteSpace(reason))
             throw new ArgumentException("Rejection reason is required.", nameof(reason));
+        if (reason.Length > MaxFreeTextLength)
+            throw new ArgumentException(
+                $"Rejection reason exceeds MaxFreeTextLength={MaxFreeTextLength}.", nameof(reason));
         Status            = TimeEntryStatus.Rejected;
         RejectionReason   = reason;
-        ApprovedByPartyId = approverPartyId;
-        UpdatedBy         = approverPartyId;
+        RejectedByPartyId = rejecterPartyId;
+        RejectedAt        = rejectedAt;
+        UpdatedBy         = rejecterPartyId;
         UpdatedAt         = rejectedAt;
         Version          += 1;
     }
@@ -201,10 +228,14 @@ public sealed class TimeEntry
     /// <summary>
     /// One-way mark-as-invoiced — called by the financial cluster
     /// reactor when this entry rolls into an invoice. The only
-    /// permitted post-approval mutation.
+    /// permitted post-approval mutation. Idempotent: a re-fire from the
+    /// reactor (e.g., at-least-once delivery) is a no-op when the entry
+    /// is already <see cref="TimeEntryStatus.Invoiced"/>.
     /// </summary>
     public void MarkInvoiced(Guid updatedBy, Instant updatedAt)
     {
+        if (Status == TimeEntryStatus.Invoiced && InvoicedFlag)
+            return;
         if (Status != TimeEntryStatus.Approved)
             throw new InvalidOperationException(
                 $"Cannot MarkInvoiced a TimeEntry in status {Status}.");

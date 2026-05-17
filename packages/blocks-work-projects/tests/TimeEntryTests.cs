@@ -127,6 +127,33 @@ public sealed class TimeEntryTests
     }
 
     [Fact]
+    public void Reject_StoresRejecterOnRejectedByPartyId_NotApprovedByPartyId()
+    {
+        var e = MakeOpen();
+        e.Stop(new Instant(new DateTimeOffset(2026, 5, 16, 10, 0, 0, TimeSpan.Zero)),
+            null, null, Worker);
+        e.Submit(Instant.Now, Worker);
+        e.Reject("missing detail", Approver, Instant.Now);
+        Assert.Equal(TimeEntryStatus.Rejected, e.Status);
+        Assert.Equal(Approver, e.RejectedByPartyId);
+        Assert.NotNull(e.RejectedAt);
+        Assert.Null(e.ApprovedByPartyId);
+        Assert.Null(e.ApprovedAt);
+        Assert.Equal("missing detail", e.RejectionReason);
+    }
+
+    [Fact]
+    public void Reject_ReasonExceedsMax_Throws()
+    {
+        var e = MakeOpen();
+        e.Stop(new Instant(new DateTimeOffset(2026, 5, 16, 10, 0, 0, TimeSpan.Zero)),
+            null, null, Worker);
+        e.Submit(Instant.Now, Worker);
+        var huge = new string('x', TimeEntry.MaxFreeTextLength + 1);
+        Assert.Throws<ArgumentException>(() => e.Reject(huge, Approver, Instant.Now));
+    }
+
+    [Fact]
     public void MarkInvoiced_ApprovedEntry_TransitionsAndSetsFlag()
     {
         var e = MakeOpen();
@@ -137,6 +164,60 @@ public sealed class TimeEntryTests
         e.MarkInvoiced(Worker, Instant.Now);
         Assert.Equal(TimeEntryStatus.Invoiced, e.Status);
         Assert.True(e.InvoicedFlag);
+    }
+
+    [Fact]
+    public void MarkInvoiced_TwiceFromReactorRetry_IsIdempotent()
+    {
+        var e = MakeOpen();
+        e.Stop(new Instant(new DateTimeOffset(2026, 5, 16, 10, 0, 0, TimeSpan.Zero)),
+            null, null, Worker);
+        e.Submit(Instant.Now, Worker);
+        e.Approve(Approver, Instant.Now);
+        e.MarkInvoiced(Worker, Instant.Now);
+        var versionBefore = e.Version;
+        // At-least-once reactor delivery: second call must be a no-op
+        // (not throw), preserving the state machine without poison-pill.
+        e.MarkInvoiced(Worker, Instant.Now);
+        Assert.Equal(TimeEntryStatus.Invoiced, e.Status);
+        Assert.Equal(versionBefore, e.Version);
+    }
+
+    [Fact]
+    public void Stop_RoundsAmountAwayFromZero()
+    {
+        var e = MakeOpen();
+        // 0.005 boundary: AwayFromZero rounds 0.005 -> 0.01, banker's -> 0.00.
+        // rate 0.30/hr * 1 minute = 0.005 -> expected 0.01.
+        e.Stop(new Instant(new DateTimeOffset(2026, 5, 16, 9, 1, 0, TimeSpan.Zero)),
+            hourlyRate: 0.30m, rateCurrency: "USD", updatedBy: Worker);
+        Assert.Equal(0.01m, e.Amount);
+    }
+
+    [Fact]
+    public void Stop_InvalidCurrencyLength_Throws()
+    {
+        var e = MakeOpen();
+        Assert.Throws<ArgumentException>(() =>
+            e.Stop(new Instant(new DateTimeOffset(2026, 5, 16, 10, 0, 0, TimeSpan.Zero)),
+                hourlyRate: 80m, rateCurrency: "DOLLARS", updatedBy: Worker));
+    }
+
+    [Fact]
+    public void Stop_NonAsciiCurrency_Throws()
+    {
+        var e = MakeOpen();
+        Assert.Throws<ArgumentException>(() =>
+            e.Stop(new Instant(new DateTimeOffset(2026, 5, 16, 10, 0, 0, TimeSpan.Zero)),
+                hourlyRate: 80m, rateCurrency: "USD1", updatedBy: Worker));
+    }
+
+    [Fact]
+    public void UpdateDescription_ExceedsMaxLength_Throws()
+    {
+        var e = MakeOpen();
+        var huge = new string('x', TimeEntry.MaxFreeTextLength + 1);
+        Assert.Throws<ArgumentException>(() => e.UpdateDescription(huge, Worker, Instant.Now));
     }
 
     [Fact]

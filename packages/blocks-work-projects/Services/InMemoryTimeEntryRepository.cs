@@ -27,17 +27,12 @@ public sealed class InMemoryTimeEntryRepository
     }
 
     /// <summary>
-    /// Internal lookup that bypasses the H5 tenant gate. The service
-    /// layer uses this when the caller already supplied a
-    /// <see cref="TimeEntryId"/> from a prior open/stop call — the id
-    /// itself is unguessable enough that re-checking tenant is
-    /// redundant overhead.
+    /// Snapshot of all non-deleted entries in a tenant — internal so
+    /// the public surface matches the future Postgres impl (which
+    /// won't expose an unbounded tenant scan). Tests + <c>TimeLog</c>
+    /// builds inside the assembly via <c>InternalsVisibleTo</c>.
     /// </summary>
-    internal TimeEntry? GetByIdAnyTenant(TimeEntryId id)
-        => _entries.TryGetValue(id, out var entry) ? entry : null;
-
-    /// <summary>Snapshot of all non-deleted entries in a tenant — used by tests + TimeLog.Build.</summary>
-    public IReadOnlyList<TimeEntry> ListByTenant(TenantId tenantId)
+    internal IReadOnlyList<TimeEntry> ListByTenant(TenantId tenantId)
         => _entries.Values
             .Where(e => e.TenantId.Value.Equals(tenantId.Value, StringComparison.Ordinal)
                         && e.DeletedAt is null)

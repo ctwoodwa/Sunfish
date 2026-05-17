@@ -10,7 +10,8 @@ namespace Sunfish.Blocks.WorkProjects.Services;
 /// <see cref="TimeEntry.Approve"/> / <see cref="TimeEntry.Reject"/>
 /// — the assembly-internal mutators — and emits
 /// <c>Work.TimeEntryApproved</c> via the canonical
-/// <see cref="IDomainEventPublisher"/>.
+/// <see cref="IDomainEventPublisher"/>. Envelope <c>TenantId</c> is
+/// derived from the entry, not ctor-bound.
 /// </summary>
 public sealed class InMemoryTimeApprovalService : ITimeApprovalService
 {
@@ -18,28 +19,25 @@ public sealed class InMemoryTimeApprovalService : ITimeApprovalService
 
     private readonly InMemoryTimeEntryRepository _repo;
     private readonly IDomainEventPublisher _events;
-    private readonly TenantId _envelopeTenantId;
     private readonly ReplicaId _envelopeReplicaId;
 
     public InMemoryTimeApprovalService(
         InMemoryTimeEntryRepository repo,
         IDomainEventPublisher events,
-        TenantId? envelopeTenantId = null,
         ReplicaId? envelopeReplicaId = null)
     {
         _repo              = repo   ?? throw new ArgumentNullException(nameof(repo));
         _events            = events ?? throw new ArgumentNullException(nameof(events));
-        _envelopeTenantId  = envelopeTenantId  ?? TenantId.System;
         _envelopeReplicaId = envelopeReplicaId ?? ReplicaId.System;
     }
 
     /// <inheritdoc />
     public async Task<TimeEntry> ApproveAsync(
-        TimeEntryId id, Guid approverPartyId, Instant approvedAt,
+        TenantId tenantId, TimeEntryId id, Guid approverPartyId, Instant approvedAt,
         CancellationToken cancellationToken = default)
     {
-        var entry = _repo.GetByIdAnyTenant(id)
-            ?? throw new InvalidOperationException($"TimeEntry {id.Value} not found.");
+        var entry = _repo.GetById(tenantId, id)
+            ?? throw new InvalidOperationException($"TimeEntry {id.Value} not found in tenant {tenantId}.");
         entry.Approve(approverPartyId, approvedAt);
         _repo.Upsert(entry);
 
@@ -49,7 +47,7 @@ public sealed class InMemoryTimeApprovalService : ITimeApprovalService
             EventType            = "Work.TimeEntryApproved",
             SchemaVersion        = PayloadSchemaVersion,
             OccurredAt           = approvedAt.Value,
-            TenantId             = _envelopeTenantId,
+            TenantId             = entry.TenantId,
             OriginatingReplicaId = _envelopeReplicaId,
             IdempotencyKey       = $"time-entry-approved:{entry.Id.Value}",
             Payload              = new TimeEntryApprovedEvent(
@@ -72,12 +70,12 @@ public sealed class InMemoryTimeApprovalService : ITimeApprovalService
 
     /// <inheritdoc />
     public Task<TimeEntry> RejectAsync(
-        TimeEntryId id, Guid approverPartyId, Instant rejectedAt, string reason,
+        TenantId tenantId, TimeEntryId id, Guid rejecterPartyId, Instant rejectedAt, string reason,
         CancellationToken cancellationToken = default)
     {
-        var entry = _repo.GetByIdAnyTenant(id)
-            ?? throw new InvalidOperationException($"TimeEntry {id.Value} not found.");
-        entry.Reject(reason, approverPartyId, rejectedAt);
+        var entry = _repo.GetById(tenantId, id)
+            ?? throw new InvalidOperationException($"TimeEntry {id.Value} not found in tenant {tenantId}.");
+        entry.Reject(reason, rejecterPartyId, rejectedAt);
         _repo.Upsert(entry);
         return Task.FromResult(entry);
     }

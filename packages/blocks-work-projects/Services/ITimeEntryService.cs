@@ -8,6 +8,8 @@ namespace Sunfish.Blocks.WorkProjects.Services;
 /// → Submit). Approval / Reject lives on
 /// <see cref="ITimeApprovalService"/> so the write + approve
 /// authorities can be split at the host's composition root.
+/// Every mutating method takes <see cref="TenantId"/> + enforces the
+/// H5 cross-tenant gate (mismatch → <see cref="InvalidOperationException"/>).
 /// </summary>
 public interface ITimeEntryService
 {
@@ -26,8 +28,13 @@ public interface ITimeEntryService
         string? description = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Stop a running entry; captures hourly rate at stop-time.</summary>
+    /// <summary>
+    /// Stop a running entry; captures hourly rate at stop-time. Callers
+    /// MUST gate rate-setting authority to a role distinct from the
+    /// worker — this service does not consult <c>IUserContext</c>.
+    /// </summary>
     Task<TimeEntry> StopAsync(
+        TenantId tenantId,
         TimeEntryId id,
         Instant endedAt,
         decimal? hourlyRate,
@@ -40,8 +47,12 @@ public interface ITimeEntryService
     /// <c>Work.TimeEntrySubmitted</c>. Period-gating is the caller's
     /// responsibility (PR 6 service-layer compose with
     /// <c>IPeriodResolver</c> when chart context is available).
+    /// Concurrent duplicate-submit relies on downstream dedup by the
+    /// envelope's <c>IdempotencyKey</c> (<c>foundation-events</c>
+    /// <c>INSERT … ON CONFLICT(tenant_id, idempotency_key) DO NOTHING</c>).
     /// </summary>
     Task<TimeEntry> SubmitAsync(
+        TenantId tenantId,
         TimeEntryId id,
         Instant submittedAt,
         Guid updatedBy,
@@ -49,6 +60,7 @@ public interface ITimeEntryService
 
     /// <summary>Update description on Open / Submitted entries only.</summary>
     Task UpdateDescriptionAsync(
+        TenantId tenantId,
         TimeEntryId id,
         string description,
         Guid updatedBy,

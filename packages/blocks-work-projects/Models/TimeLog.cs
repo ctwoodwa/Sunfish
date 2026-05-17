@@ -26,8 +26,17 @@ public sealed record TimeLog(
     /// (filtering + ordering happens here). The list is filtered to
     /// entries whose <see cref="TimeEntry.WorkerPartyId"/> matches
     /// + whose <see cref="TimeEntry.StartedAt"/> falls within
-    /// [<paramref name="from"/>, <paramref name="until"/>] inclusive.
+    /// [<paramref name="from"/> 00:00 UTC, <paramref name="until"/>
+    /// 23:59:59.9999999 UTC] inclusive.
     /// </summary>
+    /// <remarks>
+    /// WINDOWING IS UTC-BASED. An entry started 2026-05-16T23:30:00-08:00
+    /// (Pacific) — i.e., 2026-05-17T07:30:00Z — lands on UTC-day
+    /// 2026-05-17, not the worker's local 2026-05-16. Callers that need
+    /// local-day semantics must pre-shift <paramref name="from"/> +
+    /// <paramref name="until"/> to the worker's timezone before calling.
+    /// A TZ-aware overload is tracked for PR 6 service-layer compose.
+    /// </remarks>
     public static TimeLog Build(
         Guid workerPartyId,
         DateOnly from,
