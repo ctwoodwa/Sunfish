@@ -117,4 +117,47 @@ public sealed class TenantSecurityPolicyDefaultsTests
         Assert.Equal(1, RecoveryContactPolicy.Default.MinimumContactCount);
         Assert.Equal(3, RecoveryContactPolicy.Default.PreferredContactCount);
     }
+
+    [Fact]
+    public void KeyRotationDefault_AutoTriggers_DoNotIncludeEmergencyOverride()
+    {
+        // §1.4.2 — emergency rotation requires multi-actor approval and
+        // must NOT fire automatically.
+        Assert.DoesNotContain(KeyRotationTrigger.EmergencyOverride, KeyRotationPolicy.Default.AutoTriggers);
+    }
+
+    [Theory]
+    [InlineData(RetentionJurisdictionPreset.Custom)]
+    [InlineData(RetentionJurisdictionPreset.HipaaInformedDefault)]
+    [InlineData(RetentionJurisdictionPreset.PciDssInformedDefault)]
+    [InlineData(RetentionJurisdictionPreset.Soc2InformedDefault)]
+    [InlineData(RetentionJurisdictionPreset.GdprInformedDefault)]
+    [InlineData(RetentionJurisdictionPreset.EuAiActInformedDefault)]
+    public void AuditRetentionPolicy_AllJurisdictionPresets_ConstructValid(RetentionJurisdictionPreset preset)
+    {
+        // Insurance against an accidental rename / removal breaking the
+        // floor validator wiring in PR 2 — every enum value must remain
+        // constructable on the policy record.
+        var p = AuditRetentionPolicy.Default with { JurisdictionPreset = preset };
+        Assert.Equal(preset, p.JurisdictionPreset);
+    }
+
+    [Fact]
+    public void AttestationEvidence_ConstructsWithEmptyProof_ForDataLayer()
+    {
+        // §1.2.1: the policy layer ACCEPTS evidence at construction;
+        // the verifier (future PR) is the authority on whether empty
+        // proof for a hardware tier passes. Data-layer should not
+        // pre-reject.
+        var e = new AttestationEvidence(AttestationTier.Fido2HardwareToken, ReadOnlyMemory<byte>.Empty, DateTimeOffset.UtcNow);
+        Assert.True(e.PlatformProof.IsEmpty);
+    }
+
+    [Fact]
+    public void MfaEnrollmentPolicy_Default_DictionaryIsReadOnly()
+    {
+        // Defense-in-depth: caller cannot downcast and mutate Default.
+        Assert.IsAssignableFrom<System.Collections.ObjectModel.ReadOnlyDictionary<ShipRole, IReadOnlyList<MfaFactor>>>(
+            MfaEnrollmentPolicy.Default.RequiredFactorsByRole);
+    }
 }

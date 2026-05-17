@@ -21,8 +21,14 @@ namespace Sunfish.Foundation.SecurityPolicy.Models;
 /// hardware tiers — the verifier is the authority on what tier the
 /// evidence proves.
 /// </para>
+/// <para>
+/// <see cref="PlatformProof"/> is exposed as <c>ReadOnlyMemory&lt;byte&gt;</c>
+/// rather than <c>byte[]</c> so callers cannot mutate the proof bytes
+/// after construction; pair with a verifier-side defensive copy when
+/// long-term retention is needed.
+/// </para>
 /// </remarks>
 public sealed record AttestationEvidence(
     AttestationTier Tier,
-    byte[] PlatformProof,
+    ReadOnlyMemory<byte> PlatformProof,
     DateTimeOffset EvidenceAt);

@@ -36,6 +36,11 @@ public enum MfaFactor
     /// <summary>OTP delivered via email; low assurance. Copy-paste MUST be enabled.</summary>
     Email,
 
-    /// <summary>OTP delivered via SMS. NIST 800-63B Rev. 3 §5.1.3.3 RESTRICTED authenticator.</summary>
+    /// <summary>
+    /// OTP delivered via SMS. NIST SP 800-63B Rev. 3 §5.1.3.3 RESTRICTED
+    /// authenticator — permitted but discouraged. Threat vectors:
+    /// SIM-swap, SS7 interception, number-recycling. Subject to risk-
+    /// assessment + user-notification requirements per NIST.
+    /// </summary>
     Sms,
 }

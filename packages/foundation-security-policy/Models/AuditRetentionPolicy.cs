@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace Sunfish.Foundation.SecurityPolicy.Models;
 
 /// <summary>
@@ -33,6 +35,7 @@ public sealed record AuditRetentionPolicy(
     public static readonly AuditRetentionPolicy Default = new(
         DefaultMinimumRetentionWindow: TimeSpan.FromDays(365 * 3),
         DefaultMaximumRetentionWindow: TimeSpan.FromDays(365 * 7),
-        PerClassOverrides: new Dictionary<AuditEventClass, (TimeSpan Min, TimeSpan Max)>(),
+        PerClassOverrides: new ReadOnlyDictionary<AuditEventClass, (TimeSpan Min, TimeSpan Max)>(
+            new Dictionary<AuditEventClass, (TimeSpan Min, TimeSpan Max)>()),
         JurisdictionPreset: RetentionJurisdictionPreset.Custom);
 }

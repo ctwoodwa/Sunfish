@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Sunfish.Foundation.Ship.Common;
 
 namespace Sunfish.Foundation.SecurityPolicy.Models;
@@ -15,8 +16,14 @@ namespace Sunfish.Foundation.SecurityPolicy.Models;
 /// for production use.
 /// <para>
 /// Default cadence is 90 days; <see cref="ShipRole.Captain"/> tightens
-/// to 30 days (§1.4 Default). Emergency rotation still requires the
-/// multi-actor approval floor (§1.4.2).
+/// to 30 days (§1.4 Default). Roles absent from
+/// <see cref="PerRoleOverrides"/> fall through to
+/// <see cref="DefaultRotationCadence"/>. Emergency rotation still
+/// requires the multi-actor approval floor (§1.4.2) — note that
+/// <c>EmergencyOverride</c> is intentionally absent from
+/// <see cref="AutoTriggers"/> in the default because it MUST go
+/// through Captain + officer co-approval rather than firing
+/// automatically.
 /// </para>
 /// </remarks>
 public sealed record KeyRotationPolicy(
@@ -28,13 +35,14 @@ public sealed record KeyRotationPolicy(
 {
     public static readonly KeyRotationPolicy Default = new(
         DefaultRotationCadence: TimeSpan.FromDays(90),
-        PerRoleOverrides: new Dictionary<ShipRole, TimeSpan>
-        {
-            [ShipRole.Captain] = TimeSpan.FromDays(30),
-        },
+        PerRoleOverrides: new ReadOnlyDictionary<ShipRole, TimeSpan>(
+            new Dictionary<ShipRole, TimeSpan>
+            {
+                [ShipRole.Captain] = TimeSpan.FromDays(30),
+            }),
         RotationGracePeriod: TimeSpan.FromDays(7),
         AllowEmergencyRotation: true,
-        AutoTriggers: new[]
+        AutoTriggers: Array.AsReadOnly(new[]
         {
             KeyRotationTrigger.CadenceExpired,
             KeyRotationTrigger.CompromiseIndicatorFlagged,
@@ -42,5 +50,5 @@ public sealed record KeyRotationPolicy(
             KeyRotationTrigger.RecoveryCompleted,
             KeyRotationTrigger.AttestationTierDowngrade,
             KeyRotationTrigger.PolicyTightening,
-        });
+        }));
 }

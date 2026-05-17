@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace Sunfish.Foundation.SecurityPolicy.Models;
 
 /// <summary>
@@ -23,21 +25,21 @@ public sealed record DeviceAttestationPolicy(
     bool RequireAttestationForWatchTransfer)
 {
     public static readonly DeviceAttestationPolicy Default = new(
-        AcceptedTiersForPrivilegedActions: new[]
+        AcceptedTiersForPrivilegedActions: Array.AsReadOnly(new[]
         {
             AttestationTier.AppleSecureElement,
             AttestationTier.AndroidHardwareKeyStore,
             AttestationTier.Tpm2,
             AttestationTier.Fido2HardwareToken,
-        },
-        AcceptedTiersForReadActions: new[]
+        }),
+        AcceptedTiersForReadActions: Array.AsReadOnly(new[]
         {
             AttestationTier.SoftwareSandbox,
             AttestationTier.AppleSecureElement,
             AttestationTier.AndroidHardwareKeyStore,
             AttestationTier.Tpm2,
             AttestationTier.Fido2HardwareToken,
-        },
+        }),
         RequireAttestationForWatchTransfer: true);
 
     /// <summary>
