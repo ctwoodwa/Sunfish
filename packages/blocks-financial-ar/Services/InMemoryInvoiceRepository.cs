@@ -24,6 +24,18 @@ public sealed class InMemoryInvoiceRepository : IInvoiceRepository
         if (invoice is null) throw new ArgumentNullException(nameof(invoice));
         if (_invoices.TryGetValue(invoice.Id, out var existing) && existing.DeletedAtUtc is not null)
             throw new InvalidOperationException($"Invoice '{invoice.Id.Value}' is tombstoned; further mutations are not permitted.");
+
+        // Drafts may carry an empty InvoiceNumber (PR 3 mints on Issue).
+        // Issued+ invoices MUST match the canonical numbering format —
+        // a malformed number would surface as a bad ERPNext-importer
+        // payload or a misuse of `Invoice.Create` with hand-rolled string.
+        if (invoice.Status != Models.InvoiceStatus.Draft
+            && !InvoiceNumberFormat.IsWellFormed(invoice.InvoiceNumber))
+        {
+            throw new InvalidOperationException(
+                $"Invoice '{invoice.Id.Value}' is in status '{invoice.Status}' but its InvoiceNumber '{invoice.InvoiceNumber}' does not match the canonical format 'INV-YYYY-MM-DD-{{Replica}}-{{NNNN}}'.");
+        }
+
         _invoices[invoice.Id] = invoice;
         return Task.CompletedTask;
     }
