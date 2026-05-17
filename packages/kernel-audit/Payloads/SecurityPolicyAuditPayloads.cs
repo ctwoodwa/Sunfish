@@ -29,12 +29,21 @@ public static class SecurityPolicyAuditPayloads
         TenantId TenantId,
         DateTimeOffset BootstrappedAt);
 
-    /// <summary>Payload for <c>AuditEventType.SecurityPolicyProposed</c>.</summary>
+    /// <summary>
+    /// Payload for <c>AuditEventType.SecurityPolicyProposed</c>.
+    /// <see cref="CaptainVacancyExceptionInvoked"/> is set <c>true</c>
+    /// when the proposer relied on the ADR 0068 §3.2 Captain-vacancy
+    /// elevation (XO satisfies the senior-approver invariant); no new
+    /// <c>AuditEventType</c> constant is needed per §3.2 — the
+    /// elevation is recorded as a payload flag on the existing event.
+    /// Added in PR 3b.1 (W#37 P1).
+    /// </summary>
     public sealed record ProposedPayload(
         TenantId TenantId,
         ActorId Proposer,
         StandingOrderId StandingOrderId,
-        string PolicyDiffSummary);
+        string PolicyDiffSummary,
+        bool CaptainVacancyExceptionInvoked = false);
 
     /// <summary>Payload for <c>AuditEventType.SecurityPolicyApprovalReceived</c>.</summary>
     public sealed record ApprovalReceivedPayload(

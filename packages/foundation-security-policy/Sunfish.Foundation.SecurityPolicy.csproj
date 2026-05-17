@@ -20,5 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <!-- PR 3b.1 — ApprovalChain / ApprovalStep / StandingOrder (ADR 0065 §1). -->
+    <ProjectReference Include="..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
   </ItemGroup>
 </Project>
