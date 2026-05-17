@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.FinancialAr.Models;
 using Sunfish.Blocks.FinancialAr.Services;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialAr.DependencyInjection;
 
@@ -34,6 +35,9 @@ public static class FinancialArServiceCollectionExtensions
         services.TryAddSingleton<IInvoiceRepository, InMemoryInvoiceRepository>();
         services.TryAddSingleton<IInvoiceNumberingService>(_ =>
             new InMemoryInvoiceNumberingService(options.LocalReplicaId));
+        services.TryAddSingleton<ITaxCalculator, NoOpTaxCalculator>();
+        services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
+        services.TryAddSingleton<IInvoicePostingService, InvoicePostingService>();
         return services;
     }
 }
