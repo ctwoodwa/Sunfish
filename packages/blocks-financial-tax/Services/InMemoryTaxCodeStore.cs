@@ -4,6 +4,7 @@ using FL = Sunfish.Blocks.FinancialLedger.Models;
 using Sunfish.Blocks.FinancialTax.Models;
 using Sunfish.Blocks.FinancialTax.Models.Events;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Events;
 
 namespace Sunfish.Blocks.FinancialTax.Services;
 
