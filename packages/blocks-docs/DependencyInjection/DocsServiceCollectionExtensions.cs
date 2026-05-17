@@ -39,6 +39,7 @@ public static class DocsServiceCollectionExtensions
         services.TryAddSingleton<IDocumentRefRepository, InMemoryDocumentRefRepository>();
         services.TryAddSingleton<IDocumentRefService, DocumentRefService>();
         services.TryAddSingleton<DocumentRefReconciler>();
+        services.TryAddSingleton<AttachmentOrphanReconciler>();
         return services;
     }
 }
