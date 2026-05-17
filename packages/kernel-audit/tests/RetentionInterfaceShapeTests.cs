@@ -29,11 +29,11 @@ public sealed class RetentionInterfaceShapeTests
     [Fact]
     public void AuditRetentionPolicy_IsImmutableRecord_WithExpectedFields()
     {
-        // Sealed positional record with init-only properties.
+        // Sealed positional record. Field roster: MinDays, MaxDays,
+        // LegalHoldOverride, EnforcementMode (4 ctor params per xo-ruling-T12-55Z).
+        // The positional-record init-only nature is guaranteed by the language;
+        // no need to reflect over the setter (council A.2 — drop tautological check).
         Assert.True(typeof(AuditRetentionPolicy).IsSealed);
-        Assert.True(typeof(AuditRetentionPolicy).GetProperty(nameof(AuditRetentionPolicy.MinDays))!.SetMethod!.IsPublic == false
-            || typeof(AuditRetentionPolicy).GetProperty(nameof(AuditRetentionPolicy.MinDays))!.SetMethod is not null);
-        // Field roster: MinDays, MaxDays, LegalHoldOverride, EnforcementMode (4 ctor params per xo-ruling-T12-55Z)
         var ctor = typeof(AuditRetentionPolicy).GetConstructors().Single();
         var paramNames = ctor.GetParameters().Select(p => p.Name).OrderBy(n => n).ToArray();
         Assert.Equal(
@@ -53,18 +53,15 @@ public sealed class RetentionInterfaceShapeTests
     }
 
     [Fact]
-    public void AllPublicTypes_CarryGc1Remarks()
+    public void RetentionNamespace_ExposesExactlyFourPublicTypes()
     {
-        // Lightweight discovery: every public type in the Retention namespace must have a non-empty XML
-        // <remarks> block referencing §GC.1 (legal-disclaimer). Compiler-emitted documentation is in the
-        // generated .xml file at build time; this test confirms the source carries the marker by reflecting
-        // on the [Doc]-stripped types and reading the file content via the assembly's TypeInfo for a
-        // smoke-grade check (assembly-embedded doc is not present in test runtime, so we proxy by
-        // asserting the types are sealed + recordable — see other tests; this test is a marker test).
+        // Per council A.1: this is a type-count pin (the §GC.1 marker presence is a
+        // source-code convention enforced by reviewer not by reflection — xmldoc text is
+        // stripped at runtime). Four expected: interface IAuditRetentionEnforcer + records
+        // AuditRetentionPolicy + RetentionEnforcementResult + enum AuditRetentionEnforcementMode.
         var types = typeof(IAuditRetentionEnforcer).Assembly.GetTypes()
             .Where(t => t.Namespace == "Sunfish.Kernel.Audit.Retention" && t.IsPublic);
         Assert.NotEmpty(types);
-        // Sanity — exactly 4 public types in the namespace (interface + 2 records + 1 enum):
         Assert.Equal(4, types.Count());
     }
 }
