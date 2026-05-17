@@ -1,3 +1,4 @@
 # Auto-merge log — XO-maintained. One JSON line per PR merged under pre-authorization.
 # Fields: pr, title, workstream, pattern, timestamp, tier, council-status, auto-merged-by
 # Created: 2026-05-17T12-15Z. First entry will appear when tax-bridge pilot PR merges.
+{"pr": 977, "title": "feat(blocks-financial-tax-bridge): bridge AR/AP local ITaxCalculator to canonical engine", "workstream": "blocks-financial-tax-bridge", "pattern": "pattern-005", "deviation": "TaxCalculationInput 4-arg + Error enum (resolved per xo-ruling-2026-05-17T12-30Z option A)", "timestamp": "2026-05-17T10:08:12Z", "tier": "pre-authorized", "council-status": "standing-pattern-exempt (pattern-005)", "auto-merged-by": "XO (CI-green + pre-authorized; no CO click required)", "pilot": true}
