@@ -16,5 +16,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <!-- W#72 PR 2 — Trial Balance cartridge consumes ledger + periods read surfaces. -->
+    <ProjectReference Include="..\blocks-financial-ledger\Sunfish.Blocks.FinancialLedger.csproj" />
+    <ProjectReference Include="..\blocks-financial-periods\Sunfish.Blocks.FinancialPeriods.csproj" />
   </ItemGroup>
 </Project>
