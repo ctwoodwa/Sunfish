@@ -70,6 +70,11 @@ public sealed class DefaultSecurityPolicyIssuer : ISecurityPolicyIssuer
     // Issued proposal. VALUE: ordered (chronological) list of approvals
     // recorded so far + the proof expiry the approver supplied. Phase 1
     // durability gap — see class-level remarks.
+    // TODO(PR 3b.4): bound _inFlight via a sweep against
+    // ApprovalProofMaxAge once ITenantSecurityPolicyLoader provides the
+    // durable backing store. Until then a malicious or buggy caller can
+    // flood ProposeAsync and never approve, growing the per-process map.
+    // Council SE-2 (LOW) acknowledged + deferred.
     private readonly ConcurrentDictionary<StandingOrderId, InFlightProposal> _inFlight = new();
 
     /// <summary>Construct an issuer bound to its collaborators.</summary>
@@ -235,7 +240,26 @@ public sealed class DefaultSecurityPolicyIssuer : ISecurityPolicyIssuer
                 });
         }
 
-        if (!_inFlight.TryGetValue(proposal, out var inflight))
+        // Atomic compare-and-swap append on the in-flight proposal. Per
+        // council .NET-architect A.1 (lost-update race): a naive
+        // TryGetValue → modify → assign sequence is NOT atomic under
+        // concurrent ApproveAsync calls — two approvers can both observe
+        // the same baseline and the later write clobbers the earlier
+        // approval. AddOrUpdate makes the read-modify-write a single
+        // CAS over the per-proposal slot; the addValueFactory throws so
+        // a vanished proposal (rescinded between this call and the CAS)
+        // surfaces as PROPOSAL_NOT_FOUND rather than creating a phantom
+        // entry.
+        var newApproval = new RecordedApproval(approver, occurredAt, approverProof.ExpiresAt, comment);
+        InFlightProposal updated;
+        try
+        {
+            updated = _inFlight.AddOrUpdate(
+                key: proposal,
+                addValueFactory: _ => throw new KeyNotFoundException(),
+                updateValueFactory: (_, existing) => existing with { Approvals = existing.Approvals.Add(newApproval) });
+        }
+        catch (KeyNotFoundException)
         {
             await EmitSecurityPolicyAuditAsync(
                 AuditEventType.SecurityPolicyRejected,
@@ -247,8 +271,9 @@ public sealed class DefaultSecurityPolicyIssuer : ISecurityPolicyIssuer
                 $"No in-flight proposal with id {proposal.Value:N}; it may have been Applied, Rescinded, or originated in a prior process.");
         }
 
-        // Emit ApprovalReceived for every approval (success path; rejection
-        // path emitted SecurityPolicyRejected above).
+        // Emit ApprovalReceived AFTER the successful CAS append so the
+        // audit log only records approvals that actually landed on a
+        // live proposal.
         await EmitSecurityPolicyAuditAsync(
             AuditEventType.SecurityPolicyApprovalReceived,
             tenant,
@@ -256,19 +281,15 @@ public sealed class DefaultSecurityPolicyIssuer : ISecurityPolicyIssuer
             occurredAt,
             ct).ConfigureAwait(false);
 
-        var newApproval = new RecordedApproval(approver, occurredAt, approverProof.ExpiresAt, comment);
-        var nextApprovals = inflight.Approvals.Add(newApproval);
-        var nextInflight = inflight with { Approvals = nextApprovals };
-
         var roles = await SnapshotRolesAsync(tenant, ct).ConfigureAwait(false);
-        var chain = new ApprovalChain(nextApprovals
+        var chain = new ApprovalChain(updated.Approvals
             .Select(a => new ApprovalStep(a.Approver, a.ApprovedAt, a.Comment))
             .ToArray());
-        var proofExpiries = nextApprovals.ToDictionary(a => a.Approver, a => a.ProofExpiresAt);
+        var proofExpiries = updated.Approvals.ToDictionary(a => a.Approver, a => a.ProofExpiresAt);
 
         var verdict = _approvalFloor.Evaluate(
             proposal: proposal,
-            proposer: inflight.Proposer,
+            proposer: updated.Proposer,
             chainSoFar: chain,
             approverRoles: roles,
             proofExpiriesByApprover: proofExpiries,
@@ -276,10 +297,9 @@ public sealed class DefaultSecurityPolicyIssuer : ISecurityPolicyIssuer
 
         if (!verdict.AllowApply)
         {
-            _inFlight[proposal] = nextInflight;
             return new SecurityPolicyApprovalResult(
                 IsApprovalChainSatisfied: false,
-                ApprovalsGranted: nextApprovals.Count,
+                ApprovalsGranted: updated.Approvals.Count,
                 ApprovalsRequired: DefaultSecurityPolicyApprovalFloorProvider.MinimumApproverCount);
         }
 
@@ -287,20 +307,28 @@ public sealed class DefaultSecurityPolicyIssuer : ISecurityPolicyIssuer
         // supersedes the proposal. Per ADR 0065 §4 the Issued proposal is NOT
         // mutated in place; the application is a fresh Standing Order whose
         // triples carry the proposed policy as the new value.
-        await IssueAppliedStandingOrderAsync(tenant, inflight, chain, ct).ConfigureAwait(false);
-
-        await EmitSecurityPolicyAuditAsync(
-            AuditEventType.SecurityPolicyApplied,
-            tenant,
-            new SecurityPolicyAuditPayloads.AppliedPayload(tenant, proposal, occurredAt),
-            occurredAt,
-            ct).ConfigureAwait(false);
-
-        _inFlight.TryRemove(proposal, out _);
+        //
+        // Apply-once race-guard: a concurrent approver may already have
+        // crossed the floor and removed the proposal from _inFlight while
+        // this call was between the CAS append and here. TryRemove returns
+        // false in that case — abort the Apply transition (audit + Standing
+        // Order would be duplicated) but still report the chain as satisfied
+        // because it factually IS (this approver's vote landed; another
+        // approver's win is what actually drove the Apply).
+        if (_inFlight.TryRemove(proposal, out _))
+        {
+            await IssueAppliedStandingOrderAsync(tenant, updated, chain, ct).ConfigureAwait(false);
+            await EmitSecurityPolicyAuditAsync(
+                AuditEventType.SecurityPolicyApplied,
+                tenant,
+                new SecurityPolicyAuditPayloads.AppliedPayload(tenant, proposal, occurredAt),
+                occurredAt,
+                ct).ConfigureAwait(false);
+        }
 
         return new SecurityPolicyApprovalResult(
             IsApprovalChainSatisfied: true,
-            ApprovalsGranted: nextApprovals.Count,
+            ApprovalsGranted: updated.Approvals.Count,
             ApprovalsRequired: DefaultSecurityPolicyApprovalFloorProvider.MinimumApproverCount);
     }
 

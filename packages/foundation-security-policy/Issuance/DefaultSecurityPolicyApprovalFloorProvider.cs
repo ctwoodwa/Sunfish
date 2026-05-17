@@ -26,6 +26,15 @@ namespace Sunfish.Foundation.SecurityPolicy.Issuance;
 /// inserted, so historical audit reason codes remain stable.
 /// </para>
 /// <para>
+/// <b>Evaluation order is 1, 3, 4, 2, 5</b> — see invariant-specific
+/// comments at each branch in <see cref="Evaluate"/>. Spec §3.1 lists
+/// the invariants 1→5 in narrative order; the impl reorders so a
+/// self-approval or duplicate-approver structural defect surfaces
+/// BEFORE "no senior approver" (which would otherwise mask the more
+/// specific diagnosis under contention). All five invariants still
+/// run on every call; only the FIRST failure short-circuits.
+/// </para>
+/// <para>
 /// §3.2 Captain-vacancy: when <see cref="ShipRole.Captain"/> is absent
 /// from the approver-roles snapshot the senior-approver invariant
 /// (#2) is satisfied by an <see cref="ShipRole.XO"/> approver. The

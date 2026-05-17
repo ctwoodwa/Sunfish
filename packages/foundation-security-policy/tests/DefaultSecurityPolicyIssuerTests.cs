@@ -269,6 +269,72 @@ public sealed class DefaultSecurityPolicyIssuerTests
     }
 
     [Fact]
+    public async Task Issuer_Approve_Concurrent_DoesNotLoseApprovals()
+    {
+        // Council .NET-architect A.1 regression guard: lost-update race on
+        // _inFlight could let two concurrent ApproveAsync calls observe the
+        // same baseline + later writer clobbers earlier approval. AddOrUpdate
+        // CAS prevents this. Verify by racing 3 distinct approvers (floor is
+        // 2 so first 2 to land transition Applied; third sees PROPOSAL_NOT_FOUND
+        // because _inFlight was removed). Without CAS, an approver could be
+        // silently dropped — this test would intermittently see ApprovalsGranted
+        // counts like {1,1,…} instead of {1,2,…}.
+        var (issuer, _, audit, roles, principals, _) = Build();
+        var a1 = new ActorId("actor-a1");
+        var a2 = new ActorId("actor-a2");
+        var a3 = new ActorId("actor-a3");
+        roles.Assignments.Add(Assignment(a1, ShipRole.Captain));
+        roles.Assignments.Add(Assignment(a2, ShipRole.EngineerOfficer));
+        roles.Assignments.Add(Assignment(a3, ShipRole.EngineerOfficer));
+        roles.Assignments.Add(Assignment(Proposer, ShipRole.EngineerOfficer));
+        principals.Map[a1] = new Individual(PrincipalId.FromBytes(new byte[32]));
+        principals.Map[a2] = new Individual(PrincipalId.FromBytes(new byte[32]));
+        principals.Map[a3] = new Individual(PrincipalId.FromBytes(new byte[32]));
+
+        var proposalId = await issuer.ProposeAsync(Tenant, Proposer, DefaultPolicy(), "test", CancellationToken.None);
+
+        var tasks = new[] { a1, a2, a3 }
+            .Select(approver => Task.Run(async () =>
+            {
+                try
+                {
+                    return (Success: true, Result: await issuer.ApproveAsync(
+                        Tenant, approver, proposalId,
+                        FreshProofFor(approver, proposalId), comment: null, CancellationToken.None));
+                }
+                catch (InvalidOperationException)
+                {
+                    // Expected for the racing-loser whose proposal was removed
+                    // after Applied transition by an earlier approver.
+                    return (Success: false, Result: default(SecurityPolicyApprovalResult)!);
+                }
+            }))
+            .ToArray();
+
+        var outcomes = await Task.WhenAll(tasks);
+        var successes = outcomes.Where(o => o.Success).Select(o => o.Result).ToArray();
+
+        // At least 2 approvers must have landed (the minimum floor); the third
+        // may either land + return Applied=true, or race-lose + throw
+        // InvalidOperationException with PROPOSAL_NOT_FOUND audit.
+        Assert.True(successes.Length >= 2, "At least 2 of the 3 approvers should have landed on the in-flight proposal.");
+
+        // The CAS append guarantees ApprovalsGranted values are strictly
+        // increasing 1..N (no duplicates) — proves no lost update.
+        var granted = successes.Select(r => r.ApprovalsGranted).OrderBy(n => n).ToArray();
+        Assert.Equal(granted.Distinct().Count(), granted.Length);
+
+        // Apply-once race-guard: exactly ONE SecurityPolicyApplied audit
+        // must have been emitted, even when multiple approvers concurrently
+        // observe the floor as satisfied. (Multiple successes may report
+        // IsApprovalChainSatisfied=true factually — only one performs the
+        // underlying StandingOrder transition + audit.)
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r => r != null && r.EventType.Equals(AuditEventType.SecurityPolicyApplied)),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Issuer_Rescind_Proposer_Succeeds()
     {
         var (issuer, _, audit, roles, _, _) = Build();

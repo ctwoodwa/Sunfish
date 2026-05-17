@@ -25,9 +25,12 @@ namespace Sunfish.Foundation.SecurityPolicy.Issuance;
 /// <see cref="ProofBytes"/> is OPAQUE. The issuer never decodes it in
 /// Phase 1 — cryptographic verification against
 /// <c>ICapabilityGraph</c> ships in Phase 2 (W#37 Phase 2 +
-/// Cap-graph workstream). Phase 1 stores and forwards the bytes into
-/// the <c>SecurityPolicyApprovalReceived</c> audit payload but does
-/// NOT inspect them.
+/// Cap-graph workstream). Phase 1 is more conservative than the spec:
+/// the bytes are NEVER persisted into any audit payload (the
+/// <c>SecurityPolicyApprovalReceived</c> payload carries only
+/// approver / proposal / timestamp) and NEVER inspected by the
+/// issuer. The bytes live only on the in-memory in-flight record and
+/// fall out of scope when the proposal is Applied or Rescinded.
 /// </para>
 /// </remarks>
 /// <param name="Approver">The actor whose capability is being attested.</param>
