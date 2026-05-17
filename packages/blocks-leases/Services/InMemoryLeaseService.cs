@@ -1,3 +1,4 @@
+
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
@@ -218,7 +219,7 @@ public sealed class InMemoryLeaseService : ILeaseService
     }
 
     /// <inheritdoc />
-    public async ValueTask<Lease> RecordPartySignatureAsync(LeaseId id, PartyId party, SignatureEventId signatureEvent, ActorId actor, CancellationToken ct = default)
+    public async ValueTask<Lease> RecordPartySignatureAsync(LeaseId id, Sunfish.Blocks.People.Foundation.Models.PartyId party, SignatureEventId signatureEvent, ActorId actor, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         if (!_store.TryGetValue(id, out var lease))

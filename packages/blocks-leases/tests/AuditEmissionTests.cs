@@ -7,6 +7,8 @@ using Sunfish.Foundation.Crypto;
 using Sunfish.Kernel.Audit;
 using Xunit;
 
+using PartyId = Sunfish.Blocks.People.Foundation.Models.PartyId;
+
 namespace Sunfish.Blocks.Leases.Tests;
 
 /// <summary>

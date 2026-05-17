@@ -1,3 +1,4 @@
+
 using Sunfish.Blocks.Leases.Models;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Kernel.Signatures.Models;
@@ -63,7 +64,7 @@ public interface ILeaseService
     /// latest. Returns the persisted lease with the new signature
     /// appended to <see cref="Lease.PartySignatures"/>.
     /// </summary>
-    ValueTask<Lease> RecordPartySignatureAsync(LeaseId id, PartyId party, SignatureEventId signatureEvent, ActorId actor, CancellationToken ct = default);
+    ValueTask<Lease> RecordPartySignatureAsync(LeaseId id, Sunfish.Blocks.People.Foundation.Models.PartyId party, SignatureEventId signatureEvent, ActorId actor, CancellationToken ct = default);
 
     /// <summary>
     /// W#27 Phase 3: sets the landlord's attestation signature for the
