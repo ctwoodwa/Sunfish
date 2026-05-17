@@ -4,7 +4,7 @@ number: 71
 slug: blocks-docs
 title: "W#71 — blocks-docs: Document attachment substrate (Attachment, StorageRef, DocumentRef, IBlobStore)"
 status: "building"
-status_cell: "`building` — dev implementing; PR 1 merged (#968); 5 PRs remaining; hand-off at `icm/_state/handoffs/blocks-docs-stage06-handoff.md`; 6 PRs total; ~10-13h; security-engineering council MANDATORY on PR 3 (IBlobStore wiring + tenant-scoped quotas + MIME/size policy)"
+status_cell: "`building` — dev implementing; PR 1 (#968) + PR 2 (#971) merged; 4 PRs remaining; PR 3 (#974) DRAFT — **BLOCKING council verdict 2026-05-17** (3 blockers: SupersedeAsync bypass, system-blacklist override, Windows reserved-name bypass; apply amendments → re-council before merging); hand-off at `icm/_state/handoffs/blocks-docs-stage06-handoff.md`; 6 PRs total; ~10-13h"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/02_architecture/blocks-docs-schema-design.md` §3.1 (Document base scaffold / storage-ref dimensions) + §6 (storage model) + §7 (cross-cluster contracts) + `icm/_state/handoffs/blocks-docs-stage06-handoff.md`; ADR 0088 (Path II)"
