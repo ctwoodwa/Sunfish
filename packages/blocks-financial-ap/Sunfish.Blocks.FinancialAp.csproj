@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.FinancialAp</PackageId>
+    <Description>Accounts-payable substrate for Sunfish — Bill + BillLine entities, status transitions (incl. Disputed hold + optional Approval gate), and in-memory repository. First pass: entity model + repository contract only; posting, aging, and ERPNext importer arrive in PRs 2–4 of the financial-ap hand-off.</Description>
+    <PackageTags>accounts-payable;ap;bill;vendor;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.FinancialAp.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-events\Sunfish.Foundation.Events.csproj" />
+    <ProjectReference Include="..\blocks-financial-ledger\Sunfish.Blocks.FinancialLedger.csproj" />
+    <ProjectReference Include="..\blocks-people-foundation\Sunfish.Blocks.People.Foundation.csproj" />
+  </ItemGroup>
+</Project>
