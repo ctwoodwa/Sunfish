@@ -38,6 +38,7 @@ public static class FinancialArServiceCollectionExtensions
         services.TryAddSingleton<ITaxCalculator, NoOpTaxCalculator>();
         services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
         services.TryAddSingleton<IInvoicePostingService, InvoicePostingService>();
+        services.TryAddSingleton<IArAgingService, ArAgingService>();
         return services;
     }
 }
