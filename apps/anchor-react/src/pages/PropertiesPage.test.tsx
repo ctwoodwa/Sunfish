@@ -3,7 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { PropertiesPage } from './PropertiesPage'
-import type { Property } from '@/api/erpnext'
+// W#74 PR 1: rebound from ERPNext API to /api/v1/properties Bridge cluster endpoint.
+import type { PropertyList } from '@/api/properties'
 
 vi.mock('@/hooks/useProperties')
 
@@ -21,30 +22,32 @@ function wrapper({ children }: { children: React.ReactNode }) {
   )
 }
 
-const mockProperties: Property[] = [
-  {
-    name: 'PROP-0001',
-    property_name: '150 Lexington Ct',
-    address_line_1: '150 Lexington Ct',
-    city: 'Seattle',
-    state: 'WA',
-    postal_code: '98101',
-    units: 4,
-    status: 'Active',
-    company: 'Royal Key Management LLC',
-  },
-  {
-    name: 'PROP-0002',
-    property_name: '200 Main St',
-    address_line_1: '200 Main St',
-    city: 'Bellevue',
-    state: 'WA',
-    postal_code: '98004',
-    units: 1,
-    status: 'Vacant',
-    company: 'Royal Key Management LLC',
-  },
-]
+const mockData: PropertyList = {
+  properties: [
+    {
+      propertyId: 'PROP-0001',
+      displayName: '150 Lexington Ct',
+      kind: 'MultiUnit',
+      addressLine1: '150 Lexington Ct',
+      city: 'Seattle',
+      region: 'WA',
+      unitCount: 4,
+      status: 'Active',
+      entityTag: null,
+    },
+    {
+      propertyId: 'PROP-0002',
+      displayName: '200 Main St',
+      kind: 'SingleFamily',
+      addressLine1: '200 Main St',
+      city: 'Bellevue',
+      region: 'WA',
+      unitCount: 1,
+      status: 'Vacant',
+      entityTag: null,
+    },
+  ],
+}
 
 describe('PropertiesPage', () => {
   beforeEach(() => {
@@ -53,7 +56,7 @@ describe('PropertiesPage', () => {
 
   it('renders property cards when data is available', async () => {
     mockUseProperties.mockReturnValue({
-      data: mockProperties,
+      data: mockData,
       isPending: false,
       isError: false,
       error: null,
@@ -102,5 +105,21 @@ describe('PropertiesPage', () => {
     expect(screen.getByText(/failed to load properties/i)).toBeInTheDocument()
     expect(screen.getByText('Bridge unavailable')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
+  })
+
+  it('shows empty-state copy without ERPNext mention', () => {
+    mockUseProperties.mockReturnValue({
+      data: { properties: [] },
+      isPending: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    render(<PropertiesPage />, { wrapper })
+
+    expect(screen.getByText(/no properties found/i)).toBeInTheDocument()
+    // W#74 PR 1: empty-state copy no longer references ERPNext.
+    expect(screen.queryByText(/erpnext/i)).not.toBeInTheDocument()
   })
 })

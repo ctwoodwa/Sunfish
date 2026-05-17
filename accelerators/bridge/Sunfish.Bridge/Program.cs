@@ -12,6 +12,7 @@ using Sunfish.Bridge.Localization;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
+using Sunfish.Bridge.Properties;
 using Sunfish.Bridge.Field;
 using Sunfish.Bridge.Orchestration;
 using Sunfish.Bridge.Services;
@@ -191,6 +192,11 @@ app.MapReportsEndpoints();
 // (authenticated + role in {owner, spouse}). PR 1 ships the property selector
 // only; PR 2–5 attach detail / work-order / vendor / dashboard endpoints.
 app.MapCockpitEndpoints();
+
+// W#74 PR 1 — top-level /api/v1/properties cluster endpoint family,
+// guarded by AuthenticatedTenantPolicy (any authenticated tenant user).
+// Backs the Anchor React PropertiesPage rebind off ERPNext.
+app.MapPropertiesEndpoints();
 
 // W#60 Phase 2 — caller-identity endpoint consumed by the React SPA.
 // Phase 1 returns a dev stub; Phase 2 wires real OIDC claims via UserService.
@@ -426,7 +432,13 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
                   .AllowAnyMethod()
                   .AllowCredentials());
     });
-    builder.Services.AddAuthorization(opts => opts.AddCockpitPolicy());
+    builder.Services.AddAuthorization(opts =>
+    {
+        opts.AddCockpitPolicy();
+        // W#74 PR 1: shared policy for non-cockpit cluster endpoint families
+        // (/api/v1/properties, /api/v1/leases, future /api/v1/maintenance/*).
+        opts.AddAuthenticatedTenantPolicy();
+    });
 
     // W#29 Phase 1 — owner cockpit needs IPropertyRepository to back the
     // landing-page property selector. Wire the in-memory repo here so PR 1
