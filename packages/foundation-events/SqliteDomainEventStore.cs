@@ -41,17 +41,24 @@ public sealed class SqliteDomainEventStore : IDomainEventStore
     }
 
     /// <summary>
-    /// Apply migration 001 (<c>create domain_events</c>). Idempotent
-    /// — safe to call on every host start. The composition root
-    /// invokes this once at startup, or
+    /// Apply all foundation-events migrations (currently 001 +
+    /// 002). Idempotent — safe to call on every host start. The
+    /// composition root invokes this once at startup, or
     /// <c>AddFoundationEvents()</c> (PR 6) does it during DI build.
     /// </summary>
     public async Task ApplyMigrationsAsync(CancellationToken cancellationToken = default)
     {
-        var sql = LoadEmbeddedSql("001-create-domain-events.sql");
-        await using var cmd = _connection.CreateCommand();
-        cmd.CommandText = sql;
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var resourceName in new[]
+                 {
+                     "001-create-domain-events.sql",
+                     "002-create-handler-cursors.sql",
+                 })
+        {
+            var sql = LoadEmbeddedSql(resourceName);
+            await using var cmd = _connection.CreateCommand();
+            cmd.CommandText = sql;
+            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
