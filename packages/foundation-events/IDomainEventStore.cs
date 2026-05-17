@@ -4,9 +4,8 @@ namespace Sunfish.Foundation.Events;
 
 /// <summary>
 /// Append-only durable store for domain events. PR 2 ships the
-/// SQLite-backed implementation (<c>SqliteDomainEventStore</c>); PR 1
-/// defines the contract so callers can wire it before the
-/// implementation lands.
+/// SQLite-backed implementation (<see cref="SqliteDomainEventStore"/>);
+/// PR 4 wires the cursor-based reader and dispatcher host.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -19,51 +18,54 @@ namespace Sunfish.Foundation.Events;
 /// <para>
 /// <b>Idempotency:</b> <see cref="AppendAsync"/> uses
 /// <c>INSERT ... ON CONFLICT(tenant_id, idempotency_key) DO NOTHING</c>.
-/// On conflict (duplicate <see cref="DomainEventEnvelope{TPayload}.IdempotencyKey"/>),
-/// the store returns the EXISTING row's <see cref="AppendResult.EventId"/>
-/// (not the would-be-inserted one) — callers know dedup happened
-/// without needing to query.
+/// On conflict (duplicate
+/// <see cref="DomainEventEnvelope{TPayload}.IdempotencyKey"/>), the
+/// method returns the EXISTING row's event id (not the would-be-
+/// inserted one) — callers detect dedup by comparing the returned
+/// id to the envelope's <see cref="DomainEventEnvelope{TPayload}.EventId"/>.
 /// </para>
 /// </remarks>
 public interface IDomainEventStore
 {
     /// <summary>
     /// Append an envelope to the store. On idempotency-key conflict,
-    /// returns the existing row's id with
-    /// <see cref="AppendResult.Deduped"/> = <c>true</c>.
+    /// returns the existing row's event id.
     /// </summary>
-    Task<AppendResult> AppendAsync<TPayload>(
+    Task<string> AppendAsync<TPayload>(
         DomainEventEnvelope<TPayload> envelope,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetch a single event by id within the supplied tenant scope.
-    /// Returns null when missing or when the stored row's tenant
-    /// does not match (security gate — cross-tenant reads must fail
-    /// closed).
+    /// Read events strictly after <paramref name="afterEventId"/> in
+    /// ULID (event-id) order, up to <paramref name="batchSize"/>.
+    /// Tenant-scoped. Pass <c>null</c> for <paramref name="afterEventId"/>
+    /// to read from the beginning.
     /// </summary>
-    Task<StoredEvent?> GetByIdAsync(
+    Task<IReadOnlyList<RawDomainEvent>> GetAfterCursorAsync(
         TenantId tenantId,
-        string eventId,
+        string? afterEventId,
+        int batchSize,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Look up an event by its idempotency key within the supplied
+    /// tenant. Returns <c>null</c> when no row matches.
+    /// </summary>
+    Task<RawDomainEvent?> FindByIdempotencyKeyAsync(
+        TenantId tenantId,
+        string idempotencyKey,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Outcome of a <see cref="IDomainEventStore.AppendAsync"/> call.
+/// Untyped projection of a persisted event row. Carries the envelope
+/// fields plus the store-side <see cref="RecordedAtUtc"/> +
+/// <see cref="ProducerCluster"/> denormalization columns the SQLite
+/// store materializes at insertion-time. Consumers deserialize
+/// <see cref="PayloadJson"/> to their cluster-specific payload type at
+/// dispatch time.
 /// </summary>
-/// <param name="EventId">The canonical event id; equals the envelope's id on insert, OR the existing-row id on dedup.</param>
-/// <param name="Deduped">True when the append was rejected because an existing row had the same <c>(TenantId, IdempotencyKey)</c>.</param>
-public readonly record struct AppendResult(string EventId, bool Deduped);
-
-/// <summary>
-/// Stored-event projection returned by
-/// <see cref="IDomainEventStore.GetByIdAsync"/> + the cursor-based
-/// readers in PR 4. Carries the envelope fields plus the store-side
-/// denormalization columns (<see cref="RecordedAtUtc"/>,
-/// <see cref="ProducerCluster"/>) the SQLite store materializes at
-/// insertion-time.
-/// </summary>
-public sealed record StoredEvent
+public sealed record RawDomainEvent
 {
     public required string EventId { get; init; }
     public required string EventType { get; init; }
@@ -76,8 +78,6 @@ public sealed record StoredEvent
     public string? CausationId { get; init; }
     public string? CorrelationId { get; init; }
     public required string ProducerCluster { get; init; }
-    public string? ProducerEntityKind { get; init; }
-    public string? ProducerEntityId { get; init; }
 
     /// <summary>JSON-serialized payload. Consumers deserialize per their event type.</summary>
     public required string PayloadJson { get; init; }
