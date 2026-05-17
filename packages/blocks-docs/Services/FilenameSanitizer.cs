@@ -29,9 +29,29 @@ public static class FilenameSanitizer
         "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
     };
 
+    // Unicode bidi-override and zero-width chars — display-name spoofing
+    // (council hardening). RTL override makes "evilexe.txt" render as "eviltxt.exe".
+    private static readonly HashSet<char> BidiAndZeroWidth = new()
+    {
+        '‪', '‫', '‬', '‭', '‮', // bidi embed/override/pop
+        '⁦', '⁧', '⁨', '⁩',           // bidi isolate / pop
+        '​', '‌', '‍', '﻿',           // zero-width / BOM
+    };
+
     /// <summary>
     /// Returns the sanitized leaf filename, or <c>null</c> if no safe
     /// form can be derived.
+    ///
+    /// <para>
+    /// <b>Caller contract (SE-5, council-mandated).</b> Callers MUST
+    /// pre-normalize the raw filename: URL-decode any percent-encoding
+    /// and apply Unicode NFC normalization to fold confusables. This
+    /// sanitizer operates on the post-normalization form and rejects
+    /// raw <c>/</c>, <c>\</c>, <c>:</c> in any normalization. Downstream
+    /// consumers MUST NOT re-decode the output — the sanitized leaf is
+    /// the contract boundary; treating it as still-encoded re-introduces
+    /// the traversal vector this layer just closed.
+    /// </para>
     /// </summary>
     public static string? Sanitize(string raw)
     {
@@ -46,18 +66,35 @@ public static class FilenameSanitizer
         // 2. Reject if any control char is present.
         if (leaf.IndexOfAny(ControlChars) >= 0) return null;
 
-        // 3. Reject the special directory names.
-        if (leaf is "." or "..") return null;
+        // 3. Strip bidi-override and zero-width chars (display-name spoofing).
+        if (leaf.Any(c => BidiAndZeroWidth.Contains(c)))
+        {
+            leaf = new string(leaf.Where(c => !BidiAndZeroWidth.Contains(c)).ToArray());
+            if (string.IsNullOrEmpty(leaf)) return null;
+        }
 
-        // 4. Reject Windows reserved device names (no extension and with extension).
-        var withoutExt = System.IO.Path.GetFileNameWithoutExtension(leaf);
-        if (WindowsReserved.Contains(withoutExt)) return null;
-
-        // 5. Trim trailing whitespace and dots (Windows strips these on disk).
-        leaf = leaf.TrimEnd(' ', '.');
+        // 4. Trim leading/trailing whitespace AND dots BEFORE the reserved-name
+        // check (SE-3 council blocker). Windows strips trailing space/dot when
+        // resolving a path, so "CON " resolves to "CON". Doing the trim AFTER
+        // the reserved-name check let "CON " sneak past the HashSet lookup.
+        leaf = leaf.Trim(' ', '.');
         if (string.IsNullOrEmpty(leaf)) return null;
 
-        // 6. Length cap — prevent absurd filenames overflowing downstream UIs / filesystems.
+        // 5. Reject the special directory names (after trim — "..."/".." both empty out).
+        if (leaf is "." or "..") return null;
+
+        // 6. Reject Windows reserved device names. Split on the FIRST `.` rather
+        // than the last (SE-3 council blocker) — Windows resolves "COM1.foo.bar"
+        // against "COM1", not "COM1.foo".
+        var firstDot = leaf.IndexOf('.');
+        var stem = firstDot >= 0 ? leaf.Substring(0, firstDot) : leaf;
+        // Stem may carry residual trailing whitespace if a multi-dot filename
+        // had whitespace before its first dot (e.g., "CON .pdf" → stem = "CON ").
+        // Trim it before the reserved-name check.
+        stem = stem.Trim(' ', '.');
+        if (WindowsReserved.Contains(stem)) return null;
+
+        // 7. Length cap — prevent absurd filenames overflowing downstream UIs / filesystems.
         const int maxLen = 255;
         if (leaf.Length > maxLen) leaf = leaf.Substring(0, maxLen);
 

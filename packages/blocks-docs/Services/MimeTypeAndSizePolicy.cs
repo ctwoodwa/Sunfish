@@ -40,12 +40,24 @@ public sealed class MimeTypeAndSizePolicy : IMimeTypeAndSizePolicy
         long sizeBytes,
         CancellationToken cancellationToken = default)
     {
-        // Gate 1: MIME whitelist.
+        // Pre-gate (SE-2 council blocker): system blacklist.
+        // No tenant whitelist override may re-enable an XSS / executable
+        // vector. Enforced ahead of the per-tenant lookup.
+        if (DefaultMimeWhitelist.SystemBlacklist.Contains(sniffedMime))
+        {
+            return PolicyResult.Reject(PolicyRejection.Mime,
+                $"MIME type '{sniffedMime}' is system-blacklisted and cannot be whitelisted per-tenant.");
+        }
+
+        // Gate 1: per-tenant MIME whitelist.
         var allowed = _options.GetAllowedMimeTypes(tenantId.Value);
         if (!allowed.Contains(sniffedMime))
         {
+            // SE-6 council amendment: do NOT leak tenant id in rejection detail.
+            // The exception type + PolicyRejection enum carry the actionable
+            // signal; tenant scope is recovered from the audit-log entry.
             return PolicyResult.Reject(PolicyRejection.Mime,
-                $"MIME type '{sniffedMime}' is not in tenant '{tenantId.Value}'s whitelist.");
+                $"MIME type '{sniffedMime}' is not whitelisted.");
         }
 
         // Gate 2: per-attachment size cap.
@@ -53,7 +65,7 @@ public sealed class MimeTypeAndSizePolicy : IMimeTypeAndSizePolicy
         if (sizeBytes > maxAttachment)
         {
             return PolicyResult.Reject(PolicyRejection.Size,
-                $"Upload size {sizeBytes} exceeds per-attachment cap {maxAttachment} for tenant '{tenantId.Value}'.");
+                $"Upload size {sizeBytes} exceeds per-attachment cap {maxAttachment}.");
         }
 
         // Gate 3: cumulative tenant quota.
@@ -65,7 +77,7 @@ public sealed class MimeTypeAndSizePolicy : IMimeTypeAndSizePolicy
             if (currentTotal + sizeBytes > limit)
             {
                 return PolicyResult.Reject(PolicyRejection.TenantQuota,
-                    $"Tenant '{tenantId.Value}' quota would be exceeded: current {currentTotal} + upload {sizeBytes} > limit {limit}.");
+                    $"Tenant quota would be exceeded: current {currentTotal} + upload {sizeBytes} > limit {limit}.");
             }
         }
 

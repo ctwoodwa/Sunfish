@@ -134,4 +134,72 @@ public class MimeTypeAndSizePolicyTests
         // other tenant: default whitelist applies
         Assert.False((await policy.ValidateAsync(Tenant("other"), "application/pdf", 100)).Rejected);
     }
+
+    // SE-2 council blocker: tenant whitelist cannot re-enable a system-blacklisted MIME.
+    [Theory]
+    [InlineData("text/html")]
+    [InlineData("application/javascript")]
+    [InlineData("text/javascript")]
+    [InlineData("application/x-msdownload")]
+    [InlineData("application/x-executable")]
+    [InlineData("application/x-sh")]
+    [InlineData("application/octet-stream")]
+    [InlineData("application/x-shockwave-flash")]
+    public async Task ValidateAsync_TenantWhitelistsBlacklistedMime_StillRejected(string blacklisted)
+    {
+        // Construct a tenant whose override INCLUDES every system-blacklisted MIME.
+        var customWhitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            blacklisted,
+        };
+        var options = new BlocksDocsOptions
+        {
+            MimeWhitelistPerTenant = new Dictionary<string, IReadOnlySet<string>>
+            {
+                ["misconfigured-tenant"] = customWhitelist,
+            },
+        };
+        var policy = new MimeTypeAndSizePolicy(options, new InMemoryAttachmentRepository());
+
+        var result = await policy.ValidateAsync(new TenantId("misconfigured-tenant"), blacklisted, sizeBytes: 100);
+        Assert.True(result.Rejected, $"system blacklist must trump tenant whitelist for {blacklisted}");
+        Assert.Equal(PolicyRejection.Mime, result.RejectionReason);
+        // SE-6: the rejection detail must not echo the tenant id.
+        Assert.DoesNotContain("misconfigured-tenant", result.Detail);
+    }
+
+    // SE-6 council amendment: rejection details must not leak tenant id.
+    [Fact]
+    public async Task ValidateAsync_AnyRejectionPath_DetailDoesNotContainTenantId()
+    {
+        var repo = new InMemoryAttachmentRepository();
+        var seeded = Attachment.Create(
+            tenantId: new TenantId("secret-tenant"),
+            storageRef: StorageRef.ForFoundationBlob("cid-x"),
+            contentHash: "h",
+            mimeType: "application/pdf",
+            sizeBytes: 950,
+            originalFilename: "x.pdf",
+            createdBy: "u");
+        await repo.UpsertAsync(seeded);
+
+        var options = new BlocksDocsOptions
+        {
+            MaxAttachmentBytes = 100,
+            TenantQuotaBytes = new Dictionary<string, long?> { ["secret-tenant"] = 1_000 },
+        };
+        var policy = new MimeTypeAndSizePolicy(options, repo);
+
+        // Each gate, in turn — none should mention "secret-tenant" in Detail.
+        var mimeReject = await policy.ValidateAsync(new TenantId("secret-tenant"), "application/x-msdownload", 50);
+        Assert.DoesNotContain("secret-tenant", mimeReject.Detail);
+
+        var sizeReject = await policy.ValidateAsync(new TenantId("secret-tenant"), "application/pdf", 500);
+        Assert.DoesNotContain("secret-tenant", sizeReject.Detail);
+
+        // 950 seeded + 99 new = 1_049 > 1_000 quota → quota rejection.
+        var quotaReject = await policy.ValidateAsync(new TenantId("secret-tenant"), "application/pdf", 99);
+        Assert.DoesNotContain("secret-tenant", quotaReject.Detail);
+        Assert.Equal(PolicyRejection.TenantQuota, quotaReject.RejectionReason);
+    }
 }

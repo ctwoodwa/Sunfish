@@ -40,7 +40,21 @@ public static class MimeSniffer
     private static readonly byte[] ElfMagic =
         { 0x7F, 0x45, 0x4C, 0x46 };
 
-    /// <summary>Synchronous helper for the byte-span shape.</summary>
+    /// <summary>
+    /// Sniff the canonical MIME type from leading magic bytes.
+    ///
+    /// <para>
+    /// <b>Council doc-amendment (council A).</b> This sniffer reads at most
+    /// the first 512 bytes of <paramref name="bytes"/> (the SVG / HTML
+    /// prefix scan is the longest path). A successful sniff confirms the
+    /// CONTAINER FORMAT of the leading bytes only; it does NOT certify
+    /// the entire payload is safe. Polyglot files (a JPEG with a ZIP
+    /// trailer; a PDF carrying embedded JavaScript) are intentionally
+    /// out-of-scope for this layer — they're sniffed as the leading
+    /// container and the downstream consumer is responsible for any
+    /// deeper inspection (e.g., PDF script-stripping, OOXML macro-policy).
+    /// </para>
+    /// </summary>
     public static string Sniff(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length == 0) return UnknownMime;
