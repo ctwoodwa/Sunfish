@@ -24,6 +24,7 @@ public static class FinancialApServiceCollectionExtensions
 
         services.TryAddSingleton(options);
         services.TryAddSingleton<IBillRepository, InMemoryBillRepository>();
+        services.TryAddSingleton<IApAgingService, ApAgingService>();
         return services;
     }
 }
