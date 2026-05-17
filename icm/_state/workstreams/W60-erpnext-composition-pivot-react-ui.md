@@ -4,9 +4,9 @@ number: 60
 slug: erpnext-composition-pivot-react-ui
 title: "**ERPNext Composition Pivot — React UI + local-first sync layer** (5-phase; `sunfish-feature-change` pipeline) — CO UPF plan approved 2026-05-11; ERPNext (GPLv3, self-hosted) as property/accounting engine; Sunfish as local-first sync + offline + React UI + tenant comms layer over it"
 status: "building"
-status_cell: "`building` — **P2 BUILT 2026-05-13** (PRs #731+#732+#751+#752+#757+#758); **P3 IMPLEMENTATION COMPLETE 2026-05-14** (PR #812 Tauri shell + PR #836 SQLite cache + PR #839 Loro CRDT write queue; ADR 0086 Accepted PR #784 2026-05-13); **P3 debug artifacts STAGED 2026-05-16** (x64 29.9MB + ARM 25.1MB exe at `dist/anchor-tauri-{x64,arm64}-debug-p3only/`; dev-win idle waiting CO Surface Pro PASS); **P4 owner: dev (dev-win)** — hand-off `w60-collaboration-phase4-stage06-handoff.md`; gated on CO Surface Pro PASS signal; **P5 BUILT 2026-05-13** (PRs #844+#847+#848); **ADR 0089 authored 2026-05-16 (multi-arch Windows installer packaging; C-now / B-deferred / A-skip; PR 5 scope adds web-layer arch-detect)"
-owner: "dev"
-owner_cell: "dev (dev-win; P4 Tauri ARM + Stronghold + Collaboration)"
+status_cell: "`building` — **P2 BUILT 2026-05-13** (PRs #731+#732+#751+#752+#757+#758; `apps/anchor-react/` + `@sunfish/ui-react`); **P3 hand-off authored 2026-05-13** — gated on ADR 0086 Accepted (PR #737 MERGED 2026-05-17; council done — CO status flip Proposed→Accepted is the only remaining gate); hand-off: `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md`; **P4 hand-off authored 2026-05-16** — gated on Phase 3 PASS (CO Surface Pro acceptance); hand-off: `icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md`; **P5 hand-off authored 2026-05-16** — PR 1 (`@sunfish/contracts`) is INDEPENDENT and immediately buildable; PR 2+ (reporting) gated on Phase 2 React UI on main (done); hand-off: `icm/_state/handoffs/w60-reporting-contracts-phase5-stage06-handoff.md`"
+owner: "sunfish-PM"
+owner_cell: "sunfish-PM"
 reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-handoff.md`; P3: `icm/_state/handoffs/w60-tauri-offline-phase3-stage06-handoff.md`; P4: `icm/_state/handoffs/w60-collaboration-phase4-stage06-handoff.md`; P5: `icm/_state/handoffs/w60-reporting-contracts-phase5-stage06-handoff.md`; UPF: `~/.claude/plans/noble-crunching-hopper.md`"
 ---
 
@@ -18,7 +18,7 @@ reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-ha
 
 **Phase 2 (COB, ~6 dev-weeks, GATED on Phase 1 PASS):** React 19 + TypeScript + Vite + Tailwind + shadcn/ui skeleton; ASP.NET Core proxy layer between React and ERPNext API; 6 screens (properties, leases, rent, accounting, crew-comms, maintenance); `@sunfish/ui-react` npm package; role routing (CO/accountant/CPA/tenant). Hand-off to be authored by XO once Phase 1 PASS confirmed.
 
-**Phase 3 (~3 dev-weeks, GATED on ADR 0086 Accepted):** Tauri v2 on Surface Pro; offline SQLite cache; write queue → ERPNext sync on reconnect; Loro CRDT for AP-class data. Hand-off authored 2026-05-13. Council review of ADR 0086 dispatched 2026-05-13. PR #737 must merge (status: Accepted) before COB starts.
+**Phase 3 (~3 dev-weeks, GATED on ADR 0086 Accepted):** Tauri v2 on Surface Pro; offline SQLite cache; write queue → ERPNext sync on reconnect; Loro CRDT for AP-class data. Hand-off authored 2026-05-13. ADR 0086 council review PR #737 MERGED 2026-05-17 — council is done. **CO must flip ADR 0086 status: Proposed → Accepted before COB starts P3.**
 
 **Phase 4 (~4 dev-weeks):** Accountant peer node (Headscale Tier 2, read/write, bidirectional sync); CPA read-only Bridge account; tenant magic-link portal; bank CSV import.
 
@@ -27,7 +27,7 @@ reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-ha
 **Fate of existing .NET work:**
 - `blocks-crew-comms` (2,291 LOC) — KEPT, primary differentiator (ERPNext has no chat)
 - `kernel-sync`, `kernel-crdt`, `kernel-lease` — KEPT, central to local-first value
-- `blocks-financial-ledger` (979 LOC) → becomes ERPNext API adapter
+- `blocks-accounting` (979 LOC) → becomes ERPNext API adapter
 - `blocks-leases` (1,107 LOC) → becomes ERPNext API adapter
 - `blocks-forms` (32 LOC stub) → may be superseded by ERPNext native forms
 
@@ -35,7 +35,7 @@ reference_cell: "P2: `icm/_state/handoffs/w60-erpnext-react-ui-phase2-stage06-ha
 
 | Collaborator | Access | Sync |
 |---|---|---|
-| Accountant | Read/write blocks-financial-ledger (reconciliation) | Peer node — Headscale Tier 2, bidirectional |
+| Accountant | Read/write blocks-accounting (reconciliation) | Peer node — Headscale Tier 2, bidirectional |
 | CPA | Read-only accounting + tax reporting | Bridge read-only account or snapshot export |
 | Tenants | Read own lease + messages | Magic-link portal on Bridge; no install |
 
