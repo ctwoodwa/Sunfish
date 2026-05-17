@@ -3,7 +3,7 @@
 **From:** XO (research session)
 **To:** dev (galley primary; Sunfish overflow)
 **Created:** 2026-05-17
-**Status:** `ready-to-build` (no gate conditions — not dependent on financial cluster)
+**Status:** `ready-to-build` — **gated on `blocks-docs` (attachment substrate) all 6 PRs merged** — `DocumentVersion.ContentStorageRef` depends on `blocks-docs.StorageRef` type
 **Workstream:** W#69 — blocks-docs-core (Phase 2 document cluster substrate)
 **Spec source:** [`icm/02_architecture/blocks-docs-schema-design.md`](../../02_architecture/blocks-docs-schema-design.md) §3.1 (all sub-sections: Document + DocumentVersion + DocumentRevisionHistory + DocumentTag + DocumentFolder + DocumentPermission + RetentionPolicy) + §6 (storage model, IBlobStore contract)
 **ADR:** [ADR 0088 Path II](../../../docs/adrs/0088-anchor-all-in-one-local-first-runtime.md)
@@ -34,7 +34,7 @@
 
 All follow-on packages depend on the `Document` entity from `blocks-docs-core`; none can ship until this substrate lands.
 
-**No financial dependency.** This hand-off does not depend on the blocks-financial-* cluster. Start this immediately after AP PRs merge (or even in parallel if #960/#961/#963 are still in CI).
+**Gate condition.** Start after `blocks-docs` (attachment substrate) PR 1 merges — `DocumentVersion.ContentStorageRef` uses `StorageRef` from `blocks-docs`. Add csproj dep: `<ProjectReference Include="..\blocks-docs\blocks-docs.csproj" />`. No financial dependency; can run in parallel with any remaining financial PRs.
 
 ### What this hand-off ships
 
@@ -45,7 +45,7 @@ Per `blocks-docs-schema-design.md` §3.1:
 | Type | Description |
 |---|---|
 | `Document` | Base entity — name, slug, `DocumentType` discriminator, version pointers, status, sensitivity, storageRef, soft-delete |
-| `DocumentVersion` | Append-only version row — body or storageRef, contentHash, versionNumber, changeSummary |
+| `DocumentVersion` | Append-only version row — `ContentStorageRef: StorageRef?` (from `blocks-docs`), contentHash, versionNumber, changeSummary |
 | `DocumentRevisionHistory` | Fine-grained revision journal — supports `full-snapshot`, `json-patch`, and `crdt-op` diff kinds |
 | `DocumentTag` | Tag taxonomy — name, slug, color; many-to-many with documents |
 | `DocumentFolder` | Hierarchical folders — materialized-path (`/policies/hr/`), depth ≤ 8 |
@@ -73,7 +73,7 @@ Per `blocks-docs-schema-design.md` §3.1:
 
 `IDocumentTagRepository` and `IDocumentPermissionRepository` are declared as interfaces (stubs); in-memory implementations arrive in PR 2 alongside the services that need them.
 
-**What this does NOT ship:** wiki/policy/template/DAM/signing overlays; EFCore configurations; `IBlobStore` wiring (storage model); `IContentEditorSurface` integration (that's in `blocks-ships-office`). Binary blob storage via `StorageRef` is modeled in the schema but the `IBlobStore` interface lives in a future package.
+**What this does NOT ship:** wiki/policy/template/DAM/signing overlays; EFCore configurations; `IAttachmentService` or `IBlobStore` wiring (those are in `blocks-docs`). `StorageRef` is consumed from `blocks-docs` — do NOT redefine it here.
 
 ---
 
