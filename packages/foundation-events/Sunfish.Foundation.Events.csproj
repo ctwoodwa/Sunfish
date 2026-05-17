@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Events</PackageId>
+    <Description>Canonical cross-cluster domain-event substrate for Sunfish: DomainEventEnvelope&lt;T&gt;, IDomainEventPublisher, IDomainEventStore (SQLite append-only — PR 2), IEventReader (per-handler cursor — PR 4). Per cross-cluster-event-bus-design.md.</Description>
+    <PackageTags>sunfish;foundation;events;cross-cluster;domain-events;sqlite;crdt</PackageTags>
+    <RootNamespace>Sunfish.Foundation.Events</RootNamespace>
+    <AssemblyName>Sunfish.Foundation.Events</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Events.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+</Project>
