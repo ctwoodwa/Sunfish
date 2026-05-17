@@ -26,6 +26,18 @@ public interface ISecurityPolicyValidator
     /// <paramref name="current"/> projection. Returns findings;
     /// presence of Error severity blocks issuance at the caller.
     /// </summary>
+    /// <remarks>
+    /// TRUST CONTRACT: <paramref name="current"/> MUST be the
+    /// issuer's authoritative projection from the immutable Standing-
+    /// Order log (§3). Callers MUST NOT synthesize
+    /// <paramref name="current"/> from untrusted input — a forged
+    /// <c>current</c> could let a Consistency rule silently pass
+    /// (e.g., omitting <c>CompromiseIndicatorFlagged</c> from
+    /// <c>current.AutoTriggers</c> so the non-removability check
+    /// trivially holds). The <see cref="ISecurityPolicyFloorValidator"/>
+    /// is the absolute-invariant backstop and does not depend on
+    /// <paramref name="current"/> for its core rules.
+    /// </remarks>
     ValueTask<SecurityPolicyValidationResult> ValidateAsync(
         TenantSecurityPolicy proposed,
         TenantSecurityPolicy current,

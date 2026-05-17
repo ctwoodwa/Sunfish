@@ -83,6 +83,12 @@ public sealed class SchemaValidator : ISecurityPolicyValidator
 
         // --- KeyRotationPolicy ---
         var key = proposed.KeyRotation;
+        foreach (var t in key.AutoTriggers)
+            if (!Enum.IsDefined(t))
+                findings.Add(SecurityPolicyValidationFinding.Error(
+                    "SCHEMA_KEY_TRIGGER_UNDEFINED",
+                    $"KeyRotationPolicy.AutoTriggers contains an undefined KeyRotationTrigger value: {t}.",
+                    "Use only defined KeyRotationTrigger values."));
         if (key.DefaultRotationCadence <= TimeSpan.Zero)
             findings.Add(SecurityPolicyValidationFinding.Error(
                 "SCHEMA_KEY_CADENCE_NONPOSITIVE",

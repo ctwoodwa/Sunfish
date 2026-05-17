@@ -114,38 +114,109 @@ public sealed class ValidationPipelineTests
 
     // --- Floor ---
 
-    [Fact]
-    public async Task FloorPolicyValidator_RejectsCaptainSmsOnly()
+    [Theory]
+    [InlineData(ShipRole.Captain)]
+    [InlineData(ShipRole.XO)]
+    [InlineData(ShipRole.EngineerOfficer)]
+    public async Task FloorPolicyValidator_RejectsHighPrivRoleWithSmsOnly(ShipRole role)
     {
         var sut = new FloorPolicyValidator();
         var dict = new Dictionary<ShipRole, IReadOnlyList<MfaFactor>>(
             MfaEnrollmentPolicy.Default.RequiredFactorsByRole)
         {
-            [ShipRole.Captain] = new[] { MfaFactor.Sms },
+            [role] = new[] { MfaFactor.Sms },
         };
         var bad = Baseline() with
         {
             Mfa = MfaEnrollmentPolicy.Default with { RequiredFactorsByRole = dict }
         };
         var result = await sut.ValidateAsync(bad, Baseline(), Ctx);
-        Assert.Contains(result.Findings, f => f.Code == "FLOOR_CAPTAIN_LOW_ASSURANCE_ONLY");
+        Assert.Contains(result.Findings, f => f.Code == "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY" && f.Message.Contains(role.ToString()));
     }
 
-    [Fact]
-    public async Task FloorPolicyValidator_RejectsCaptainEmailOnly()
+    [Theory]
+    [InlineData(ShipRole.Captain)]
+    [InlineData(ShipRole.XO)]
+    [InlineData(ShipRole.EngineerOfficer)]
+    public async Task FloorPolicyValidator_RejectsHighPrivRoleWithEmailOnly(ShipRole role)
     {
         var sut = new FloorPolicyValidator();
         var dict = new Dictionary<ShipRole, IReadOnlyList<MfaFactor>>(
             MfaEnrollmentPolicy.Default.RequiredFactorsByRole)
         {
-            [ShipRole.Captain] = new[] { MfaFactor.Email },
+            [role] = new[] { MfaFactor.Email },
         };
         var bad = Baseline() with
         {
             Mfa = MfaEnrollmentPolicy.Default with { RequiredFactorsByRole = dict }
         };
         var result = await sut.ValidateAsync(bad, Baseline(), Ctx);
-        Assert.Contains(result.Findings, f => f.Code == "FLOOR_CAPTAIN_LOW_ASSURANCE_ONLY");
+        Assert.Contains(result.Findings, f => f.Code == "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY" && f.Message.Contains(role.ToString()));
+    }
+
+    [Theory]
+    [InlineData(ShipRole.Captain)]
+    [InlineData(ShipRole.XO)]
+    [InlineData(ShipRole.EngineerOfficer)]
+    public async Task FloorPolicyValidator_RejectsHighPrivRoleWithEmailPlusSms(ShipRole role)
+    {
+        // Combined-low-assurance gap: [Email, Sms] has no acceptable-
+        // assurance factor. Per ADR §1.1.4 intent.
+        var sut = new FloorPolicyValidator();
+        var dict = new Dictionary<ShipRole, IReadOnlyList<MfaFactor>>(
+            MfaEnrollmentPolicy.Default.RequiredFactorsByRole)
+        {
+            [role] = new[] { MfaFactor.Email, MfaFactor.Sms },
+        };
+        var bad = Baseline() with
+        {
+            Mfa = MfaEnrollmentPolicy.Default with { RequiredFactorsByRole = dict }
+        };
+        var result = await sut.ValidateAsync(bad, Baseline(), Ctx);
+        Assert.Contains(result.Findings, f => f.Code == "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY" && f.Message.Contains(role.ToString()));
+    }
+
+    [Theory]
+    [InlineData(ShipRole.Captain)]
+    [InlineData(ShipRole.XO)]
+    [InlineData(ShipRole.EngineerOfficer)]
+    public async Task FloorPolicyValidator_AcceptsHighPrivRoleWithTotpOnly(ShipRole role)
+    {
+        // Totp is acceptable-assurance per ADR §1.1.4 — only Email
+        // and Sms are forbidden. WCAG 3.3.8 Warning (rule f) is a
+        // separate Warning, not an Error.
+        var sut = new FloorPolicyValidator();
+        var dict = new Dictionary<ShipRole, IReadOnlyList<MfaFactor>>(
+            MfaEnrollmentPolicy.Default.RequiredFactorsByRole)
+        {
+            [role] = new[] { MfaFactor.Totp },
+        };
+        var good = Baseline() with
+        {
+            Mfa = MfaEnrollmentPolicy.Default with { RequiredFactorsByRole = dict }
+        };
+        var result = await sut.ValidateAsync(good, Baseline(), Ctx);
+        Assert.DoesNotContain(result.Findings, f => f.Code == "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY" && f.Message.Contains(role.ToString()));
+    }
+
+    [Theory]
+    [InlineData(ShipRole.Captain)]
+    [InlineData(ShipRole.XO)]
+    [InlineData(ShipRole.EngineerOfficer)]
+    public async Task FloorPolicyValidator_AcceptsHighPrivRoleWithWebAuthnPlusTotp(ShipRole role)
+    {
+        var sut = new FloorPolicyValidator();
+        var dict = new Dictionary<ShipRole, IReadOnlyList<MfaFactor>>(
+            MfaEnrollmentPolicy.Default.RequiredFactorsByRole)
+        {
+            [role] = new[] { MfaFactor.WebAuthnPasskey, MfaFactor.Totp },
+        };
+        var good = Baseline() with
+        {
+            Mfa = MfaEnrollmentPolicy.Default with { RequiredFactorsByRole = dict }
+        };
+        var result = await sut.ValidateAsync(good, Baseline(), Ctx);
+        Assert.DoesNotContain(result.Findings, f => f.Code == "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY" && f.Message.Contains(role.ToString()));
     }
 
     [Fact]
@@ -229,6 +300,21 @@ public sealed class ValidationPipelineTests
         Assert.DoesNotContain(result.Findings, f =>
             f.Code == "FLOOR_WCAG_338_COGNITIVE_ONLY"
             && f.Message.Contains("Captain"));
+    }
+
+    [Fact]
+    public async Task SchemaValidator_RejectsUndefinedKeyRotationTrigger()
+    {
+        var sut = new SchemaValidator();
+        var bad = Baseline() with
+        {
+            KeyRotation = KeyRotationPolicy.Default with
+            {
+                AutoTriggers = new[] { (KeyRotationTrigger)999 },
+            }
+        };
+        var result = await sut.ValidateAsync(bad, Baseline(), Ctx);
+        Assert.Contains(result.Findings, f => f.Code == "SCHEMA_KEY_TRIGGER_UNDEFINED");
     }
 
     // --- Finding factory WCAG enforcement ---

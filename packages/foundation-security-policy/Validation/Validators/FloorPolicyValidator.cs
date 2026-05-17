@@ -26,6 +26,11 @@ namespace Sunfish.Foundation.SecurityPolicy.Validation.Validators;
 /// </remarks>
 public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
 {
+    // Year-as-365-days simplification — HIPAA / PCI-DSS floors are
+    // calendar-coarse; ±1-2 days of leap-day drift is well within
+    // tolerance per §2.1.2 floor semantics. If a future regime
+    // requires exact-calendar semantics, swap for DateTimeOffset
+    // arithmetic at validator call time.
     private static readonly TimeSpan SixYears = TimeSpan.FromDays(365 * 6);
     private static readonly TimeSpan TwelveMonths = TimeSpan.FromDays(365);
 
@@ -34,6 +39,22 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
 
     private static readonly IReadOnlySet<MfaFactor> NonCognitiveFactors =
         new HashSet<MfaFactor> { MfaFactor.WebAuthnPasskey, MfaFactor.HardwareKey };
+
+    /// <summary>
+    /// Per ADR §1.1.4 / NIST 800-63B Rev. 3 §5.1.3.3 (SMS RESTRICTED).
+    /// "Acceptable assurance" excludes Email + Sms. Totp + the two
+    /// non-cognitive factors all qualify as at-least-medium assurance.
+    /// </summary>
+    private static readonly IReadOnlySet<MfaFactor> LowAssuranceFactors =
+        new HashSet<MfaFactor> { MfaFactor.Email, MfaFactor.Sms };
+
+    /// <summary>
+    /// Roles for which Email-only or Sms-only MFA is forbidden per
+    /// ADR 0068 §1.1.4 — Captain, XO, EngineerOfficer must have at
+    /// least one phishing-resistant (non-cognitive-test) factor.
+    /// </summary>
+    private static readonly IReadOnlySet<ShipRole> HighPrivilegeRoles =
+        new HashSet<ShipRole> { ShipRole.Captain, ShipRole.XO, ShipRole.EngineerOfficer };
 
     private static readonly IReadOnlySet<AuditEventClass> HipaaFlooredClasses =
         new HashSet<AuditEventClass> { AuditEventClass.Identity, AuditEventClass.Security, AuditEventClass.Configuration };
@@ -61,16 +82,34 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
                 "RecoveryContactPolicy.MinimumContactCount must be at least 1 — at least one recovery contact is required to satisfy key-loss recovery.",
                 "Set MinimumContactCount to 1 or more."));
 
-        // (b) Captain MUST NOT have Email-only or Sms-only
-        if (proposed.Mfa.RequiredFactorsByRole.TryGetValue(ShipRole.Captain, out var captainFactors))
+        // (b) Captain + XO + EngineerOfficer MUST NOT have Email-only,
+        // Sms-only, or combined-low-assurance ([Email, Sms]) MFA — per
+        // ADR §1.1.4 + NIST SP 800-63B Rev. 3 §5.1.3.3 (SMS RESTRICTED).
+        // Totp is acceptable for these roles (cognitive-test surfaces
+        // a separate WCAG 3.3.8 Warning at rule (f) below; that warning
+        // does not block these roles' configurations).
+        foreach (var role in HighPrivilegeRoles)
         {
-            var distinct = captainFactors.Distinct().ToList();
-            if (distinct.Count == 1 && (distinct[0] == MfaFactor.Email || distinct[0] == MfaFactor.Sms))
+            if (!proposed.Mfa.RequiredFactorsByRole.TryGetValue(role, out var factors)) continue;
+            if (factors.Count == 0) continue;
+            // Error when EVERY factor is low-assurance (Email or Sms);
+            // a single Totp or non-cognitive factor disqualifies the
+            // error. This catches "[Email]" / "[Sms]" / "[Email, Sms]"
+            // while permitting "[Totp]" + any superset.
+            var allLowAssurance = factors.All(LowAssuranceFactors.Contains);
+            if (allLowAssurance)
                 findings.Add(SecurityPolicyValidationFinding.Error(
-                    "FLOOR_CAPTAIN_LOW_ASSURANCE_ONLY",
-                    $"ShipRole.Captain MUST NOT have {distinct[0]}-only MFA — low-assurance factor not permitted as the sole factor for Captain.",
-                    "Add WebAuthnPasskey or HardwareKey to the Captain's MFA factor list (recommended) and retain Totp as a fallback."));
+                    "FLOOR_HIGH_PRIV_LOW_ASSURANCE_ONLY",
+                    $"ShipRole.{role} MUST NOT have Email-only or Sms-only MFA (current: [{string.Join(", ", factors)}]). Per ADR §1.1.4 / NIST SP 800-63B §5.1.3.3 (SMS RESTRICTED).",
+                    $"Add at least one of Totp / WebAuthnPasskey / HardwareKey to the {role} factor list. WebAuthnPasskey is preferred (also satisfies WCAG 3.3.8)."));
         }
+
+        // TODO(W#37 PR3): EmergencyOverride rate-limit (1/24h per actor)
+        // is a §2.1.2(f) floor rule deferred to PR 3 because rate-limit
+        // enforcement requires actor + timestamp state that the
+        // current ValidateAsync signature doesn't carry. The PR 3
+        // issuer will compose this validator with an
+        // ISecurityPolicyOverrideRateLimiter and enforce there.
 
         // (c) CompromiseIndicatorFlagged required (floor invariant — beyond the consistency check)
         if (!proposed.KeyRotation.AutoTriggers.Contains(KeyRotationTrigger.CompromiseIndicatorFlagged))

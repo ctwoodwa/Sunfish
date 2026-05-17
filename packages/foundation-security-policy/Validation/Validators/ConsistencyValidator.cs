@@ -40,6 +40,10 @@ public sealed class ConsistencyValidator : ISecurityPolicyValidator
                 "Key rotation grace period must be strictly less than default cadence.",
                 "Reduce RotationGracePeriod below DefaultRotationCadence so rotation actually elapses."));
 
+        // MFA <-> KeyRotation coupling rationale: rotating keys mid-MFA-
+        // enrollment-grace defeats the grace — the user is told they
+        // have N days to enroll, then their key rotates inside that
+        // window invalidating prior attempts.
         if (proposed.Mfa.EnrollmentGracePeriod >= proposed.KeyRotation.DefaultRotationCadence)
             findings.Add(SecurityPolicyValidationFinding.Error(
                 "CONSISTENCY_MFA_GRACE_GTE_KEY_CADENCE",
