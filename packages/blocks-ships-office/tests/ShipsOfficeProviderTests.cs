@@ -32,6 +32,7 @@ public class ShipsOfficeProviderTests
         ILeaseDocumentVersionLog? leaseDocLog = null,
         IMaintenanceService? maintenanceService = null,
         IW9DocumentService? w9Service = null,
+        Sunfish.Foundation.ShipsOffice.Services.IFormSchemaStore? formSchemas = null,
         IMissionEnvelopeProvider? missionEnvelopeProvider = null,
         TimeProvider? timeProvider = null)
     {
@@ -40,6 +41,7 @@ public class ShipsOfficeProviderTests
         leaseDocLog ??= Substitute.For<ILeaseDocumentVersionLog>();
         maintenanceService ??= EmptyMaintenanceService();
         w9Service ??= Substitute.For<IW9DocumentService>();
+        formSchemas ??= new Sunfish.Foundation.ShipsOffice.Services.NoopFormSchemaStore();
         missionEnvelopeProvider ??= NoopMissionEnvelopeProvider();
 
         return new ShipsOfficeDataProvider(
@@ -48,6 +50,7 @@ public class ShipsOfficeProviderTests
             leaseDocLog,
             maintenanceService,
             w9Service,
+            formSchemas,
             missionEnvelopeProvider,
             Options.Create(options ?? new ShipsOfficeOptions()),
             timeProvider);
@@ -535,5 +538,76 @@ public class ShipsOfficeProviderTests
             foreach (var arg in type.GetGenericArguments())
                 AssertNotForbidden(arg, site + " (generic arg)", forbiddenName);
         }
+    }
+
+    // ── W#55 Phase 5: DynamicTemplate kind via IFormSchemaStore stub ──────────
+
+    [Fact]
+    public async Task GetSnapshotAsync_IncludesDynamicTemplate_FromFormSchemaStore()
+    {
+        var schemas = Substitute.For<Sunfish.Foundation.ShipsOffice.Services.IFormSchemaStore>();
+        var schemaId = Sunfish.Foundation.ShipsOffice.Services.FormSchemaId.NewId();
+        var updatedAt = new DateTimeOffset(2026, 5, 16, 10, 0, 0, TimeSpan.Zero);
+        schemas.ListByTenantAsync(TenantA, Arg.Any<CancellationToken>())
+               .Returns(Task.FromResult<IReadOnlyList<Sunfish.Foundation.ShipsOffice.Services.FormSchema>>(
+                   new[]
+                   {
+                       new Sunfish.Foundation.ShipsOffice.Services.FormSchema(
+                           Id: schemaId,
+                           TenantId: TenantA,
+                           Name: "Vendor Onboarding Form",
+                           Status: Sunfish.Foundation.ShipsOffice.Services.FormSchemaStatus.Published,
+                           UpdatedAt: updatedAt,
+                           LastModifiedBy: ActorId.Sunfish),
+                   }));
+
+        var snapshot = await Build(formSchemas: schemas).GetSnapshotAsync(TenantA);
+
+        var doc = Assert.Single(snapshot.Documents);
+        Assert.Equal(ShipsOfficeDocumentKind.DynamicTemplate, doc.Kind);
+        Assert.Equal("Vendor Onboarding Form", doc.Title);
+        Assert.Equal(DocumentStatus.Published, doc.Status);
+        Assert.Equal($"form-schema:{schemaId.Value}", doc.Id.Value);
+        Assert.Equal(updatedAt, doc.UpdatedAt);
+        Assert.Equal(ActorId.Sunfish, doc.LastModifiedBy);
+    }
+
+    [Fact]
+    public async Task SearchAsync_FiltersDynamicTemplate_ByStatusFilter()
+    {
+        var schemas = Substitute.For<Sunfish.Foundation.ShipsOffice.Services.IFormSchemaStore>();
+        var draftId = Sunfish.Foundation.ShipsOffice.Services.FormSchemaId.NewId();
+        var publishedId = Sunfish.Foundation.ShipsOffice.Services.FormSchemaId.NewId();
+        var archivedId = Sunfish.Foundation.ShipsOffice.Services.FormSchemaId.NewId();
+        schemas.ListByTenantAsync(TenantA, Arg.Any<CancellationToken>())
+               .Returns(Task.FromResult<IReadOnlyList<Sunfish.Foundation.ShipsOffice.Services.FormSchema>>(
+                   new[]
+                   {
+                       new Sunfish.Foundation.ShipsOffice.Services.FormSchema(
+                           draftId, TenantA, "Draft Form",
+                           Sunfish.Foundation.ShipsOffice.Services.FormSchemaStatus.Draft,
+                           DateTimeOffset.UtcNow, ActorId.Sunfish),
+                       new Sunfish.Foundation.ShipsOffice.Services.FormSchema(
+                           publishedId, TenantA, "Published Form",
+                           Sunfish.Foundation.ShipsOffice.Services.FormSchemaStatus.Published,
+                           DateTimeOffset.UtcNow, ActorId.Sunfish),
+                       new Sunfish.Foundation.ShipsOffice.Services.FormSchema(
+                           archivedId, TenantA, "Archived Form",
+                           Sunfish.Foundation.ShipsOffice.Services.FormSchemaStatus.Archived,
+                           DateTimeOffset.UtcNow, ActorId.Sunfish),
+                   }));
+
+        var provider = Build(formSchemas: schemas);
+        var draftQuery = new ShipsOfficeSearchQuery(
+            TextQuery: null, KindFilter: null, StatusFilter: DocumentStatus.Draft,
+            PageSize: 50, PageToken: null);
+        var results = new List<ShipsOfficeDocumentView>();
+        await foreach (var v in provider.SearchAsync(TenantA, draftQuery))
+            results.Add(v);
+
+        var draftOnly = Assert.Single(results);
+        Assert.Equal(ShipsOfficeDocumentKind.DynamicTemplate, draftOnly.Kind);
+        Assert.Equal("Draft Form", draftOnly.Title);
+        Assert.Equal(DocumentStatus.Draft, draftOnly.Status);
     }
 }

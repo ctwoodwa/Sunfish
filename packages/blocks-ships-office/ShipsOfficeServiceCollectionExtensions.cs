@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Foundation.ShipsOffice;
+using Sunfish.Foundation.ShipsOffice.Services;
 
 namespace Sunfish.Blocks.ShipsOffice;
 
@@ -39,6 +40,10 @@ public static class ShipsOfficeServiceCollectionExtensions
         services.TryAddSingleton<IShipsOfficeCommandService, ShipsOfficeCommandService>();
         services.TryAddSingleton<IContentEditorSurface, NoopContentEditorSurface>();
         services.TryAddSingleton<IDocumentDiffService, DocumentDiffService>();
+        // ADR 0055 DynamicTemplate substrate — local stub pending canonical
+        // foundation-forms hand-off per xo-ruling-T02-43Z. Hosts override
+        // with a real impl when wiring a forms backing store.
+        services.TryAddSingleton<IFormSchemaStore, NoopFormSchemaStore>();
         return services;
     }
 }

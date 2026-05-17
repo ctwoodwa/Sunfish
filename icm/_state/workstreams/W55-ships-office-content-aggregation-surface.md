@@ -4,7 +4,7 @@ number: 55
 slug: ships-office-content-aggregation-surface
 title: "**Ship's Office Content Aggregation Surface + Scribe Role** (ADR 0083; W#35 Ship Architecture follow-on #7 — FINAL cohort ADR; `sunfish-feature-change` pipeline)"
 status: "built"
-status_cell: "`built` — non-conditional phases shipped 2026-05-13 (PRs #624+#711+#753+#756+#759+#762+#787; PR #828 flip merged); 5 Razor components + 59 tests; Phase 5 gated on ADR 0055 Accepted (still Proposed); pipeline partially closed"
+status_cell: "`built` — all 6 phases shipped 2026-05-13/16 (PRs #624+#711+#753+#756+#759+#762+#787+#828 + Phase 5 PR #NNN); 5 Razor components + DynamicTemplate kind + 61 tests; ADR 0055 Accepted (PR #916); IFormSchemaStore local stub per xo-ruling-T02-43Z; pipeline closed (W#35 cohort COMPLETE)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/ships-office-stage06-handoff.md` + `docs/adrs/0083-ships-office-content-aggregation.md` (PR #591 merged) + `packages/foundation-ships-office/` (P1 merged) + `icm/00_intake/output/2026-05-01_ships-office-content-aggregation-intake.md`"

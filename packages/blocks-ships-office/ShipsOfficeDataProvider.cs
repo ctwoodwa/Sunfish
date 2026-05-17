@@ -13,6 +13,7 @@ using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Catalog.Bundles;
 using Sunfish.Foundation.MissionSpace;
 using Sunfish.Foundation.ShipsOffice;
+using Sunfish.Foundation.ShipsOffice.Services;
 
 namespace Sunfish.Blocks.ShipsOffice;
 
@@ -56,6 +57,7 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
     private readonly ILeaseDocumentVersionLog _leaseDocLog;
     private readonly IMaintenanceService _maintenanceService;
     private readonly IW9DocumentService _w9Service;
+    private readonly IFormSchemaStore _formSchemas;
     private readonly IMissionEnvelopeProvider _missionEnvelopeProvider;
     private readonly IOptions<ShipsOfficeOptions> _options;
     private readonly TimeProvider _time;
@@ -66,6 +68,7 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
         ILeaseDocumentVersionLog leaseDocLog,
         IMaintenanceService maintenanceService,
         IW9DocumentService w9Service,
+        IFormSchemaStore formSchemas,
         IMissionEnvelopeProvider missionEnvelopeProvider,
         IOptions<ShipsOfficeOptions> options,
         TimeProvider? timeProvider = null)
@@ -75,6 +78,7 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
         ArgumentNullException.ThrowIfNull(leaseDocLog);
         ArgumentNullException.ThrowIfNull(maintenanceService);
         ArgumentNullException.ThrowIfNull(w9Service);
+        ArgumentNullException.ThrowIfNull(formSchemas);
         ArgumentNullException.ThrowIfNull(missionEnvelopeProvider);
         ArgumentNullException.ThrowIfNull(options);
         _bundleCatalog = bundleCatalog;
@@ -82,6 +86,7 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
         _leaseDocLog = leaseDocLog;
         _maintenanceService = maintenanceService;
         _w9Service = w9Service;
+        _formSchemas = formSchemas;
         _missionEnvelopeProvider = missionEnvelopeProvider;
         _options = options;
         _time = timeProvider ?? TimeProvider.System;
@@ -268,8 +273,32 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
         // 4. SignatureEnvelope — H6 pending (ADR 0004 Stage 06 not yet shipped).
         // Revisit when ISignatureEnvelopeStore ships a queryable tenant surface.
 
+        // 5. DynamicTemplate — ADR 0055 (W#55 Phase 5). Sourced from
+        // local IFormSchemaStore stub per xo-ruling-T02-43Z; canonical
+        // foundation-forms substrate will replace this when a forcing
+        // function surfaces. §Trust redaction policy applies — the
+        // FormSchema record carries name + status only; no payload data.
+        foreach (var schema in await _formSchemas.ListByTenantAsync(tenant, ct).ConfigureAwait(false))
+        {
+            views.Add(new ShipsOfficeDocumentView(
+                Id: new ShipsOfficeDocumentId($"form-schema:{schema.Id.Value}"),
+                Kind: ShipsOfficeDocumentKind.DynamicTemplate,
+                Title: schema.Name,
+                Status: MapFormSchemaStatus(schema.Status),
+                UpdatedAt: schema.UpdatedAt,
+                LastModifiedBy: schema.LastModifiedBy,
+                VersionLabel: null));
+        }
+
         return views;
     }
+
+    private static DocumentStatus MapFormSchemaStatus(FormSchemaStatus status) => status switch
+    {
+        FormSchemaStatus.Draft     => DocumentStatus.Draft,
+        FormSchemaStatus.Archived  => DocumentStatus.Archived,
+        _                          => DocumentStatus.Published,
+    };
 
     private static DocumentStatus MapBundleStatus(BundleStatus status) => status switch
     {
