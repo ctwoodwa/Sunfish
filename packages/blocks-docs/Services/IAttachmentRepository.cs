@@ -31,4 +31,12 @@ public interface IAttachmentRepository
     /// is unknown.
     /// </summary>
     Task<bool> SoftDeleteAsync(AttachmentId id, string actor, string? reason, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sum of <see cref="Attachment.SizeBytes"/> across all live attachments
+    /// in <paramref name="tenantId"/>. Supports PR 3's tenant-quota check.
+    /// Excludes tombstoned + superseded rows so a tenant's quota reflects
+    /// only their current "active" footprint.
+    /// </summary>
+    Task<long> GetTenantTotalSizeBytesAsync(TenantId tenantId, CancellationToken cancellationToken = default);
 }

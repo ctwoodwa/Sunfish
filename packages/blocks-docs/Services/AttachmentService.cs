@@ -6,17 +6,39 @@ namespace Sunfish.Blocks.Docs.Services;
 
 /// <summary>
 /// Default <see cref="IAttachmentService"/>. Performs sha-256 content
-/// hashing + dedup; stores bytes inline. PR 3 swaps the Inline storage
-/// path for FoundationBlob — this service's surface doesn't change
-/// when that lands.
+/// hashing + dedup; runs every upload through the PR 3 defense-in-depth
+/// gates (server-side MIME sniffer, filename sanitizer, MIME + size +
+/// tenant-quota policy) before persisting bytes.
+///
+/// <para>
+/// <b>Upload order (council review):</b>
+/// </para>
+/// <list type="number">
+/// <item>Sniff the real MIME from leading magic bytes (filename ext is not trusted).</item>
+/// <item>Sanitize the original filename (strip path components, reject control chars / reserved names).</item>
+/// <item>Run the three-gate policy (MIME whitelist + per-attachment cap + tenant quota).</item>
+/// <item>Compute sha-256 + dedup against existing tenant attachments.</item>
+/// <item>Persist via <see cref="IAttachmentRepository"/>.</item>
+/// </list>
 /// </summary>
 public sealed class AttachmentService : IAttachmentService
 {
     private readonly IAttachmentRepository _attachments;
+    private readonly IMimeTypeAndSizePolicy? _policy;
 
-    public AttachmentService(IAttachmentRepository attachments)
+    /// <summary>
+    /// Construct with optional policy. When <paramref name="policy"/> is
+    /// null (test fixtures, sketches) the service falls through to the
+    /// PR 2 behavior — no MIME / size / quota gating. Production
+    /// registrations supply a real
+    /// <see cref="MimeTypeAndSizePolicy"/>.
+    /// </summary>
+    public AttachmentService(
+        IAttachmentRepository attachments,
+        IMimeTypeAndSizePolicy? policy = null)
     {
         _attachments = attachments ?? throw new ArgumentNullException(nameof(attachments));
+        _policy = policy;
     }
 
     /// <inheritdoc />
@@ -29,21 +51,41 @@ public sealed class AttachmentService : IAttachmentService
         Sensitivity sensitivity = Sensitivity.Internal,
         CancellationToken cancellationToken = default)
     {
+        // 1. Server-side MIME sniff. We deliberately IGNORE the caller-
+        // supplied mimeType for the policy decision — the filename ext
+        // and the Content-Type header are not trusted.
+        var sniffedMime = MimeSniffer.Sniff(bytes.Span);
+
+        // 2. Sanitize the filename. Fall back to a hash-derived safe name
+        // if the input doesn't sanitize.
+        var safeFilename = FilenameSanitizer.Sanitize(originalFilename) ?? "attachment.bin";
+
+        // 3. Three-gate policy check (only when the host wired one).
+        if (_policy is not null)
+        {
+            var result = await _policy.ValidateAsync(tenantId, sniffedMime, bytes.Length, cancellationToken)
+                .ConfigureAwait(false);
+            if (result.Rejected)
+                throw new UploadRejectedException(result.RejectionReason, result.Detail ?? "Upload rejected by policy.");
+        }
+
         var hash = ComputeSha256Hex(bytes.Span);
 
-        // Dedup: same (tenant, hash) → reuse the existing Active attachment.
+        // 4. Dedup: same (tenant, hash) → reuse the existing Active attachment.
         var existing = await _attachments.FindByContentHashAsync(tenantId, hash, cancellationToken)
             .ConfigureAwait(false);
         var existingActive = existing.FirstOrDefault(a => a.Status == AttachmentStatus.Active);
         if (existingActive is not null) return existingActive;
 
+        // 5. Persist. PR 3 keeps the Inline storage tier; FoundationBlob
+        // wiring lands in a follow-on when IBlobStore DI is fully threaded.
         var attachment = Attachment.Create(
             tenantId: tenantId,
             storageRef: StorageRef.ForInline(bytes),
             contentHash: hash,
-            mimeType: mimeType,
+            mimeType: sniffedMime,         // Persist the sniffed MIME, not the caller-supplied one.
             sizeBytes: bytes.Length,
-            originalFilename: originalFilename,
+            originalFilename: safeFilename, // Persist the sanitized name.
             createdBy: createdBy,
             sensitivity: sensitivity);
 

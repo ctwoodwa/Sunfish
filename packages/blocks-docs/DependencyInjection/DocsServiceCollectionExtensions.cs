@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Blocks.Docs.Models;
 using Sunfish.Blocks.Docs.Services;
 
 namespace Sunfish.Blocks.Docs.DependencyInjection;
@@ -10,15 +11,28 @@ namespace Sunfish.Blocks.Docs.DependencyInjection;
 public static class DocsServiceCollectionExtensions
 {
     /// <summary>
-    /// Register the blocks-docs substrate. PR 2 wires
-    /// <see cref="IAttachmentRepository"/> → <see cref="InMemoryAttachmentRepository"/>
-    /// and <see cref="IAttachmentService"/> → <see cref="AttachmentService"/>.
-    /// PR 3 will wire <c>IBlobStore</c> + <c>BlocksDocsOptions</c>
-    /// (MIME / size policy). PR 4 adds <c>IDocumentRefService</c>.
+    /// Register the blocks-docs substrate. PR 3 wires the full upload
+    /// pipeline: <see cref="IAttachmentRepository"/>,
+    /// <see cref="IAttachmentService"/>, and
+    /// <see cref="IMimeTypeAndSizePolicy"/> for defense-in-depth (MIME
+    /// whitelist + size cap + tenant quota). PR 4 will add
+    /// <c>IDocumentRefService</c>.
+    ///
+    /// <para>
+    /// Optional <paramref name="options"/> lets the host customize
+    /// <see cref="BlocksDocsOptions"/> — per-tenant MIME whitelist
+    /// overrides, per-attachment cap, cumulative tenant quota. Without
+    /// it the defaults from <see cref="DefaultMimeWhitelist.Defaults"/>
+    /// + 100 MB cap + unlimited quota apply.
+    /// </para>
     /// </summary>
-    public static IServiceCollection AddBlocksDocs(this IServiceCollection services)
+    public static IServiceCollection AddBlocksDocs(
+        this IServiceCollection services,
+        BlocksDocsOptions? options = null)
     {
+        services.TryAddSingleton(options ?? new BlocksDocsOptions());
         services.TryAddSingleton<IAttachmentRepository, InMemoryAttachmentRepository>();
+        services.TryAddSingleton<IMimeTypeAndSizePolicy, MimeTypeAndSizePolicy>();
         services.TryAddSingleton<IAttachmentService, AttachmentService>();
         return services;
     }

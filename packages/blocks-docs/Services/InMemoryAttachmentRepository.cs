@@ -56,6 +56,19 @@ public sealed class InMemoryAttachmentRepository : IAttachmentRepository
     }
 
     /// <inheritdoc />
+    public Task<long> GetTenantTotalSizeBytesAsync(TenantId tenantId, CancellationToken cancellationToken = default)
+    {
+        // Sum only Active rows — Superseded/Tombstoned don't count toward a
+        // tenant's current footprint per PR 3's quota gate.
+        var total = _attachments.Values
+            .Where(a => a.DeletedAtUtc is null
+                && a.TenantId == tenantId
+                && a.Status == AttachmentStatus.Active)
+            .Sum(a => a.SizeBytes);
+        return Task.FromResult(total);
+    }
+
+    /// <inheritdoc />
     public Task<bool> SoftDeleteAsync(AttachmentId id, string actor, string? reason, CancellationToken cancellationToken = default)
     {
         if (!_attachments.TryGetValue(id, out var a)) return Task.FromResult(false);
