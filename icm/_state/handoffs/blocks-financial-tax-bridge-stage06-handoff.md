@@ -4,7 +4,7 @@ cluster: blocks-financial-tax-bridge (new tiny package)
 pipeline: sunfish-feature-change
 routing: substrate-bridge
 owner: dev (Sunfish overflow) OR cob (fallback)
-state: ready-to-build
+state: built
 stage-02-source: dev's blocks-financial-ap-stage06-handoff completion note + AR's `ITaxCalculator` XML doc reference to "bridge adapter ... separate package"
 depends-on:
   - blocks-financial-tax ✓ (shipped on main)
