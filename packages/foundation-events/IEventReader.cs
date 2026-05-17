@@ -26,7 +26,7 @@ public interface IEventReader
     /// <paramref name="maxBatchSize"/>. Ordered by EventId ascending
     /// (ULIDs sort by mint-time).
     /// </summary>
-    Task<IReadOnlyList<StoredEvent>> ReadAsync(
+    Task<IReadOnlyList<RawDomainEvent>> ReadAsync(
         TenantId tenantId,
         string eventType,
         string? afterEventId,
