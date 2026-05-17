@@ -67,8 +67,7 @@ public sealed class ConsistencyValidator : ISecurityPolicyValidator
                 "KeyRotationTrigger.CompromiseIndicatorFlagged cannot be removed from AutoTriggers (§1.4.1).",
                 "Re-add CompromiseIndicatorFlagged to KeyRotationPolicy.AutoTriggers."));
 
-        var ok = !findings.Any(f => f.Severity == SecurityPolicyValidationSeverity.Error);
         return new ValueTask<SecurityPolicyValidationResult>(
-            new SecurityPolicyValidationResult(ok, findings));
+            new SecurityPolicyValidationResult(findings));
     }
 }

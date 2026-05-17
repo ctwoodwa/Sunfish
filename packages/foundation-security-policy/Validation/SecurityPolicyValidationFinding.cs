@@ -20,9 +20,11 @@ public sealed record SecurityPolicyValidationFinding
     public string Message { get; init; } = string.Empty;
     public string Suggestion { get; init; } = string.Empty;
 
-    /// <summary>Factory for an Error-severity finding — both Message + Suggestion are required (WCAG 3.3.1 + 3.3.3).</summary>
+    /// <summary>Factory for an Error-severity finding — Code + Message + Suggestion all required (WCAG 3.3.1 + 3.3.3).</summary>
     public static SecurityPolicyValidationFinding Error(string code, string message, string suggestion)
     {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Code must be non-empty.", nameof(code));
         if (string.IsNullOrWhiteSpace(message))
             throw new ArgumentException("WCAG 3.3.1 — Message must be non-empty plain-English.", nameof(message));
         if (string.IsNullOrWhiteSpace(suggestion))
@@ -36,9 +38,11 @@ public sealed record SecurityPolicyValidationFinding
         };
     }
 
-    /// <summary>Factory for a Warning-severity finding (Suggestion still required — WCAG 3.3.3).</summary>
+    /// <summary>Factory for a Warning-severity finding — Code + Message + Suggestion all required (WCAG 3.3.3).</summary>
     public static SecurityPolicyValidationFinding Warning(string code, string message, string suggestion)
     {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Code must be non-empty.", nameof(code));
         if (string.IsNullOrWhiteSpace(message))
             throw new ArgumentException("Message must be non-empty.", nameof(message));
         if (string.IsNullOrWhiteSpace(suggestion))

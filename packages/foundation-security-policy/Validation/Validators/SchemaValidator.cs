@@ -1,4 +1,5 @@
 using Sunfish.Foundation.SecurityPolicy.Models;
+using Sunfish.Foundation.Ship.Common;
 
 namespace Sunfish.Foundation.SecurityPolicy.Validation.Validators;
 
@@ -47,6 +48,11 @@ public sealed class SchemaValidator : ISecurityPolicyValidator
                 "Increase DefaultMaximumRetentionWindow to be at least the minimum window."));
         foreach (var (cls, window) in ar.PerClassOverrides)
         {
+            if (!Enum.IsDefined(cls))
+                findings.Add(SecurityPolicyValidationFinding.Error(
+                    "SCHEMA_RETENTION_CLASS_UNDEFINED",
+                    $"PerClassOverrides key {(int)cls} is not a defined AuditEventClass value.",
+                    "Use only defined AuditEventClass values (Security/Financial/Identity/Configuration/System)."));
             if (window.Min <= TimeSpan.Zero)
                 findings.Add(SecurityPolicyValidationFinding.Error(
                     "SCHEMA_RETENTION_PERCLASS_MIN_NONPOSITIVE",
@@ -64,6 +70,15 @@ public sealed class SchemaValidator : ISecurityPolicyValidator
                 "RetentionJurisdictionPreset is not a defined enum value.",
                 "Use one of: Custom, HipaaInformedDefault, PciDssInformedDefault, Soc2InformedDefault, GdprInformedDefault, EuAiActInformedDefault."));
 
+        // --- DeviceAttestationPolicy ---
+        var da = proposed.DeviceAttestation;
+        foreach (var tier in da.AcceptedTiersForPrivilegedActions.Concat(da.AcceptedTiersForReadActions))
+            if (!Enum.IsDefined(tier))
+                findings.Add(SecurityPolicyValidationFinding.Error(
+                    "SCHEMA_ATTESTATION_TIER_UNDEFINED",
+                    $"AttestationTier {(int)tier} is not defined.",
+                    "Use only defined AttestationTier values (None / SoftwareSandbox / AndroidHardwareKeyStore / Tpm2 / AppleSecureElement / Fido2HardwareToken)."));
+
         // --- MfaEnrollmentPolicy ---
         var mfa = proposed.Mfa;
         if (mfa.EnrollmentGracePeriod < TimeSpan.Zero)
@@ -73,6 +88,11 @@ public sealed class SchemaValidator : ISecurityPolicyValidator
                 "Set EnrollmentGracePeriod to TimeSpan.Zero or a positive value."));
         foreach (var (role, factors) in mfa.RequiredFactorsByRole)
         {
+            if (!Enum.IsDefined(role))
+                findings.Add(SecurityPolicyValidationFinding.Error(
+                    "SCHEMA_MFA_ROLE_UNDEFINED",
+                    $"ShipRole {(int)role} in RequiredFactorsByRole is not defined.",
+                    "Use only defined ShipRole values."));
             foreach (var f in factors)
                 if (!Enum.IsDefined(f))
                     findings.Add(SecurityPolicyValidationFinding.Error(
@@ -101,6 +121,11 @@ public sealed class SchemaValidator : ISecurityPolicyValidator
                 "Set RotationGracePeriod to TimeSpan.Zero or a positive value."));
         foreach (var (role, cadence) in key.PerRoleOverrides)
         {
+            if (!Enum.IsDefined(role))
+                findings.Add(SecurityPolicyValidationFinding.Error(
+                    "SCHEMA_KEY_ROLE_UNDEFINED",
+                    $"ShipRole {(int)role} in PerRoleOverrides is not defined.",
+                    "Use only defined ShipRole values."));
             if (cadence <= TimeSpan.Zero)
                 findings.Add(SecurityPolicyValidationFinding.Error(
                     "SCHEMA_KEY_OVERRIDE_NONPOSITIVE",
@@ -126,8 +151,7 @@ public sealed class SchemaValidator : ISecurityPolicyValidator
                 "Recovery-contact VerificationCadence must be greater than zero.",
                 "Set VerificationCadence to a positive TimeSpan (e.g., 90 days)."));
 
-        var ok = !findings.Any(f => f.Severity == SecurityPolicyValidationSeverity.Error);
         return new ValueTask<SecurityPolicyValidationResult>(
-            new SecurityPolicyValidationResult(ok, findings));
+            new SecurityPolicyValidationResult(findings));
     }
 }
