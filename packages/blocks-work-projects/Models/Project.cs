@@ -198,4 +198,18 @@ public sealed class Project
         UpdatedAt = deletedAt;
         Version  += 1;
     }
+
+    /// <summary>
+    /// Replace the full <see cref="Tags"/> collection. Intended for
+    /// importer-style flows that maintain external-system metadata
+    /// tags (<c>externalRef:erpnext:&lt;name&gt;</c> +
+    /// <c>erpnextModified:&lt;version&gt;</c>). Set-semantics: callers
+    /// pass the entire desired post-state.
+    /// </summary>
+    public void OverwriteTags(IEnumerable<string> tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        Tags = tags.ToList();
+        Version += 1;
+    }
 }
