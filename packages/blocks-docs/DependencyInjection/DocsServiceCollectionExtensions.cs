@@ -11,12 +11,14 @@ namespace Sunfish.Blocks.Docs.DependencyInjection;
 public static class DocsServiceCollectionExtensions
 {
     /// <summary>
-    /// Register the blocks-docs substrate. PR 3 wires the full upload
+    /// Register the blocks-docs substrate. PR 3 wires the upload
     /// pipeline: <see cref="IAttachmentRepository"/>,
     /// <see cref="IAttachmentService"/>, and
     /// <see cref="IMimeTypeAndSizePolicy"/> for defense-in-depth (MIME
-    /// whitelist + size cap + tenant quota). PR 4 will add
-    /// <c>IDocumentRefService</c>.
+    /// whitelist + size cap + tenant quota). PR 4 adds the cross-cluster
+    /// join surface: <see cref="IDocumentRefRepository"/>. PR 5 wires
+    /// the service layer + parent-delete reconciler:
+    /// <see cref="IDocumentRefService"/> + <see cref="DocumentRefReconciler"/>.
     ///
     /// <para>
     /// Optional <paramref name="options"/> lets the host customize
@@ -34,6 +36,9 @@ public static class DocsServiceCollectionExtensions
         services.TryAddSingleton<IAttachmentRepository, InMemoryAttachmentRepository>();
         services.TryAddSingleton<IMimeTypeAndSizePolicy, MimeTypeAndSizePolicy>();
         services.TryAddSingleton<IAttachmentService, AttachmentService>();
+        services.TryAddSingleton<IDocumentRefRepository, InMemoryDocumentRefRepository>();
+        services.TryAddSingleton<IDocumentRefService, DocumentRefService>();
+        services.TryAddSingleton<DocumentRefReconciler>();
         return services;
     }
 }
