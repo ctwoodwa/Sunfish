@@ -114,9 +114,13 @@ public sealed class EnforcementTests
     }
 
     [Fact]
-    public async Task DeviceAttestation_HardwareTier_RejectedWhenVerifierFails()
+    public async Task DeviceAttestation_HardwareTier_RejectedWhenVerifierFails_FailureReasonNotInAccessibleMessage()
     {
-        var verifier = new StubVerifier(AttestationTier.Tpm2, isVerified: false, failureReason: "TPM seal mismatch");
+        // FailureReason MUST NOT leak into the UI-bound AccessibleMessage —
+        // it can contain device internals (PCR mismatches, byte ranges).
+        // Verifier-supplied detail belongs in the audit-payload only.
+        var verifier = new StubVerifier(AttestationTier.Tpm2, isVerified: false,
+            failureReason: "TPM PCR_7 mismatch (expected: 0xAAAA, actual: 0xBBBB)");
         var enforcer = Build(verifiers: new[] { (IAttestationVerifier)verifier });
         var evidence = new AttestationEvidence(
             AttestationTier.Tpm2,
@@ -125,7 +129,33 @@ public sealed class EnforcementTests
         var r = await enforcer.CheckDeviceAttestationAsync(Tenant, Actor, evidence, isPrivilegedAction: true);
         Assert.False(r.IsCompliant);
         Assert.Equal(PolicyViolationKind.DeviceAttestationRequired, r.Violation);
-        Assert.Contains("TPM seal mismatch", r.AccessibleMessage);
+        Assert.DoesNotContain("PCR_7", r.AccessibleMessage);
+        Assert.DoesNotContain("0xAAAA", r.AccessibleMessage);
+    }
+
+    [Fact]
+    public void IsCompliant_IsComputed_FromViolation_NotInitSetter()
+    {
+        // xo-council B2 precedent — caller cannot construct
+        // (IsCompliant=true, Violation=MfaEnrollmentRequired).
+        var r = new PolicyCheckResult
+        {
+            Violation         = PolicyViolationKind.MfaEnrollmentRequired,
+            AccessibleMessage = "msg",
+            SuggestedAction   = "suggest",
+        };
+        Assert.False(r.IsCompliant);
+    }
+
+    [Fact]
+    public void DuplicateTierVerifiers_ThrowsAtConstruction()
+    {
+        var v1 = new StubVerifier(AttestationTier.Tpm2, isVerified: true);
+        var v2 = new StubVerifier(AttestationTier.Tpm2, isVerified: false);
+        Assert.Throws<ArgumentException>(() =>
+            new DefaultSecurityPolicyEnforcer(
+                policyLoader: (_, _) => new ValueTask<TenantSecurityPolicy>(TenantSecurityPolicy.DefaultFor(Tenant, DateTimeOffset.UtcNow)),
+                verifiers:    new[] { (IAttestationVerifier)v1, v2 }));
     }
 
     // --- Phase 1 stubs ---

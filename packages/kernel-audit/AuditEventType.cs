@@ -752,6 +752,44 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A user exported the Profit &amp; Loss report as CSV or JSON. Emitted by the Bridge Reports endpoint on GET /api/v1/reports/profit-loss/export.</summary>
     public static readonly AuditEventType PLReportExported = new("PLReportExported");
 
+    // ===== ADR 0068 §6 — Tenant Security Policy (W#37 Phase 1 PR 3) =====
+    // See §GC.1 in ADR 0068 (docs/adrs/0068-tenant-security-policy.md).
+    // Each enforcement event below feeds the cross-regulatory audit
+    // trail (HIPAA, PCI-DSS, SOC 2, GDPR, EU AI Act).
+
+    /// <summary>Tenant security policy bootstrapped at provisioning time per ADR 0068 §1.1 — emitted ONCE per tenant when the default policy is materialized.</summary>
+    public static readonly AuditEventType SecurityPolicyBootstrapped = new("Sunfish.SecurityPolicy.Bootstrapped");
+
+    /// <summary>A Standing Order proposing a security-policy change was filed per ADR 0068 §3 — emitted before approvals are gathered.</summary>
+    public static readonly AuditEventType SecurityPolicyProposed = new("Sunfish.SecurityPolicy.Proposed");
+
+    /// <summary>An approver attested to a proposed security-policy Standing Order per ADR 0068 §3.1 — one event per approval step.</summary>
+    public static readonly AuditEventType SecurityPolicyApprovalReceived = new("Sunfish.SecurityPolicy.ApprovalReceived");
+
+    /// <summary>A security-policy Standing Order met the approval floor and was applied — the policy projection now reflects the proposed values per ADR 0068 §3.</summary>
+    public static readonly AuditEventType SecurityPolicyApplied = new("Sunfish.SecurityPolicy.Applied");
+
+    /// <summary>A security-policy Standing Order was rejected (validator returned Error findings, or approval floor was not met before timeout) per ADR 0068 §3.</summary>
+    public static readonly AuditEventType SecurityPolicyRejected = new("Sunfish.SecurityPolicy.Rejected");
+
+    /// <summary>A previously-applied security policy was rescinded — the prior policy is reinstated. Subject to the same approval floor as application per ADR 0068 §3.</summary>
+    public static readonly AuditEventType SecurityPolicyRescinded = new("Sunfish.SecurityPolicy.Rescinded");
+
+    /// <summary>An actor's MFA enrollment did not satisfy the tenant's policy at action time per ADR 0068 §4. Emitted by ISecurityPolicyEnforcer.CheckMfaComplianceAsync on a violation.</summary>
+    public static readonly AuditEventType SecurityPolicyMfaViolation = new("Sunfish.SecurityPolicy.MfaViolation");
+
+    /// <summary>Device-attestation evidence did not satisfy the tenant's policy at action time per ADR 0068 §4. Carries the claimed AttestationTier + verifier outcome in the payload.</summary>
+    public static readonly AuditEventType SecurityPolicyAttestationViolation = new("Sunfish.SecurityPolicy.AttestationViolation");
+
+    /// <summary>An actor's key-rotation cadence is past the policy's grace period per ADR 0068 §4. Periodic detection event, NOT a per-action emission.</summary>
+    public static readonly AuditEventType SecurityPolicyKeyRotationOverdue = new("Sunfish.SecurityPolicy.KeyRotationOverdue");
+
+    /// <summary>The tenant's recovery-contact set fell below MinimumContactCount per ADR 0068 §4. Emitted when a recovery contact is removed or expires.</summary>
+    public static readonly AuditEventType SecurityPolicyRecoveryContactViolation = new("Sunfish.SecurityPolicy.RecoveryContactViolation");
+
+    /// <summary>An emergency key rotation was triggered (Captain + 1 officer approval; rate-limited 1/24h per actor) per ADR 0068 §1.4.2. Distinguishes from cadence rotation.</summary>
+    public static readonly AuditEventType SecurityPolicyKeyEmergencyRotation = new("Sunfish.SecurityPolicy.KeyEmergencyRotation");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

@@ -88,10 +88,17 @@ public sealed class DefaultSecurityPolicyEnforcer : ISecurityPolicyEnforcer
             var result = await verifier.VerifyAsync(evidence.PlatformProof, evidence.EvidenceAt, cancellationToken)
                                        .ConfigureAwait(false);
             if (!result.IsVerified)
+            {
+                // Verifier-supplied FailureReason may contain device internals
+                // (PCR mismatches, byte ranges, signer-cert fingerprints).
+                // It MUST NOT surface to the UI-bound AccessibleMessage —
+                // route into AttestationViolationPayload.FailureReason only.
+                // UI gets an opaque safe summary.
                 return PolicyCheckResult.ViolationResult(
                     PolicyViolationKind.DeviceAttestationRequired,
-                    accessibleMessage: $"Attestation verification failed: {result.FailureReason ?? "unspecified"}.",
+                    accessibleMessage: "Attestation verification failed. The device's hardware attestation could not be confirmed.",
                     suggestedAction: "Re-enroll the device's attestation evidence and retry.");
+            }
         }
 
         return PolicyCheckResult.Compliant();
