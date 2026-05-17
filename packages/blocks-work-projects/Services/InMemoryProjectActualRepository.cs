@@ -11,6 +11,7 @@ public sealed class InMemoryProjectActualRepository : IProjectActualRepository
 
     public Task<ProjectActual?> FindAsync(
         TenantId tenantId, ProjectId projectId, ActualSourceKind sourceKind, Guid? sourceRefId,
+        Guid? glAccountId,
         CancellationToken cancellationToken = default)
     {
         var match = _rows.Values.FirstOrDefault(r =>
@@ -18,6 +19,7 @@ public sealed class InMemoryProjectActualRepository : IProjectActualRepository
             && r.ProjectId.Value == projectId.Value
             && r.SourceKind == sourceKind
             && Nullable.Equals(r.SourceRefId, sourceRefId)
+            && Nullable.Equals(r.GlAccountId, glAccountId)
             && r.DeletedAt is null);
         return Task.FromResult(match);
     }

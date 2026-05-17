@@ -22,6 +22,13 @@ public interface IProjectActualProjector
     /// <c>foundation-events</c>'s event store). Idempotent — re-running
     /// over the same range produces the same final state.
     /// </summary>
+    /// <remarks>
+    /// TRUST CONTRACT: callers MUST source envelopes from
+    /// <c>foundation-events</c>'s <c>IDomainEventStore</c> read API; do
+    /// not synthesize envelopes from untrusted input. The projector
+    /// trusts <c>envelope.TenantId</c> + payload at face value — bypassing
+    /// the trust boundary materializes attacker-controlled rows.
+    /// </remarks>
     Task RebuildFromCursorAsync(
         IEnumerable<DomainEventEnvelope<JournalEntryPostedPayload>> envelopes,
         CancellationToken cancellationToken = default);

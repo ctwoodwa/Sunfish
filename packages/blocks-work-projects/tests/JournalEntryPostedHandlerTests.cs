@@ -102,13 +102,12 @@ public sealed class JournalEntryPostedHandlerTests
     }
 
     [Fact]
-    public async Task Handle_MultipleLinesSameProject_CreatesOneRow()
+    public async Task Handle_MultipleLinesSameProjectDifferentAccounts_CreatesOneRowPerAccount()
     {
-        // Composite-idempotency key is (projectId, sourceKind, sourceRefId)
-        // — for a single JE with multiple lines on the same project,
-        // dedup collapses to one row per (project, je) pair. The total
-        // exposure is reconstructed by callers from GetByProjectAsync
-        // sums when needed.
+        // Composite idempotency key includes GlAccountId so that a JE
+        // splitting cost across (e.g.) Labor + Materials on the same
+        // project preserves per-line granularity — both lines project,
+        // and GetTotalsAsync reflects the full posting.
         var repo = new InMemoryProjectActualRepository();
         var handler = new JournalEntryPostedHandler(repo);
         var pid = ProjectId.NewId();
@@ -116,7 +115,36 @@ public sealed class JournalEntryPostedHandlerTests
             Line(100m, 0m, pid),
             Line(50m, 0m, pid)));
         var rows = await repo.GetByProjectAsync(Tenant, pid);
-        Assert.Single(rows);
+        Assert.Equal(2, rows.Count);
+        Assert.Equal(150m, rows.Sum(r => r.PostedAmount));
+    }
+
+    [Fact]
+    public async Task Handle_SameProjectSameAccountSameJe_DedupsToOneRow()
+    {
+        // Defense-in-depth idempotency: replay of a JE with the same
+        // (project, account, JE id) tuple must not double-project.
+        var repo = new InMemoryProjectActualRepository();
+        var handler = new JournalEntryPostedHandler(repo);
+        var pid = ProjectId.NewId();
+        var entryId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        var line = new JournalEntryPostedLine(
+            AccountId: accountId, Debit: 75m, Credit: 0m, Currency: "USD",
+            Dimensions: new Dictionary<string, string> { ["projectId"] = pid.Value.ToString() });
+        var env = new DomainEventEnvelope<JournalEntryPostedPayload>
+        {
+            EventId              = EventId.New(),
+            EventType            = "Financial.JournalEntryPosted",
+            SchemaVersion        = 1,
+            OccurredAt           = DateTimeOffset.UtcNow,
+            TenantId             = Tenant,
+            OriginatingReplicaId = ReplicaId.System,
+            IdempotencyKey       = $"je-posted:{entryId}",
+            Payload              = new JournalEntryPostedPayload(entryId, new DateOnly(2026, 5, 16), "Manual", new[] { line, line }),
+        };
+        await handler.HandleAsync(env);
+        Assert.Single(await repo.GetByProjectAsync(Tenant, pid));
     }
 
     [Fact]

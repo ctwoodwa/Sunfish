@@ -56,6 +56,29 @@ public sealed class ProjectActualTests
             sourceRefId: null, createdAt: Instant.Now, createdBy: Guid.NewGuid()));
     }
 
+    [Fact]
+    public void Create_CurrencyWithSurroundingWhitespace_IsTrimmed()
+    {
+        var actual = ProjectActual.Create(
+            Tenant, ProjectActualId.NewId(), ProjectId.NewId(), BudgetCategory.Other,
+            glAccountId: null, postedAmount: 1m, currency: "  usd  ",
+            postedDate: new DateOnly(2026, 5, 16), sourceKind: ActualSourceKind.JournalEntry,
+            sourceRefId: null, createdAt: Instant.Now, createdBy: Guid.NewGuid());
+        Assert.Equal("USD", actual.Currency);
+    }
+
+    [Fact]
+    public void Create_NotesExceedsMaxLength_Throws()
+    {
+        var huge = new string('x', ProjectActual.MaxNotesLength + 1);
+        Assert.Throws<ArgumentException>(() => ProjectActual.Create(
+            Tenant, ProjectActualId.NewId(), ProjectId.NewId(), BudgetCategory.Other,
+            glAccountId: null, postedAmount: 1m, currency: "USD",
+            postedDate: new DateOnly(2026, 5, 16), sourceKind: ActualSourceKind.JournalEntry,
+            sourceRefId: null, createdAt: Instant.Now, createdBy: Guid.NewGuid(),
+            notes: huge));
+    }
+
     private static readonly Guid JournalEntryPostedHandler_DefaultPrincipal =
         Sunfish.Blocks.WorkProjects.Events.JournalEntryPostedHandler.ProjectorPrincipalId;
 }

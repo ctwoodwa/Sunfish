@@ -32,6 +32,9 @@ public sealed class ProjectActual
     public Guid CreatedBy { get; private set; }
     public Instant? DeletedAt { get; private set; }
 
+    /// <summary>Max length of <see cref="Notes"/> — DoS + PII-smuggling guard at the model boundary.</summary>
+    public const int MaxNotesLength = 4000;
+
     private ProjectActual() { }
 
     /// <summary>
@@ -55,10 +58,13 @@ public sealed class ProjectActual
     {
         if (string.IsNullOrWhiteSpace(currency))
             throw new ArgumentException("Currency is required.", nameof(currency));
-        var normalizedCurrency = currency.ToUpperInvariant();
+        var normalizedCurrency = currency.Trim().ToUpperInvariant();
         if (normalizedCurrency.Length != 3 || !normalizedCurrency.All(char.IsAsciiLetterUpper))
             throw new ArgumentException(
                 $"Currency '{currency}' is not a 3-letter ISO-4217 code.", nameof(currency));
+        if (notes is { Length: > MaxNotesLength })
+            throw new ArgumentException(
+                $"Notes exceeds MaxNotesLength={MaxNotesLength}.", nameof(notes));
 
         return new ProjectActual
         {

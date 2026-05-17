@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Sunfish.Blocks.WorkProjects.Models;
 using Sunfish.Blocks.WorkProjects.Services;
 using Sunfish.Foundation.Assets.Common;
@@ -9,31 +11,50 @@ namespace Sunfish.Blocks.WorkProjects.Events;
 /// <see cref="IEventHandler{TPayload}"/> for
 /// <c>Financial.JournalEntryPosted</c>. For every line that carries a
 /// <c>"projectId"</c> dimension, upserts a single
-/// <see cref="ProjectActual"/> row. Idempotent on the composite key
-/// <c>(projectId, sourceKind, sourceRefId)</c>.
+/// <see cref="ProjectActual"/> row keyed on the composite
+/// <c>(projectId, sourceKind, sourceRefId, glAccountId)</c> — the
+/// <c>glAccountId</c> tail keeps per-line granularity intact when a
+/// single JE splits cost across accounts on the same project
+/// (e.g. Labor + Materials).
 /// </summary>
 /// <remarks>
+/// Trust contract: <see cref="DomainEventEnvelope{TPayload}.TenantId"/>
+/// is taken at face value; envelope authenticity is the responsibility
+/// of <c>foundation-events</c> (signed envelopes, replica-id provenance).
 /// Reversal handling is OUT OF SCOPE — see Stage 06 PR 4 hand-off
-/// "Reversal handling (deferred)" note. When financial publishes
-/// <c>Financial.JournalEntryReversed</c>, a separate handler will
-/// either tombstone the matching row or post a new compensating row.
+/// "Reversal handling (deferred)" note.
 /// </remarks>
 public sealed class JournalEntryPostedHandler : IEventHandler<JournalEntryPostedPayload>
 {
     /// <summary>System principal for projector-authored audit rows.</summary>
     public static readonly Guid ProjectorPrincipalId = new("00000000-0000-0000-0000-00000000a1ac");
 
-    private readonly IProjectActualRepository _repository;
+    private readonly IProjectActualReader _reader;
+    private readonly IProjectActualWriter _writer;
     private readonly IGlAccountCategoryResolver _categoryResolver;
+    private readonly ILogger<JournalEntryPostedHandler> _logger;
     private readonly Func<Instant> _now;
 
     public JournalEntryPostedHandler(
         IProjectActualRepository repository,
         IGlAccountCategoryResolver? categoryResolver = null,
+        ILogger<JournalEntryPostedHandler>? logger = null,
+        Func<Instant>? now = null)
+        : this(repository, repository, categoryResolver, logger, now)
+    {
+    }
+
+    public JournalEntryPostedHandler(
+        IProjectActualReader reader,
+        IProjectActualWriter writer,
+        IGlAccountCategoryResolver? categoryResolver = null,
+        ILogger<JournalEntryPostedHandler>? logger = null,
         Func<Instant>? now = null)
     {
-        _repository       = repository ?? throw new ArgumentNullException(nameof(repository));
+        _reader           = reader ?? throw new ArgumentNullException(nameof(reader));
+        _writer           = writer ?? throw new ArgumentNullException(nameof(writer));
         _categoryResolver = categoryResolver ?? new FallbackGlAccountCategoryResolver();
+        _logger           = logger ?? NullLogger<JournalEntryPostedHandler>.Instance;
         _now              = now ?? (() => Instant.Now);
     }
 
@@ -54,8 +75,8 @@ public sealed class JournalEntryPostedHandler : IEventHandler<JournalEntryPosted
 
             var projectId = new ProjectId(projectIdGuid);
 
-            var existing = await _repository.FindAsync(
-                envelope.TenantId, projectId, sourceKind, payload.EntryId, cancellationToken)
+            var existing = await _reader.FindAsync(
+                envelope.TenantId, projectId, sourceKind, payload.EntryId, line.AccountId, cancellationToken)
                 .ConfigureAwait(false);
             if (existing is not null) continue;
 
@@ -76,21 +97,32 @@ public sealed class JournalEntryPostedHandler : IEventHandler<JournalEntryPosted
                 createdAt:    _now(),
                 createdBy:    ProjectorPrincipalId);
 
-            await _repository.InsertAsync(actual, cancellationToken).ConfigureAwait(false);
+            await _writer.InsertAsync(actual, cancellationToken).ConfigureAwait(false);
         }
     }
 
     /// <summary>
     /// Maps the financial cluster's <c>JournalEntrySource</c> string
     /// onto <see cref="ActualSourceKind"/>. Unknown values fall back
-    /// to <see cref="ActualSourceKind.JournalEntry"/>.
+    /// to <see cref="ActualSourceKind.JournalEntry"/> + log a warning
+    /// so protocol drift between clusters is observable.
     /// </summary>
-    public static ActualSourceKind MapSourceKind(string financialSourceKind) =>
-        financialSourceKind switch
+    internal ActualSourceKind MapSourceKind(string financialSourceKind)
+    {
+        switch (financialSourceKind)
         {
-            "TimeEntry" => ActualSourceKind.TimeEntry,
-            "Invoice"   => ActualSourceKind.Invoice,
-            "Manual"    => ActualSourceKind.Manual,
-            _           => ActualSourceKind.JournalEntry,
-        };
+            case "TimeEntry": return ActualSourceKind.TimeEntry;
+            case "Invoice":   return ActualSourceKind.Invoice;
+            case "Manual":    return ActualSourceKind.Manual;
+            case "Bill":
+            case "Payment":
+            case "Receipt":
+            case "Reversal":  return ActualSourceKind.JournalEntry;
+            default:
+                _logger.LogWarning(
+                    "Unknown JournalEntrySource '{SourceKind}'; projecting as JournalEntry.",
+                    financialSourceKind);
+                return ActualSourceKind.JournalEntry;
+        }
+    }
 }
