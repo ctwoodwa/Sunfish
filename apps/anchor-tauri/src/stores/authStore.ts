@@ -4,9 +4,9 @@ interface AuthState {
   user: string
   role: string
   /**
-   * Bridge auth token. `null` indicates the user is not authenticated and the
-   * LoginPage should be shown. `''` (empty string) is treated the same as null
-   * for gate purposes — `setToken('')` is the logout path.
+   * Bridge auth token. `null` indicates the user has not connected to Bridge —
+   * Anchor stays in local-first offline mode. `''` (empty string) is treated
+   * the same as null for gate purposes — `setToken('')` is the disconnect path.
    */
   token: string | null
   loaded: boolean

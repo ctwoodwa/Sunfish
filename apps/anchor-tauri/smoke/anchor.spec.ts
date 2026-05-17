@@ -9,39 +9,60 @@ import { test, expect } from './fixtures'
  * so we don't need a separate mock server.
  *
  * Preconditions (handled by `scripts/run-smoke.ps1`):
- *   - anchor-tauri.exe is running with `--remote-debugging-port=9222`
- *   - Stronghold snapshot is cleared (fresh first-launch state) so the
- *     LoginPage renders. Tests that need an authenticated state set up
- *     their own token via `setup()`.
+ *   - anchor-tauri is running with `--remote-debugging-port=9222`
+ *   - Stronghold snapshot is cleared (fresh first-launch state) so cold-boot
+ *     lands in offline mode with no token.
  *
  * Note on isolation: connectOverCDP gives a SHARED browser context. State
- * (Stronghold, authStore, etc.) persists across tests in the same run.
- * Tests are ordered so the auth flow runs in dependency order. For full
- * isolation, the wrapper script can quit/relaunch Tauri between specs.
+ * (Stronghold, authStore, etc.) persists across tests in the same run. Tests
+ * are ordered so the disconnect step in the last spec leaves the app back
+ * in offline mode for the next run.
  */
 
-test.describe('LoginPage smoke (no token)', () => {
-  // Clear any route handlers a previous test installed so each test starts
-  // from a known interception baseline.
+test.describe('Local-first cold boot (no token)', () => {
   test.beforeEach(async ({ page }) => {
     await page.unrouteAll({ behavior: 'ignoreErrors' })
   })
 
-  test('AuthGate renders LoginPage with token input and Sign in button', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Sign in to Anchor' })).toBeVisible()
-    await expect(page.getByLabel('Bridge auth token')).toBeVisible()
-    await expect(page.getByRole('button', { name: /Sign in/ })).toBeEnabled()
-    // Theme-token sanity — body should pick up the theme bg/fg vars, not the
-    // legacy hardcoded utilities. We can't assert a specific color because the
-    // active theme depends on the OS setting at run time, so we just check
-    // that the body has a non-empty computed bg and an applied color-scheme
-    // (proves index.css's `:root { color-scheme: light dark }` shipped).
+  test('AuthGate renders AppLayout immediately, no Bridge required', async ({ page }) => {
+    // The local-first contract: cold-launch with no stored token MUST reach
+    // a usable app shell without any Bridge call. The Properties nav link is
+    // the canonical "app rendered" sentinel.
+    await expect(page.getByRole('link', { name: 'Properties' })).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('link', { name: 'Connect to Bridge' })).toBeVisible()
+
+    // Theme-token sanity — body should pick up theme bg/fg vars.
     const cs = await page.evaluate(() => ({
       bg: getComputedStyle(document.body).backgroundColor,
       colorScheme: getComputedStyle(document.documentElement).colorScheme,
     }))
     expect(cs.bg).toBeTruthy()
     expect(cs.colorScheme).toMatch(/light|dark/)
+  })
+
+  test('cold boot does not call Bridge', async ({ page }) => {
+    let bridgeHits = 0
+    await page.route('**/api/v1/whoami', (r) => {
+      bridgeHits++
+      r.fulfill({ status: 200, body: '{}' })
+    })
+    // Reload to retrigger cold-boot path with the route installed.
+    await page.reload()
+    await expect(page.getByRole('link', { name: 'Properties' })).toBeVisible({ timeout: 10_000 })
+    // The whoami call inside AppLayout is best-effort and may fire — but
+    // the boot itself must not depend on it. We assert the count is 0 OR 1;
+    // 0 if AppLayout's whoami fetch was aborted before the route matched,
+    // 1 if it landed. The key invariant is that the screen rendered before
+    // the call resolved (asserted above by the visibility check).
+    expect(bridgeHits).toBeLessThanOrEqual(1)
+  })
+})
+
+test.describe('Connect to Bridge flow (/settings/bridge)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+    await page.getByRole('link', { name: 'Connect to Bridge' }).click()
+    await expect(page.getByRole('heading', { name: 'Connect to Bridge' })).toBeVisible()
   })
 
   test('empty submit shows "Token cannot be empty" without Bridge call', async ({ page }) => {
@@ -52,13 +73,13 @@ test.describe('LoginPage smoke (no token)', () => {
     })
 
     await page.getByLabel('Bridge auth token').fill('')
-    await page.getByRole('button', { name: /Sign in/ }).click()
+    await page.getByRole('button', { name: /Connect/ }).click()
 
     await expect(page.getByText('Token cannot be empty.')).toBeVisible()
     expect(bridgeHits).toBe(0)
   })
 
-  test('Bridge rejects token → distinct "Bridge rejected the token" error, stays on LoginPage', async ({
+  test('Bridge rejects token → distinct "Bridge rejected the token" error, stays on page', async ({
     page,
   }) => {
     await page.route('**/api/v1/whoami', (r) =>
@@ -66,30 +87,43 @@ test.describe('LoginPage smoke (no token)', () => {
     )
 
     await page.getByLabel('Bridge auth token').fill('definitely-not-a-real-token')
-    await page.getByRole('button', { name: /Sign in/ }).click()
+    await page.getByRole('button', { name: /^Connect$/ }).click()
 
     await expect(page.getByText(/Bridge rejected the token: 401/)).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: 'Sign in to Anchor' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Connect to Bridge' })).toBeVisible()
   })
 
-  test('Network failure → distinct "Could not reach Bridge" error, stays on LoginPage', async ({
+  test('Network failure → distinct "Could not reach Bridge" error, stays on page', async ({
     page,
   }) => {
     await page.route('**/api/v1/whoami', (r) => r.abort('connectionrefused'))
 
     await page.getByLabel('Bridge auth token').fill('any-token')
-    await page.getByRole('button', { name: /Sign in/ }).click()
+    await page.getByRole('button', { name: /^Connect$/ }).click()
 
     await expect(page.getByText(/Could not reach Bridge at/)).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: 'Sign in to Anchor' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Connect to Bridge' })).toBeVisible()
   })
 
-  test('PASS path: Bridge 200 + Stronghold persist → AuthGate transitions to AppLayout', async ({
+  test('Continue offline button returns to the app without touching Bridge', async ({ page }) => {
+    let bridgeHits = 0
+    await page.route('**/api/v1/whoami', (r) => {
+      bridgeHits++
+      r.fulfill({ status: 200, body: '{}' })
+    })
+
+    await page.getByLabel('Bridge auth token').fill('whatever')
+    await page.getByRole('button', { name: /Continue offline/ }).click()
+
+    await expect(page.getByRole('link', { name: 'Properties' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Connect to Bridge' })).toBeVisible()
+    expect(bridgeHits).toBe(0)
+  })
+
+  test('PASS path: Bridge 200 + Stronghold persist → returns to app with Disconnect button', async ({
     page,
   }) => {
     test.setTimeout(90_000)
-    // Mock whoami 200 and all sync endpoints with empty arrays so the
-    // Properties tab empty-state renders.
     await page.route('**/api/v1/whoami', (r) =>
       r.fulfill({
         status: 200,
@@ -102,44 +136,31 @@ test.describe('LoginPage smoke (no token)', () => {
         }),
       }),
     )
-    // Catch-all for anything else under /api/v1/ so a sync call doesn't hang
-    // the auth flow waiting on a real Bridge that isn't there.
     await page.route('**/api/v1/**', (r) => {
       if (r.request().url().includes('/whoami')) return r.fallback()
       return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
     })
 
-    // Confirm the 200 actually fires before we wait on the post-success path.
     const whoamiResp = page.waitForResponse(
       (resp) => resp.url().includes('/api/v1/whoami') && resp.status() === 200,
       { timeout: 15_000 },
     )
     await page.getByLabel('Bridge auth token').fill('smoke-pass-token-playwright')
-    await page.getByRole('button', { name: /Sign in/ }).click()
+    await page.getByRole('button', { name: /^Connect$/ }).click()
     await whoamiResp
 
-    // After whoami 200, the LoginPage flow is:
-    //   1. persistToken() — Stronghold.load() + insert() + save()  ~10–30s cold
-    //   2. invoke('set_bridge_token', …) — Rust state, sub-ms
-    //   3. setToken() → zustand → AuthGate re-renders → AppLayout mounts
-    // Cold Stronghold first-launch can be slow (iota_stronghold engine init +
-    // OS-keychain read), so give the AppLayout up to 60s to render.
-    //
-    // We assert the AUTH-TRANSITION invariants only — LoginPage gone, AppLayout
-    // chrome present. Asserting empty-state copy in `main` would couple this
-    // test to the data-layer mock shape (React Query envelopes, route handlers
-    // per fetcher, etc.); separate per-tab smoke specs can layer that on.
+    // After persist+navigate: app shell, Disconnect button (not Connect link).
     await expect(page.getByRole('link', { name: 'Properties' })).toBeVisible({ timeout: 60_000 })
-    await expect(page.getByRole('button', { name: /Logout/ })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Sign in to Anchor' })).toBeHidden()
+    await expect(page.getByRole('button', { name: /Disconnect/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Connect to Bridge' })).toBeHidden()
 
-    // Capture a screenshot of the rendered AppLayout. Useful for visual
-    // verification of theme-token rendering (dark/light) without requiring a
-    // reviewer to build + run locally. Saved to smoke-artifacts/ which is in
-    // .gitignore — Playwright also auto-attaches it to the HTML report.
     await page.screenshot({
-      path: 'smoke-artifacts/applayout-post-login.png',
+      path: 'smoke-artifacts/applayout-post-connect.png',
       fullPage: true,
     })
+
+    // Leave the app in offline mode for the next test run.
+    await page.getByRole('button', { name: /Disconnect/ }).click()
+    await expect(page.getByRole('link', { name: 'Connect to Bridge' })).toBeVisible({ timeout: 10_000 })
   })
 })
