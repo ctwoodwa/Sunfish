@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.FinancialTaxBridge</PackageId>
+    <Description>Bridge package that wires the canonical Sunfish.Blocks.FinancialTax engine into AR's and AP's local ITaxCalculator interfaces. Pure adapter — no calculation logic of its own.</Description>
+    <PackageTags>tax;bridge;adapter;sales-tax;ar;ap;blocks;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.FinancialTaxBridge.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\blocks-financial-tax\Sunfish.Blocks.FinancialTax.csproj" />
+    <ProjectReference Include="..\blocks-financial-ar\Sunfish.Blocks.FinancialAr.csproj" />
+    <ProjectReference Include="..\blocks-financial-ap\Sunfish.Blocks.FinancialAp.csproj" />
+  </ItemGroup>
+</Project>
