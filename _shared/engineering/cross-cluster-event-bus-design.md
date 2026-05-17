@@ -256,6 +256,7 @@ Compiled from the five Stage 02 design docs. Columns:
 | `Work.ContractRendered` | docs, financial | `{ contractId, templateId, documentId, counterpartyPartyId }` | `contract-rendered:{contractId}` |
 | `Work.ContractRenewed` | financial, reports | `{ contractId, renewalId, newExpirationDate }` | `contract-renewed:{renewalId}` |
 | `Work.ContractExpired` | financial, reports | `{ contractId, expiredAt }` | `contract-expired:{contractId}` |
+| `Work.RemodelPhaseCompleted` | financial, reports | `{ phaseId, remodelProjectId, projectId, ordinal, name, actualAmount?, currency?, actualEndDate }` | `remodel-phase-completed:{phaseId}` |
 | `Work.RemodelCapitalized` | financial, reports | `{ remodelProjectId, propertyId, capitalizedAmount, placedInServiceDate }` | `remodel-capitalized:{remodelProjectId}` |
 | `Work.DeliverableSubmitted` | docs, reports | `{ deliverableId, projectId, milestoneId?, approverPartyId }` | `deliverable-submitted:{deliverableId}:{submissionNumber}` |
 | `Work.DeliverableAccepted` | financial, docs, reports | `{ deliverableId, projectId, milestoneId?, acceptedAt }` | `deliverable-accepted:{deliverableId}` |
