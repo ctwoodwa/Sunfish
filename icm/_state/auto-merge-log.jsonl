@@ -1,0 +1,3 @@
+# Auto-merge log — XO-maintained. One JSON line per PR merged under pre-authorization.
+# Fields: pr, title, workstream, pattern, timestamp, tier, council-status, auto-merged-by
+# Created: 2026-05-17T12-15Z. First entry will appear when tax-bridge pilot PR merges.
