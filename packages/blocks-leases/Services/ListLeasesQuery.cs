@@ -1,3 +1,4 @@
+
 using Sunfish.Blocks.Leases.Models;
 
 namespace Sunfish.Blocks.Leases.Services;
@@ -16,7 +17,7 @@ public sealed record ListLeasesQuery
     /// <summary>
     /// When set, only leases that include this tenant party are returned.
     /// </summary>
-    public PartyId? TenantId { get; init; }
+    public Sunfish.Blocks.People.Foundation.Models.PartyId? TenantId { get; init; }
 
     /// <summary>
     /// Shared empty query that applies no filters.

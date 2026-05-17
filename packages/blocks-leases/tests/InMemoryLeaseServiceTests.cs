@@ -3,6 +3,8 @@ using Sunfish.Blocks.Leases.Services;
 using Sunfish.Foundation.Assets.Common;
 using Xunit;
 
+using PartyId = Sunfish.Blocks.People.Foundation.Models.PartyId;
+
 namespace Sunfish.Blocks.Leases.Tests;
 
 public class InMemoryLeaseServiceTests

@@ -18,7 +18,7 @@ public sealed record LeasePartySignature
     public required LeaseId Lease { get; init; }
 
     /// <summary>The signing party (typically a tenant).</summary>
-    public required PartyId Party { get; init; }
+    public required Sunfish.Blocks.People.Foundation.Models.PartyId Party { get; init; }
 
     /// <summary>Reference to the captured signature event (kernel-signatures).</summary>
     public required SignatureEventId SignatureEvent { get; init; }

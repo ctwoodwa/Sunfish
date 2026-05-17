@@ -1,3 +1,4 @@
+
 namespace Sunfish.Blocks.Leases.Models;
 
 /// <summary>
@@ -15,7 +16,7 @@ public sealed record LeasePartyRole
     public required LeaseId Lease { get; init; }
 
     /// <summary>The party assigned this role.</summary>
-    public required PartyId Party { get; init; }
+    public required Sunfish.Blocks.People.Foundation.Models.PartyId Party { get; init; }
 
     /// <summary>The role the party plays on this lease.</summary>
     public required LeaseHolderRole Role { get; init; }

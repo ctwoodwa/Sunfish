@@ -1,6 +1,8 @@
 using Sunfish.Blocks.Leases.Models;
 using Xunit;
 
+using PartyId = Sunfish.Blocks.People.Foundation.Models.PartyId;
+
 namespace Sunfish.Blocks.Leases.Tests;
 
 public sealed class LeaseHolderRoleTests

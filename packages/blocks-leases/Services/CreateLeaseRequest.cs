@@ -1,3 +1,4 @@
+
 using Sunfish.Blocks.Leases.Models;
 using Sunfish.Foundation.Assets.Common;
 
@@ -12,10 +13,10 @@ public sealed record CreateLeaseRequest
     public required EntityId UnitId { get; init; }
 
     /// <summary>All tenant parties on this lease (at least one required).</summary>
-    public required IReadOnlyList<PartyId> Tenants { get; init; }
+    public required IReadOnlyList<Sunfish.Blocks.People.Foundation.Models.PartyId> Tenants { get; init; }
 
     /// <summary>The landlord party for this lease.</summary>
-    public required PartyId Landlord { get; init; }
+    public required Sunfish.Blocks.People.Foundation.Models.PartyId Landlord { get; init; }
 
     /// <summary>Date the lease term begins.</summary>
     public required DateOnly StartDate { get; init; }
