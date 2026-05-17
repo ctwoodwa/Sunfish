@@ -219,6 +219,10 @@
     <Project Path="packages/blocks-people-foundation/Sunfish.Blocks.People.Foundation.csproj" />
     <Project Path="packages/blocks-people-foundation/tests/Sunfish.Blocks.People.Foundation.Tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/financial-ar/">
+    <Project Path="packages/blocks-financial-ar/Sunfish.Blocks.FinancialAr.csproj" />
+    <Project Path="packages/blocks-financial-ar/tests/Sunfish.Blocks.FinancialAr.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/reports-tax/">
     <Project Path="packages/blocks-reports-tax/Sunfish.Blocks.Reports.Tax.csproj" />
     <Project Path="packages/blocks-reports-tax/tests/tests.csproj" />
