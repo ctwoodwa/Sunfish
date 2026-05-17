@@ -712,7 +712,7 @@ W#65 fills that gap: `ISessionSignerAccessor.GetCurrentAsync()` returns an `IBou
 **Scope:** 1 PR, ~1.5-2h. Single file change + tests.
 
 **Gate:** W#65 merged (provides `Sunfish.Kernel.Security.Session.ISessionSignerAccessor`; PR #868). |
-| 67 | W#67 — G6-A: Social recovery seed-delivery protocol (ADR 0046 Phase 2) | `ready-to-build` — ADR 0046-A6 Accepted 2026-05-16 (CO); hand-off at `icm/_state/handoffs/w67-g6a-social-recovery-seed-delivery-protocol-stage06-handoff.md`; api-change pipeline; ~18-22h / 5-6 PRs | sunfish-PM | `docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md` (Proposed 2026-05-16) + `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` + `packages/foundation-recovery/RecoveryRequest.cs` + `packages/foundation-recovery/TrusteeAttestation.cs` + `packages/kernel-security/Crypto/IX25519KeyAgreement.cs` + `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` §G6-A | **Context.** The G7 conformance baseline scan (2026-05-16) confirmed G6 is PARTIAL — the social recovery state machine, hosting infrastructure, and 5 Razor pages are wired, but `AnchorRecoveryCompletionHandler.HandleAsync` stubs the SQLCipher rekey:
+| 67 | W#67 — G6-A: Social recovery seed-delivery protocol (ADR 0046 Phase 2) | `built` — all 6 PRs merged 2026-05-16 (PRs #875 + #878 + #880 + #883 + #889 + #903); G6-A CLOSED; SQLCipher rekey + RecoveryRekey audit event + DPAPI ephemeral key + ISqlCipherKeyDerivation all on main | sunfish-PM | `docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md` (Proposed 2026-05-16) + `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` + `packages/foundation-recovery/RecoveryRequest.cs` + `packages/foundation-recovery/TrusteeAttestation.cs` + `packages/kernel-security/Crypto/IX25519KeyAgreement.cs` + `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` §G6-A | **Context.** The G7 conformance baseline scan (2026-05-16) confirmed G6 is PARTIAL — the social recovery state machine, hosting infrastructure, and 5 Razor pages are wired, but `AnchorRecoveryCompletionHandler.HandleAsync` stubs the SQLCipher rekey:
 
 ```csharp
 // TODO (post-W#63): IEncryptedStore.RotateKeyAsync(...)
@@ -764,6 +764,34 @@ No seed material, no key bytes, no encrypted payload. The Phase 1 social recover
 **Scope.** XO research session: ~3-4h. Outputs: ADR 0046 amendment (A6) specifying the protocol; updated `TrusteeAttestation` and `RecoveryRequest` context; W#67 → `ready-to-build` once council-reviewed.
 
 **Unblocks.** Full G6 closure — `AnchorRecoveryCompletionHandler.HandleAsync` wiring the real rekey path. |
+| 68 | W#68 — blocks-financial-payments: Payment + PaymentApplication (Phase 2 financial cluster) | `ready-to-build` — gated on `blocks-financial-ar` + `blocks-financial-ap` all PRs merged; hand-off at `icm/_state/handoffs/blocks-financial-payments-stage06-handoff.md`; 4 PRs; ~8-12h; security spot-check on PR 3 | sunfish-PM | `icm/02_architecture/blocks-financial-schema-design.md` §3.9–§3.10 (Payment + PaymentApplication) + §6.1 (posting algorithm) + §10.3 (importPaymentEntry) + `icm/_state/handoffs/blocks-financial-payments-stage06-handoff.md` | **Phase 1 critical-path position.** `blocks-financial-payments` is the final entity package in the Phase 2 financial cluster:
+
+```
+blocks-financial-ledger    (Chart + Journal core)                  ✓ shipped
+blocks-financial-periods   (FiscalYear + FiscalPeriod)             ✓ shipped
+blocks-financial-tax       (TaxCode + TaxRate + TaxJurisdiction)   ✓ shipped
+blocks-financial-ar        (Invoice + InvoiceLine)                 ✓ shipped
+blocks-financial-ap        (Bill + BillLine)                       in-progress (dev; PRs 1-4)
+blocks-financial-payments  ← THIS WORKSTREAM                       gated on AP completion
+```
+
+**What it ships.** Per spec §3.9–§3.10:
+
+- `Payment` record entity — models a cash movement (Inbound from customer; Outbound to vendor). Has `PaymentDirection`, `PaymentMethod`, `PaymentStatus`, `UnappliedAmount` invariant, references the GL via `JournalEntryId`.
+- `PaymentApplication` record entity — many-to-many join between Payment and Invoice/Bill. Carries `AmountApplied`, `DiscountAmount`, `WriteoffAmount`; immutable once created (correct by unapply + re-apply).
+- `IPaymentRepository` + `InMemoryPaymentRepository`
+- `IPaymentApplicationRepository` + `InMemoryPaymentApplicationRepository`
+- `IPaymentPostingService` (PR 2) — clear/bounce/void → GL; delegates to `IJournalPostingService`
+- `IPaymentApplicationService` (PR 3) — apply/unapply; direction-matching invariant enforced; security spot-check required before auto-merge
+- `IErpnextPaymentEntryImporter` (PR 4) — completes Pass 4 of the ERPNext migration importer (`importPaymentEntry`)
+
+**Direction-matching invariant (critical financial correctness gate):** Inbound payments MUST only be applied to Invoices (AR); Outbound payments MUST only be applied to Bills (AP). Mismatches are rejected as `ApplyError.DirectionMismatch`. This is the first guard in `IPaymentApplicationService.ApplyAsync`, before any repository lookup.
+
+**Why security spot-check on PR 3.** Direction-matching is analogous to a payment-routing invariant — bypassing it would allow a vendor payment to reduce a customer's invoice balance (silent financial corruption). XO will run a security spot-check on `DefaultPaymentApplicationService` before PR 3 auto-merges.
+
+**Consumers unblocked.** `blocks-reports-ap-aging` (full cashflow: AR aging + AP aging + cash positions); `tooling-anchor-import` (Pass 4 complete, full ERPNext migration pipeline closes); tenant-ledger view (payment.appliedDate for monthly reconciliation).
+
+**Attribution.** Apache OFBiz (Apache 2.0) — payment-application entity pattern; NOTICE entry required in package root. |
 
 ---
 
