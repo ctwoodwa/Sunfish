@@ -151,6 +151,10 @@
     <Project Path="packages/blocks-work-orders/Sunfish.Blocks.WorkOrders.csproj" />
     <Project Path="packages/blocks-work-orders/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/work-projects/">
+    <Project Path="packages/blocks-work-projects/Sunfish.Blocks.WorkProjects.csproj" />
+    <Project Path="packages/blocks-work-projects/tests/Sunfish.Blocks.WorkProjects.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/forms/">
     <Project Path="packages/blocks-forms/Sunfish.Blocks.Forms.csproj" />
     <Project Path="packages/blocks-forms/tests/tests.csproj" />

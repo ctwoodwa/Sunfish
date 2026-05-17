@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.WorkProjects</PackageId>
+    <Description>Project + ProjectMilestone + ProjectBudget + ProjectActual + TimeEntry + RemodelProject entities for the Sunfish Anchor native work-cluster domain. Second slice of the work cluster (after blocks-work-orders).</Description>
+    <PackageTags>project;milestone;budget;actual;time-entry;remodel;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.WorkProjects.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\blocks-work-orders\Sunfish.Blocks.WorkOrders.csproj" />
+  </ItemGroup>
+</Project>
