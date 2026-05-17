@@ -15,6 +15,25 @@ public interface IAccountResolver
     /// account exists in the resolver's backing store.
     /// </summary>
     Task<GLAccount?> GetAsync(GLAccountId id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Enumerate all accounts associated with the given
+    /// <paramref name="chartId"/>. When
+    /// <paramref name="includeInactive"/> is <c>false</c> (default),
+    /// accounts with <see cref="GLAccount.IsActive"/> = <c>false</c>
+    /// are filtered out. Order is not specified at the interface
+    /// level; callers that need ordering (e.g. Trial Balance) sort
+    /// the result themselves.
+    /// </summary>
+    /// <remarks>
+    /// Added in W#72 PR 2 (Trial Balance cartridge) per xo-ruling-T14-50Z D5-A.
+    /// Production SQLite-backed resolvers will scope this to the
+    /// per-tenant chart-of-accounts table.
+    /// </remarks>
+    Task<IReadOnlyList<GLAccount>> EnumerateForChartAsync(
+        ChartOfAccountsId chartId,
+        bool includeInactive = false,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -48,4 +67,17 @@ public sealed class InMemoryAccountResolver : IAccountResolver
     /// <inheritdoc />
     public Task<GLAccount?> GetAsync(GLAccountId id, CancellationToken cancellationToken = default)
         => Task.FromResult(_accounts.TryGetValue(id, out var a) ? a : null);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<GLAccount>> EnumerateForChartAsync(
+        ChartOfAccountsId chartId,
+        bool includeInactive = false,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<GLAccount> result = _accounts.Values
+            .Where(a => a.ChartId == chartId)
+            .Where(a => includeInactive || a.IsActive)
+            .ToList();
+        return Task.FromResult(result);
+    }
 }
