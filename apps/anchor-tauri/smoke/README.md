@@ -52,18 +52,23 @@ HTML report is written to `apps/anchor-tauri/playwright-report/`. Open `playwrig
 
 `smoke/anchor.spec.ts`:
 
-1. **LoginPage render** — heading + textarea + button present; theme tokens applied (`color-scheme: light dark` on `<html>`, non-empty body bg).
-2. **Empty submit validation** — clicking Sign in with an empty textarea shows "Token cannot be empty" without making any Bridge call.
-3. **Bridge 401 rejection** — Playwright intercepts `/api/v1/whoami` with 401; LoginPage shows "Bridge rejected the token: 401" and stays.
-4. **Network failure** — Playwright aborts the fetch with `connectionrefused`; LoginPage shows "Could not reach Bridge at …" and stays.
-5. **PASS path** — `/api/v1/whoami` returns 200; LoginPage persists via Stronghold; AuthGate transitions to AppLayout (Properties nav link + Logout button visible, Sign-in heading gone).
+Local-first cold boot (no token):
+1. **AppLayout renders immediately** — Properties nav link + "Connect to Bridge" link visible without any Bridge call; theme tokens applied.
+2. **Cold boot does not call Bridge** — reload-and-assert that the app shell is up before any whoami fetch is required.
+
+Connect-to-Bridge flow (`/settings/bridge`):
+3. **Empty submit validation** — clicking Connect with an empty textarea shows "Token cannot be empty" without making any Bridge call.
+4. **Bridge 401 rejection** — Playwright intercepts `/api/v1/whoami` with 401; ConnectBridgePage shows "Bridge rejected the token: 401" and stays.
+5. **Network failure** — Playwright aborts the fetch with `connectionrefused`; ConnectBridgePage shows "Could not reach Bridge at …" and stays.
+6. **Continue offline button** — bypasses the connect flow back to the app shell without touching Bridge.
+7. **PASS path** — `/api/v1/whoami` returns 200; token persists via Stronghold; user lands back on Properties; header shows Disconnect (not Connect). Test ends with Disconnect to leave clean state for next run.
 
 Each spec uses `page.route()` for Bridge mocking so there's no separate Python HTTP server to manage — Playwright handles request interception transparently.
 
 ## What's NOT covered yet (carry-forward)
 
 - **A1.1 round-trip across process restart** — `connectOverCDP` attaches to ONE running process. A round-trip test needs a wrapper that quits Tauri, relaunches, and reconnects Playwright to the new instance. Doable as a `test.beforeAll(async () => { await spawnAndAttach(); })` orchestration; not implemented yet.
-- **Logout flow** — header Logout button → returns to LoginPage → quit + relaunch → still LoginPage. Same restart-mid-test problem as above.
+- **Disconnect across relaunch** — Disconnect → quit + relaunch → still offline with Connect link. Same restart-mid-test problem as above.
 - **Keychain-failure banner (A1.4)** — requires either mocking Tauri's `keychain_status` IPC (Playwright can't override Rust state) or forcing a real keychain failure (GPO toggle, denied Keychain dialog). Better validated via Rust integration test.
 - **Surface Pro cross-device round-trip** — different hardware = different keychain. Future work when there's a Tauri-CI runner with the right target.
 
