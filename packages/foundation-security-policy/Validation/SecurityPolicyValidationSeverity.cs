@@ -13,5 +13,9 @@ public enum SecurityPolicyValidationSeverity
 {
     Error,
     Warning,
-    Info,
+    // Info severity removed per xo-council 2026-05-17 — no validator
+    // in scope emits Info, and the unused-enum-value path would
+    // bypass the WCAG factory guards on .Error()/.Warning(). Restore
+    // when RegulatoryValidator (PR 3) needs informational findings
+    // with a matching .Info() factory.
 }

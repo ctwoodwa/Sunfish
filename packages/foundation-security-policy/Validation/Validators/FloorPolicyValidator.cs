@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Sunfish.Foundation.SecurityPolicy.Models;
 using Sunfish.Foundation.Ship.Common;
 
@@ -26,13 +27,19 @@ namespace Sunfish.Foundation.SecurityPolicy.Validation.Validators;
 /// </remarks>
 public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
 {
-    // Year-as-365-days simplification — HIPAA / PCI-DSS floors are
-    // calendar-coarse; ±1-2 days of leap-day drift is well within
-    // tolerance per §2.1.2 floor semantics. If a future regime
-    // requires exact-calendar semantics, swap for DateTimeOffset
-    // arithmetic at validator call time.
-    private static readonly TimeSpan SixYears = TimeSpan.FromDays(365 * 6);
-    private static readonly TimeSpan TwelveMonths = TimeSpan.FromDays(365);
+    // Calendar-aware floor constants — rounded UP for safety so any
+    // typical 6-year window covers the maximum regulatory minimum per
+    // 45 CFR §164.530(j)(2) (2191–2192 calendar days), and any 12-
+    // month window covers PCI-DSS §10.5.1 (366d covers leap years).
+    // Conservative — rejects e.g. a 2191d HIPAA minimum (one-leap-day
+    // window) even though HIPAA accepts it; acceptable per §2.1.2
+    // coarse semantics. SOC 2 / GDPR / EU AI Act floors are
+    // intentionally NOT enforced here: ADR Open-Question 3 documents
+    // GDPR as processing-purpose-dependent (no numeric floor), and
+    // SOC 2 + EU AI Act floors are RegulatoryValidator scope
+    // (priority 400, PR 3).
+    private static readonly TimeSpan SixYears = TimeSpan.FromDays(365 * 6 + 2);
+    private static readonly TimeSpan TwelveMonths = TimeSpan.FromDays(366);
 
     private static readonly IReadOnlySet<MfaFactor> CognitiveTestFactors =
         new HashSet<MfaFactor> { MfaFactor.Totp, MfaFactor.Email, MfaFactor.Sms };
@@ -56,11 +63,15 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
     private static readonly IReadOnlySet<ShipRole> HighPrivilegeRoles =
         new HashSet<ShipRole> { ShipRole.Captain, ShipRole.XO, ShipRole.EngineerOfficer };
 
-    private static readonly IReadOnlySet<AuditEventClass> HipaaFlooredClasses =
-        new HashSet<AuditEventClass> { AuditEventClass.Identity, AuditEventClass.Security, AuditEventClass.Configuration };
+    // Iteration order is deterministic — finding order in
+    // result.Findings is stable, supporting downstream snapshot tests
+    // + PR 3 issuer rendering. Set semantics aren't load-bearing here
+    // (no contains-lookup; only iteration).
+    private static readonly ImmutableArray<AuditEventClass> HipaaFlooredClasses =
+        ImmutableArray.Create(AuditEventClass.Identity, AuditEventClass.Security, AuditEventClass.Configuration);
 
-    private static readonly IReadOnlySet<AuditEventClass> PciDssFlooredClasses =
-        new HashSet<AuditEventClass> { AuditEventClass.Financial, AuditEventClass.Security };
+    private static readonly ImmutableArray<AuditEventClass> PciDssFlooredClasses =
+        ImmutableArray.Create(AuditEventClass.Financial, AuditEventClass.Security);
 
     /// <inheritdoc />
     public SecurityPolicyValidatorPriority Priority => SecurityPolicyValidatorPriority.FloorPolicy;
@@ -75,12 +86,12 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
         ArgumentNullException.ThrowIfNull(proposed);
         var findings = new List<SecurityPolicyValidationFinding>();
 
-        // (a) RecoveryContact.MinimumContactCount >= 1
-        if (proposed.RecoveryContact.MinimumContactCount < 1)
-            findings.Add(SecurityPolicyValidationFinding.Error(
-                "FLOOR_RECOVERY_MIN_LT_ONE",
-                "RecoveryContactPolicy.MinimumContactCount must be at least 1 — at least one recovery contact is required to satisfy key-loss recovery.",
-                "Set MinimumContactCount to 1 or more."));
+        // (a) RecoveryContact.MinimumContactCount >= 1 — REMOVED in
+        // backfill per xo-council B3. This is a schema invariant
+        // (structural nonsense), not a jurisdictional floor; the
+        // SchemaValidator owns the check (SCHEMA_RECOVERY_MIN_LT_ONE).
+        // Eliminating the duplicate prevents one violation from
+        // producing two findings with different codes.
 
         // (b) Captain + XO + EngineerOfficer MUST NOT have Email-only,
         // Sms-only, or combined-low-assurance ([Email, Sms]) MFA — per
@@ -140,17 +151,16 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
                     $"Add WebAuthnPasskey or HardwareKey to the {role} factor list (the Atlas UI exposes a compliance warning if not enrolled by the actor)."));
         }
 
-        var ok = !findings.Any(f => f.Severity == SecurityPolicyValidationSeverity.Error);
         return new ValueTask<SecurityPolicyValidationResult>(
-            new SecurityPolicyValidationResult(ok, findings));
+            new SecurityPolicyValidationResult(findings));
     }
 
     private static void FloorRetentionClasses(
         AuditRetentionPolicy ar,
-        IReadOnlySet<AuditEventClass> classes,
+        IReadOnlyList<AuditEventClass> classes,
         TimeSpan floor,
         List<SecurityPolicyValidationFinding> findings,
-        string code,
+        string codePrefix,
         string floorLabel)
     {
         foreach (var cls in classes)
@@ -160,7 +170,10 @@ public sealed class FloorPolicyValidator : ISecurityPolicyFloorValidator
                 : ar.DefaultMinimumRetentionWindow;
             if (min < floor)
                 findings.Add(SecurityPolicyValidationFinding.Error(
-                    code,
+                    // Class-distinguishing code so downstream tooling
+                    // (PR 3 issuer, Atlas UI) doesn't dedup 3 distinct
+                    // class-level violations into a single finding.
+                    $"{codePrefix}_{cls.ToString().ToUpperInvariant()}",
                     $"Audit retention for {cls} ({min.TotalDays:F0}d) is below the {floorLabel} floor required by the {ar.JurisdictionPreset} preset.",
                     $"Set PerClassOverrides[{cls}].Min to at least {floorLabel}."));
         }
