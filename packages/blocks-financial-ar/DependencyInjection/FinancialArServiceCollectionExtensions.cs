@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Blocks.FinancialAr.Migration;
 using Sunfish.Blocks.FinancialAr.Models;
 using Sunfish.Blocks.FinancialAr.Services;
 using Sunfish.Foundation.Events;
@@ -38,6 +39,7 @@ public static class FinancialArServiceCollectionExtensions
         services.TryAddSingleton<ITaxCalculator, NoOpTaxCalculator>();
         services.TryAddSingleton<IDomainEventPublisher, NoopDomainEventPublisher>();
         services.TryAddSingleton<IInvoicePostingService, InvoicePostingService>();
+        services.TryAddSingleton<IErpnextSalesInvoiceImporter, ErpnextSalesInvoiceImporter>();
         return services;
     }
 }
