@@ -247,6 +247,9 @@ Compiled from the five Stage 02 design docs. Columns:
 
 | Event | Consumers | Payload sketch | Idempotency key |
 |---|---|---|---|
+| `Work.ProjectCreated` | property, reports, financial | `{ projectId, code, name, kind, propertyId?, customerPartyId?, ownerPartyId }` | `project-created:{projectId}` |
+| `Work.ProjectStatusChanged` | property, reports, financial | `{ projectId, fromStatus, toStatus, transitionedByPartyId, transitionedAt }` | `project-status:{projectId}:{occurredAtTicks}` |
+| `Work.MilestoneCreated` | property, reports, financial | `{ milestoneId, projectId, code, kind, plannedDate, paymentAmount?, paymentCurrency?, triggersInvoice }` | `milestone-created:{milestoneId}` |
 | `Work.WorkOrderCreated` | property, reports, financial | `{ workOrderId, kind, propertyId?, unitId?, assetId?, deficiencyId?, projectId? }` | `wo-created:{workOrderId}` |
 | `Work.WorkOrderAssigned` | people, property | `{ workOrderId, assignedToPartyId, contractorId? }` | `wo-assigned:{workOrderId}:{assignedToPartyId}` |
 | `Work.WorkOrderCompleted` | property, reports, financial | `{ workOrderId, propertyId?, unitId?, assetId?, completedAt, actualAmount? }` | `wo-completed:{workOrderId}` |

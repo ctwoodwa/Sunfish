@@ -50,6 +50,12 @@ public sealed class Project
     public Instant? DeletedAt { get; private set; }
     public long Version { get; private set; }
 
+    /// <summary>Max length of <see cref="Name"/> + <see cref="Code"/> + per-tag entry — DoS guard.</summary>
+    public const int MaxNameLength = 300;
+
+    /// <summary>Max length of a single <see cref="Tags"/> entry.</summary>
+    public const int MaxTagLength = 300;
+
     private Project(
         ProjectId id,
         TenantId tenantId,
@@ -105,8 +111,12 @@ public sealed class Project
     {
         if (string.IsNullOrWhiteSpace(code))
             throw new ArgumentException("Code must be non-empty.", nameof(code));
+        if (code.Length > MaxNameLength)
+            throw new ArgumentException($"Code exceeds MaxNameLength={MaxNameLength}.", nameof(code));
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name must be non-empty.", nameof(name));
+        if (name.Length > MaxNameLength)
+            throw new ArgumentException($"Name exceeds MaxNameLength={MaxNameLength}.", nameof(name));
         if (ownerPartyId == Guid.Empty)
             throw new ArgumentException("OwnerPartyId is required (designated authority per CRDT Pattern A).", nameof(ownerPartyId));
         if (plannedStartDate is { } pStart && plannedEndDate is { } pEnd && pEnd < pStart)
@@ -197,5 +207,33 @@ public sealed class Project
         UpdatedBy = deletedBy;
         UpdatedAt = deletedAt;
         Version  += 1;
+    }
+
+    /// <summary>
+    /// Replace the full <see cref="Tags"/> collection. Intended for
+    /// importer-style flows that maintain external-system metadata
+    /// tags (<c>externalRef:erpnext:&lt;name&gt;</c> +
+    /// <c>erpnextModified:&lt;version&gt;</c>). Set-semantics: callers
+    /// pass the entire desired post-state. Each tag is bounded at
+    /// <see cref="MaxTagLength"/> + rejected if it contains
+    /// <c>\r</c>/<c>\n</c> (newline-injection guard — downstream log /
+    /// projection consumers parse tags line-by-line).
+    /// </summary>
+    internal void OverwriteTags(IEnumerable<string> tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        var list = tags.ToList();
+        foreach (var t in list)
+        {
+            if (t is null) throw new ArgumentException("Tag entry cannot be null.", nameof(tags));
+            if (t.Length > MaxTagLength)
+                throw new ArgumentException(
+                    $"Tag entry exceeds MaxTagLength={MaxTagLength}.", nameof(tags));
+            if (t.Contains('\r') || t.Contains('\n'))
+                throw new ArgumentException(
+                    "Tag entry must not contain CR or LF characters.", nameof(tags));
+        }
+        Tags = list;
+        Version += 1;
     }
 }
