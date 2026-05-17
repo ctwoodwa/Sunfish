@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.Docs</PackageId>
+    <Description>Document-attachment substrate for Sunfish — Attachment entity, StorageRef discriminated union, status state machine, and repository contract. Cross-cluster surface consumed by AR invoices, AP bills, leases, inspections, and work orders. First pass: entity primitives only; service + IBlobStore wiring + cross-cluster DocumentRef arrive in PRs 2–6.</Description>
+    <PackageTags>docs;attachments;blobs;sha256;cross-cluster;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.Docs.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+</Project>
