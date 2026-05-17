@@ -121,6 +121,33 @@ await foreach (var l in svc.ListAsync(new ListLeasesQuery { Phase = LeasePhase.D
 | `GetAsync` returns `null` for unknown ids rather than throwing. | `InMemoryLeaseService.GetAsync`. | Pinned by `GetAsync_ReturnsNull_WhenIdUnknown`. |
 | Concurrent creates never lose a record. | Thread-safe dictionary in `InMemoryLeaseService`. | Pinned by `ConcurrentCreates_AreAllPersisted` (20 parallel creates → 20 records). |
 
+## Party canonical retrofit (PR #949, W#27 follow-on)
+
+The `Party` / `PartyId` / `PartyKind` types in `Sunfish.Blocks.Leases.Models` are
+**`[Obsolete]`** as of PR #949. They predate the canonical party-model convention
+(see `_shared/engineering/party-model-convention.md`). Consume the canonical
+types instead:
+
+- `Sunfish.Blocks.People.Foundation.Models.PartyId` (string-backed; wire-format
+  compatible with the deprecated lease-local `PartyId`).
+- `Sunfish.Blocks.People.Foundation.Models.Party` (full ~30-field surface;
+  resolve display names through `IPartyReadModel` at read time rather than
+  denormalizing).
+- `Sunfish.Blocks.People.Foundation.Models.PartyRole` string-code registry
+  (replaces the lease-local `PartyKind` enum).
+
+`LeasePartyRole` + `LeaseHolderRole` are unchanged — `LeaseHolderRole` answers
+the **per-lease** assignment question (PrimaryLeaseholder / CoLeaseholder /
+Occupant / Guarantor), which is orthogonal to the cross-cluster role registry.
+
+PR #949 also adds `ILeaseService.GetLeaseholderDisplaysAsync(leaseId, ct)` —
+returns one `LeaseholderDisplay` per tenant with display name resolved through
+`IPartyReadModel.GetByIdAsync`. Orphan-tolerant per CRDT §12: when the read
+model is unwired (or the party isn't in the canonical store), `DisplayName`
+comes back `null`.
+
+Removal of the deprecated types is a future `sunfish-api-change` pipeline step.
+
 ## Deferred follow-ups
 
 - DocuSign envelope dispatch and signature-state polling (ADR 0013 integration).
@@ -128,7 +155,7 @@ await foreach (var l in svc.ListAsync(new ListLeasesQuery { Phase = LeasePhase.D
 - Document upload, blob-store linking (`IBlobStore`), and e-signature audit trail.
 - Commencement-date triggers, renewal workflows, and termination reason codes.
 - Rent-ledger hookup to `blocks-financial-ledger`.
-- Parties as first-class module entities (persistence-backed party CRUD).
+- Removal of `[Obsolete]` lease-local `Party` / `PartyId` / `PartyKind` (separate `sunfish-api-change` pipeline pass).
 
 ## Related ADRs
 

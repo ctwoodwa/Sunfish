@@ -4,7 +4,7 @@ number: 27
 slug: leases-domain-extended
 title: "Leases domain (cluster module) — **EXTENDED `blocks-leases`**"
 status: "built"
-status_cell: "`built` (all 7 phases shipped 2026-04-29 → 30)"
+status_cell: "`built` (all 7 phases shipped 2026-04-29 → 30; Party canonical retrofit follow-on shipped 2026-05-17 via PR #949 — local Party/PartyId/PartyKind [Obsolete]; canonical type swap + GetLeaseholderDisplaysAsync via IPartyReadModel)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM ✓"
 reference_cell: "`icm/00_intake/output/property-leases-intake-2026-04-28.md` + `icm/_state/handoffs/property-leases-stage06-handoff.md`"
