@@ -31,4 +31,32 @@ public interface IAttachmentRepository
     /// is unknown.
     /// </summary>
     Task<bool> SoftDeleteAsync(AttachmentId id, string actor, string? reason, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sum of <see cref="Attachment.SizeBytes"/> across all live attachments
+    /// in <paramref name="tenantId"/>. Supports PR 3's tenant-quota check.
+    /// Excludes tombstoned + superseded rows so a tenant's quota reflects
+    /// only their current "active" footprint.
+    /// </summary>
+    /// <remarks>
+    /// <b>Council doc-amendment (council D).</b>
+    /// <list type="bullet">
+    /// <item><b>Active-only semantics.</b> Tombstoned + Superseded rows do
+    /// NOT count toward the tenant's quota — they represent dead bytes
+    /// that future GC will reclaim and shouldn't gate new uploads.</item>
+    /// <item><b>Restore-from-tombstone must re-check.</b> A future API that
+    /// can restore a tombstoned attachment to Active MUST re-run
+    /// <see cref="IMimeTypeAndSizePolicy.ValidateAsync"/> against the
+    /// current Active total at restore time. Otherwise the
+    /// "tombstone-old → upload-new → restore-old" pattern lets a tenant
+    /// exceed quota. PR 3 ships no public restore API, so this is a
+    /// forward-looking contract.</item>
+    /// <item><b>Best-effort posture.</b> The check is non-transactional —
+    /// under extreme concurrency two uploads may both pass and jointly
+    /// exceed the quota by one upload's worth. Multi-writer
+    /// persistence-backed implementations MUST enforce quota
+    /// transactionally or via a reserved-bytes counter.</item>
+    /// </list>
+    /// </remarks>
+    Task<long> GetTenantTotalSizeBytesAsync(TenantId tenantId, CancellationToken cancellationToken = default);
 }
