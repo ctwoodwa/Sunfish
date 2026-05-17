@@ -22,5 +22,7 @@
     <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
     <!-- PR 3b.1 — ApprovalChain / ApprovalStep / StandingOrder (ADR 0065 §1). -->
     <ProjectReference Include="..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
+    <!-- PR 3b.2 — IAuditRetentionEnforcer contract for DefaultAuditRetentionEnforcer. -->
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
 </Project>

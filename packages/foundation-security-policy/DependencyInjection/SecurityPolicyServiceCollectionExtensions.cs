@@ -80,6 +80,17 @@ public static class SecurityPolicyServiceCollectionExtensions
             policyLoader: policyLoader,
             options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<SecurityPolicyIssuerOptions>>()));
 
+        // PR 3b.2 — retention enforcement surface. Both registered as Singletons
+        // since both are stateless after construction; both are replaceable via
+        // TryAddSingleton so hosts can compose decorators by registering an
+        // alternate impl FIRST then calling this method.
+        services.TryAddSingleton<Retention.IRetentionPolicyResolver>(sp =>
+            new Retention.DefaultRetentionPolicyResolver(policyLoader));
+        services.TryAddSingleton<Sunfish.Kernel.Audit.Retention.IAuditRetentionEnforcer>(sp =>
+            new Retention.DefaultAuditRetentionEnforcer(
+                sp.GetRequiredService<Retention.IRetentionPolicyResolver>(),
+                sp.GetRequiredService<TimeProvider>()));
+
         return services;
     }
 }
