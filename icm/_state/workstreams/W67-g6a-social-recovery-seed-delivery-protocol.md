@@ -4,10 +4,10 @@ number: 67
 slug: g6a-social-recovery-seed-delivery-protocol
 title: "W#67 — G6-A: Social recovery seed-delivery protocol (ADR 0046 Phase 2)"
 status: "built"
-status_cell: "`built` — 6 PRs merged. PR 1 #875 `IX25519SubkeyDerivation` + `IRootSeedRestorer`; PR 2 #878 `RecoveryRequest` + `TrusteeAttestation` envelope-field schema; PR 3 #880 coordinator state + `RecoveryCompletionResult`; PR 4 #883 `AnchorRecoveryCompletionHandler` real rekey + council R-1..R-10 + B-1/B-2/M-1/M-4 fixes; PR 5 #889 trustee seed-envelope flow + MAJOR-2 `TrusteeDesignation.DHPublicKey` binding + council R-1..R-10; PR 6 audit constant + ledger flip. G6-A conformance gap CLOSED."
+status_cell: "`built` — all 6 PRs merged 2026-05-16 (PRs #875 + #878 + #880 + #883 + #889 + #903); G6-A CLOSED; SQLCipher rekey + RecoveryRekey audit event + DPAPI ephemeral key + ISqlCipherKeyDerivation all on main"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md` (Accepted 2026-05-16) + `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` + `packages/foundation-recovery/RecoveryRequest.cs` + `packages/foundation-recovery/TrusteeAttestation.cs` + `packages/kernel-security/Crypto/IX25519KeyAgreement.cs` + `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` §G6-A"
+reference_cell: "`docs/adrs/0046-a6-social-recovery-seed-delivery-protocol.md` (Proposed 2026-05-16) + `accelerators/anchor/Services/AnchorRecoveryCompletionHandler.cs` + `packages/foundation-recovery/RecoveryRequest.cs` + `packages/foundation-recovery/TrusteeAttestation.cs` + `packages/kernel-security/Crypto/IX25519KeyAgreement.cs` + `icm/01_discovery/output/g7-conformance-baseline-2026-Q2.md` §G6-A"
 ---
 
 ## Notes
