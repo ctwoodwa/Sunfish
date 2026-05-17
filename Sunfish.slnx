@@ -215,6 +215,10 @@
     <Project Path="packages/blocks-financial-tax/Sunfish.Blocks.FinancialTax.csproj" />
     <Project Path="packages/blocks-financial-tax/tests/Sunfish.Blocks.FinancialTax.Tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/financial-tax-bridge/">
+    <Project Path="packages/blocks-financial-tax-bridge/Sunfish.Blocks.FinancialTaxBridge.csproj" />
+    <Project Path="packages/blocks-financial-tax-bridge/tests/Sunfish.Blocks.FinancialTaxBridge.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/people-foundation/">
     <Project Path="packages/blocks-people-foundation/Sunfish.Blocks.People.Foundation.csproj" />
     <Project Path="packages/blocks-people-foundation/tests/Sunfish.Blocks.People.Foundation.Tests.csproj" />
