@@ -18,6 +18,7 @@ using Sunfish.Foundation.Recovery;
 using Sunfish.Foundation.ShipsOffice;
 using Sunfish.Kernel.Signatures.Models;
 using Xunit;
+using PartyId = Sunfish.Blocks.People.Foundation.Models.PartyId;
 
 namespace Sunfish.Blocks.ShipsOffice.Tests;
 
