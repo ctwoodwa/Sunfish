@@ -6,9 +6,8 @@ namespace Sunfish.Foundation.ShipsOffice.Services;
 /// Minimal stub — pending canonical <c>foundation-forms</c> /
 /// <c>foundation-ships-office</c> substrate hand-off per ADR 0055.
 /// Local declaration in this assembly per xo-ruling-T02-43Z (Option (a):
-/// local stub matching the established pattern from
-/// <c>IDomainEventPublisher</c>, <c>IPartyReadModel</c>, etc.). Tagged
-/// for sweep-and-migrate when canonical lands.
+/// local stub pending canonical home — TBD). Tagged for sweep-and-
+/// migrate when canonical lands.
 /// </summary>
 /// <remarks>
 /// TODO-RELOCATE-WHEN-CANONICAL: replace with

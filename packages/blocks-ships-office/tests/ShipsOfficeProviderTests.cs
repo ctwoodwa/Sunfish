@@ -573,6 +573,23 @@ public class ShipsOfficeProviderTests
     }
 
     [Fact]
+    public void DynamicTemplate_Schema_Carries_NameAndStatusOnly_NoPayload()
+    {
+        // §Trust anchor: FormSchema is intentionally minimal (Name +
+        // Status + audit metadata). The projection MUST NOT pass payload
+        // data into ShipsOfficeDocumentView. Pin via reflection — when
+        // the canonical substrate ships, future fields like JSON-schema
+        // body or revision-history MUST stay behind a separate accessor.
+        var schemaProps = typeof(Sunfish.Foundation.ShipsOffice.Services.FormSchema)
+            .GetProperties()
+            .Select(p => p.Name)
+            .OrderBy(x => x)
+            .ToArray();
+        var expected = new[] { "Id", "LastModifiedBy", "Name", "Status", "TenantId", "UpdatedAt" };
+        Assert.Equal(expected, schemaProps);
+    }
+
+    [Fact]
     public async Task SearchAsync_FiltersDynamicTemplate_ByStatusFilter()
     {
         var schemas = Substitute.For<Sunfish.Foundation.ShipsOffice.Services.IFormSchemaStore>();

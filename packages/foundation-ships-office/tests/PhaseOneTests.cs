@@ -40,16 +40,18 @@ public class ContractSurfaceTests
 public class DataModelTests
 {
     [Fact]
-    public void ShipsOfficeDocumentKind_HasFourValues_DynamicTemplateAbsentInPhase1()
+    public void ShipsOfficeDocumentKind_HasFiveValues_IncludingDynamicTemplate()
     {
+        // W#55 Phase 5: DynamicTemplate joined the enum once ADR 0055
+        // reached Status: Accepted (PR #916). Consumed via local
+        // IFormSchemaStore stub per xo-ruling-T02-43Z.
         var values = Enum.GetValues<ShipsOfficeDocumentKind>();
-        Assert.Equal(4, values.Length);
+        Assert.Equal(5, values.Length);
         Assert.Contains(ShipsOfficeDocumentKind.BundleManifest, values);
         Assert.Contains(ShipsOfficeDocumentKind.LeaseDocument, values);
         Assert.Contains(ShipsOfficeDocumentKind.VendorW9, values);
         Assert.Contains(ShipsOfficeDocumentKind.SignatureEnvelope, values);
-        // DynamicTemplate is Phase 5 (gated on H4 — ADR 0055 acceptance).
-        Assert.DoesNotContain("DynamicTemplate", Enum.GetNames<ShipsOfficeDocumentKind>());
+        Assert.Contains(ShipsOfficeDocumentKind.DynamicTemplate, values);
     }
 
     [Fact]

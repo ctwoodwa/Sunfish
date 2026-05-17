@@ -296,8 +296,15 @@ internal sealed class ShipsOfficeDataProvider : IShipsOfficeDataProvider
     private static DocumentStatus MapFormSchemaStatus(FormSchemaStatus status) => status switch
     {
         FormSchemaStatus.Draft     => DocumentStatus.Draft,
+        FormSchemaStatus.Published => DocumentStatus.Published,
         FormSchemaStatus.Archived  => DocumentStatus.Archived,
-        _                          => DocumentStatus.Published,
+        // Fail loud on unknown enum value — the local-stub FormSchemaStatus
+        // is sealed today but the canonical-substrate sweep will reshape
+        // this enum; silent fall-through to Published would silently
+        // promote unknown future values to visible (§Trust posture says
+        // fail-loud, not fail-safe-to-published).
+        _ => throw new InvalidOperationException(
+            $"Unknown FormSchemaStatus value '{status}' — update MapFormSchemaStatus when the substrate enum gains values."),
     };
 
     private static DocumentStatus MapBundleStatus(BundleStatus status) => status switch
