@@ -27,6 +27,8 @@
          ITeamContextFactory from kernel-runtime to assert that the relay
          posture does NOT register it (ADR 0031 carve-out). -->
     <ProjectReference Include="..\..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+    <!-- PR #949 sweep: canonical PartyId for endpoint tests. -->
+    <ProjectReference Include="..\..\..\..\packages\blocks-people-foundation\Sunfish.Blocks.People.Foundation.csproj" />
   </ItemGroup>
 
 </Project>
