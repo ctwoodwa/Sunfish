@@ -88,14 +88,19 @@ public sealed class DefaultAuditRetentionEnforcer : IAuditRetentionEnforcer
             policyMatched = false;
         }
 
-        // Phase 1: no entries are actually evaluated (no purge surface yet).
-        // Honor legal-hold for forensic clarity even though it's a no-op here.
-        var skippedDueToHold = policy.LegalHoldOverride ? 0 : 0;
+        // Phase 1: no purge surface on IAuditTrail yet (ADR 0049 append-only).
+        // All counts report 0; legal-hold semantics light up in a follow-on PR
+        // once the kernel-audit purge contract lands.
+        // TODO(PR 3b.x): when purge surface lands, populate EntriesEvaluated /
+        // EntriesPurged from the actual sweep + set EntriesSkippedDueToHold to
+        // the count of entries that would have been purged but weren't due to
+        // policy.LegalHoldOverride.
+        _ = policy;   // parameter intent stays visible until the purge surface lands
 
         return new RetentionEnforcementResult(
             PolicyMatched: policyMatched,
             EntriesEvaluated: 0,
             EntriesPurged: 0,
-            EntriesSkippedDueToHold: skippedDueToHold);
+            EntriesSkippedDueToHold: 0);
     }
 }

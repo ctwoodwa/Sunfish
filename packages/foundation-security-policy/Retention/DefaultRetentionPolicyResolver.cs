@@ -69,10 +69,20 @@ public sealed class DefaultRetentionPolicyResolver : IRetentionPolicyResolver
             isJurisdictionFloor = true;
         }
 
-        // 3. Compose verdict timestamps.
+        // Per council SE-1: defensive Zero-floor against a future loader supplying
+        // a negative TimeSpan in PerClassOverrides or DefaultMinimumRetentionWindow.
+        // No in-tree loader produces negatives, but the resolver is a public
+        // replaceable surface; lock the forensic invariant (MinimumHoldUntil never
+        // earlier than recordCreatedAt) at the boundary.
+        if (min < TimeSpan.Zero) min = TimeSpan.Zero;
+        if (max < TimeSpan.Zero) max = TimeSpan.Zero;
+
+        // 3. Compose verdict timestamps. Per council SE-2: short-circuit
+        //    TimeSpan.MaxValue on both min and max symmetrically to avoid
+        //    arithmetic-overflow on `recordCreatedAt + min`.
         return new RetentionVerdict(
             EventClass: eventClass,
-            MinimumHoldUntil: recordCreatedAt + min,
+            MinimumHoldUntil: min == TimeSpan.MaxValue ? DateTimeOffset.MaxValue : recordCreatedAt + min,
             MaximumHoldUntil: max == TimeSpan.MaxValue ? DateTimeOffset.MaxValue : recordCreatedAt + max,
             IsJurisdictionFloor: isJurisdictionFloor);
     }
