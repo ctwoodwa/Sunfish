@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-events\Sunfish.Foundation.Events.csproj" />
     <ProjectReference Include="..\blocks-work-orders\Sunfish.Blocks.WorkOrders.csproj" />
   </ItemGroup>
 </Project>
