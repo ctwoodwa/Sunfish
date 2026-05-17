@@ -24,6 +24,9 @@ public sealed class RemodelPhase
     public DateOnly? ActualEndDate { get; private set; }
     public PhaseStatus Status { get; private set; }
 
+    /// <summary>Max length of <see cref="Name"/> — input-cap guard.</summary>
+    public const int MaxNameLength = 200;
+
     public Instant CreatedAt { get; private set; }
     public Instant UpdatedAt { get; private set; }
     public Guid CreatedBy { get; private set; }
@@ -49,8 +52,14 @@ public sealed class RemodelPhase
             throw new ArgumentException("Ordinal must be >= 1.", nameof(ordinal));
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required.", nameof(name));
+        if (name.Length > MaxNameLength)
+            throw new ArgumentException(
+                $"Name exceeds MaxNameLength={MaxNameLength}.", nameof(name));
         if (budgetedAmount < 0m)
             throw new ArgumentException("BudgetedAmount must be >= 0.", nameof(budgetedAmount));
+        if (budgetedAmount > RemodelProject.MaxCapitalizedAmount)
+            throw new ArgumentException(
+                $"BudgetedAmount exceeds sanity ceiling {RemodelProject.MaxCapitalizedAmount}.", nameof(budgetedAmount));
         var currency = NormalizeCurrency(budgetedCurrency, nameof(budgetedCurrency));
         if (plannedEndDate is { } end && plannedStartDate is { } start && end < start)
             throw new ArgumentException("PlannedEndDate must be >= PlannedStartDate.", nameof(plannedEndDate));
@@ -103,11 +112,18 @@ public sealed class RemodelPhase
 
     public void MarkOverBudget(decimal actualAmount, Guid updatedBy, Instant updatedAt)
     {
-        if (Status != PhaseStatus.Active && Status != PhaseStatus.Planned)
+        // Only Active phases can be over-budget — a Planned phase has
+        // no ActualStartDate, so "over budget on work that never
+        // started" is meaningless. Pre-start re-budgeting is a separate
+        // concern (out of scope for this PR).
+        if (Status != PhaseStatus.Active)
             throw new InvalidOperationException($"Cannot MarkOverBudget a phase in status {Status}.");
         if (actualAmount < BudgetedAmount)
             throw new ArgumentException(
                 "ActualAmount must exceed BudgetedAmount to mark over-budget.", nameof(actualAmount));
+        if (actualAmount > RemodelProject.MaxCapitalizedAmount)
+            throw new ArgumentException(
+                $"ActualAmount exceeds sanity ceiling {RemodelProject.MaxCapitalizedAmount}.", nameof(actualAmount));
         Status       = PhaseStatus.OverBudget;
         ActualAmount = actualAmount;
         UpdatedBy    = updatedBy;

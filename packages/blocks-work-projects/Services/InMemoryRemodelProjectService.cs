@@ -59,8 +59,11 @@ public sealed class InMemoryRemodelProjectService : IRemodelProjectService
             p.RemodelProjectId.Value == remodelProjectId.Value && p.Ordinal == ordinal))
             throw new InvalidOperationException(
                 $"RemodelPhase with ordinal {ordinal} already exists on RemodelProject {remodelProjectId.Value}.");
+        // Derive child tenant from parent (NOT the caller-supplied tenantId)
+        // — a buggy caller passing a mismatched tenantId here would otherwise
+        // orphan the phase against its parent project.
         var phase = RemodelPhase.Create(
-            tenantId, RemodelPhaseId.NewId(), remodelProjectId, ordinal, name,
+            rp.TenantId, RemodelPhaseId.NewId(), remodelProjectId, ordinal, name,
             budgetedAmount, budgetedCurrency, plannedStartDate, plannedEndDate, createdBy, _now());
         _phases[phase.Id] = phase;
         return Task.FromResult(phase);
@@ -85,7 +88,15 @@ public sealed class InMemoryRemodelProjectService : IRemodelProjectService
         var phase = GetTenantPhase(tenantId, phaseId);
         var rp = GetTenantProject(tenantId, phase.RemodelProjectId);
         var now = _now();
-        phase.Complete(endDate, actualAmount, updatedBy, now);
+
+        // Build + publish envelope BEFORE mutating the entity. Phase
+        // completion is terminal — once Status flips to Complete, a
+        // failed publish leaves no path to re-emit (entity guard would
+        // throw "Cannot Complete a phase in status Complete" on retry).
+        // We validate the inputs by invoking the entity validation
+        // logic eagerly via a dry-run (re-throw bubbles before publish);
+        // the actual state mutation happens only after the bus accepts.
+        ValidatePhaseCompletePreconditions(phase, endDate, actualAmount);
 
         var envelope = new DomainEventEnvelope<RemodelPhaseCompletedEvent>
         {
@@ -102,11 +113,14 @@ public sealed class InMemoryRemodelProjectService : IRemodelProjectService
                 ProjectId:        rp.ProjectId,
                 Ordinal:          phase.Ordinal,
                 Name:             phase.Name,
-                ActualAmount:     phase.ActualAmount,
+                ActualAmount:     actualAmount,
                 Currency:         actualCurrency is null ? null : RemodelPhase.NormalizeCurrency(actualCurrency, nameof(actualCurrency)),
                 ActualEndDate:    endDate),
         };
         await _events.PublishAsync(envelope, cancellationToken).ConfigureAwait(false);
+
+        // Publish succeeded — now safe to commit the terminal state.
+        phase.Complete(endDate, actualAmount, updatedBy, now);
         return phase;
     }
 
@@ -125,9 +139,16 @@ public sealed class InMemoryRemodelProjectService : IRemodelProjectService
         if (phases.Any(p => p.Status == PhaseStatus.Planned || p.Status == PhaseStatus.Active))
             throw new RemodelHasIncompletePhasesException(remodelProjectId);
 
-        var now = _now();
-        rp.Capitalize(capitalizationAccountId, placedInServiceAt, capitalizedAmount, currency, updatedBy, now);
+        // Validate entity-level preconditions BEFORE publishing — same
+        // ordering rationale as MarkPhaseComplete. Capitalize is one-
+        // shot; a failed publish after mutation would strand the work-
+        // projects side as "capitalized" with no event ever delivered
+        // to the financial cluster.
+        if (rp.CapitalizedAt is not null)
+            throw new InvalidOperationException("RemodelProject is already capitalized.");
+        var normalizedCurrency = RemodelPhase.NormalizeCurrency(currency, nameof(currency));
 
+        var now = _now();
         var envelope = new DomainEventEnvelope<RemodelCapitalizedEvent>
         {
             EventId              = EventId.New(),
@@ -143,11 +164,24 @@ public sealed class InMemoryRemodelProjectService : IRemodelProjectService
                 PropertyId:              propertyId,
                 CapitalizationAccountId: capitalizationAccountId,
                 CapitalizedAmount:       capitalizedAmount,
-                Currency:                rp.CapitalizedCurrency!,
+                Currency:                normalizedCurrency,
                 PlacedInServiceDate:     placedInServiceAt),
         };
         await _events.PublishAsync(envelope, cancellationToken).ConfigureAwait(false);
+
+        // Publish succeeded — now safe to commit the terminal state.
+        rp.Capitalize(capitalizationAccountId, placedInServiceAt, capitalizedAmount, currency, updatedBy, now);
         return rp;
+    }
+
+    private static void ValidatePhaseCompletePreconditions(RemodelPhase phase, DateOnly endDate, decimal? actualAmount)
+    {
+        if (phase.Status != PhaseStatus.Active)
+            throw new InvalidOperationException($"Cannot Complete a phase in status {phase.Status}.");
+        if (actualAmount is { } amt && amt < 0m)
+            throw new ArgumentException("ActualAmount must be >= 0.", nameof(actualAmount));
+        if (phase.ActualStartDate is { } start && endDate < start)
+            throw new ArgumentException("ActualEndDate must be >= ActualStartDate.", nameof(endDate));
     }
 
     /// <inheritdoc />

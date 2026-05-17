@@ -62,13 +62,35 @@ public sealed class RemodelPhaseTests
     }
 
     [Fact]
-    public void MarkOverBudget_RequiresAmountAboveBudget()
+    public void MarkOverBudget_FromPlanned_Throws()
+    {
+        // Tightened from the original spec — Planned has no
+        // ActualStartDate so it cannot be "over budget."
+        var p = MakePhase(budget: 10_000m);
+        Assert.Throws<InvalidOperationException>(() =>
+            p.MarkOverBudget(actualAmount: 12_000m, Actor, Instant.Now));
+    }
+
+    [Fact]
+    public void MarkOverBudget_FromActive_RequiresAmountAboveBudget()
     {
         var p = MakePhase(budget: 10_000m);
+        p.Start(new DateOnly(2026, 5, 5), Actor, Instant.Now);
         Assert.Throws<ArgumentException>(() =>
             p.MarkOverBudget(actualAmount: 9_000m, Actor, Instant.Now));
         p.MarkOverBudget(actualAmount: 12_000m, Actor, Instant.Now);
         Assert.Equal(PhaseStatus.OverBudget, p.Status);
+    }
+
+    [Fact]
+    public void Create_NameTooLong_Throws()
+    {
+        var huge = new string('x', RemodelPhase.MaxNameLength + 1);
+        Assert.Throws<ArgumentException>(() => RemodelPhase.Create(
+            Tenant, RemodelPhaseId.NewId(), Rpid, 1, name: huge,
+            budgetedAmount: 1_000m, budgetedCurrency: "USD",
+            plannedStartDate: null, plannedEndDate: null,
+            createdBy: Actor, createdAt: Instant.Now));
     }
 
     [Fact]

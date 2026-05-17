@@ -11,6 +11,24 @@ namespace Sunfish.Blocks.WorkProjects.Services;
 /// cross-cluster trigger for <c>blocks-financial-ledger</c> to post the
 /// capital-asset <c>JournalEntry</c>.
 /// </summary>
+/// <remarks>
+/// AUTHORIZATION CONTRACT: Authorization is the caller's responsibility.
+/// This service emits financial-cluster trigger events; callers MUST
+/// verify the <c>updatedBy</c> principal holds the Accountant or Manager
+/// role before invoking <see cref="CapitalizeAsync"/> or
+/// <see cref="MarkPhaseCompleteAsync"/>. The service intentionally does
+/// not consult <c>IUserContext</c> — authorization gates live at the
+/// API boundary, not the service layer.
+///
+/// ACCOUNT VALIDATION CONTRACT: The financial account passed to
+/// <see cref="CapitalizeAsync"/> as <c>capitalizationAccountId</c> is
+/// not validated against the financial cluster's chart of accounts —
+/// callers MUST verify the account exists + is a valid
+/// capital/CIP-asset account before invocation. Eventual-consistency
+/// drift (work-projects "capitalized" but financial reactor rejects)
+/// is one-shot at the entity level; recovery requires manual
+/// intervention.
+/// </remarks>
 public interface IRemodelProjectService
 {
     Task<RemodelProject> CreateAsync(

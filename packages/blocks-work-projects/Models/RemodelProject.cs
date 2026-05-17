@@ -44,6 +44,23 @@ public sealed class RemodelProject
     /// <summary>Max length of <see cref="ScopeStatement"/> — DoS guard.</summary>
     public const int MaxScopeStatementLength = 4000;
 
+    /// <summary>Max length of <see cref="PermitNumber"/> — input-cap guard.</summary>
+    public const int MaxPermitNumberLength = 100;
+
+    /// <summary>Max entries in <see cref="InspectionsRequired"/> — input-cap guard.</summary>
+    public const int MaxInspectionsCount = 50;
+
+    /// <summary>Max length per entry in <see cref="InspectionsRequired"/>.</summary>
+    public const int MaxInspectionNameLength = 200;
+
+    /// <summary>
+    /// Sanity ceiling on <see cref="CapitalizedAmount"/> (1 trillion).
+    /// Well below decimal overflow; well above any plausible single
+    /// capital asset. Prevents typo-driven payload + downstream
+    /// arithmetic overflow.
+    /// </summary>
+    public const decimal MaxCapitalizedAmount = 1_000_000_000_000m;
+
     private RemodelProject() { }
 
     public static RemodelProject Create(
@@ -62,6 +79,14 @@ public sealed class RemodelProject
         if (scopeStatement.Length > MaxScopeStatementLength)
             throw new ArgumentException(
                 $"ScopeStatement exceeds MaxScopeStatementLength={MaxScopeStatementLength}.", nameof(scopeStatement));
+        if (inspectionsRequired is { Count: > MaxInspectionsCount })
+            throw new ArgumentException(
+                $"InspectionsRequired exceeds MaxInspectionsCount={MaxInspectionsCount}.", nameof(inspectionsRequired));
+        if (inspectionsRequired is not null
+            && inspectionsRequired.Any(i => i is null || i.Length > MaxInspectionNameLength))
+            throw new ArgumentException(
+                $"InspectionsRequired entry exceeds MaxInspectionNameLength={MaxInspectionNameLength}.",
+                nameof(inspectionsRequired));
 
         return new RemodelProject
         {
@@ -86,6 +111,9 @@ public sealed class RemodelProject
                 "Cannot SetPermit when PermitRequired is false.");
         if (string.IsNullOrWhiteSpace(permitNumber))
             throw new ArgumentException("PermitNumber is required.", nameof(permitNumber));
+        if (permitNumber.Length > MaxPermitNumberLength)
+            throw new ArgumentException(
+                $"PermitNumber exceeds MaxPermitNumberLength={MaxPermitNumberLength}.", nameof(permitNumber));
         PermitNumber   = permitNumber;
         PermitIssuedAt = issuedAt;
         UpdatedBy      = updatedBy;
@@ -107,6 +135,10 @@ public sealed class RemodelProject
             throw new ArgumentException("CapitalizationAccountId is required.", nameof(capitalizationAccountId));
         if (capitalizedAmount <= 0m)
             throw new ArgumentException("CapitalizedAmount must be > 0.", nameof(capitalizedAmount));
+        if (capitalizedAmount > MaxCapitalizedAmount)
+            throw new ArgumentException(
+                $"CapitalizedAmount exceeds MaxCapitalizedAmount={MaxCapitalizedAmount} (sanity ceiling).",
+                nameof(capitalizedAmount));
         var normalized = RemodelPhase.NormalizeCurrency(currency, nameof(currency));
 
         CapitalizationAccountId = capitalizationAccountId;

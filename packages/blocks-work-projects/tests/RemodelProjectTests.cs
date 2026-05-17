@@ -72,6 +72,35 @@ public sealed class RemodelProjectTests
     }
 
     [Fact]
+    public void Capitalize_AmountExceedsCeiling_Throws()
+    {
+        var rp = MakeBase();
+        Assert.Throws<ArgumentException>(() => rp.Capitalize(
+            Guid.NewGuid(), new DateOnly(2026, 5, 16),
+            RemodelProject.MaxCapitalizedAmount + 1m, "USD", Actor, Instant.Now));
+    }
+
+    [Fact]
+    public void Create_InspectionsExceedsMaxCount_Throws()
+    {
+        var huge = Enumerable.Range(0, RemodelProject.MaxInspectionsCount + 1).Select(i => $"i{i}").ToList();
+        Assert.Throws<ArgumentException>(() => RemodelProject.Create(
+            Tenant, RemodelProjectId.NewId(), ProjectId.NewId(),
+            scopeStatement: "scope",
+            remodelKind: RemodelKind.Bath, permitRequired: false,
+            inspectionsRequired: huge, createdBy: Actor, createdAt: Instant.Now));
+    }
+
+    [Fact]
+    public void SetPermit_PermitNumberTooLong_Throws()
+    {
+        var rp = MakeBase(permitRequired: true);
+        var huge = new string('x', RemodelProject.MaxPermitNumberLength + 1);
+        Assert.Throws<ArgumentException>(() =>
+            rp.SetPermit(huge, new DateOnly(2026, 5, 1), Actor, Instant.Now));
+    }
+
+    [Fact]
     public void Capitalize_SetsCapitalizedAtAndIsOneShot()
     {
         var rp = MakeBase();
