@@ -191,8 +191,20 @@ public sealed class InMemoryProjectService : IProjectService
         };
         await _events.PublishAsync(achievedEnvelope, cancellationToken).ConfigureAwait(false);
 
-        if (milestone is { TriggersInvoice: true, PaymentAmount: { } amt, PaymentCurrency: { } cur, CustomerPartyId: { } cust })
+        if (milestone.TriggersInvoice)
         {
+            // Entity invariant: TriggersInvoice == true MUST imply all
+            // three fields present (validated on Create). If any is null
+            // here, storage corruption / schema-migration bug — throw
+            // loudly so AR invoices are never silently lost.
+            if (milestone.PaymentAmount is null || milestone.PaymentCurrency is null || milestone.CustomerPartyId is null)
+                throw new InvalidOperationException(
+                    $"Milestone {milestone.Id.Value} has TriggersInvoice=true but is missing "
+                    + "PaymentAmount/PaymentCurrency/CustomerPartyId — entity invariant violated.");
+            var amt  = milestone.PaymentAmount.Value;
+            var cur  = milestone.PaymentCurrency;
+            var cust = milestone.CustomerPartyId.Value;
+
             var invoiceEnvelope = new DomainEventEnvelope<MilestoneInvoiceTriggeredEvent>
             {
                 EventId              = EventId.New(),

@@ -108,4 +108,13 @@ public sealed class InMemoryProjectServiceTests
         Assert.DoesNotContain(pub.Published, e => e.EventType == "Work.MilestoneInvoiceTriggered");
         Assert.Contains(pub.Published, e => e.EventType == "Work.MilestoneAchieved");
     }
+
+    [Fact]
+    public async Task CreateAsync_NameExceedsMax_Throws()
+    {
+        var (svc, _, _, _) = Build();
+        var huge = new string('x', Project.MaxNameLength + 1);
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            svc.CreateAsync(Tenant, huge, ProjectKind.Generic, Priority.Normal, Owner, Owner));
+    }
 }

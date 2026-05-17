@@ -26,9 +26,12 @@ public sealed class InMemoryProjectRepository
     }
 
     public Project? GetByCode(TenantId tenantId, string code)
+        // Project codes are deterministic identifiers (PRJ-2026-L00001
+        // pattern), not user free-text — Ordinal comparison prevents
+        // case-folding collisions across generator changes.
         => _projects.Values.FirstOrDefault(p =>
             p.TenantId.Value.Equals(tenantId.Value, StringComparison.Ordinal)
-            && p.Code.Equals(code, StringComparison.OrdinalIgnoreCase)
+            && p.Code.Equals(code, StringComparison.Ordinal)
             && p.DeletedAt is null);
 
     public IReadOnlyList<Project> ListByTenant(TenantId tenantId)

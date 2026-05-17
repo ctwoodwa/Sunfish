@@ -83,4 +83,13 @@ public sealed class ErpnextProjectImporterTests
         var result = await importer.UpsertFromErpnextAsync(Source("  ", "v1"), Tenant, Owner);
         Assert.Equal(ImportOutcomeKind.Failed, result.Kind);
     }
+
+    [Fact]
+    public async Task UpsertFromErpnextAsync_NameWithNewline_RejectedByTagGuard()
+    {
+        var (importer, _) = Build();
+        // \n in source.Name would flow into the externalRef tag; OverwriteTags must reject.
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            importer.UpsertFromErpnextAsync(Source("foo\nbar", "v1"), Tenant, Owner));
+    }
 }
