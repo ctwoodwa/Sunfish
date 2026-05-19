@@ -24,7 +24,7 @@ jobs:
     # Beacon: coordination/inbox/xo-status-2026-05-13T13-15Z-wcag-gate-broken-on-main.md
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
