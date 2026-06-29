@@ -22,7 +22,7 @@
     "react-dom": "^19.0.0",
     "react-error-boundary": "^4.0.0",
     "react-hook-form": "^7.0.0",
-    "react-router-dom": "^7.0.0",
+    "react-router-dom": "^7.18.1",
     "tailwind-merge": "^2.0.0",
     "zod": "^3.0.0",
     "zustand": "^5.0.0"
