@@ -59,8 +59,8 @@
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.4"/>
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.4"/>
     <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.2.4"/>
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.5.26302.115"/>
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="11.0.0-preview.5.26302.115"/>
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.6.26359.118"/>
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="11.0.0-preview.6.26359.118"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0-preview.2.26159.112"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0"/>
